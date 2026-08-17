@@ -592,6 +592,36 @@ test('security-header validation rejects scanner-only conclusions', () => {
   }
 });
 
+test('cloud methodology follows provider context and covers identity, storage, metadata, and lifecycle', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability, selectVariants }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'cloud-storage.json'), 'utf8'));
+  for (const tag of ['public-access', 'public-listing', 'object-authorization', 'signed-url', 'presigned-upload', 'metadata', 'credential-exposure', 'iam', 'cross-account', 'origin-bypass', 'multi-tenant', 'versioning', 'retention', 'event-notification', 'audit-logging']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.references.some(({ url }) => url.includes('docs.aws.amazon.com'))));
+  assert.ok(items.every((item) => item.references.some(({ url }) => url.includes('cloud.google.com'))));
+  assert.ok(items.every((item) => item.references.some(({ url }) => url.includes('learn.microsoft.com'))));
+  const none = deriveContext({ cloud: 'none', features: ['multi_tenant'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, none).state === APPLICABILITY.NA_CONTEXT));
+  const aws = deriveContext({ cloud: 'aws', features: ['multi_tenant'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, aws).state === APPLICABILITY.ACTIVE));
+  const metadata = items.find(({ id }) => id === 'WAPT-CLOUD-009');
+  assert.ok(selectVariants(metadata, aws).some(({ notes }) => notes.includes('169.254.169.254')));
+});
+
+test('cloud write, metadata, IAM, and event tests use synthetic safety boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'cloud-storage.json'), 'utf8'));
+  for (const id of [
+    'WAPT-CLOUD-005', 'WAPT-CLOUD-006', 'WAPT-CLOUD-007', 'WAPT-CLOUD-009',
+    'WAPT-CLOUD-010', 'WAPT-CLOUD-011', 'WAPT-CLOUD-012', 'WAPT-CLOUD-013',
+    'WAPT-CLOUD-014', 'WAPT-CLOUD-016', 'WAPT-CLOUD-017'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

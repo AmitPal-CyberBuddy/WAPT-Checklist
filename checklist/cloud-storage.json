@@ -1,0 +1,1927 @@
+{
+  "schema_version": "1.0.0",
+  "category": "cloud-storage",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-CLOUD-001",
+      "title": "Inventory cloud storage, identities, endpoints, and data classes",
+      "category": "cloud-storage",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Map buckets/containers, accounts/projects/subscriptions, regions, CDN/origins, workloads, owners, and intended public/private data before active tests.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a live material store or trust relationship remains unowned, unclassified, or outside assessment coverage",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "provider-managed service buckets can be dependency-only",
+        "one logical product can intentionally span multiple accounts/regions"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "inventory",
+        "asset-management",
+        "data-classification"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    },
+    {
+      "id": "WAPT-CLOUD-002",
+      "title": "Prevent unintended public object reads",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether anonymous callers can read objects intended only for authenticated users or internal workloads.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "an anonymous request retrieves a synthetic private object or sensitive confirmed content",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "public website assets can intentionally allow anonymous reads",
+        "a signed URL can grant deliberate temporary bearer access"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "public-access",
+        "object-read",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    },
+    {
+      "id": "WAPT-CLOUD-003",
+      "title": "Prevent public bucket or container listing",
+      "category": "cloud-storage",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether anonymous or low-trust callers can enumerate private object names, metadata, prefixes, or versions.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a caller lists non-public synthetic keys or sensitive metadata beyond intended index behavior",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "public distribution buckets can intentionally expose an index",
+        "knowing a bucket name does not prove listing or object access"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "public-listing",
+        "enumeration",
+        "metadata"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    },
+    {
+      "id": "WAPT-CLOUD-004",
+      "title": "Authorize object reads by tenant, owner, and purpose",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing storage keys, prefixes, account/project, or proxy parameters crosses object or tenant boundaries.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a designated non-owner retrieves another account/tenant's synthetic object",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "shared team objects can be intentionally readable",
+        "opaque keys reduce guessing but do not replace authorization"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-010"
+      ],
+      "tags": [
+        "cloud-storage",
+        "object-authorization",
+        "multi-tenant",
+        "idor"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "cloud:aws|gcp|azure|self_hosted",
+          "features:multi_tenant",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-CLOUD-005",
+      "title": "Constrain object write, overwrite, and delete permissions",
+      "category": "cloud-storage",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether low-privilege or anonymous callers can create, replace, change metadata/ACL, or delete protected objects.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a caller modifies a synthetic object outside its documented write scope",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "append-only upload dropboxes can intentionally allow create without read",
+        "versioning can preserve a prior object despite an unauthorized current write"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "object-write",
+        "overwrite",
+        "delete"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use only uniquely prefixed synthetic objects and restore/delete them; never target application or real-user keys."
+    },
+    {
+      "id": "WAPT-CLOUD-006",
+      "title": "Scope signed download URLs to object, action, and lifetime",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether signed URLs can change key, method, response headers, account, or remain usable beyond intended expiry/revocation.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "one capability accesses another object/action or remains valid materially beyond policy",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "signed URLs are intentionally transferable bearer capabilities",
+        "small clock tolerance can be documented"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "signed-url",
+        "download",
+        "capability"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use synthetic objects and controlled recipients; never share signed URLs externally and delete artifacts."
+    },
+    {
+      "id": "WAPT-CLOUD-007",
+      "title": "Constrain presigned uploads and shared access signatures",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether signed upload capabilities permit unexpected keys, types, sizes, metadata, ACLs, overwrite, or tenant destinations.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a synthetic capability writes outside its intended object/content constraints",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "some presigned PUT designs intentionally allow any body for one fixed key",
+        "backend validation can quarantine and reject after direct upload"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "presigned-upload",
+        "sas",
+        "content-constraint"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Upload only tiny inert files to uniquely prefixed test keys and remove staged objects afterward."
+    },
+    {
+      "id": "WAPT-CLOUD-008",
+      "title": "Configure storage CORS for intended browser origins and methods",
+      "category": "cloud-storage",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether untrusted origins can read or write non-public storage resources with browser credentials/capabilities.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "controlled cross-origin JavaScript reads synthetic private data or performs an unauthorized write",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "public assets can intentionally allow wildcard GET",
+        "signed bearer URLs can be readable by any holder independent of CORS"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "cors",
+        "browser",
+        "storage"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    },
+    {
+      "id": "WAPT-CLOUD-009",
+      "title": "Block workload access to cloud metadata credentials",
+      "category": "cloud-storage",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether application fetchers or workloads can expose provider metadata or identity tokens to untrusted input.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "architecture/log/canary evidence shows an untrusted fetch path can reach metadata-equivalent credentials",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "the workload can run outside the named provider",
+        "modern metadata controls can require session/special headers that generic fetchers lack"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "metadata",
+        "workload-identity",
+        "credential"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [
+        {
+          "when": {
+            "cloud": [
+              "aws"
+            ]
+          },
+          "steps": [
+            "Verify IMDSv2 enforcement and network isolation using configuration or an owner-provided inert canary; never request workload credentials."
+          ],
+          "notes": "Do not contact 169.254.169.254 during production testing."
+        },
+        {
+          "when": {
+            "cloud": [
+              "gcp"
+            ]
+          },
+          "steps": [
+            "Verify metadata destination and Metadata-Flavor requirements are unreachable from untrusted fetchers."
+          ],
+          "notes": "Use architecture and egress evidence, not token retrieval."
+        },
+        {
+          "when": {
+            "cloud": [
+              "azure"
+            ]
+          },
+          "steps": [
+            "Verify Azure metadata destination/header requirements and workload identity are isolated from user-controlled fetches."
+          ],
+          "notes": "Never request managed identity tokens."
+        }
+      ],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "REVIEW ONLY. Never request real metadata endpoints, credentials, tokens, or identity documents; use architecture, policy, egress logs, or an inert owner canary."
+    },
+    {
+      "id": "WAPT-CLOUD-010",
+      "title": "Keep cloud workload credentials out of responses, files, and client artifacts",
+      "category": "cloud-storage",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether temporary credentials, service-account keys, connection strings, or SAS tokens leak through APIs, logs, bundles, errors, or storage.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a valid synthetic or real credential is exposed to an unintended principal/channel with confirmed authority",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "public project/account identifiers are not secrets",
+        "expired/redacted credential examples can be harmless"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "credential-exposure",
+        "service-account",
+        "secret"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Do not use exposed credentials beyond an owner-approved harmless identity call; redact and rotate/revoke immediately."
+    },
+    {
+      "id": "WAPT-CLOUD-011",
+      "title": "Apply least privilege to workload storage identities",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a compromised application role/service account can list, read, write, delete, or change policy beyond its documented function.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "an owner-provided test identity performs a harmless action outside its required bucket/prefix/action scope",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "administrative maintenance roles can intentionally have broad privileges",
+        "permission simulators can differ from effective conditional policy"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "iam",
+        "least-privilege",
+        "workload-identity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use only an owner-provided test identity and synthetic prefix; never alter real policy or objects."
+    },
+    {
+      "id": "WAPT-CLOUD-012",
+      "title": "Constrain cross-account and federated storage trust",
+      "category": "cloud-storage",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether bucket policies, IAM trusts, service principals, external IDs, or project/subscription grants admit unintended principals.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a designated external test principal receives storage authority outside documented trust",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "organization-wide shared services can intentionally trust several accounts",
+        "a principal can be listed in policy but blocked by conditions/deny rules"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "cross-account",
+        "trust-policy",
+        "iam"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use policy simulation or designated principals and synthetic objects; do not modify production trust policies."
+    },
+    {
+      "id": "WAPT-CLOUD-013",
+      "title": "Protect storage origin endpoints behind CDN or application controls",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether direct bucket/blob origins bypass authentication, filtering, signed-cookie, geo, or cache controls enforced at the public edge.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "an owner-confirmed direct origin serves synthetic protected content denied through the intended edge",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "public origin assets can intentionally be directly readable",
+        "origin access control can be provider-managed and not obvious from DNS"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "origin-bypass",
+        "cdn",
+        "storage-endpoint"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use only owner-confirmed origins and synthetic objects; never enumerate guessed bucket endpoints."
+    },
+    {
+      "id": "WAPT-CLOUD-014",
+      "title": "Isolate tenant objects with canonical prefixes and policy conditions",
+      "category": "cloud-storage",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether prefix/path manipulation, account context, or mis-scoped policies cross tenant storage boundaries.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "tenant B reads/writes tenant A's synthetic key through direct or proxied storage access",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "global assets can intentionally share a prefix",
+        "server-generated random keys can avoid client-selected paths while policy still enforces tenant"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "multi-tenant",
+        "prefix",
+        "isolation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "cloud:aws|gcp|azure|self_hosted",
+          "features:multi_tenant",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use designated test tenants and unique synthetic prefixes; remove every object afterward.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-CLOUD-015",
+      "title": "Control object versions, soft deletes, and recovery access",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether old sensitive versions or deleted objects remain accessible to users who should no longer have access.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a caller retrieves a prior/deleted synthetic version contrary to retention and authorization policy",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "versioning intentionally preserves objects for recovery",
+        "administrators can have documented legal/backup access"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "versioning",
+        "soft-delete",
+        "retention"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    },
+    {
+      "id": "WAPT-CLOUD-016",
+      "title": "Enforce lifecycle, retention, and legal-hold policy safely",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can shorten retention, bypass immutability, retain temporary sensitive data, or delete held objects beyond authority.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a low-privilege designated identity changes retention/hold or preserves/deletes a synthetic object contrary to policy",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "test environments can use shorter lifecycle rules",
+        "provider lifecycle actions can run asynchronously"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "lifecycle",
+        "retention",
+        "immutability"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use policy review or a test container/object; never alter production retention or legal holds."
+    },
+    {
+      "id": "WAPT-CLOUD-017",
+      "title": "Protect storage event notifications and downstream consumers",
+      "category": "cloud-storage",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether object-created events can be forged, redirected, replayed, or used to feed unsafe data into privileged functions.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "a synthetic event/object triggers an unauthorized destination, duplicate privileged effect, or unvalidated downstream action",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "providers can deliver events at least once by design",
+        "consumer idempotency can safely deduplicate retries"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "event-notification",
+        "webhook",
+        "downstream"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging.",
+      "safety": "Use tiny inert objects in a test prefix and owner-monitored consumers; never trigger production workflows or external messages."
+    },
+    {
+      "id": "WAPT-CLOUD-018",
+      "title": "Log storage access and policy changes without exposing secrets",
+      "category": "cloud-storage",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether object reads/writes/deletes, denied access, signed capability creation, IAM/policy changes, and lifecycle events are auditable.",
+      "prerequisites": [
+        "Confirmed cloud/storage provider, account/project/subscription, and owner-approved scope",
+        "Synthetic uniquely prefixed objects, designated identities, and policy/log evidence as applicable"
+      ],
+      "steps": [
+        "Map provider/account/container/origin/identity/data-class and intended access contract",
+        "Create or identify a uniquely prefixed synthetic control object/policy fixture",
+        "Change one principal, object key, capability, policy condition, origin, lifecycle, event, or delivery context",
+        "Verify effective provider decision and audit evidence, then remove all test objects/capabilities/state"
+      ],
+      "examples": [
+        {
+          "note": "Use only uniquely prefixed synthetic objects and designated test identities; fully redact URLs, keys, credentials, and account IDs."
+        }
+      ],
+      "manipulate": "One cloud principal, container/object key, signed capability, policy condition, origin, lifecycle, event, or browser context at a time",
+      "secure_behavior": "Storage access is private by default, explicitly authorized by principal/action/resource/tenant, least-privileged, short-lived where delegated, isolated from metadata/egress abuse, lifecycle-controlled, and audited.",
+      "vulnerable_behavior": "material synthetic access/change cannot be traced to principal, object alias, action, result, and request ID, or logs expose secrets/data",
+      "validation": "Confirm effective provider access or policy behavior with a synthetic object and distinguish public design, signed capability semantics, conditional denies, caching, and asynchronous lifecycle/event behavior.",
+      "false_positives": [
+        "high-volume public reads can be sampled under policy",
+        "provider audit and data-access logs can be separate/optional"
+      ],
+      "impact": "A confirmed cloud/storage weakness can expose or alter tenant data, leak workload credentials, bypass edge controls, grant persistent cross-account access, destroy/retain protected objects, or trigger privileged downstream systems.",
+      "evidence": [
+        "Provider/account/container/object aliases with sensitive IDs redacted",
+        "Anonymous and designated-principal request/policy decision",
+        "Signed capability, origin, lifecycle, event, or IAM conditions",
+        "Synthetic before/after object state, audit event, cleanup, and credential revocation"
+      ],
+      "tools": [
+        "Provider CLI with designated test identity",
+        "Burp Repeater for public/signed endpoints",
+        "Provider policy simulator and audit logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Cloud Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Amazon S3 security best practices",
+          "url": "https://docs.aws.amazon.com/AmazonS3/latest/userguide/security-best-practices.html"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Cloud Storage access control",
+          "url": "https://cloud.google.com/storage/docs/access-control"
+        },
+        {
+          "source": "Official vendor",
+          "title": "Azure Storage security recommendations",
+          "url": "https://learn.microsoft.com/en-us/azure/storage/blobs/security-recommendations"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cloud-storage",
+        "audit-logging",
+        "policy-change",
+        "monitoring"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "cloud": [
+            "aws",
+            "gcp",
+            "azure",
+            "self_hosted"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private-by-default storage, explicit least-privilege identity/resource/tenant policies, narrow expiring capabilities, isolated origins/metadata/egress, safe lifecycle/event consumers, encryption where required, and complete audit logging."
+    }
+  ]
+}

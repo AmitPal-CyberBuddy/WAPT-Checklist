@@ -130,6 +130,7 @@ function referenceUrlAllowed(raw) {
   if (host === 'html.spec.whatwg.org' || host.endsWith('.spec.whatwg.org')) return true;
   if (host === 'www.w3.org') return true;
   if (host === 'docs.oasis-open.org') return url.pathname.startsWith('/security/saml/');
+  if (host === 'docs.aws.amazon.com' || host === 'cloud.google.com' || host === 'learn.microsoft.com') return true;
   if (host === 'github.com') return url.pathname === '/OWASP/ASVS/tree/v5.0.0' || url.pathname.startsWith('/OWASP/ASVS/blob/v5.0.0/');
   return false;
 }

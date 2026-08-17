@@ -16,12 +16,16 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 18 | Client-side security | 25 | 29 | Complete |
 | 19 | WebSocket | 8 | 10 | Complete |
 | 20 | Security headers | 20 | 24 | Complete |
-| 21 | Cloud / storage | 15 | 0 | Not started |
+| 21 | Cloud / storage | 15 | 18 | Complete |
 | 22 | Information disclosure | 15 | 0 | Not started |
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **194**. Overall production catalog: **542**.
+Advanced floor total: **217**. Current Phase 6 production total: **212**. Overall production catalog: **560**.
+
+## Cloud / storage coverage
+
+The cloud catalog adds 18 provider-aware tests for inventory, public reads/listing, object read/write/delete authorization, signed downloads and uploads, storage CORS, metadata and workload credential isolation, least-privilege and cross-account IAM, CDN/origin bypass, tenant prefixes, versions/deletes, retention/holds, event consumers, and audit logging. Vendor references cover AWS S3, Google Cloud Storage, and Azure Blob Storage. Metadata tests prohibit real endpoint or token retrieval.
 
 ## Security-header coverage
 

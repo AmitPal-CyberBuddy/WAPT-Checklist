@@ -210,7 +210,7 @@
       "file": "cloud-storage.json",
       "prefix": "WAPT-CLOUD",
       "floor": 15,
-      "count": 0,
+      "count": 18,
       "summary": "Assess object storage, signed URLs, identity, and metadata boundaries."
     },
     {
