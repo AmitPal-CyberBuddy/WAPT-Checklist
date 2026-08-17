@@ -1,0 +1,1867 @@
+{
+  "schema_version": "1.0.0",
+  "category": "security-headers",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-HDR-001",
+      "title": "Assess each security header against an actual browser exposure",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether a missing, malformed, or weak header creates a reachable security consequence for the response type and threat model.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a relevant browser behavior remains exploitable and the header would materially prevent or reduce it",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "a scanner checklist can flag headers irrelevant to an API/download/static resource",
+        "application controls can remove the underlying exposure independently"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "context-aware",
+        "false-positive",
+        "baseline"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-002",
+      "title": "Enforce HTTPS with a deployment-safe HSTS policy",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether HTTPS-ready browser hosts send one valid HSTS policy with appropriate lifetime and subdomain scope.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a realistic first/expired-policy network downgrade exposes sensitive content/cookies or covered hosts omit an effective policy",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "a parent includeSubDomains policy can already cover the host",
+        "APIs used only by pinned non-browser clients have a different threat model"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test HTTP Strict Transport Security",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/07-Test_HTTP_Strict_Transport_Security"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-319"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "hsts",
+        "tls",
+        "transport"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-003",
+      "title": "Deploy an enforced CSP matched to application script behavior",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether Content-Security-Policy meaningfully constrains scripts, objects, navigation, framing, and injection impact.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a confirmed injection path executes through unnecessarily broad sources, unsafe directives, or missing enforcement",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "CSP absence does not create XSS by itself",
+        "report-only policy provides telemetry but not blocking"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Content Security Policy Level 3",
+          "url": "https://www.w3.org/TR/CSP3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "csp",
+        "script-src",
+        "defense-in-depth"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-004",
+      "title": "Use unpredictable CSP nonces or hashes without unsafe fallbacks",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether script nonces are reused/predictable or policy also permits unsafe-inline, unsafe-eval, broad hosts, or bypassable gadgets.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a confirmed sink executes because nonce/hash trust is predictable, reused unsafely, or neutralized by permissive directives",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "one nonce can intentionally cover several scripts in the same response",
+        "third-party host trust can be a conscious but risky requirement"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Content Security Policy Level 3",
+          "url": "https://www.w3.org/TR/CSP3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "csp",
+        "nonce",
+        "hash",
+        "script-src"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-005",
+      "title": "Constrain CSP base-uri, object-src, and navigation destinations",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether injected base elements, plugins, forms, frames, or navigation can leave trusted boundaries despite CSP.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a confirmed HTML/content injection gains material impact through an omitted/broad relevant directive",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "object-src none is irrelevant when no plugin content exists",
+        "form-action/navigation policy can be enforced by application allowlists"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Content Security Policy Level 3",
+          "url": "https://www.w3.org/TR/CSP3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "csp",
+        "base-uri",
+        "object-src",
+        "form-action"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-006",
+      "title": "Prevent unauthorized framing with CSP frame-ancestors",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether sensitive interactive pages can be framed by an untrusted origin.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a controlled origin frames a sensitive page and can align a reversible victim action",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "public widgets can intentionally allow selected framing origins",
+        "SameSite/CSRF does not universally prevent clickjacking but can reduce specific actions"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Content Security Policy Level 3",
+          "url": "https://www.w3.org/TR/CSP3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-1021"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "frame-ancestors",
+        "clickjacking",
+        "csp"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "safety": "Use a controlled framing origin and reversible action; never trick real users."
+    },
+    {
+      "id": "WAPT-HDR-007",
+      "title": "Keep X-Frame-Options consistent with frame-ancestors where retained",
+      "category": "security-headers",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether legacy framing protection is valid and non-conflicting while CSP remains authoritative in modern browsers.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "legacy target browsers remain frameable due to invalid/conflicting policy on a sensitive page",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "frame-ancestors supersedes X-Frame-Options in modern browsers",
+        "ALLOW-FROM is obsolete and inconsistently supported"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-1021"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "x-frame-options",
+        "clickjacking",
+        "legacy"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-008",
+      "title": "Prevent MIME sniffing with accurate types and nosniff",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether X-Content-Type-Options plus correct Content-Type stops attacker-controlled bytes being interpreted actively.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a realistic script/style/download context reinterprets attacker-controlled content and creates execution or spoofing impact",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "missing nosniff is irrelevant for some fixed server-generated representations",
+        "an inaccurate Content-Type remains a problem even when nosniff blocks one context"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-3.4.4"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-430"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "nosniff",
+        "mime-sniffing",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-009",
+      "title": "Send accurate Content-Type and charset on every body",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether media-type or encoding ambiguity changes browser/parser interpretation.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "attacker-influenced bytes are interpreted in a more active or less constrained context due to type/charset mismatch",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "JSON has defined encoding behavior without needing a charset parameter",
+        "generic binary downloads can safely use application/octet-stream"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "content-type",
+        "charset",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-010",
+      "title": "Limit referrer data with a purpose-appropriate Referrer-Policy",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether navigation or subresource requests leak sensitive paths, queries, identifiers, or cross-origin context.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a controlled cross-origin destination receives sensitive synthetic URL data unnecessary for the flow",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "origin-only referrers can be required for analytics/CSRF fallback",
+        "secrets should not be placed in URLs even with a restrictive policy"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "referrer-policy",
+        "privacy",
+        "data-leakage"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "safety": "Use only synthetic URL markers and a controlled destination; never capture real user navigation."
+    },
+    {
+      "id": "WAPT-HDR-011",
+      "title": "Restrict powerful browser features with Permissions-Policy",
+      "category": "security-headers",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether frames or documents can use camera, microphone, geolocation, fullscreen, payment, or other features beyond need.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a controlled untrusted frame/origin obtains a powerful feature contrary to documented policy and user consent",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "browser permission prompts still gate many features",
+        "missing policy is irrelevant when the feature/API is unused"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "permissions-policy",
+        "browser-feature",
+        "iframe"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-012",
+      "title": "Use COOP where cross-window isolation is required",
+      "category": "security-headers",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether opener relationships enable tabnabbing, cross-window reference abuse, or weaken cross-origin isolation goals.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a controlled cross-origin window retains a security-relevant opener relationship or prevents required isolation",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "many sites safely interoperate without COOP",
+        "noopener on individual links can mitigate a narrower threat"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-1022"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "coop",
+        "opener",
+        "cross-origin-isolation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-013",
+      "title": "Use COEP only when cross-origin isolation and resource policy require it",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether Cross-Origin-Embedder-Policy is correctly enforced for a documented isolation need without assuming universal applicability.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "required cross-origin isolation is absent/bypassable and enables a demonstrated high-resolution or shared-memory threat",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "most applications do not require cross-origin isolation",
+        "credentialless and require-corp have different compatibility models"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "coep",
+        "cross-origin-isolation",
+        "embedder"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-014",
+      "title": "Protect resources with an appropriate Cross-Origin-Resource-Policy",
+      "category": "security-headers",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether sensitive resources can be embedded/read as cross-origin subresources contrary to intended audience.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "an untrusted origin can load a sensitive resource in a context where CORP would enforce intended same-origin/site policy",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "CORS and CORP solve different browser controls",
+        "public images/scripts can intentionally allow cross-origin loading"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "corp",
+        "resource-policy",
+        "cross-origin"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-015",
+      "title": "Prevent sensitive browser caching with explicit Cache-Control",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether authenticated/private responses persist in browser or intermediary caches beyond need.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "sensitive synthetic content is retrievable after logout or by another cache context",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "back navigation can issue a fresh authorized request",
+        "public/static assets should remain cacheable"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-525"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "cache-control",
+        "no-store",
+        "sensitive-data"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-016",
+      "title": "Use Clear-Site-Data deliberately during high-risk logout or reset",
+      "category": "security-headers",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether cookies, storage, cache, and execution contexts requiring cleanup survive a security event.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "documented full-client cleanup fails and leaves reusable synthetic authority/data",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "ordinary logout can invalidate server sessions without clearing every preference/cache",
+        "Clear-Site-Data support and scope vary by browser"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "clear-site-data",
+        "logout",
+        "browser-storage"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-017",
+      "title": "Set safe Content-Disposition for downloads",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether browsers render active content inline or accept an injected/misleading filename when attachment behavior is required.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "attacker-controlled content executes/spoofs in the app origin or injects response syntax due to disposition handling",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "public PDFs/images can intentionally render inline",
+        "browser filename normalization differs without security impact"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-113"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "content-disposition",
+        "download",
+        "filename"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-018",
+      "title": "Minimize product and version disclosure headers",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether Server, X-Powered-By, framework, gateway, or debug headers reveal a precise actionable obsolete component.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a confirmed precise version maps to a reachable applicable weakness or sensitive architecture detail",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "generic product family names are usually informational",
+        "proxies can add misleading banners"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "server-header",
+        "version-disclosure",
+        "fingerprinting"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-019",
+      "title": "Disable obsolete X-XSS-Protection behavior",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether legacy X-XSS-Protection creates browser-specific filtering risks or a false sense of XSS defense.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a supported legacy browser's enabled filter creates a demonstrated security bypass/content mutation",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "modern browsers ignore the header",
+        "header absence is not an XSS vulnerability"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "x-xss-protection",
+        "obsolete",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-020",
+      "title": "Do not deploy HTTP Public Key Pinning",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Verify obsolete HPKP headers are absent and no operational process depends on browser key pinning.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "an active pin policy creates realistic self-denial/recovery risk or conflicts with certificate operations",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "historical cached pins can outlive header removal",
+        "mobile certificate pinning is a separate client design"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "hpkp",
+        "obsolete",
+        "availability"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-021",
+      "title": "Treat Expect-CT as obsolete telemetry, not a required defense",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Ensure missing Expect-CT is not reported and certificate-transparency monitoring uses current mechanisms.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "an assessment incorrectly relies on or reports this obsolete header instead of actual certificate controls",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "browsers have removed/changed Expect-CT behavior",
+        "CT compliance can be enforced by browser ecosystem independently"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "expect-ct",
+        "obsolete",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-022",
+      "title": "Apply policies consistently across routes, errors, redirects, and status codes",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether security-relevant headers disappear on authentication, error, download, cached, or alternate-origin responses.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a relevant response path lacks/eases a policy and enables a demonstrated attack there",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "different response types legitimately need different policies",
+        "CDNs can inject policies centrally even when origin config differs"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "header-consistency",
+        "error-response",
+        "route"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-023",
+      "title": "Reject duplicate or malformed security headers consistently",
+      "category": "security-headers",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether browsers, proxies, and applications interpret repeated, comma-joined, invalid, or case-varied policies differently.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a malformed/duplicate policy is ignored or weakened in a target browser and enables a demonstrated exposure",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "some list-valued headers intentionally combine values",
+        "browsers commonly choose the most restrictive framing policy but behavior varies"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "duplicate-header",
+        "malformed-header",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    },
+    {
+      "id": "WAPT-HDR-024",
+      "title": "Distinguish report-only policies from enforced protection",
+      "category": "security-headers",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether CSP/COEP reporting endpoints are mistaken for enforcement and whether reports avoid sensitive data leakage.",
+      "prerequisites": [
+        "Representative responses, routes, status codes, browser contexts, and target browser support",
+        "A confirmed underlying exposure or threat model before rating a missing header as a vulnerability"
+      ],
+      "steps": [
+        "Inventory the header and effective policy on representative success, redirect, error, authenticated, download, and cached responses",
+        "Parse duplicate/malformed values and identify which browser/proxy policy actually applies",
+        "Exercise only a harmless controlled browser behavior relevant to the response and threat model",
+        "Confirm meaningful security impact and exclude checklist-only or obsolete-header findings"
+      ],
+      "examples": [
+        {
+          "note": "A missing header is not a vulnerability by itself; demonstrate relevant browser behavior and realistic impact."
+        }
+      ],
+      "manipulate": "The response route/status/browser context and one policy directive or header value at a time",
+      "secure_behavior": "The response sends a valid, context-appropriate, consistently enforced browser policy that addresses a real exposure without relying on obsolete controls.",
+      "vulnerable_behavior": "a report-only policy is relied upon as a blocking control or reports disclose sensitive synthetic URL/content data to an unintended collector",
+      "validation": "Demonstrate effective behavior in a supported browser and the underlying exposure; scanner output, absence, or syntax differences alone are insufficient.",
+      "false_positives": [
+        "report-only deployment is useful during policy tuning",
+        "reports can contain necessary violation context under a trusted collector"
+      ],
+      "impact": "Impact depends on the underlying browser exposure and can include downgrade, script execution amplification, UI redressing, data/referrer leakage, cross-origin resource abuse, stale sensitive data, or unsafe content rendering.",
+      "evidence": [
+        "Raw representative response headers",
+        "Parsed effective policy and target browser/version",
+        "Harmless controlled browser behavior",
+        "Underlying exposure, realistic impact, route consistency, and false-positive exclusions"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Policy parser used offline"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Content Security Policy Level 3",
+          "url": "https://www.w3.org/TR/CSP3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-header",
+        "report-only",
+        "csp-report",
+        "telemetry"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+    }
+  ]
+}

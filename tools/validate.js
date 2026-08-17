@@ -127,7 +127,7 @@ function referenceUrlAllowed(raw) {
   if (host === 'portswigger.net') return url.pathname === '/web-security' || url.pathname.startsWith('/web-security/');
   if (host === 'www.rfc-editor.org') return /^\/rfc\/rfc\d+\/?$/.test(url.pathname);
   if (host === 'cwe.mitre.org') return url.pathname.startsWith('/data/definitions/');
-  if (host === 'html.spec.whatwg.org') return true;
+  if (host === 'html.spec.whatwg.org' || host.endsWith('.spec.whatwg.org')) return true;
   if (host === 'www.w3.org') return true;
   if (host === 'docs.oasis-open.org') return url.pathname.startsWith('/security/saml/');
   if (host === 'github.com') return url.pathname === '/OWASP/ASVS/tree/v5.0.0' || url.pathname.startsWith('/OWASP/ASVS/blob/v5.0.0/');

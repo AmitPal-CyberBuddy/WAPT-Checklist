@@ -565,6 +565,33 @@ test('WebSocket resource, replay, and revocation probes are bounded', () => {
   }
 });
 
+test('security-header methodology requires contextual impact and handles obsolete policies correctly', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'security-headers.json'), 'utf8'));
+  for (const tag of ['hsts', 'csp', 'frame-ancestors', 'nosniff', 'referrer-policy', 'permissions-policy', 'coop', 'coep', 'corp', 'cache-control', 'clear-site-data', 'content-disposition', 'x-xss-protection', 'hpkp', 'expect-ct', 'report-only']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => /missing header is not a vulnerability/i.test(item.examples[0].note)));
+  assert.ok(items.some(({ mode }) => mode === 'manual'));
+  assert.ok(items.some(({ mode }) => mode === 'automated'));
+  for (const id of ['WAPT-HDR-019', 'WAPT-HDR-020', 'WAPT-HDR-021']) {
+    assert.ok(items.find((item) => item.id === id).tags.includes('obsolete'), `${id} must be obsolete guidance`);
+  }
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+});
+
+test('security-header validation rejects scanner-only conclusions', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'security-headers.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.validation, /scanner output/);
+    assert.ok(item.false_positives.length >= 2);
+    assert.ok(item.evidence.some((entry) => /browser/i.test(entry)), item.id);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Phase 6 categories 11–19 now contain 170 production items, adding protocol-gated WebSocket handshake, message, subscription, resource, and revocation methodology.
+- Phase 6 categories 11–20 now contain 194 production items, adding context-aware security-header and obsolete-header false-positive methodology.
 - Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
 - Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
 - Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.

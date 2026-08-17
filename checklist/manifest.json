@@ -200,7 +200,7 @@
       "file": "security-headers.json",
       "prefix": "WAPT-HDR",
       "floor": 20,
-      "count": 0,
+      "count": 24,
       "summary": "Judge browser policies by actual exposure rather than missing-header noise."
     },
     {
