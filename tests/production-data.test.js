@@ -622,6 +622,27 @@ test('cloud write, metadata, IAM, and event tests use synthetic safety boundarie
   }
 });
 
+test('information-disclosure methodology requires sensitive content and realistic utility', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'information-disclosure.json'), 'utf8'));
+  for (const tag of ['stack-trace', 'debug-mode', 'client-secret', 'source-map', 'backup-file', 'git', 'environment-file', 'directory-listing', 'version-disclosure', 'metrics', 'log-disclosure', 'cache-disclosure', 'robots-txt', 'personal-data', 'document-metadata', 'stale-copy']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => /sensitivity\/validity|sensitive|utility/.test(item.validation)));
+  assert.ok(items.every((item) => /leads; report only/.test(item.examples[0].note)));
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+});
+
+test('secret, debug, repository, log, and management checks constrain evidence handling', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'information-disclosure.json'), 'utf8'));
+  for (const id of ['WAPT-INFO-002', 'WAPT-INFO-003', 'WAPT-INFO-006', 'WAPT-INFO-007', 'WAPT-INFO-008', 'WAPT-INFO-011', 'WAPT-INFO-013', 'WAPT-INFO-014', 'WAPT-INFO-017']) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

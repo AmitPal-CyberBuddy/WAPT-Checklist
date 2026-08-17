@@ -17,11 +17,15 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 19 | WebSocket | 8 | 10 | Complete |
 | 20 | Security headers | 20 | 24 | Complete |
 | 21 | Cloud / storage | 15 | 18 | Complete |
-| 22 | Information disclosure | 15 | 0 | Not started |
+| 22 | Information disclosure | 15 | 18 | Complete |
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **212**. Overall production catalog: **560**.
+Advanced floor total: **217**. Current Phase 6 production total: **230**. Overall production catalog: **578**.
+
+## Information-disclosure coverage
+
+The disclosure catalog adds 18 impact-gated tests for stack traces/errors, debug consoles, client secrets, source maps, comments/hidden markup, backups, version-control metadata, environment/deployment files, listings, component versions, health/metrics/tracing/actuator endpoints, API errors, logs, caches, robots/sitemaps false positives, identity data, document/media metadata, and stale-copy remediation. Secrets are never retained or broadly exercised.
 
 ## Cloud / storage coverage
 

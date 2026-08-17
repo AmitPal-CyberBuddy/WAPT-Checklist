@@ -220,7 +220,7 @@
       "file": "information-disclosure.json",
       "prefix": "WAPT-INFO",
       "floor": 15,
-      "count": 0,
+      "count": 18,
       "summary": "Find actionable secrets, internals, debug output, and source artifacts."
     },
     {
