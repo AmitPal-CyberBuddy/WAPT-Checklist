@@ -11,7 +11,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 13 | OAuth / SSO / SAML | 18 | 22 | Complete |
 | 14 | SSRF | 12 | 15 | Complete |
 | 15 | Request smuggling / desync | 12 | 14 | Complete |
-| 16 | Business logic | 30 | 0 | Not started |
+| 16 | Business logic | 30 | 35 | Complete |
 | 17 | Race conditions | 10 | 0 | Not started |
 | 18 | Client-side security | 25 | 0 | Not started |
 | 19 | WebSocket | 8 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **84**. Overall production catalog: **432**.
+Advanced floor total: **217**. Current Phase 6 production total: **119**. Overall production catalog: **467**.
+
+## Business logic coverage
+
+The business-logic catalog adds 35 synthetic-state tests for workflow sequence/replay/token binding, numeric and price/quantity/currency/tax/shipping calculations, coupons and stored value, payment/refund/cancellation/subscription lifecycle, quotas and alternate identities, invitations/referrals, approval separation, integrity fields and callbacks, asynchronous/idempotent effects, account/tenant/plan/time invariants, reservation hoarding, application misuse, consent, and cross-channel retesting. Every item prohibits real charges, fulfillment, messages, approvals, inventory loss, or customer impact.
 
 ## HTTP request smuggling / desync coverage
 

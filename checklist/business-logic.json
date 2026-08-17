@@ -1,0 +1,3376 @@
+{
+  "schema_version": "1.0.0",
+  "category": "business-logic",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-BL-001",
+      "title": "Map server-side workflow states and invariants",
+      "category": "business-logic",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Define valid states, transitions, actors, prerequisites, limits, and rollback before testing sequence abuse.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a material workflow has no enforceable server-side invariant or cannot be reconciled with owner policy",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "UI steps do not always correspond one-to-one with server states",
+        "asynchronous intermediate states can be intentionally visible"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "state-machine",
+        "workflow",
+        "invariant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-002",
+      "title": "Reject skipped mandatory workflow steps",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user can jump directly to a later state without completing required verification, review, payment, or consent.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic object reaches the later protected state with a required step absent",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "the server can complete an implicit prerequisite automatically",
+        "a later endpoint can display a page without committing state"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "workflow-skip",
+        "state-transition"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-003",
+      "title": "Reject out-of-order workflow transitions",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether transitions submitted in an unexpected order bypass state prerequisites.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "an out-of-order request commits a state that the normal sequence would forbid",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "idempotent state setting can safely accept the current state",
+        "asynchronous events can arrive out of order but reconcile safely"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "workflow-order",
+        "state-transition"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-004",
+      "title": "Prevent replay of completed workflow actions",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a previously valid transition can be replayed after completion, cancellation, or expiry.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "replaying one completed synthetic transition creates another effect or restores an invalid state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "a repeated response can report the original result without a second commit",
+        "safe idempotent operations can intentionally be replayable"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "workflow-replay",
+        "idempotency"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-005",
+      "title": "Bind workflow tokens and identifiers to the intended account and object",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether swapping transaction, cart, application, approval, or step tokens crosses user/object boundaries.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a token from test account A advances or changes account B's object",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "tokens can be transferable capabilities under explicit sharing policy",
+        "a client-visible step ID can be ignored in favor of server session state"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "workflow-token",
+        "object-binding",
+        "integrity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-006",
+      "title": "Validate numeric ranges and signs as business values",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether negative, zero, extreme, fractional, or overflow-adjacent values violate quantity, balance, duration, or count rules.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a bounded invalid value commits a financially or operationally impossible state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "zero can be a valid removal/no-op value",
+        "display rounding can differ while authoritative minor units remain correct"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Business Logic Data Validation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/01-Test_Business_Logic_Data_Validation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-01"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "numeric-validation",
+        "quantity",
+        "range"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-007",
+      "title": "Recalculate item prices from trusted product records",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether client-supplied unit price, total, or price identifier controls authoritative order value.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic order persists or settles below the trusted product price due to client input",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "test/customer-specific pricing can be intentional",
+        "the UI can preview a changed price before server recalculation"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "price-manipulation",
+        "checkout",
+        "integrity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-008",
+      "title": "Validate quantity against product and inventory rules",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether negative, excessive, fractional, or inconsistent quantities bypass inventory or pricing constraints.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "an invalid quantity yields unintended credit, inventory, or order state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "fractional quantity can be valid for measured goods",
+        "backorders can intentionally exceed current stock"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Business Logic Data Validation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/01-Test_Business_Logic_Data_Validation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-01"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "quantity",
+        "inventory",
+        "checkout"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-009",
+      "title": "Bind currency to the trusted price and settlement context",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing currency codes or exchange fields preserves a numeric amount while reducing value.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "an order or payment uses an unauthorized currency/amount pairing",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "multi-currency catalogs can intentionally have independent price books",
+        "payment providers can perform documented conversion"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "currency",
+        "payment",
+        "price-manipulation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-010",
+      "title": "Recalculate tax, shipping, fees, and discounts server-side",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether client-controlled components can reduce the authoritative payable total.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic order commits with unauthorized tax, shipping, fee, or discount values",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "test regions can have zero tax/shipping legitimately",
+        "estimated UI totals can change at final calculation"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "tax",
+        "shipping",
+        "fees",
+        "checkout"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-011",
+      "title": "Enforce coupon eligibility and ownership",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a promotion can be applied outside product, user, tenant, region, date, channel, or minimum-spend rules.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "an ineligible synthetic account/order receives the discount",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "customer-service coupons can intentionally override normal eligibility",
+        "promotion configuration can change during the test"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Business Logic Data Validation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/01-Test_Business_Logic_Data_Validation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-01"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "coupon",
+        "eligibility",
+        "discount"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-012",
+      "title": "Enforce coupon usage and stacking limits",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the same promotion can be reused, combined, split, or applied across accounts beyond policy.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "bounded reuse/stacking produces more discount than the documented rule",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "different campaign codes can intentionally stack",
+        "a preview can show a discount that settlement later rejects"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "coupon",
+        "usage-limit",
+        "stacking"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-013",
+      "title": "Protect gift cards, credits, points, and stored value",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether balances can be forged, transferred, redeemed repeatedly, or driven negative through ordinary requests.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic stored-value account gains/spends value beyond its authoritative ledger",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "promotional/test credits can be intentionally replenished",
+        "eventual UI balance can lag a correct ledger"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "stored-value",
+        "gift-card",
+        "loyalty",
+        "ledger"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-014",
+      "title": "Bind checkout completion to verified payment state",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether success callbacks, order states, or client flags can mark an order paid without provider-confirmed settlement.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a zero-value sandbox order reaches paid/fulfilled state without a verified matching provider event",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "cash-on-delivery or invoice flows can intentionally create unpaid orders",
+        "a success page can render before backend settlement"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "payment",
+        "checkout",
+        "settlement"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-015",
+      "title": "Verify payment amount, currency, merchant, and order binding",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a legitimate provider event for one transaction can settle another order or amount.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a sandbox payment is accepted for a mismatched order, amount, currency, merchant, or account",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "partial payments can be a documented feature",
+        "provider fees can make gross/net amounts differ"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "payment",
+        "transaction-binding",
+        "webhook"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-016",
+      "title": "Enforce refund and reversal limits",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether refunds exceed paid value, repeat, target another transaction, or bypass role/state requirements.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a sandbox refund commits beyond remaining refundable value or required permission",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "multiple partial refunds can be legitimate within the total",
+        "provider and local ledger states can reconcile asynchronously"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Business Logic Data Validation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/01-Test_Business_Logic_Data_Validation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-01"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "refund",
+        "payment",
+        "ledger"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-017",
+      "title": "Constrain cancellation after irreversible fulfillment states",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can cancel, reverse, or reclaim value after shipment, consumption, transfer, or completion.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic transaction reaches an economically inconsistent cancel/refund state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "grace periods can intentionally allow late cancellation",
+        "fulfillment systems can update asynchronously"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "cancellation",
+        "fulfillment",
+        "state-machine"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-018",
+      "title": "Enforce subscription and trial lifecycle rules",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can repeat trials, downgrade after consumption, avoid billing, or retain entitlements after expiry/cancellation.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic account retains or reacquires entitlement beyond documented trial/subscription policy",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "promotional extensions can be intentionally granted",
+        "entitlement revocation can have a short documented propagation window"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "subscription",
+        "trial",
+        "entitlement"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-019",
+      "title": "Enforce per-user and global usage limits",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether quotas, redemptions, invitations, votes, reservations, or limited resources can be used beyond policy.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a bounded sequence exceeds the authoritative account/resource limit",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "different tenants/roles can have distinct limits",
+        "failed responses can still represent one committed use"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "usage-limit",
+        "quota",
+        "limited-resource"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-020",
+      "title": "Prevent limit reset through alternate identities or channels",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether case variants, aliases, tenant switches, APIs, mobile routes, or guest/auth transitions bypass one logical limit.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "the same controlled actor/resource exceeds policy by changing channel or representation",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "limits can intentionally be per-tenant rather than per-person",
+        "separate campaigns can maintain independent counters"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "usage-limit",
+        "alternate-channel",
+        "identity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-021",
+      "title": "Enforce invitation and referral business rules",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can self-refer, exceed rewards, alter inviter/invitee, reuse links, or invite prohibited recipients.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "synthetic accounts obtain referral/invitation value outside documented rules",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "household/team referrals can be intentionally allowed",
+        "rewards can remain pending until later fraud checks"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Business Logic Data Validation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/01-Test_Business_Logic_Data_Validation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-01"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "invitation",
+        "referral",
+        "reward"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-022",
+      "title": "Bind approval actions to eligible independent reviewers",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether requesters can self-approve, reuse approval tokens, or select an unauthorized approver.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic high-risk request is approved without the required distinct eligible principal",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "low-risk requests can intentionally allow self-approval",
+        "emergency override can be documented and audited"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "approval",
+        "separation-of-duties",
+        "workflow"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-023",
+      "title": "Preserve maker-checker separation after reassignment",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether role, ownership, or assignee changes let one person perform both required sides of a controlled action.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic request bypasses separation by reassigning or switching role/account state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "teams can have documented pooled approvals",
+        "a user can hold multiple roles but policy can still identify the same principal"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "maker-checker",
+        "reassignment",
+        "approval"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-024",
+      "title": "Prevent forged client-side integrity fields",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether hidden fields, hashes, signatures, totals, step flags, or checksums can be omitted/recomputed without a server-held secret.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a modified request passes a claimed integrity check and changes protected business state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "a checksum can detect accidents rather than attackers",
+        "the server can ignore a client integrity field and recalculate safely"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Ability to Forge Requests",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/02-Test_Ability_to_Forge_Requests"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-02"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "integrity-field",
+        "hidden-field",
+        "request-forgery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-025",
+      "title": "Bind asynchronous callbacks to original business transactions",
+      "category": "business-logic",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether webhooks, return URLs, jobs, or status callbacks can update another transaction or be replayed.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a controlled callback changes a mismatched, expired, or already-completed synthetic transaction",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "providers can retry callbacks safely with idempotency",
+        "out-of-order events can reconcile through versioned state"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "callback",
+        "webhook",
+        "transaction-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-026",
+      "title": "Keep asynchronous jobs within current account and object state",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether queued operations execute after ownership, tenant, permission, or object state has changed.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a queued synthetic job uses stale authority or state and commits an otherwise denied action",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "some jobs intentionally snapshot authorization at submission under policy",
+        "cancellation can race with already committed work"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "async-job",
+        "stale-state",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-027",
+      "title": "Prevent duplicate business effects across retries",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether network/client retries create duplicate orders, messages, grants, jobs, or account changes.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "one logical synthetic action commits more than once without an idempotent contract",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "duplicate success responses can point to one result",
+        "naturally repeatable actions may not require idempotency"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "idempotency",
+        "retry",
+        "duplicate-action"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-028",
+      "title": "Validate account-state prerequisites for sensitive flows",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether unverified, suspended, closed, deleted, or recovery-pending accounts can perform prohibited actions.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a designated account in a restricted state completes a protected business action",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "some read-only or recovery functions must remain available",
+        "state changes can have documented propagation delay"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "account-state",
+        "lifecycle",
+        "prerequisite"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-029",
+      "title": "Enforce tenant-specific business invariants",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cross-tenant plans, limits, catalogs, discounts, workflows, or resources can be mixed.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic tenant combines a rule/resource from another tenant to gain unintended value or state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "global products can be shared across tenants",
+        "administrative global roles can intentionally cross boundaries"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Integrity Checks",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/03-Test_Integrity_Checks"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-03"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "multi-tenant",
+        "business-invariant",
+        "tenant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-030",
+      "title": "Prevent plan and entitlement downgrade confusion",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing plan IDs, feature flags, or order of downgrade/upgrade retains higher-tier functionality without payment/authorization.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic account retains or activates an entitlement outside its authoritative plan",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "grace periods can intentionally preserve access",
+        "feature caches can have a short documented invalidation window"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "plan",
+        "entitlement",
+        "upgrade-downgrade"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-031",
+      "title": "Validate time windows with trusted server time",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether client clocks, timezone, date fields, or delayed requests bypass booking, auction, offer, approval, or expiry windows.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic action commits outside the server-defined allowed window due to client-controlled time/state",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "timezone presentation can differ while server UTC decision is correct",
+        "a documented grace period can allow boundary actions"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "time-window",
+        "trusted-time",
+        "expiry"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-032",
+      "title": "Prevent reservation and inventory hoarding",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can hold scarce resources indefinitely or at excessive scale without commitment.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a bounded synthetic sequence reserves disproportionate resources beyond documented hold/identity limits",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "group bookings can intentionally reserve multiple units",
+        "short holds can be acceptable without payment"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Defenses Against Application Misuse",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/07-Test_Defenses_Against_Application_Misuse"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-07"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "reservation",
+        "inventory",
+        "abuse"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-BL-033",
+      "title": "Detect business abuse across search and notification features",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether legitimate search, contact, invitation, or messaging functions can be used for scraping, spam, harassment, or cost amplification.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a small controlled sample demonstrates missing business constraints with realistic scaled harm",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "high-volume partner roles can be intentionally authorized",
+        "technical rate limiting can exist above the safe test ceiling"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Defenses Against Application Misuse",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/07-Test_Defenses_Against_Application_Misuse"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-07"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "application-misuse",
+        "search",
+        "messaging"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-034",
+      "title": "Preserve consent and disclosure decisions through workflows",
+      "category": "business-logic",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can bypass required terms, privacy consent, risk acknowledgment, or regulated disclosure steps.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "a synthetic account reaches the protected outcome without the required current consent record",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "consent can be inherited at organization level under policy",
+        "displaying a page does not prove server records consent"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for the Circumvention of Work Flows",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/06-Testing_for_the_Circumvention_of_Work_Flows"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-06"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "consent",
+        "compliance",
+        "workflow"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    },
+    {
+      "id": "WAPT-BL-035",
+      "title": "Verify business-rule remediation across adjacent channels",
+      "category": "business-logic",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Retest a fixed invariant through UI, API, mobile, batch, retry, and asynchronous paths without assuming one controller fix is global.",
+      "prerequisites": [
+        "Owner-reviewed business rules and expected state transitions",
+        "Disposable accounts/objects, synthetic data, and explicit stopping/cleanup points"
+      ],
+      "steps": [
+        "Perform the normal workflow and record authoritative server states, actors, values, limits, and side effects",
+        "Create a clean synthetic control object or transaction",
+        "Change one sequence, state, value, identity, limit, timing, or channel condition",
+        "Verify authoritative outcome, restore/void test state, and compare with the documented invariant"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic records and zero-value or reversible transitions; stop before external or irreversible effects."
+        }
+      ],
+      "manipulate": "One workflow sequence, state, numeric value, identity, limit, timing, callback, or channel at a time",
+      "secure_behavior": "The server enforces documented business invariants, actor/state prerequisites, trusted calculations, usage limits, idempotency, and auditable transitions at the authoritative commit point.",
+      "vulnerable_behavior": "the original or equivalent synthetic business violation remains reachable through another channel",
+      "validation": "Confirm committed authoritative state or ledger effect and the violated owner-approved invariant; UI differences, accepted responses, or theoretical scaling alone are insufficient.",
+      "false_positives": [
+        "channels can intentionally implement different products/rules",
+        "cached test state can resemble an unfixed path"
+      ],
+      "impact": "A confirmed business-logic flaw can cause financial loss, free goods/services, stored-value abuse, workflow/approval bypass, inventory denial, entitlement theft, fraud, spam, or regulatory harm.",
+      "evidence": [
+        "Normal and modified workflow requests",
+        "Before/after authoritative state or synthetic ledger",
+        "Accounts, roles, tenants, object IDs, values, sequence, and timing",
+        "Documented invariant, business impact, cleanup/void confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Owner business-rule/state worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Defenses Against Application Misuse",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/07-Test_Defenses_Against_Application_Misuse"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-07"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.1",
+          "v5.0.0-2.3.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-840"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/logic-flaws"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "business-logic",
+        "retest",
+        "channel-parity",
+        "business-invariant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "Use only designated accounts, synthetic records, reversible or zero-value actions, and owner-approved stopping points; never create real charges, fulfillment, messages, approvals, inventory loss, or customer impact.",
+      "remediation": "Model business invariants and state machines explicitly, calculate trusted values server-side, authorize transitions, enforce limits/idempotency atomically, and audit every high-impact state change."
+    }
+  ]
+}

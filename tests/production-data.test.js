@@ -462,6 +462,34 @@ test('desync methodology requires isolation, canaries, monitoring, and stop cond
   }
 });
 
+test('business-logic methodology covers workflow, financial, approval, and abuse invariants contextually', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'business-logic.json'), 'utf8'));
+  for (const tag of ['workflow-skip', 'price-manipulation', 'coupon', 'stored-value', 'payment', 'refund', 'subscription', 'usage-limit', 'separation-of-duties', 'idempotency', 'multi-tenant', 'time-window', 'application-misuse']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.safety?.length > 100));
+  const noPayments = deriveContext({ app_type: 'hybrid', creds: 'high', features: ['search'] });
+  for (const item of items.filter((candidate) => candidate.applies.any_of?.features?.includes('payments'))) {
+    assert.equal(evaluateApplicability(item, noPayments).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  const payments = deriveContext({ app_type: 'hybrid', creds: 'high', features: ['payments'] });
+  assert.ok(items.filter((item) => evaluateApplicability(item, payments).state === APPLICABILITY.ACTIVE).length >= 30);
+  const staticContext = deriveContext({ app_type: 'static', creds: 'high', features: ['payments'] });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+});
+
+test('business-logic evidence requires authoritative state and cleanup', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'business-logic.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.validation, /authoritative/);
+    assert.ok(item.evidence.some((entry) => /cleanup|void/i.test(entry)), item.id);
+    assert.match(item.safety, /never/i);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

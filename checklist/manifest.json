@@ -160,7 +160,7 @@
       "file": "business-logic.json",
       "prefix": "WAPT-BL",
       "floor": 30,
-      "count": 0,
+      "count": 35,
       "summary": "Challenge workflow, state, pricing, approval, and process invariants."
     },
     {
