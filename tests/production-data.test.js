@@ -39,14 +39,50 @@ test('reconnaissance stays discovery-focused and carries explicit false-positive
   }
 });
 
-test('unknown scope never silently hides reconnaissance work', async () => {
+test('production category IDs are contiguous and document metadata stays consistent', () => {
+  for (const file of productionFiles()) {
+    const document = JSON.parse(fs.readFileSync(file, 'utf8'));
+    const prefix = CATEGORIES[document.category].prefix;
+    assert.deepEqual(
+      document.items.map(({ id }) => id),
+      document.items.map((_, index) => `${prefix}-${String(index + 1).padStart(3, '0')}`),
+      document.category
+    );
+  }
+});
+
+test('unknown scope never silently hides reconnaissance or HTTP fundamentals', async () => {
   const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
     import('../js/engine/context.js'), import('../js/engine/applicability.js')
   ]);
-  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const context = deriveContext();
-  for (const item of items) {
-    assert.notEqual(evaluateApplicability(item, context).state, APPLICABILITY.NA_CONTEXT, item.id);
+  for (const file of productionFiles()) {
+    const { items } = JSON.parse(fs.readFileSync(file, 'utf8'));
+    for (const item of items) {
+      assert.notEqual(evaluateApplicability(item, context).state, APPLICABILITY.NA_CONTEXT, item.id);
+    }
+  }
+});
+
+test('all production methodology carries decision and evidence depth', () => {
+  for (const file of productionFiles()) {
+    const { items } = JSON.parse(fs.readFileSync(file, 'utf8'));
+    for (const item of items) {
+      assert.ok(item.steps.length >= 4, `${item.id} needs at least four controlled steps`);
+      assert.ok(item.false_positives.length >= 2, `${item.id} needs at least two false positives`);
+      assert.ok(item.evidence.length >= 3, `${item.id} needs reproducible evidence guidance`);
+      assert.ok(item.remediation?.length > 40, `${item.id} needs root-cause remediation`);
+    }
+  }
+});
+
+test('HTTP coverage includes CORS variants and safety boundaries for active techniques', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'http.json'), 'utf8'));
+  const cors = items.filter(({ tags }) => tags.includes('cors'));
+  assert.equal(cors.length, 5);
+  assert.ok(items.find(({ id }) => id === 'WAPT-HTTP-016').variants.length >= 2);
+  for (const id of ['WAPT-HTTP-002', 'WAPT-HTTP-013', 'WAPT-HTTP-018', 'WAPT-HTTP-021', 'WAPT-HTTP-022', 'WAPT-HTTP-024', 'WAPT-HTTP-025', 'WAPT-HTTP-026']) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
 });
 

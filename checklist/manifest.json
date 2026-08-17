@@ -20,7 +20,7 @@
       "file": "http.json",
       "prefix": "WAPT-HTTP",
       "floor": 25,
-      "count": 0,
+      "count": 26,
       "summary": "Verify protocol, routing, caching, origin, and browser fundamentals."
     },
     {

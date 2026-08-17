@@ -1,0 +1,2060 @@
+{
+  "schema_version": "1.0.0",
+  "category": "http",
+  "lastmod": "2026-08-17",
+  "items": [
+    {
+      "id": "WAPT-HTTP-001",
+      "title": "Reject unsupported HTTP methods at every application route",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether unsupported methods reach a handler or bypass route-specific controls.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture the intended method and response for a representative route",
+        "Use OPTIONS only as a discovery hint",
+        "Repeat with one unsupported method while preserving identity and body",
+        "Compare status, response body, headers, and server-side state"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for reject unsupported http methods at every application route and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Unsupported methods are rejected consistently, normally with 405 and an accurate Allow value.",
+      "vulnerable_behavior": "An unsupported method reaches protected logic, returns sensitive data, or performs a state change.",
+      "validation": "Verify server-side state and repeat with a baseline; a different status or generic page alone is insufficient.",
+      "false_positives": [
+        "OPTIONS can be intentionally enabled for CORS",
+        "A framework can return 200 from a fallback route without invoking the target handler"
+      ],
+      "impact": "A verified method bypass can expose data or unauthorized functions.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test HTTP Methods",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/06-Test_HTTP_Methods"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-06"
+        ],
+        "asvs": [
+          "v5.0.0-4.1.4"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-749"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "http-methods",
+        "routing"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Allowlist methods in routing and enforce authentication, authorization, and action semantics inside every handler."
+    },
+    {
+      "id": "WAPT-HTTP-002",
+      "title": "Keep safe HTTP methods free of state-changing side effects",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether GET, HEAD, or OPTIONS can trigger a security-sensitive state change.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify sensitive mutations from normal workflows",
+        "Check whether any equivalent link or request uses a safe method",
+        "Send one safe-method request against a reversible test object",
+        "Compare authoritative state before and after"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for keep safe http methods free of state-changing side effects and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Safe methods retrieve metadata or representations without changing application state.",
+      "vulnerable_behavior": "A safe-method request changes account, object, payment, permission, or workflow state.",
+      "validation": "Confirm the committed effect using a fresh read and exclude analytics or access-log writes.",
+      "false_positives": [
+        "Servers naturally record access logs for GET",
+        "A GET can initialize non-security preferences without meaningful impact"
+      ],
+      "impact": "Unsafe GET behavior enables cross-site triggering, crawler activation, replay, and cache-related side effects.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-3.5.3"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-650"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "safe-method",
+        "state-change",
+        "http-semantics"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use POST, PUT, PATCH, or DELETE for mutations and require intent, authorization, and CSRF controls where browsers send ambient credentials.",
+      "safety": "Use only reversible changes on designated test objects; never trigger payment, deletion, fulfillment, or notification side effects during this check."
+    },
+    {
+      "id": "WAPT-HTTP-003",
+      "title": "Constrain HTTP method override mechanisms",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether override headers or body parameters permit unauthorized verbs or inconsistent controls.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Check normal traffic and framework documentation for override support",
+        "Send the intended request as a control",
+        "Add one observed override field for a different harmless method",
+        "Compare routing, authorization, response, and state"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for constrain http method override mechanisms and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Overrides are disabled unless required, strictly allowlisted, and enter the same authorization path as the effective method.",
+      "vulnerable_behavior": "A client-controlled override reaches a function denied through the normal method or bypasses intermediary controls.",
+      "validation": "Prove the effective server action and preserve all inputs except the override signal.",
+      "false_positives": [
+        "A proxy can strip the override before the application",
+        "The response can echo an override without changing the effective route"
+      ],
+      "impact": "Method override confusion can bypass gateway, routing, or function-level access controls.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test HTTP Methods",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/06-Test_HTTP_Methods"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-06"
+        ],
+        "asvs": [
+          "v5.0.0-4.1.4"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-749"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "method-override",
+        "routing",
+        "access-control"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Disable unnecessary overrides or normalize them once at a trusted edge before method allowlisting and authorization."
+    },
+    {
+      "id": "WAPT-HTTP-004",
+      "title": "Require declared request media types to match parsed bodies",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether endpoints parse bodies under undeclared, ambiguous, or conflicting Content-Type values.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture a valid body and declared media type",
+        "Repeat with the media type removed",
+        "Repeat with one incompatible media type while preserving bytes",
+        "Compare validation, parser selection, and side effects"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for require declared request media types to match parsed bodies and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Endpoints accept only documented media types and reject mismatches before business processing.",
+      "vulnerable_behavior": "A mismatched declaration selects a weaker parser or bypasses validation/security middleware.",
+      "validation": "Demonstrate a security-relevant interpretation difference; tolerant parsing by itself is not a vulnerability.",
+      "false_positives": [
+        "Some endpoints intentionally support multiple documented media types",
+        "A generic 400 difference does not show a control bypass"
+      ],
+      "impact": "Parser selection inconsistencies can enable validation, CSRF, or data-binding bypasses.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.1.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "content-type",
+        "request-parsing",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Route bodies by an explicit media-type allowlist, reject ambiguity, and apply equivalent validation after parsing."
+    },
+    {
+      "id": "WAPT-HTTP-005",
+      "title": "Send accurate response media types and safe character encodings",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether responses declare a media type and charset consistent with their actual bytes and browser context.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture representative HTML, JSON, XML, text, and download responses",
+        "Compare Content-Type with actual representation",
+        "Check explicit or format-defined character encoding",
+        "Observe browser handling only with harmless test content"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for send accurate response media types and safe character encodings and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Every body has an accurate media type and a safe unambiguous encoding appropriate to the format.",
+      "vulnerable_behavior": "A mismatch causes attacker-influenced bytes to be interpreted in an executable or less constrained context.",
+      "validation": "Show actual browser or consumer interpretation and attacker control; a missing charset alone is not a finding.",
+      "false_positives": [
+        "JSON has a defined Unicode encoding model without requiring a charset parameter",
+        "A browser can safely render plain text despite a generic server default"
+      ],
+      "impact": "Type or encoding confusion can turn inert data into active content or create parser differentials.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.1.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "content-type",
+        "charset",
+        "response"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Set Content-Type from trusted route metadata, use UTF-8 consistently, and prevent user input from selecting response types."
+    },
+    {
+      "id": "WAPT-HTTP-006",
+      "title": "Prevent browser MIME sniffing on active and user-controlled responses",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether browser sniffing can reinterpret a response as script, style, or HTML in a security-relevant load context.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify scripts, styles, downloads, API data, and user-controlled resources",
+        "Record Content-Type and X-Content-Type-Options",
+        "Load only a harmless controlled resource through its realistic destination context",
+        "Observe whether the browser blocks or reinterprets it"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for prevent browser mime sniffing on active and user-controlled responses and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Responses declare accurate types and use nosniff where browser reinterpretation would create risk.",
+      "vulnerable_behavior": "Attacker-controlled bytes execute or render actively because the browser ignores or overrides an unsafe declared type.",
+      "validation": "Demonstrate the exact load context and execution/rendering effect; a missing header without a viable context is informational.",
+      "false_positives": [
+        "Browsers do not sniff every destination or media type",
+        "A missing nosniff header can be irrelevant for fixed server-generated HTML"
+      ],
+      "impact": "Successful type confusion can enable script execution, content spoofing, or unsafe handling of uploads.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-3.4.4"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-430"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "mime-sniffing",
+        "nosniff",
+        "browser"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Set accurate media types, add X-Content-Type-Options: nosniff, isolate user content, and force downloads when active rendering is unnecessary."
+    },
+    {
+      "id": "WAPT-HTTP-007",
+      "title": "Normalize path segments before routing and authorization",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether dot segments, repeated separators, case, or trailing delimiters reach inconsistent handlers or controls.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture one authorized route as a baseline",
+        "Create one semantically equivalent path variant at a time",
+        "Compare edge and application status, handler identity, and authorization",
+        "Repeat only when the variant remains within the same approved route"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for normalize path segments before routing and authorization and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "All hops agree on one canonical path before routing, caching, and authorization.",
+      "vulnerable_behavior": "A non-canonical path reaches protected content or a different control path than its canonical equivalent.",
+      "validation": "Prove equivalent resource/handler identity and a security-relevant control difference.",
+      "false_positives": [
+        "Case-sensitive paths can intentionally identify different resources",
+        "A redirect to the canonical path is generally secure behavior"
+      ],
+      "impact": "Canonicalization disagreement can bypass access controls, filters, or cache boundaries.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.1.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-180"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "path-normalization",
+        "routing",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Canonicalize once at the trusted edge, reject ambiguous forms, and authorize the canonical route used by the application."
+    },
+    {
+      "id": "WAPT-HTTP-008",
+      "title": "Decode percent-encoded and Unicode input exactly once",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether HTTP components disagree because a path or parameter is decoded multiple times or under different character rules.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Choose a harmless path or parameter with a known value",
+        "Send its canonical encoding as a control",
+        "Test one single- and double-encoded equivalent",
+        "Compare routing, validation, cache behavior, and final parsed value"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for decode percent-encoded and unicode input exactly once and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Input is decoded once into a canonical form before validation and all downstream components use that form.",
+      "vulnerable_behavior": "An alternate encoding bypasses a validation or routing decision and reaches a security-sensitive interpretation.",
+      "validation": "Trace the final value or resource and repeat controls; response differences alone do not establish double decoding.",
+      "false_positives": [
+        "Different encoded forms can be rejected by design",
+        "A WAF can block encoding while the application never receives it"
+      ],
+      "impact": "Decode disagreement can enable traversal, filter bypass, duplicate resources, and parser confusion.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.1.1",
+          "v5.0.0-1.5.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-174"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "url-encoding",
+        "unicode",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define accepted encodings, decode once before validation, reject malformed sequences, and align edge and application parsers."
+    },
+    {
+      "id": "WAPT-HTTP-009",
+      "title": "Resolve duplicate HTTP parameters consistently",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine how every hop handles repeated names and whether inconsistent first/last/list semantics bypass controls.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture a single-valued harmless parameter",
+        "Repeat its name with the same value as a control",
+        "Send two distinct safe values in both orders",
+        "Compare gateway validation, application value, logs, and response"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for resolve duplicate http parameters consistently and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Duplicate names are rejected or interpreted under one documented rule shared by all components.",
+      "vulnerable_behavior": "A security control inspects one value while downstream logic acts on another.",
+      "validation": "Demonstrate the conflicting values at two trust boundaries or a resulting control bypass.",
+      "false_positives": [
+        "Frameworks can intentionally expose repeated values as an array",
+        "A response difference can reflect ordinary multi-select behavior"
+      ],
+      "impact": "Parameter pollution can bypass validation, authorization, signatures, cache keys, or business rules.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Parameter Pollution",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/04-Testing_for_HTTP_Parameter_Pollution"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-04"
+        ],
+        "asvs": [
+          "v5.0.0-15.3.7"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-235"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "http-parameter-pollution",
+        "duplicate-parameter",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use typed input contracts, reject unexpected duplicates, and normalize parameter semantics before security decisions."
+    },
+    {
+      "id": "WAPT-HTTP-010",
+      "title": "Handle absolute-form and authority-form request targets safely",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether proxy-style absolute targets or authority forms alter routing, host validation, or generated links.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture an origin-form HTTP/1.1 request",
+        "Repeat with an absolute-form target containing the same authority",
+        "Where supported, compare authority and Host conflict handling",
+        "Observe routing and generated URLs without using external destinations"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for handle absolute-form and authority-form request targets safely and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Unsupported target forms are rejected; supported proxy forms use one validated authority consistently.",
+      "vulnerable_behavior": "A conflicting target authority changes routing, cache identity, password-reset links, or a security decision.",
+      "validation": "Prove the server-selected authority through a harmless same-scope effect; parser acceptance alone is insufficient.",
+      "false_positives": [
+        "Forward proxies legitimately require absolute-form targets",
+        "Servers can normalize absolute form to the same origin without risk"
+      ],
+      "impact": "Authority ambiguity can enable host-routing, cache, or link-generation attacks.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.1.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-441"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "request-target",
+        "absolute-uri",
+        "proxy"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Reject unexpected request-target forms and derive authority from one trusted, allowlisted source after proxy normalization."
+    },
+    {
+      "id": "WAPT-HTTP-011",
+      "title": "Keep HTTP/1 Host and HTTP/2 authority validation equivalent",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Host and :authority reach different virtual hosts or security policies across protocol versions.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture equivalent HTTP/1.1 and HTTP/2 requests",
+        "Compare canonical authority handling",
+        "Where tooling permits safely, send conflicting Host and :authority values using approved names",
+        "Compare rejection, routing, redirects, and cache behavior"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for keep http/1 host and http/2 authority validation equivalent and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Every protocol version validates one canonical approved authority and rejects conflicts.",
+      "vulnerable_behavior": "Protocol-specific authority parsing reaches a different application or bypasses host-dependent controls.",
+      "validation": "Demonstrate a same-scope routing/control difference and exclude client translation artifacts.",
+      "false_positives": [
+        "Clients and proxies can rewrite one authority field before transmission",
+        "HTTP/2 libraries may prohibit constructing an invalid conflict"
+      ],
+      "impact": "Authority discrepancies can bypass routing, tenant boundaries, or cache partitioning.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.1.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "host",
+        "authority",
+        "http2"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Normalize authority at the trusted edge, reject conflicts, and apply the same host allowlist across HTTP versions."
+    },
+    {
+      "id": "WAPT-HTTP-012",
+      "title": "Trust forwarding headers only from authenticated intermediaries",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether clients can influence scheme, host, address, or path values that the application expects a proxy to set.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify forwarding headers used in normal edge traffic",
+        "Send a baseline through the intended public path",
+        "Add one client-supplied conflicting forwarded value",
+        "Observe redirects, links, access decisions, rate identity, and logs"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for trust forwarding headers only from authenticated intermediaries and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "The edge strips client values and sets trusted forwarding metadata; the application trusts only authenticated proxy hops.",
+      "vulnerable_behavior": "A client value controls a security-relevant scheme, host, IP, or path decision.",
+      "validation": "Show a concrete downstream effect and verify the value was not merely reflected in diagnostics.",
+      "false_positives": [
+        "Applications can log untrusted forwarded values without acting on them",
+        "A CDN can overwrite the test header before it reaches the application"
+      ],
+      "impact": "Forwarded-header trust can enable host injection, HTTPS confusion, IP control bypass, or poisoned links.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.1.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-345"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "forwarded-header",
+        "reverse-proxy",
+        "trust-boundary"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Strip inbound forwarding headers at the edge, set canonical values, authenticate internal hops, and parse only a configured proxy chain."
+    },
+    {
+      "id": "WAPT-HTTP-013",
+      "title": "Restrict user-controlled redirects to approved destinations",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether redirect parameters, paths, or headers can send users to an attacker-controlled origin.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture a normal same-origin redirect",
+        "Identify the destination input and accepted representation",
+        "Substitute a controlled HTTPS destination using one syntax at a time",
+        "Confirm the browser's final effective origin without collecting credentials"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for restrict user-controlled redirects to approved destinations and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Redirect destinations are fixed, relative, or matched exactly against an approved allowlist; external transitions are clearly mediated.",
+      "vulnerable_behavior": "Attacker-controlled input places an unapproved origin in an automatic redirect Location or equivalent navigation.",
+      "validation": "Use a controlled domain and prove final browser navigation; reflected text or a rejected error page is insufficient.",
+      "false_positives": [
+        "A warning/interstitial can intentionally permit user-approved external links",
+        "A destination can be a separately approved partner allowlist entry"
+      ],
+      "impact": "Open redirects support phishing, OAuth flow abuse, and trust-boundary confusion.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-3.7.2",
+          "v5.0.0-3.7.3"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-601"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "open-redirect",
+        "location-header",
+        "navigation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use relative destinations or stable identifiers mapped server-side; otherwise exact-allowlist destinations and clearly warn for external navigation.",
+      "safety": "Use only a controlled non-lookalike HTTPS destination and never collect credentials, tokens, or real-user traffic."
+    },
+    {
+      "id": "WAPT-HTTP-014",
+      "title": "Redirect browser-facing HTTP requests to canonical HTTPS safely",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether plaintext entry paths expose sensitive content or redirect inconsistently before HTTPS enforcement.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Request representative browser-facing routes over HTTP without credentials",
+        "Record status, body, cookies, and Location",
+        "Verify the redirect targets the canonical HTTPS host and preserves only safe path data",
+        "Test APIs separately because transparent redirects may be inappropriate"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for redirect browser-facing http requests to canonical https safely and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Browser routes redirect before sensitive processing and emit no secrets/cookies over plaintext; non-browser services fail or upgrade according to contract.",
+      "vulnerable_behavior": "Plain HTTP serves sensitive content, accepts credentials, or redirects to an unsafe host with a realistic interception path.",
+      "validation": "Demonstrate exposed data or action without sending real secrets; a non-redirecting API is not automatically vulnerable.",
+      "false_positives": [
+        "APIs may intentionally reject HTTP rather than redirect",
+        "Local health endpoints can be unreachable from attacker networks"
+      ],
+      "impact": "Plaintext handling can expose credentials, tokens, content, or redirect integrity to network attackers.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Transport Layer Security",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/09-Testing_for_Weak_Cryptography/01-Testing_for_Weak_Transport_Layer_Security"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CRYP-01"
+        ],
+        "asvs": [
+          "v5.0.0-4.1.2"
+        ],
+        "owasp_top10": [
+          "A02:2021",
+          "A04:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-319"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "http-to-https",
+        "redirect",
+        "tls"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Disable plaintext at the edge where possible, redirect only browser endpoints canonically, mark cookies Secure, and use HSTS after HTTPS readiness."
+    },
+    {
+      "id": "WAPT-HTTP-015",
+      "title": "Allowlist CORS origins without substring or reflection mistakes",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Access-Control-Allow-Origin is fixed or derived from an exact approved origin policy.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture a CORS response for an intended application origin",
+        "Repeat with a controlled untrusted origin",
+        "Test one suffix, prefix, and scheme/port variation relevant to the allowlist",
+        "Check ACAO and whether the browser exposes the response"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for allowlist cors origins without substring or reflection mistakes and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Only exact approved scheme-host-port origins receive ACAO and unapproved origins receive no readable grant.",
+      "vulnerable_behavior": "An untrusted controlled origin is granted read access to a security-sensitive response.",
+      "validation": "Use a real browser fetch and prove sensitive readable data; header reflection alone may lack credentials or sensitive content.",
+      "false_positives": [
+        "Wildcard ACAO is valid for intentionally public non-credentialed resources",
+        "A server can emit ACAO while the browser blocks due to another CORS rule"
+      ],
+      "impact": "CORS allowlist errors can disclose authenticated or network-restricted data cross-origin.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-942"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cors",
+        "origin-validation",
+        "cross-origin"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Compare parsed origins by exact scheme, host, and port against a fixed allowlist; never use substring, suffix-only, or blind reflection checks."
+    },
+    {
+      "id": "WAPT-HTTP-016",
+      "title": "Reject credentialed CORS access from untrusted origins",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether browsers can read user-specific responses cross-origin with ambient cookies or HTTP authentication.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify a harmless response that differs by test identity",
+        "Fetch it from the intended origin as a control",
+        "Repeat from a controlled untrusted origin with browser credentials mode enabled",
+        "Record ACAO, ACAC, SameSite behavior, and readable response data"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for reject credentialed cors access from untrusted origins and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Credentialed reads are granted only to exact trusted origins and sensitive responses remain unreadable elsewhere.",
+      "vulnerable_behavior": "A controlled untrusted origin can read a victim-context response containing non-public data.",
+      "validation": "Prove JavaScript can read identity-specific content in a browser; cookies being sent or a 200 response alone is insufficient.",
+      "false_positives": [
+        "SameSite cookies may prevent ambient credentials on the tested cross-site request",
+        "A response can be public and identical for every user"
+      ],
+      "impact": "Credentialed CORS abuse can expose account or tenant data to an attacker-controlled site.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-942"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cors",
+        "credentials",
+        "cookie"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [
+        {
+          "when": {
+            "auth_mechanism": [
+              "cookie",
+              "mixed"
+            ]
+          },
+          "steps": [
+            "Verify actual SameSite cookie behavior for the exact fetch context before concluding credentials are available."
+          ],
+          "notes": "ACAC does not override browser cookie policy."
+        },
+        {
+          "when": {
+            "auth_mechanism": [
+              "jwt"
+            ]
+          },
+          "steps": [
+            "Determine whether client code would attach the bearer token for the untrusted origin; Authorization headers are not ambient browser credentials."
+          ],
+          "notes": "A header-only token usually requires a separate token exposure or trusted client behavior."
+        }
+      ],
+      "remediation": "Use an exact origin allowlist, minimize credentialed CORS, set purpose-appropriate SameSite cookies, and authorize every resource server-side."
+    },
+    {
+      "id": "WAPT-HTTP-017",
+      "title": "Treat opaque and null origins according to explicit threat models",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Origin: null is trusted where sandboxed documents, local files, redirects, or opaque origins can reach sensitive resources.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Confirm whether the application intentionally supports opaque origins",
+        "Send a control request with an intended origin",
+        "Repeat with Origin: null",
+        "If granted, reproduce from a controlled sandboxed document and test only harmless data"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for treat opaque and null origins according to explicit threat models and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Null is rejected unless a documented use case requires it and compensating controls prevent access to sensitive data.",
+      "vulnerable_behavior": "A controlled opaque-origin page can read a sensitive response because null is broadly trusted.",
+      "validation": "Demonstrate a browser-reachable null-origin context and readable sensitive data; a header alone is insufficient.",
+      "false_positives": [
+        "Native or file-based clients can legitimately require null-origin support",
+        "The resource can be intentionally public and non-credentialed"
+      ],
+      "impact": "Trusting null broadly can expose data to sandboxed attacker-controlled documents or local-origin contexts.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-942"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cors",
+        "null-origin",
+        "sandbox"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Avoid allowlisting null for sensitive resources; use explicit authenticated clients, scoped capabilities, and non-browser channels for exceptional cases."
+    },
+    {
+      "id": "WAPT-HTTP-018",
+      "title": "Apply equivalent controls to simple and preflighted cross-origin requests",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a sensitive operation becomes reachable by changing method or media type so the browser skips CORS preflight.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture the normal state-changing request and its preflight requirements",
+        "Construct an equivalent safe test using a CORS-safelisted method/media type where the endpoint accepts it",
+        "Send from a controlled origin with a reversible test object",
+        "Verify server-side state and browser readability separately"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for apply equivalent controls to simple and preflighted cross-origin requests and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Sensitive operations require an attacker-unavailable signal or reject alternate simple request shapes independent of preflight.",
+      "vulnerable_behavior": "A controlled origin triggers a sensitive action by choosing a request shape that avoids preflight and other intent checks.",
+      "validation": "Confirm the committed effect in a browser and exclude operations protected by CSRF tokens, SameSite, or reauthentication.",
+      "false_positives": [
+        "CORS blocks response reading but does not itself prevent request sending",
+        "A simple request can be accepted syntactically yet rejected before state change"
+      ],
+      "impact": "Preflight assumptions can enable cross-site state changes or alternate-parser control bypass.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1",
+          "v5.0.0-3.5.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cors",
+        "preflight",
+        "simple-request"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Do not use preflight as the sole CSRF defense; restrict media types/methods and require origin-bound anti-forgery signals for ambient credentials.",
+      "safety": "Use a reversible action on a designated account and restore state immediately; never test payments, deletion, or real-user communication."
+    },
+    {
+      "id": "WAPT-HTTP-019",
+      "title": "Avoid exposing sensitive response headers cross-origin",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Access-Control-Expose-Headers reveals secrets or sensitive metadata to origins that can read a response.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Inventory non-safelisted response headers used by browser clients",
+        "Record Access-Control-Expose-Headers for trusted and untrusted origins",
+        "Fetch a harmless identity-specific response from a controlled origin",
+        "Check which header values JavaScript can read"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for avoid exposing sensitive response headers cross-origin and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Only necessary non-sensitive headers are exposed and only to approved origins.",
+      "vulnerable_behavior": "An untrusted origin can read a token, internal identifier, signed URL, or other security-sensitive header.",
+      "validation": "Demonstrate JavaScript access and explain the header's security use; header names alone do not prove impact.",
+      "false_positives": [
+        "Pagination and request-ID headers are commonly safe to expose",
+        "An exposed header can contain only public metadata"
+      ],
+      "impact": "Sensitive exposed headers can leak credentials, capabilities, internal identifiers, or tenant metadata.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-942"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cors",
+        "exposed-header",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Minimize exposed headers, never place reusable secrets in response headers readable by clients, and combine with exact origin policy."
+    },
+    {
+      "id": "WAPT-HTTP-020",
+      "title": "Prevent sensitive browser responses from persistent caching",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether browsers retain authenticated or sensitive representations after logout or on shared devices.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Select a sensitive but non-destructive test-account response",
+        "Record Cache-Control, Pragma where legacy support matters, and browser storage behavior",
+        "Navigate away, use back/forward, then log out",
+        "Check whether content is restored without a fresh authorized request"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for prevent sensitive browser responses from persistent caching and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Sensitive responses use no-store where required and are not recoverable after session invalidation on the tested browser.",
+      "vulnerable_behavior": "Sensitive account data remains available from browser cache after logout or to a subsequent local user.",
+      "validation": "Prove retrieval without a network authorization check and assess the shared-device threat model.",
+      "false_positives": [
+        "Memory rendering during the same active session can be expected",
+        "Back navigation can trigger a fresh authorized request rather than cache reuse"
+      ],
+      "impact": "Persistent browser caching can expose account data on shared or compromised local devices.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Browser Cache Weaknesses",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/06-Testing_for_Browser_Cache_Weaknesses"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-06"
+        ],
+        "asvs": [
+          "v5.0.0-14.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-525"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "browser-cache",
+        "cache-control",
+        "sensitive-data"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use Cache-Control: no-store for sensitive responses, clear client state on logout, and avoid embedding secrets in cacheable pages."
+    },
+    {
+      "id": "WAPT-HTTP-021",
+      "title": "Partition shared caches by identity and authorization context",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a CDN, reverse proxy, or server cache can serve one user's representation to another.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Choose a harmless response that differs between two designated accounts",
+        "Prime it as account A using a unique test object",
+        "Request the same cache key as account B and unauthenticated",
+        "Repeat controls while recording Age, cache-status, Vary, and body identity"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for partition shared caches by identity and authorization context and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Private responses are not shared, or cache partitions include every identity/authorization dimension needed to prevent cross-user reuse.",
+      "vulnerable_behavior": "Account B receives account A's non-public representation from a shared cache.",
+      "validation": "Use unique canary data and repeated A/B controls to distinguish caching from an underlying authorization flaw.",
+      "false_positives": [
+        "The origin itself can return the wrong object without a cache being involved",
+        "A cache header can be synthesized even on a miss"
+      ],
+      "impact": "Cross-user cache leakage can disclose account or tenant data at scale.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9111: HTTP Caching",
+          "url": "https://www.rfc-editor.org/rfc/rfc9111"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.2",
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-524"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "shared-cache",
+        "authorization",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Mark private data non-shared, remove it from edge caching, or use a safe server-controlled partition key while still enforcing origin authorization.",
+      "safety": "Use only designated accounts and synthetic canary data; stop immediately if any unrelated user's content appears."
+    },
+    {
+      "id": "WAPT-HTTP-022",
+      "title": "Include every response-shaping input in shared cache keys",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether unkeyed query fields, headers, cookies, or path transformations let one request poison another response.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify a cacheable harmless route and establish miss/hit behavior",
+        "Change one response-shaping input using a unique inert marker",
+        "Request the baseline cache key without that input",
+        "Check whether the marker persists for a clean control request"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for include every response-shaping input in shared cache keys and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Inputs that affect the response are keyed, stripped, normalized safely, or make the response uncacheable.",
+      "vulnerable_behavior": "An unkeyed attacker-controlled input persists in a cached response served to clean requests.",
+      "validation": "Require a reproducible miss-prime-hit sequence with a unique harmless marker and exclude origin persistence.",
+      "false_positives": [
+        "The marker can be reflected by the origin on every request rather than cached",
+        "Different edge nodes can produce inconsistent cache observations"
+      ],
+      "impact": "Cache poisoning can distribute redirects, script references, content spoofing, or security-policy changes to many users.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web cache poisoning",
+          "url": "https://portswigger.net/web-security/web-cache-poisoning"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/web-cache-poisoning"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "cache-key",
+        "web-cache-poisoning",
+        "unkeyed-input"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define cache keys from canonical request semantics, strip untrusted response-shaping inputs, and never cache responses influenced by unkeyed data.",
+      "safety": "Use an isolated route or cache-buster approved by the owner, an inert marker, one prime/control sequence, and purge immediately if persistence occurs."
+    },
+    {
+      "id": "WAPT-HTTP-023",
+      "title": "Send correct Vary metadata for negotiated cacheable responses",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether caches distinguish representations shaped by safe request headers such as Origin, Accept-Encoding, or language.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify a route whose response changes by a request header",
+        "Request two variants with unique harmless context",
+        "Record Vary and cache-status metadata",
+        "Alternate requests and verify each receives its intended representation"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for send correct vary metadata for negotiated cacheable responses and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Vary accurately names every supported request field that selects a cacheable representation, or the response is not shared.",
+      "vulnerable_behavior": "A cache reuses security-relevant CORS, encoding, locale, or content variants across requests that require separation.",
+      "validation": "Prove cross-variant reuse and meaningful impact; a missing Vary value without cache reuse is not a finding.",
+      "false_positives": [
+        "The CDN can key a field through configuration without emitting Vary",
+        "A response difference can be generated after the shared cache"
+      ],
+      "impact": "Incorrect variation can leak data, corrupt CORS policy, or cause content and encoding confusion.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9111: HTTP Caching",
+          "url": "https://www.rfc-editor.org/rfc/rfc9111"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "vary",
+        "content-negotiation",
+        "cache-key"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Align cache configuration and Vary metadata with actual negotiation, and disable shared caching when safe partitioning cannot be guaranteed."
+    },
+    {
+      "id": "WAPT-HTTP-024",
+      "title": "Reauthorize conditional and range requests for protected resources",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether If-None-Match, If-Modified-Since, or Range can retrieve metadata or bytes without the authorization required for a full response.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Capture an authorized protected-resource response and validators",
+        "Repeat as another designated identity with conditional headers",
+        "Request one small byte range where the resource supports ranges",
+        "Compare authorization before interpreting 206 or 304 semantics"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for reauthorize conditional and range requests for protected resources and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Authorization runs before conditional/range handling and unauthorized callers receive no validator or content oracle.",
+      "vulnerable_behavior": "An unauthorized caller receives protected bytes or a reliable existence/change oracle through 206, 304, ETag, or Last-Modified behavior.",
+      "validation": "Confirm ownership and compare with a nonexistent control; validators can be opaque and non-sensitive.",
+      "false_positives": [
+        "A 304 to an already authorized browser can be normal",
+        "Public static files legitimately support ranges and validators"
+      ],
+      "impact": "Bypasses can disclose protected file content or reveal existence and modification state.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-862"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "conditional-request",
+        "range-request",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Authorize the resource first, then evaluate conditions/ranges, and avoid stable cross-user validators for private representations.",
+      "safety": "Request only a tiny range from a synthetic test resource and avoid repeated multipart ranges or large-file amplification."
+    },
+    {
+      "id": "WAPT-HTTP-025",
+      "title": "Disable compression where reflected secrets create a practical oracle",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cross-request response-size observations can reveal secrets compressed alongside attacker-controlled input.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Identify responses containing both a test secret and reflected controllable text",
+        "Confirm response compression and stable size behavior",
+        "Use a very small set of benign guesses against a synthetic secret",
+        "Evaluate whether an attacker can repeat observations in the real browser/network context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for disable compression where reflected secrets create a practical oracle and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "Secrets are not compressed in a practical attacker-observable reflection context, or masking and request isolation remove the oracle.",
+      "vulnerable_behavior": "Repeated attacker-controlled requests yield a stable size signal correlated with a secret prefix under realistic conditions.",
+      "validation": "Require a synthetic secret, repeatable statistics, and a feasible attacker request/observation model; compression alone is not vulnerable.",
+      "false_positives": [
+        "Dynamic padding and unrelated response variance can destroy the oracle",
+        "An attacker may be unable to trigger authenticated requests or observe compressed lengths"
+      ],
+      "impact": "A practical compression oracle can disclose CSRF tokens or other response secrets over many observations.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9110: HTTP Semantics",
+          "url": "https://www.rfc-editor.org/rfc/rfc9110"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A02:2021",
+          "A04:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-203"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "compression",
+        "side-channel",
+        "secret"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Disable compression for affected secret-bearing responses, separate secrets from reflected input, rotate per-request secrets, and add masking or padding as defense in depth.",
+      "safety": "Use only a synthetic secret and a strict request ceiling in an approved window; stop if latency or error rate changes."
+    },
+    {
+      "id": "WAPT-HTTP-026",
+      "title": "Keep HTTP framing and protocol translation unambiguous",
+      "category": "http",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether normal edge-to-origin protocol translation rejects conflicting message length and malformed framing before application processing.",
+      "prerequisites": [
+        "A representative in-scope endpoint",
+        "A designated test account or public control route"
+      ],
+      "steps": [
+        "Confirm the public and upstream HTTP versions with the owner",
+        "Send well-formed Content-Length and chunked controls separately",
+        "In an isolated or approved window, send one conflict expected to be rejected",
+        "Verify no follow-up response, queue, or connection anomaly occurs"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique inert marker for keep http framing and protocol translation unambiguous and preserve a clean baseline."
+        }
+      ],
+      "manipulate": "One HTTP semantic at a time while preserving route, identity, and all unrelated request values",
+      "secure_behavior": "The edge rejects ambiguous framing and translates HTTP/2 or HTTP/3 to unambiguous upstream messages.",
+      "vulnerable_behavior": "A controlled paired probe shows components disagree on message boundaries or a conflicting request reaches application logic.",
+      "validation": "One timeout is not proof; require repeatable paired controls and isolated confirmation before classifying desynchronization.",
+      "false_positives": [
+        "WAF rejection, retries, and backend latency can cause anomalous timing",
+        "Client libraries can normalize conflicting headers before sending"
+      ],
+      "impact": "Framing disagreement can enable request smuggling, response queue poisoning, and security-control bypass.",
+      "evidence": [
+        "Baseline and modified raw requests",
+        "Paired responses with timing and cache metadata",
+        "Authentication, protocol, and route context",
+        "Confirmed server-side or browser-observable effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1",
+          "v5.0.0-4.2.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "message-framing",
+        "protocol-translation",
+        "http-desync"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Reject conflicting framing at the first hop, align patched parsers, avoid unsafe downgrade behavior, and use one canonical message boundary.",
+      "safety": "REVIEW ONLY. Prefer an isolated environment, send one paired probe at a time, avoid shared-user routes, and stop on any queue, latency, or response anomaly."
+    }
+  ]
+}

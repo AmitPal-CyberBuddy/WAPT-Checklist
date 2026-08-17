@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Phase 4 reconnaissance production catalog with 37 original, context-aware methodology items, exceeding its quality floor of 30 without counting review samples.
+- Phase 4 reconnaissance and HTTP / Web fundamentals catalogs with 63 original, context-aware production items, exceeding their combined floor of 55 without counting review samples.
 - Incremental production-floor validation (`--floors-present`), production document envelope checks, manifest/file count tests, and reconnaissance safety/content QA assertions.
 - Phase 3 pure context, applicability, priority, and state engines shared by the browser and Node tests.
 - Active, Confirm, and context-N/A evaluation with machine-readable reasons, URL-hint uncertainty, visible blocked credential work, and conditional variants.

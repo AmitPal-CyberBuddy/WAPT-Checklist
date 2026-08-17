@@ -7,7 +7,7 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | # | Category | Floor | Current | Status |
 |---:|---|---:|---:|---|
 | 01 | Reconnaissance | 30 | 37 | Complete |
-| 02 | HTTP / Web fundamentals | 25 | 0 | Not started |
+| 02 | HTTP / Web fundamentals | 25 | 26 | Complete |
 | 03 | Authentication | 40 | 0 | Not started |
 | 04 | Session management | 25 | 0 | Not started |
 | 05 | Authorization | 35 | 0 | Not started |
@@ -17,7 +17,11 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **37**.
+Core floor total: **295**. Current production total: **63**.
+
+## HTTP / Web fundamentals coverage
+
+The second production category adds 26 tests for methods and safe semantics, body and response types, MIME/charset behavior, path and encoding normalization, duplicate parameters, request-target/authority/proxy trust, redirects and HTTPS entry, CORS, browser/shared caching, cache keys and variation, conditional/range requests, compression side channels, and safe message-framing checks. Missing headers or protocol differences are never findings without a demonstrated security effect.
 
 ## Reconnaissance coverage
 
