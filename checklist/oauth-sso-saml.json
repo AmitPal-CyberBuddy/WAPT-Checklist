@@ -1,0 +1,2234 @@
+{
+  "schema_version": "1.0.0",
+  "category": "oauth-sso-saml",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-OAUTH-001",
+      "title": "Match OAuth redirect URIs exactly per client",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether authorization responses can be delivered to an unregistered attacker-controlled destination.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "an unregistered controlled URI receives a code, token, or security-sensitive response",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "the varied URI can be separately registered intentionally",
+        "an error redirect can contain no authorization response"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-601"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "redirect-uri",
+        "authorization-response"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use only a controlled non-lookalike callback and designated identity; never capture real-user responses."
+    },
+    {
+      "id": "WAPT-OAUTH-002",
+      "title": "Bind OAuth authorization responses with state",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the client accepts an authorization response not tied to the initiating browser transaction.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a response initiated in attacker test session binds the victim test browser to the attacker-selected authorization",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "state can be implemented as protected browser session state rather than a visible random parameter",
+        "a rejected callback can still display a generic success page"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "state",
+        "login-csrf",
+        "flow-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use only designated attacker/victim test identities and immediately unlink any accidentally bound account."
+    },
+    {
+      "id": "WAPT-OAUTH-003",
+      "title": "Validate OpenID Connect nonce against the initiating session",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether ID tokens can be replayed or substituted across authentication transactions.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "an ID token with absent, stale, or mismatched nonce establishes a new local session",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "nonce can be stored and validated through framework-managed state",
+        "pure OAuth authorization without OpenID Connect need not use an ID-token nonce"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.5.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "openid-connect",
+        "nonce",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-004",
+      "title": "Require PKCE for authorization-code clients",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether intercepted authorization codes can be redeemed without the original verifier.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a public-client test code redeems without the correct code_verifier or with a downgraded method",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "confidential server clients can also authenticate, though current BCP still recommends PKCE",
+        "an error at token redemption is secure behavior"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.6"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "pkce",
+        "authorization-code",
+        "interception"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use one designated client and test code; never intercept or redeem real-user authorization codes."
+    },
+    {
+      "id": "WAPT-OAUTH-005",
+      "title": "Consume authorization codes once and within a short lifetime",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a code can be replayed, used after expiry, or redeemed by a different client/redirect context.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a consumed, expired, wrong-client, or wrong-redirect test code issues tokens",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "client retries can replay a token response without a second redemption",
+        "small clock tolerance can be documented"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.2",
+          "v5.0.0-10.4.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "authorization-code",
+        "single-use",
+        "expiry"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use one controlled code and at most one replay; revoke all resulting tokens."
+    },
+    {
+      "id": "WAPT-OAUTH-006",
+      "title": "Prevent authorization-server mix-up",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a multi-provider client confuses which issuer returned a response and sends a code/token to the wrong server.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a response from controlled provider A is processed as provider B or disclosed to the wrong token endpoint",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "single-provider clients have no mix-up branch",
+        "issuer validation can be framework-managed and not visible in the callback"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.2.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "mix-up",
+        "issuer",
+        "multi-provider"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-007",
+      "title": "Reject OAuth response parameter pollution and duplicate values",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether duplicate code, state, issuer, scope, or redirect parameters make components choose different values.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "the client validates one value but redeems or binds another",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "frameworks can reject duplicates or use one documented consistent rule",
+        "duplicate error parameters can be non-security metadata"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-235"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "parameter-pollution",
+        "callback",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-008",
+      "title": "Keep OAuth codes and tokens out of leakage channels",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether authorization responses leak through Referer, browser history, logs, analytics, open redirects, or third-party resources.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a reusable synthetic code/token reaches an attacker-accessible channel before consumption",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "codes are short-lived and single-use, reducing but not eliminating impact",
+        "redacted fingerprints can safely appear in logs"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "token-leakage",
+        "referer",
+        "browser-history"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-009",
+      "title": "Constrain OAuth scopes and consent to intended access",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether clients request, receive, or retain broader delegated authority than needed or clearly consented.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a test client receives unrequested/unauthorized scopes or misleading consent hides material access",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "first-party clients can use pre-approved consent under documented policy",
+        "a scope name can be broad while resource-server authorization remains narrow"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.2.3",
+          "v5.0.0-10.4.11"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "scope",
+        "consent",
+        "least-privilege"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-010",
+      "title": "Reject deprecated implicit and password grants",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether clients can use token or password grants that bypass current code-flow protections.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a client not explicitly requiring a legacy grant obtains tokens through implicit or resource-owner-password flow",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "isolated legacy systems can have a documented migration exception",
+        "a token endpoint can name unsupported grants in errors"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "grant-type",
+        "implicit",
+        "password-grant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-011",
+      "title": "Protect refresh tokens against replay and overbroad lifetime",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether public-client refresh tokens rotate, use sender constraints where required, and revoke on reuse/logout.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a consumed or revoked refresh token mints parallel access tokens contrary to policy",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "a bounded retry grace window can tolerate one near-simultaneous use",
+        "some clients use opaque server-side sessions instead of refresh tokens"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.5",
+          "v5.0.0-10.4.9"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "refresh-token",
+        "rotation",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use one disposable token family and one replay, then revoke every descendant."
+    },
+    {
+      "id": "WAPT-OAUTH-012",
+      "title": "Validate access-token audience, scope, and delegated claims",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether resource servers accept tokens for another audience or ignore delegated authorization constraints.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a wrong-audience or insufficient-scope test token accesses the protected resource",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "shared audiences can be intentional within one trust boundary",
+        "a gateway can enforce scope before the service"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.3.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "access-token",
+        "audience",
+        "scope"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-013",
+      "title": "Keep OAuth client credentials server-side and strongly authenticated",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether confidential-client secrets are exposed to browsers/mobile packages or weakly replayable at backchannel endpoints.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a client-extractable credential authenticates as a confidential client or a backchannel accepts weak replayable auth contrary to policy",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "public client IDs are not secrets",
+        "private-key credentials can be provisioned to controlled native hardware under another model"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.10",
+          "v5.0.0-10.4.16"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-798"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "client-authentication",
+        "client-secret",
+        "backchannel"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Never retain or use real client secrets; test only owner-issued synthetic clients and revoke credentials afterward."
+    },
+    {
+      "id": "WAPT-OAUTH-014",
+      "title": "Prevent open-redirect chains in OAuth clients",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a registered callback or post-login route can forward authorization material to an untrusted origin.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a controlled redirect chain delivers a synthetic code/token or session-binding value off-origin",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "post-consumption navigation can be safe if authorization material is removed",
+        "external-link warning pages can intentionally permit user-approved navigation"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 9700: Best Current Practice for OAuth 2.0 Security",
+          "url": "https://www.rfc-editor.org/rfc/rfc9700"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "OAuth 2.0 authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/oauth"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-10.4.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-601"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/oauth"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "oauth",
+        "open-redirect",
+        "redirect-chain",
+        "callback"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use a controlled destination and synthetic flow; never collect credentials or real-user tokens."
+    },
+    {
+      "id": "WAPT-OAUTH-015",
+      "title": "Validate SAML response and assertion signatures before use",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether unsigned, partially signed, or modified assertions establish identity.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a modified/unsigned synthetic assertion creates a local session or changes attributes",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "diagnostic tools can parse unsigned XML without accepting it",
+        "a response can be signed while the consumed assertion is separately validated"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "signature",
+        "assertion"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use only designated synthetic assertions and identities; never forge real-user access."
+    },
+    {
+      "id": "WAPT-OAUTH-016",
+      "title": "Prevent SAML XML signature wrapping",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether the service validates one signed element but consumes a different attacker-controlled assertion.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a harmless synthetic duplicate/wrapped assertion changes the consumed test identity or role",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "duplicate IDs can be rejected during schema validation",
+        "library canonicalization errors can produce parser failures without bypass"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "signature-wrapping",
+        "xml"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use only synthetic identities and a harmless identity endpoint; stop after proving which assertion is consumed."
+    },
+    {
+      "id": "WAPT-OAUTH-017",
+      "title": "Validate SAML audience, recipient, destination, and issuer",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether an assertion intended for another SP, endpoint, tenant, or issuer is accepted.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a controlled mismatched assertion establishes a target-SP session",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "one federation can intentionally share a documented entity audience",
+        "proxies can canonicalize the public destination under trusted configuration"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "audience",
+        "recipient",
+        "issuer"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-018",
+      "title": "Bind SAML responses to requests and reject replay",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether stale, unsolicited, duplicate, or mismatched InResponseTo assertions can establish sessions outside policy.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a consumed/stale/mismatched synthetic response creates another session",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "IdP-initiated SSO intentionally has no SP request under explicit policy",
+        "small clock tolerance can be required"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "inresponseto",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use one synthetic response and one replay; terminate resulting sessions afterward."
+    },
+    {
+      "id": "WAPT-OAUTH-019",
+      "title": "Enforce SAML assertion time conditions",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether NotBefore, NotOnOrAfter, SessionNotOnOrAfter, and subject-confirmation expiry are validated.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "an expired or not-yet-valid synthetic assertion establishes a session outside configured skew",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "small documented clock skew is normal",
+        "a fresh IdP session can issue a new assertion after the test"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "time-condition",
+        "expiry"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation."
+    },
+    {
+      "id": "WAPT-OAUTH-020",
+      "title": "Constrain RelayState and post-SSO navigation",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether RelayState enables external redirects, cross-tenant confusion, or unsafe state selection.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a controlled RelayState sends the authenticated browser or sensitive state to an untrusted destination",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "relative internal navigation is a normal RelayState use",
+        "an interstitial can intentionally mediate external navigation"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-601"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "relaystate",
+        "open-redirect"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use a controlled non-lookalike destination and synthetic identity; never collect session data."
+    },
+    {
+      "id": "WAPT-OAUTH-021",
+      "title": "Constrain SAML attributes and role mapping",
+      "category": "oauth-sso-saml",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether untrusted or unexpected assertion attributes grant roles, groups, tenant, or account binding beyond policy.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a synthetic attribute/value outside the mapping allowlist grants unintended authority",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "the IdP can be authoritative for documented groups",
+        "unknown attributes can be safely ignored"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "attribute-mapping",
+        "role"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use synthetic roles and a harmless privilege check; remove any unexpected access immediately."
+    },
+    {
+      "id": "WAPT-OAUTH-022",
+      "title": "Coordinate SSO logout, local fallback, and session assurance",
+      "category": "oauth-sso-saml",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether local passwords, IdP logout, SP logout, or stale federation sessions bypass intended authentication strength or termination.",
+      "prerequisites": [
+        "An owner-approved federation client/service provider and controlled identity provider or designated test identities",
+        "Captured normal authorization/authentication flow with all secrets, codes, assertions, and tokens redacted"
+      ],
+      "steps": [
+        "Map browser, client, authorization/identity provider, callback, token/assertion, and local-session boundaries",
+        "Capture one successful synthetic control flow",
+        "Change only the redirect, binding, code, claim, signature, assertion, attribute, or lifecycle condition under test",
+        "Confirm local identity/authority and revoke or unlink all test sessions/tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic federation identities and fully redact codes, tokens, assertions, cookies, and client credentials."
+        }
+      ],
+      "manipulate": "One flow-binding value, redirect, grant, token, JOSE/SAML claim, XML signature context, attribute, or session lifecycle event at a time",
+      "secure_behavior": "The client/SP binds each response to an initiated flow, validates trusted issuer/signature/audience/purpose/time, limits delegated scope, and creates/revokes local sessions according to documented assurance.",
+      "vulnerable_behavior": "a weaker fallback or terminated federation session restores protected access contrary to policy",
+      "validation": "Prove the resulting local identity, token authority, redirect destination, or session state; parser acceptance, errors, or decoded content alone are insufficient.",
+      "false_positives": [
+        "local logout can intentionally leave the IdP session active",
+        "dedicated break-glass accounts can be separately controlled"
+      ],
+      "impact": "A confirmed federation weakness can enable login CSRF, account linking/takeover, token or assertion theft/replay, cross-client confusion, privilege escalation, or persistent SSO access.",
+      "evidence": [
+        "Normal and modified flow diagram plus redacted requests/responses",
+        "Client/SP, issuer/IdP, redirect/ACS, audience, and test-identity context",
+        "Signature, state/nonce/PKCE/InResponseTo/time validation outcome",
+        "Local session/authorization effect and complete cleanup"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater",
+        "Offline JOSE/XML inspection with synthetic material"
+      ],
+      "references": [
+        {
+          "source": "OASIS",
+          "title": "Assertions and Protocols for SAML V2.0",
+          "url": "https://docs.oasis-open.org/security/saml/v2.0/saml-core-2.0-os.pdf"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.8.4",
+          "v5.0.0-7.6.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-288"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "saml",
+        "sso",
+        "logout",
+        "fallback-authentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "saml",
+            "mixed"
+          ]
+        }
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "oauth",
+          "saml",
+          "mixed"
+        ]
+      },
+      "remediation": "Use maintained federation libraries, exact registered endpoints, transaction binding, current OAuth BCP, strict signature/issuer/audience/purpose/time validation, least scopes/attributes, and coordinated session revocation.",
+      "safety": "Use disposable federated identities and coordinate logout because it can affect multiple relying parties."
+    }
+  ]
+}

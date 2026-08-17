@@ -52,7 +52,7 @@
         "required": ["source", "title", "url"],
         "properties": {
           "source": {
-            "enum": ["OWASP", "OWASP WSTG", "OWASP ASVS", "OWASP API Security", "OWASP Top 10", "PortSwigger", "CWE", "IETF", "W3C", "WHATWG", "Official vendor"]
+            "enum": ["OWASP", "OWASP WSTG", "OWASP ASVS", "OWASP API Security", "OWASP Top 10", "PortSwigger", "CWE", "IETF", "OASIS", "W3C", "WHATWG", "Official vendor"]
           },
           "title": { "$ref": "#/$defs/nonEmptyString" },
           "url": { "type": "string", "format": "uri", "pattern": "^https://" }

@@ -89,7 +89,7 @@ const MAPPING_RULES = Object.freeze({
 
 const SOURCE_NAMES = new Set([
   'OWASP', 'OWASP WSTG', 'OWASP ASVS', 'OWASP API Security', 'OWASP Top 10',
-  'PortSwigger', 'CWE', 'IETF', 'W3C', 'WHATWG', 'Official vendor'
+  'PortSwigger', 'CWE', 'IETF', 'OASIS', 'W3C', 'WHATWG', 'Official vendor'
 ]);
 
 function isObject(value) {
@@ -129,6 +129,7 @@ function referenceUrlAllowed(raw) {
   if (host === 'cwe.mitre.org') return url.pathname.startsWith('/data/definitions/');
   if (host === 'html.spec.whatwg.org') return true;
   if (host === 'www.w3.org') return true;
+  if (host === 'docs.oasis-open.org') return url.pathname.startsWith('/security/saml/');
   if (host === 'github.com') return url.pathname === '/OWASP/ASVS/tree/v5.0.0' || url.pathname.startsWith('/OWASP/ASVS/blob/v5.0.0/');
   return false;
 }

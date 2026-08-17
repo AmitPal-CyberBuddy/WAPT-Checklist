@@ -8,7 +8,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 |---:|---|---:|---:|---|
 | 11 | GraphQL | 12 | 15 | Complete |
 | 12 | JWT | 15 | 18 | Complete |
-| 13 | OAuth / SSO / SAML | 18 | 0 | Not started |
+| 13 | OAuth / SSO / SAML | 18 | 22 | Complete |
 | 14 | SSRF | 12 | 0 | Not started |
 | 15 | Request smuggling / desync | 12 | 0 | Not started |
 | 16 | Business logic | 30 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **33**. Overall production catalog: **381**.
+Advanced floor total: **217**. Current Phase 6 production total: **55**. Overall production catalog: **403**.
+
+## OAuth / SSO / SAML coverage
+
+The federation catalog adds 22 tests for exact OAuth redirects, state, OIDC nonce, PKCE, code use/lifetime, mix-up and callback pollution, leakage, scope/consent, grants, refresh/access/client credentials and redirect chains; plus SAML signature and wrapping, issuer/audience/recipient/destination, request/replay/time binding, RelayState, attribute mapping, and coordinated logout/fallback assurance. OAuth references use RFC 9700; SAML references use the OASIS 2.0 core standard.
 
 ## JWT coverage
 

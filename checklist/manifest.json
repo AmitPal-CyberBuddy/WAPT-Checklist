@@ -130,7 +130,7 @@
       "file": "oauth-sso-saml.json",
       "prefix": "WAPT-OAUTH",
       "floor": 18,
-      "count": 0,
+      "count": 22,
       "summary": "Assess federated flow binding, redirects, assertions, and trust."
     },
     {

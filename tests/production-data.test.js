@@ -383,6 +383,36 @@ test('JWT key, forgery, replay, and refresh tests use synthetic safety boundarie
   }
 });
 
+test('federation methodology selects OAuth and SAML groups independently', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'oauth-sso-saml.json'), 'utf8'));
+  for (const tag of ['redirect-uri', 'state', 'pkce', 'mix-up', 'refresh-token', 'signature-wrapping', 'inresponseto', 'relaystate']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.mappings.wstg.length === 0));
+  assert.ok(items.filter(({ tags }) => tags.includes('saml')).every((item) => item.references.some(({ source }) => source === 'OASIS')));
+
+  const oauth = deriveContext({ app_type: 'hybrid', has_login: 'yes', creds: 'high', auth_mechanism: ['oauth'] });
+  assert.ok(items.filter((item) => evaluateApplicability(item, oauth).state === APPLICABILITY.ACTIVE).length >= 14);
+  assert.ok(items.filter((item) => item.id !== 'WAPT-OAUTH-022' && item.tags.includes('saml')).every((item) => evaluateApplicability(item, oauth).state === APPLICABILITY.NA_CONTEXT));
+  const saml = deriveContext({ app_type: 'hybrid', has_login: 'yes', creds: 'high', auth_mechanism: ['saml'] });
+  assert.equal(items.filter((item) => evaluateApplicability(item, saml).state === APPLICABILITY.ACTIVE).length, 8);
+});
+
+test('federation redirect, token, assertion, and role tests use controlled identities', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'oauth-sso-saml.json'), 'utf8'));
+  for (const id of [
+    'WAPT-OAUTH-001', 'WAPT-OAUTH-002', 'WAPT-OAUTH-004', 'WAPT-OAUTH-005',
+    'WAPT-OAUTH-011', 'WAPT-OAUTH-013', 'WAPT-OAUTH-014', 'WAPT-OAUTH-015',
+    'WAPT-OAUTH-016', 'WAPT-OAUTH-018', 'WAPT-OAUTH-020', 'WAPT-OAUTH-021',
+    'WAPT-OAUTH-022'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
