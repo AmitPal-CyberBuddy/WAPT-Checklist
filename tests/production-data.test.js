@@ -17,7 +17,7 @@ test('all Phase 4 core categories are present and pass their release floors', ()
   const files = productionFiles();
   const result = validateFiles(files, { enforceCoreFloors: true });
   assert.deepEqual(result.errors, []);
-  assert.equal(files.length, 10);
+  assert.ok(files.length >= 10);
   assert.equal(Object.values(result.counts).slice(0, 10).reduce((sum, count) => sum + count, 0), 348);
 });
 
@@ -329,6 +329,29 @@ test('API resource, business-flow, SSRF, and upstream tests carry safety ceiling
     'WAPT-API-027', 'WAPT-API-028', 'WAPT-API-035', 'WAPT-API-037',
     'WAPT-API-038', 'WAPT-API-039', 'WAPT-API-040'
   ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
+test('GraphQL methodology gates on protocol context and covers schema, authorization, and cost', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'graphql.json'), 'utf8'));
+  for (const tag of ['introspection', 'bola', 'field-authorization', 'mutation', 'depth-limit', 'query-cost', 'alias', 'batch', 'subscription']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const graphql = deriveContext({ api_style: ['graphql'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, graphql).state === APPLICABILITY.ACTIVE));
+  const soap = deriveContext({ api_style: ['soap'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, soap).state === APPLICABILITY.NA_CONTEXT));
+  const unknown = deriveContext();
+  assert.ok(items.every((item) => evaluateApplicability(item, unknown).state === APPLICABILITY.CONFIRM));
+});
+
+test('GraphQL resource probes carry strict query ceilings', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'graphql.json'), 'utf8'));
+  for (const id of ['WAPT-GQL-006', 'WAPT-GQL-007', 'WAPT-GQL-008', 'WAPT-GQL-009', 'WAPT-GQL-010', 'WAPT-GQL-011', 'WAPT-GQL-012', 'WAPT-GQL-013', 'WAPT-GQL-014']) {
     assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
 });

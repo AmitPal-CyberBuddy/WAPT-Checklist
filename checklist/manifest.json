@@ -110,7 +110,7 @@
       "file": "graphql.json",
       "prefix": "WAPT-GQL",
       "floor": 12,
-      "count": 0,
+      "count": 15,
       "summary": "Test schema exposure, query cost, batching, and field authorization."
     },
     {

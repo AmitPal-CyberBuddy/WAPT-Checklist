@@ -1,0 +1,1299 @@
+{
+  "schema_version": "1.0.0",
+  "category": "graphql",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-GQL-001",
+      "title": "Confirm GraphQL endpoint and transport inventory",
+      "category": "graphql",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Identify every GraphQL HTTP, persisted-query, multipart, batch, and subscription transport before deeper testing.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for observed client traffic, owner documentation, and a minimal typename query",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: observed client traffic, owner documentation, and a minimal typename query."
+        }
+      ],
+      "manipulate": "observed client traffic, owner documentation, and a minimal typename query; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a confirmed endpoint/transport is missing from the owned inventory or enters a different security boundary",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "a route named graphql can return generic non-GraphQL errors",
+        "third-party GraphQL endpoints can be dependencies outside test scope"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "inventory",
+        "transport"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    },
+    {
+      "id": "WAPT-GQL-002",
+      "title": "Restrict production schema introspection according to audience",
+      "category": "graphql",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether introspection exposes a schema beyond the API's intended consumer model.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a minimal standard introspection request and owner-defined audience",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a minimal standard introspection request and owner-defined audience."
+        }
+      ],
+      "manipulate": "a minimal standard introspection request and owner-defined audience; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "an unintended anonymous/low-trust audience retrieves sensitive internal operations or types with demonstrated reachability",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "public developer APIs intentionally expose introspection",
+        "disabling introspection does not remove discoverable operations or fix authorization"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "introspection",
+        "schema"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    },
+    {
+      "id": "WAPT-GQL-003",
+      "title": "Recover and reconcile schema information without treating names as findings",
+      "category": "graphql",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Compare introspection, validation suggestions, client documents, and observed traffic to build an accurate operation inventory.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for harmless invalid-field controls and first-party query documents",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: harmless invalid-field controls and first-party query documents."
+        }
+      ],
+      "manipulate": "harmless invalid-field controls and first-party query documents; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a security-relevant reachable operation is omitted from owner inventory or has an untested policy boundary",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "validation suggestions can be disabled without affecting security controls",
+        "field names alone do not prove data exposure or reachability"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "schema",
+        "field-suggestion",
+        "inventory"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    },
+    {
+      "id": "WAPT-GQL-004",
+      "title": "Enforce object-level authorization in GraphQL resolvers",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing node IDs or nested object arguments returns another user's or tenant's object.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a query using synthetic objects under two designated accounts",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a query using synthetic objects under two designated accounts."
+        }
+      ],
+      "manipulate": "a query using synthetic objects under two designated accounts; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "the non-owner receives a private object through a root or nested resolver",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "objects can be intentionally public/shared",
+        "a DataLoader cache can replay stale test data independently of origin authorization"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-003"
+      ],
+      "tags": [
+        "graphql",
+        "bola",
+        "resolver",
+        "object-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    },
+    {
+      "id": "WAPT-GQL-005",
+      "title": "Enforce field-level read authorization in GraphQL",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether low-privilege callers can select sensitive fields hidden from normal client queries.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for the same type queried under high and low designated roles",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: the same type queried under high and low designated roles."
+        }
+      ],
+      "manipulate": "the same type queried under high and low designated roles; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "the lower role receives a protected field or nested relationship",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "schema visibility can include fields that return null/redacted values",
+        "support roles can intentionally read selected operational fields"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-018"
+      ],
+      "tags": [
+        "graphql",
+        "field-authorization",
+        "bopla",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    },
+    {
+      "id": "WAPT-GQL-006",
+      "title": "Reject unauthorized GraphQL mutation fields and input properties",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether mutations bind protected role, owner, tenant, price, status, or verification fields.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a normal mutation plus one protected input property on a disposable object",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a normal mutation plus one protected input property on a disposable object."
+        }
+      ],
+      "manipulate": "a normal mutation plus one protected input property on a disposable object; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "the protected value persists or changes security behavior",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "the server can safely ignore an unknown input field",
+        "separate privileged mutations can intentionally accept the field"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-019"
+      ],
+      "tags": [
+        "graphql",
+        "mutation",
+        "input-object",
+        "mass-assignment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use a disposable object and harmless property; restore state immediately."
+    },
+    {
+      "id": "WAPT-GQL-007",
+      "title": "Enforce function authorization on GraphQL mutations",
+      "category": "graphql",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a lower role can invoke privileged mutations discovered in the schema or client documents.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for an owner-approved harmless privileged mutation and low-role token",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: an owner-approved harmless privileged mutation and low-role token."
+        }
+      ],
+      "manipulate": "an owner-approved harmless privileged mutation and low-role token; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "the lower role executes the privileged function or receives protected output",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "mutation presence in schema is not permission",
+        "one HTTP 200 can contain a correctly denied GraphQL error"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-013"
+      ],
+      "tags": [
+        "graphql",
+        "mutation",
+        "bfla",
+        "function-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use a harmless or reversible privileged mutation with designated roles."
+    },
+    {
+      "id": "WAPT-GQL-008",
+      "title": "Bound GraphQL query depth and recursive traversal",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether nested selections can trigger disproportionate resolver/database work.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a cheap baseline query and tiny incremental depth under an owner-approved ceiling",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a cheap baseline query and tiny incremental depth under an owner-approved ceiling."
+        }
+      ],
+      "manipulate": "a cheap baseline query and tiny incremental depth under an owner-approved ceiling; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "small depth growth causes nonlinear cost without rejection or budget",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "deep syntax can resolve cheaply through scalar/short-circuit behavior",
+        "cold caches can make one baseline slow"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.1"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "depth-limit",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "REVIEW ONLY. Increase depth one small step at a time, send one query at a time, and stop on latency or errors."
+    },
+    {
+      "id": "WAPT-GQL-009",
+      "title": "Apply GraphQL query cost analysis to expensive field combinations",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cost budgets account for resolver fan-out, nested lists, filters, and backend-specific expense.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for owner-approved query variants changing one costly field or list dimension",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: owner-approved query variants changing one costly field or list dimension."
+        }
+      ],
+      "manipulate": "owner-approved query variants changing one costly field or list dimension; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a modest query has disproportionate measured backend cost and bypasses documented budgets",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "field count alone does not equal resolver cost",
+        "an expensive administrative analytics role can have a separate quota"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.1"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "query-cost",
+        "resolver",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use owner telemetry where possible; change one field at a time and stop at the first disproportionate signal."
+    },
+    {
+      "id": "WAPT-GQL-010",
+      "title": "Count aliases and repeated fields toward GraphQL limits",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether aliases or fragments repeat an expensive resolver while bypassing amount/cost controls.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a cheap field control and a small number of aliases/fragments",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a cheap field control and a small number of aliases/fragments."
+        }
+      ],
+      "manipulate": "a cheap field control and a small number of aliases/fragments; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "repeated aliases cause multiplied work without entering the same budget",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "resolvers can deduplicate identical field work",
+        "aliases are a standard feature and not harmful at low cost"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.1"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "alias",
+        "fragment",
+        "query-cost"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use only a handful of aliases on a cheap synthetic resolver and stop on latency or errors."
+    },
+    {
+      "id": "WAPT-GQL-011",
+      "title": "Apply limits independently to GraphQL batched operations",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether JSON arrays, query batching, or persisted-query batches bypass per-operation and aggregate budgets.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for two harmless operations combined through each supported batch transport",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: two harmless operations combined through each supported batch transport."
+        }
+      ],
+      "manipulate": "two harmless operations combined through each supported batch transport; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "aggregate work exceeds limits or one authorized operation carries an unauthorized sibling",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "batching can be intentionally disabled",
+        "an HTTP 200 can contain per-operation denials"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "batch",
+        "resource-consumption",
+        "operation-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use a tiny batch of harmless operations and never attempt high concurrency."
+    },
+    {
+      "id": "WAPT-GQL-012",
+      "title": "Bound GraphQL pagination and connection traversal",
+      "category": "graphql",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether first, last, limit, cursor, or nested connection arguments bypass page and total-result limits.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a synthetic connection with small boundary values",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a synthetic connection with small boundary values."
+        }
+      ],
+      "manipulate": "a synthetic connection with small boundary values; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a caller requests unbounded/nested results or traverses outside authorized objects",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "privileged exports can intentionally use larger pages",
+        "cursor errors can differ without exposing data"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-4.3.1"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "pagination",
+        "connection",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use tiny page increments and synthetic data; do not request broad production collections."
+    },
+    {
+      "id": "WAPT-GQL-013",
+      "title": "Prevent GraphQL CSRF across alternate request encodings",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether mutations accept GET, form, text/plain, or other simple cross-site transports with ambient credentials.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for a reversible mutation and each enabled HTTP transport",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: a reversible mutation and each enabled HTTP transport."
+        }
+      ],
+      "manipulate": "a reversible mutation and each enabled HTTP transport; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a real cross-site browser request commits the mutation without an attacker-unavailable intent signal",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "application/json POST normally triggers preflight",
+        "header bearer tokens are not attached ambiently"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-CSRF-016"
+      ],
+      "tags": [
+        "graphql",
+        "csrf",
+        "mutation",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use a reversible mutation on a synthetic object and restore it immediately."
+    },
+    {
+      "id": "WAPT-GQL-014",
+      "title": "Authorize GraphQL subscriptions at subscribe and event time",
+      "category": "graphql",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can subscribe to another account/tenant channel or retain events after permission revocation.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for synthetic subscription topics under two designated identities",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: synthetic subscription topics under two designated identities."
+        }
+      ],
+      "manipulate": "synthetic subscription topics under two designated identities; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "a non-member receives private events or continues after revocation",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "public broadcast subscriptions can be intentional",
+        "connection authentication does not prove missing subscription authorization"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-035"
+      ],
+      "tags": [
+        "graphql",
+        "subscription",
+        "websocket",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors.",
+      "safety": "Use synthetic topics/events and designated accounts; never subscribe to real-user channels."
+    },
+    {
+      "id": "WAPT-GQL-015",
+      "title": "Return GraphQL errors without secrets or unauthorized data",
+      "category": "graphql",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether validation/resolver errors expose stack traces, queries, internal services, hidden values, or protected object existence.",
+      "prerequisites": [
+        "A confirmed in-scope GraphQL endpoint and supported transport",
+        "Owner-approved schema/operations, synthetic data, and test identities as applicable"
+      ],
+      "steps": [
+        "Capture a minimal valid baseline for one harmless invalid field and one denied synthetic object control",
+        "Change one field, argument, operation, identity, or query-cost dimension",
+        "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
+        "Repeat a clean control and stop at the least-impacting proof"
+      ],
+      "examples": [
+        {
+          "note": "Use minimal named operations and synthetic data only. Target: one harmless invalid field and one denied synthetic object control."
+        }
+      ],
+      "manipulate": "one harmless invalid field and one denied synthetic object control; change one GraphQL selection, argument, operation, transport, or identity at a time",
+      "secure_behavior": "The GraphQL service enforces schema audience, per-resolver authorization, strict input contracts, bounded query cost, safe transport, and minimal errors.",
+      "vulnerable_behavior": "errors contain actionable sensitive internals, valid secrets, or unauthorized field/object data",
+      "validation": "Confirm the data, resolver effect, committed state, or owner-observed cost; schema names, HTTP 200, errors, or latency alone are insufficient.",
+      "false_positives": [
+        "field/location errors are useful standard GraphQL behavior",
+        "correlation IDs are safe operational metadata"
+      ],
+      "impact": "A confirmed GraphQL weakness can expose object/field data, execute privileged mutations, automate costly resolver work, forge browser actions, or leak implementation internals.",
+      "evidence": [
+        "Minimal GraphQL operation and variables with secrets redacted",
+        "HTTP and GraphQL data/error responses",
+        "Identity, role, tenant, operation, field, and object context",
+        "Cost/telemetry or authoritative state plus cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "Owner-approved GraphQL IDE"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "GraphQL API vulnerabilities",
+          "url": "https://portswigger.net/web-security/graphql"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-209"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/graphql"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "error-handling",
+        "information-disclosure",
+        "validation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      },
+      "remediation": "Use explicit schema exposure policy, trusted resolver-level authorization, typed inputs, query/amount/depth/cost budgets, bounded pagination/batching, safe browser transport, and generic errors."
+    }
+  ]
+}
