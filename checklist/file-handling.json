@@ -1,0 +1,2349 @@
+{
+  "schema_version": "1.0.0",
+  "category": "file-handling",
+  "lastmod": "2026-08-17",
+  "items": [
+    {
+      "id": "WAPT-UPLOAD-001",
+      "title": "Document each file acceptance and delivery contract",
+      "category": "file-handling",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Establish allowed types, extensions, sizes, unpacked limits, storage, processing, retrieval, retention, and audience before active file tests.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select every upload, import, attachment, avatar, preview, and generated-file route",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: every upload, import, attachment, avatar, preview, and generated-file route."
+        }
+      ],
+      "manipulate": "every upload, import, attachment, avatar, preview, and generated-file route; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the owner cannot define or reconcile a security-relevant file contract for a reachable flow",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "different roles can intentionally have different file policies",
+        "direct-to-storage uploads can move validation to a separate callback"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.1.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "file-inventory",
+        "upload-policy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Maintain a versioned per-flow file contract and enforce it consistently at upload, processing, storage, preview, and download."
+    },
+    {
+      "id": "WAPT-UPLOAD-002",
+      "title": "Validate extension, declared media type, and file signature together",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the server accepts content whose extension, Content-Type, and magic/signature contradict the allowed type.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a small inert file with one mismatched classification signal",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a small inert file with one mismatched classification signal."
+        }
+      ],
+      "manipulate": "a small inert file with one mismatched classification signal; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the file is accepted and reaches an unsafe parser/serving context because only one signal is trusted",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "some text formats have no reliable magic bytes",
+        "acceptance can be safe when content is normalized and isolated"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "file-type",
+        "magic-bytes",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Allowlist required formats, verify extension/type/signature and parse safely, then store and serve in a non-executable context."
+    },
+    {
+      "id": "WAPT-UPLOAD-003",
+      "title": "Normalize filenames before extension allowlisting",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether case, trailing dots/spaces, alternate separators, Unicode, or multiple extensions bypass type policy.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert disallowed extension represented through one filename variant at a time",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert disallowed extension represented through one filename variant at a time."
+        }
+      ],
+      "manipulate": "an inert disallowed extension represented through one filename variant at a time; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "a non-canonical name bypasses policy and reaches an unsafe handler",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "object storage can preserve names without using them for execution",
+        "multiple dots can be legitimate in safe generated storage names"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "filename",
+        "extension",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Canonicalize once, reject ambiguous names, generate storage names server-side, and validate the final extension/type before processing."
+    },
+    {
+      "id": "WAPT-UPLOAD-004",
+      "title": "Reject server-side execution of uploaded content",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether uploaded data can be routed through a server-side executable handler.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert owner-approved canary in a format associated with the confirmed server stack",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert owner-approved canary in a format associated with the confirmed server stack."
+        }
+      ],
+      "manipulate": "an inert owner-approved canary in a format associated with the confirmed server stack; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the retrieval/processing path interprets canary syntax as server code",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "accepting an extension is safe when served as inert data",
+        "a template preview can render text without operating-system execution"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.3.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "code-execution",
+        "upload-storage",
+        "handler"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Store outside executable roots, disable execution in storage, generate names, isolate processing, and serve as data from a separate origin.",
+      "safety": "Never upload a shell or executable command. Use only an owner-approved inert canary and stop immediately on unexpected interpretation."
+    },
+    {
+      "id": "WAPT-UPLOAD-005",
+      "title": "Serve untrusted files from an isolated origin and safe browser context",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether uploaded active formats inherit application cookies, origin privileges, or inline rendering.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert HTML, SVG, XML, or text canary through an approved flow",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert HTML, SVG, XML, or text canary through an approved flow."
+        }
+      ],
+      "manipulate": "an inert HTML, SVG, XML, or text canary through an approved flow; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the browser executes active content with application-origin authority",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "an isolated cookieless origin can safely render some user files",
+        "Content-Disposition attachment can prevent inline execution"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-3.2.1",
+          "v5.0.0-5.3.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "same-origin",
+        "active-content",
+        "download"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use a separate untrusted-content origin, accurate types, nosniff, attachment disposition where appropriate, and sanitizer/rasterizer previews.",
+      "safety": "Use a local visual marker only; never read cookies, tokens, page data, or load external resources."
+    },
+    {
+      "id": "WAPT-UPLOAD-006",
+      "title": "Prevent upload overwrite and filename collision",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether chosen names or predictable storage keys replace another user's file or application asset.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select two inert files with colliding names under designated accounts",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: two inert files with colliding names under designated accounts."
+        }
+      ],
+      "manipulate": "two inert files with colliding names under designated accounts; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "one upload overwrites another account, tenant, or protected asset without permission",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "versioned object stores can intentionally create a new version",
+        "same-account replacement can be documented behavior"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "file-overwrite",
+        "filename",
+        "integrity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Generate unique opaque storage keys, enforce object authorization and conditional writes, and keep user filenames as metadata only.",
+      "safety": "Use disposable files and accounts; never target application assets or real-user filenames."
+    },
+    {
+      "id": "WAPT-UPLOAD-007",
+      "title": "Prevent path traversal through uploaded filenames",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether multipart or metadata filenames escape the intended staging or storage directory.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert upload filename containing one canonical traversal variant",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert upload filename containing one canonical traversal variant."
+        }
+      ],
+      "manipulate": "an inert upload filename containing one canonical traversal variant; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the canary is written outside the designated test directory",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "frameworks can strip path components safely",
+        "client browsers can send local fake paths that the server ignores"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Directory Traversal File Include",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-01"
+        ],
+        "asvs": [
+          "v5.0.0-5.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-22"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "path-traversal",
+        "filename",
+        "upload"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Discard client paths, generate server filenames, resolve and verify canonical destination under a fixed root, and use least filesystem privilege.",
+      "safety": "Use only an isolated owner-provided test directory and inert canary; never target existing or sensitive paths."
+    },
+    {
+      "id": "WAPT-UPLOAD-008",
+      "title": "Prevent ZIP Slip during archive extraction",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether archive entry paths escape the extraction root.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a tiny synthetic archive with one inert traversal entry targeting an owner-provided sandbox path",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a tiny synthetic archive with one inert traversal entry targeting an owner-provided sandbox path."
+        }
+      ],
+      "manipulate": "a tiny synthetic archive with one inert traversal entry targeting an owner-provided sandbox path; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "extraction writes the canary outside the canonical sandbox root",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "the library can reject or rewrite unsafe entries",
+        "archive listing can display a path without extracting it"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.3.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-22"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "zip-slip",
+        "archive",
+        "path-traversal"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Resolve every entry destination, enforce it remains under a fresh extraction root, reject absolute/traversal paths, and extract with least privilege.",
+      "safety": "REVIEW ONLY. Extract only in an isolated owner-provided sandbox using a tiny inert canary; never target real files."
+    },
+    {
+      "id": "WAPT-UPLOAD-009",
+      "title": "Reject archive symlinks that escape extraction boundaries",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether symlink or hardlink entries redirect later writes/reads outside the archive workspace.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a tiny synthetic archive containing a link to an owner-provided harmless sandbox target",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a tiny synthetic archive containing a link to an owner-provided harmless sandbox target."
+        }
+      ],
+      "manipulate": "a tiny synthetic archive containing a link to an owner-provided harmless sandbox target; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the processor follows the link outside the intended extraction tree",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "the extractor can preserve links as inert metadata without following them",
+        "some product flows intentionally allow links to a strict allowlist"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.5"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-59"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "archive",
+        "symlink",
+        "path-traversal"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Reject links by default, validate link targets and each subsequent filesystem operation, and isolate extraction in a restricted filesystem.",
+      "safety": "REVIEW ONLY. Use an isolated sandbox and harmless target; do not reference system, application, or shared files."
+    },
+    {
+      "id": "WAPT-UPLOAD-010",
+      "title": "Bound archive expansion size and entry count before extraction",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether compressed uploads exceed safe unpacked bytes, ratio, depth, or file-count limits.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select owner-provided small archives near documented limits plus configuration evidence",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: owner-provided small archives near documented limits plus configuration evidence."
+        }
+      ],
+      "manipulate": "owner-provided small archives near documented limits plus configuration evidence; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "limits are absent or a bounded near-limit sample causes disproportionate resource use",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "compression ratio alone does not prove service impact",
+        "streaming processors can enforce limits without rejecting high ratio"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-409"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "archive",
+        "decompression-bomb",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Inspect metadata and stream with hard cumulative byte/count/depth/time quotas in isolated workers; abort and clean partial output.",
+      "safety": "REVIEW ONLY. Prefer configuration/code evidence; never upload a decompression bomb. Use only small near-limit fixtures with operations monitoring."
+    },
+    {
+      "id": "WAPT-UPLOAD-011",
+      "title": "Enforce upload byte size and per-user storage quotas",
+      "category": "file-handling",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether one user can exceed documented file, request, count, or total-storage limits.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select small synthetic files around an owner-approved boundary",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: small synthetic files around an owner-approved boundary."
+        }
+      ],
+      "manipulate": "small synthetic files around an owner-approved boundary; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the service accepts beyond documented bounds or allocates disproportionate resources before rejection",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "multipart overhead can make wire and file sizes differ",
+        "enterprise roles can intentionally have larger quotas"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.1",
+          "v5.0.0-5.2.4"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "file-size",
+        "quota",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Reject early using streaming byte limits, enforce atomic per-user/tenant quotas and counts, and clean failed/abandoned parts.",
+      "safety": "Use tiny boundary samples and never attempt storage exhaustion; stop on latency, errors, or quota impact."
+    },
+    {
+      "id": "WAPT-UPLOAD-012",
+      "title": "Bound decoded image dimensions before processing",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a small encoded image can expand to excessive pixels or memory in image libraries.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select owner-approved small images near documented dimension limits",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: owner-approved small images near documented dimension limits."
+        }
+      ],
+      "manipulate": "owner-approved small images near documented dimension limits; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "dimension validation occurs only after unsafe allocation or a bounded sample materially stresses processing",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "large dimensions can be legitimate for specialist applications",
+        "encoding errors can fail independently of memory allocation"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.6"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "image",
+        "pixel-flood",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Read trusted metadata safely, enforce width/height/pixel/frame limits before full decode, isolate processing, and keep libraries patched.",
+      "safety": "REVIEW ONLY. Prefer configuration evidence; use only small near-limit images and never generate a pixel-flood payload."
+    },
+    {
+      "id": "WAPT-UPLOAD-013",
+      "title": "Normalize images and documents before downstream use",
+      "category": "file-handling",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether metadata, embedded active content, secondary streams, or parser differences survive processing.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert synthetic file with harmless metadata or secondary content",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert synthetic file with harmless metadata or secondary content."
+        }
+      ],
+      "manipulate": "an inert synthetic file with harmless metadata or secondary content; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "unsafe content survives into a preview, re-encoded file, search index, or downstream parser",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "preserving EXIF can be an intentional product requirement",
+        "different viewers can ignore harmless metadata differently"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "image-processing",
+        "metadata",
+        "normalization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Decode with maintained libraries, reconstruct only required content, strip unnecessary metadata/active parts, and isolate downstream processors.",
+      "safety": "Use inert metadata and disposable files; never embed scripts, exploits, macros, or external references."
+    },
+    {
+      "id": "WAPT-UPLOAD-014",
+      "title": "Sanitize or rasterize user-supplied SVG",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether SVG scripts, events, links, foreign content, or external references survive the upload and preview pipeline.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert SVG with a local visual marker and no external access",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert SVG with a local visual marker and no external access."
+        }
+      ],
+      "manipulate": "an inert SVG with a local visual marker and no external access; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "an active SVG capability executes in a trusted application-origin context",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "SVG served as attachment or isolated origin can be safe",
+        "rasterization can remove active content while preserving appearance"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.4"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "svg",
+        "active-content",
+        "xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Rasterize or sanitize with an SVG-specific allowlist, block external references, and serve untrusted originals from an isolated origin.",
+      "safety": "Use only a local visual marker; never include external requests, script data access, animation exhaustion, or entity expansion."
+    },
+    {
+      "id": "WAPT-UPLOAD-015",
+      "title": "Handle polyglot files according to every reachable parser",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a file valid in multiple formats bypasses one validator and becomes active in another consumer.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an owner-approved inert dual-format fixture representing actual reachable parsers",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an owner-approved inert dual-format fixture representing actual reachable parsers."
+        }
+      ],
+      "manipulate": "an owner-approved inert dual-format fixture representing actual reachable parsers; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "validation classifies the file as safe while a later parser interprets an unsafe active format",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "multiple valid signatures do not create impact if only one safe parser is reachable",
+        "a file extension can be irrelevant after safe reconstruction"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.2.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "polyglot",
+        "parser-differential",
+        "file-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Allowlist formats, parse and reconstruct with one trusted pipeline, remove ambiguous content, and ensure serving/processing cannot select a second unsafe parser.",
+      "safety": "REVIEW ONLY. Use an inert owner-reviewed fixture with no script, macro, exploit, external fetch, or command content."
+    },
+    {
+      "id": "WAPT-UPLOAD-016",
+      "title": "Treat malware scanning as defense in depth rather than type validation",
+      "category": "file-handling",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether known-malware scanning is correctly placed without assuming a clean result makes arbitrary files safe.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select owner-provided scanner configuration and a standard inert antivirus test string if explicitly approved",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: owner-provided scanner configuration and a standard inert antivirus test string if explicitly approved."
+        }
+      ],
+      "manipulate": "owner-provided scanner configuration and a standard inert antivirus test string if explicitly approved; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "known test content bypasses the documented scan path or scanning failure allows unsafe publication",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "a clean scan cannot detect every exploit or active format",
+        "security gateways can quarantine the test string before the application receives it"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [
+          "v5.0.0-5.4.3"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-509"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "malware-scan",
+        "false-positive",
+        "defense-in-depth"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Scan in quarantine with fail-safe handling and updates, but independently validate type, parse safely, isolate storage, and authorize delivery.",
+      "safety": "Use the standard inert antivirus test string only with explicit owner approval; never upload malware or exploit files."
+    },
+    {
+      "id": "WAPT-UPLOAD-017",
+      "title": "Authorize upload creation and attachment targets",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user can upload into another user's object, tenant, folder, or privileged content slot.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert file and two designated object owners",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert file and two designated object owners."
+        }
+      ],
+      "manipulate": "an inert file and two designated object owners; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the lower-privilege user creates or attaches a file under an unauthorized target",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "shared folders can intentionally permit contributor uploads",
+        "a staged upload can exist without being attached or visible"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "authorization",
+        "multi-tenant",
+        "attachment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Authorize the target container, tenant, file purpose, and final attachment transaction; clean unclaimed staged uploads.",
+      "safety": "Use inert files, synthetic objects, and designated accounts; remove staged and attached files after testing."
+    },
+    {
+      "id": "WAPT-UPLOAD-018",
+      "title": "Authorize every file download and derivative",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing a file ID, storage key, filename, or transformation retrieves another user's private file.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select synthetic files owned by two designated accounts",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: synthetic files owned by two designated accounts."
+        }
+      ],
+      "manipulate": "synthetic files owned by two designated accounts; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "one account retrieves the other account’s original, preview, thumbnail, or converted derivative",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "public avatars and published files can intentionally be readable",
+        "a signed share URL can be a documented bearer capability"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Directory Traversal File Include",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "download",
+        "idor",
+        "derivative"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize metadata before every original/derivative response and scope signed capabilities narrowly with expiry and revocation.",
+      "safety": "Use only inert synthetic files and never request real-user file identifiers."
+    },
+    {
+      "id": "WAPT-UPLOAD-019",
+      "title": "Prevent path traversal in download and export paths",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether file/path parameters escape an approved download root.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a filename or path selector and owner-provided harmless canary outside the intended subdirectory",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a filename or path selector and owner-provided harmless canary outside the intended subdirectory."
+        }
+      ],
+      "manipulate": "a filename or path selector and owner-provided harmless canary outside the intended subdirectory; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the canonicalized request returns the sandbox canary outside the allowed root",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "encoded separators can be rejected by an upstream layer",
+        "an application can map names to database IDs and ignore path syntax"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Directory Traversal File Include",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-01"
+        ],
+        "asvs": [
+          "v5.0.0-5.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-22"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "path-traversal",
+        "download",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use opaque IDs, resolve server-side metadata, canonicalize once, enforce root containment, and run with least filesystem access.",
+      "safety": "Use only an owner-provided harmless sandbox canary; never request system files, source, credentials, or real-user content."
+    },
+    {
+      "id": "WAPT-UPLOAD-020",
+      "title": "Reject encoded and double-decoded traversal variants consistently",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether edge and application decoding disagreement permits traversal through encoded separators or dot segments.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a sandboxed path parameter with single/double encoding controls",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a sandboxed path parameter with single/double encoding controls."
+        }
+      ],
+      "manipulate": "a sandboxed path parameter with single/double encoding controls; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "one encoding reaches the out-of-root synthetic canary while canonical controls do not",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "a WAF can block encoding before the app receives it",
+        "different encodings can be rejected without traversal"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Directory Traversal File Include",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/01-Testing_Directory_Traversal_File_Include"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.5.3",
+          "v5.0.0-5.3.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-174"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "path-traversal",
+        "encoding",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define accepted encoding, decode once before validation, reject ambiguity, and verify canonical root containment after decoding.",
+      "safety": "Use only the owner-provided sandbox canary and a minimal encoding set; stop after one confirmed out-of-root read."
+    },
+    {
+      "id": "WAPT-UPLOAD-021",
+      "title": "Prevent local file inclusion in dynamic include or template paths",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a local path selector loads unintended server-side files into application processing.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a language, theme, template, or include selector and harmless owner-provided local canary",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a language, theme, template, or include selector and harmless owner-provided local canary."
+        }
+      ],
+      "manipulate": "a language, theme, template, or include selector and harmless owner-provided local canary; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the canary content is included from outside the permitted template set",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "a missing-template error can expose a path without inclusion",
+        "the application can use a strict fixed template mapping"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Local File Inclusion",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/11.1-Testing_for_Local_File_Inclusion"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-98"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "local-file-inclusion",
+        "template",
+        "path"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Map stable identifiers to fixed templates, reject path syntax, enforce canonical allowlisted roots, and remove dynamic local include behavior.",
+      "safety": "Use only an owner-provided inert local canary; never include system files, logs, sessions, source, or credentials."
+    },
+    {
+      "id": "WAPT-UPLOAD-022",
+      "title": "Prevent remote file inclusion and untrusted template loading",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an include, template, theme, or plugin selector fetches and evaluates a remote resource.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a dynamic include selector and controlled inert HTTPS resource",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a dynamic include selector and controlled inert HTTPS resource."
+        }
+      ],
+      "manipulate": "a dynamic include selector and controlled inert HTTPS resource; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the server fetches and includes/evaluates the controlled resource outside an intended repository",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "a browser can fetch the URL rather than the server",
+        "an approved signed template repository can be intended"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Remote File Inclusion",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/11.2-Testing_for_Remote_File_Inclusion"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-98"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "remote-file-inclusion",
+        "template",
+        "remote-resource"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Remove remote includes; otherwise use an authenticated immutable allowlisted repository, verify signatures, disable code execution, and isolate fetch/process workers.",
+      "safety": "Use one controlled inert text resource only; never serve code, templates with expressions, redirects, or internal-network targets."
+    },
+    {
+      "id": "WAPT-UPLOAD-023",
+      "title": "Encode download filenames safely in Content-Disposition",
+      "category": "file-handling",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether user filenames inject headers, break quoting, or trigger unsafe browser filename interpretation.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a synthetic user filename containing quotes, separators, Unicode, or newline controls",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a synthetic user filename containing quotes, separators, Unicode, or newline controls."
+        }
+      ],
+      "manipulate": "a synthetic user filename containing quotes, separators, Unicode, or newline controls; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the raw response creates another header or unsafe filename outside intended syntax",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "browsers can normalize harmless Unicode names differently",
+        "a server-generated filename can ignore the user value safely"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [
+          "v5.0.0-5.4.1",
+          "v5.0.0-5.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-113"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "content-disposition",
+        "filename",
+        "header-injection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Generate or sanitize filenames, encode filename and filename* per RFC 6266, remove controls/separators, and keep type/disposition fixed.",
+      "safety": "Use a synthetic filename and inert file; do not create misleading executable extensions or overwrite local files."
+    },
+    {
+      "id": "WAPT-UPLOAD-024",
+      "title": "Keep temporary and quarantined files inaccessible",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether partial uploads, scan queues, conversion inputs, or failed files are publicly retrievable or predictable.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert upload intentionally stopped or rejected in a controlled flow",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert upload intentionally stopped or rejected in a controlled flow."
+        }
+      ],
+      "manipulate": "an inert upload intentionally stopped or rejected in a controlled flow; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the staged/quarantined file is retrievable without the final authorization and validation path",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "direct-to-storage multipart parts can be private but visible to the owner",
+        "a status endpoint can expose metadata without file bytes"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-552"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "temporary-file",
+        "quarantine",
+        "information-disclosure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Use private random staging keys, deny direct serving, authorize status, clean on timeout/failure, and publish only after atomic validation.",
+      "safety": "Use an inert disposable upload, abort only the test transfer, and clean all staged parts afterward."
+    },
+    {
+      "id": "WAPT-UPLOAD-025",
+      "title": "Prevent unsafe archive and document preview in privileged tools",
+      "category": "file-handling",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether moderation, support, or administration previews process untrusted files with greater network or filesystem privilege.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select an inert synthetic file reviewed through an owner-approved privileged preview",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: an inert synthetic file reviewed through an owner-approved privileged preview."
+        }
+      ],
+      "manipulate": "an inert synthetic file reviewed through an owner-approved privileged preview; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the preview gains active origin, external fetch, file access, or unsafe processor behavior",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "a sandboxed rasterized preview can be safe",
+        "security scanning services can perform controlled external lookups"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Malicious Files",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/09-Test_Upload_of_Malicious_Files"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "preview",
+        "admin",
+        "processor-isolation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Render previews in isolated least-privilege workers/origins with no internal egress, strict format limits, patched libraries, and safe rasterization.",
+      "safety": "Coordinate with the owner and use inert local markers only; never include exploits, macros, external URLs, or parser bombs."
+    },
+    {
+      "id": "WAPT-UPLOAD-026",
+      "title": "Validate generated files before publishing or emailing them",
+      "category": "file-handling",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether server-generated PDFs, spreadsheets, archives, or attachments inherit unsafe filenames, active content, overbroad data, or public storage.",
+      "prerequisites": [
+        "An owner-approved file flow and documented safety limits",
+        "Small inert fixtures, disposable records, and controlled storage/viewers"
+      ],
+      "steps": [
+        "Create or select a small synthetic report/export generated for a designated account",
+        "Capture the normal upload, processing, storage, or retrieval flow",
+        "Change one filename, type, path, size, object, or parser condition with an inert fixture",
+        "Verify authoritative storage/response behavior and clean every test artifact"
+      ],
+      "examples": [
+        {
+          "note": "Use only a small inert fixture. Target: a small synthetic report/export generated for a designated account."
+        }
+      ],
+      "manipulate": "a small synthetic report/export generated for a designated account; change one file property, identifier, path, parser, or delivery context at a time",
+      "secure_behavior": "The file remains within its documented type, size, storage, authorization, processing, and delivery boundaries.",
+      "vulnerable_behavior": "the generated artifact contains unintended active content/data or is delivered outside authorized scope",
+      "validation": "Confirm the final stored/processed/retrieved artifact and security effect; acceptance, a scanner alert, or an error alone is insufficient.",
+      "false_positives": [
+        "format metadata can be harmless and required",
+        "a signed link can intentionally permit short-lived bearer access"
+      ],
+      "impact": "A confirmed weakness can enable code or script execution, unauthorized file access or overwrite, path escape, parser compromise, data exposure, or resource exhaustion.",
+      "evidence": [
+        "Sanitized upload/download request and fixture digest",
+        "Processing, storage, retrieval, and authorization context",
+        "Response headers and final artifact behavior",
+        "Cleanup confirmation and safety limits used"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Upload of Unexpected File Types",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/08-Test_Upload_of_Unexpected_File_Types"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-08"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-434"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/file-upload"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "generated-file",
+        "export",
+        "delivery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Apply authorization at generation and delivery, encode untrusted content for the file format, use safe libraries, validate output, isolate storage, and expire links.",
+      "safety": "Generate only small synthetic exports to controlled recipients and delete artifacts after review."
+    }
+  ]
+}

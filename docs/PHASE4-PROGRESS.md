@@ -14,10 +14,14 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 06 | Injection | 45 | 55 | Complete |
 | 07 | Cross-site scripting | 25 | 30 | Complete |
 | 08 | Cross-site request forgery | 15 | 18 | Complete |
-| 09 | File handling | 20 | 0 | Not started |
+| 09 | File handling | 20 | 26 | Complete |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **282**.
+Core floor total: **295**. Current production total: **308**.
+
+## File handling coverage
+
+The file-handling catalog adds 26 tests for per-flow contracts, extension/type/signature and filename canonicalization, server execution and same-origin active content, overwrite/collision, filename traversal, ZIP Slip, archive links and expansion limits, quotas and image dimensions, normalization/metadata, SVG and inert polyglot review, malware-scanning boundaries, upload/download authorization, traversal encodings, local/remote inclusion, safe Content-Disposition, quarantine/temp files, privileged previews, and generated artifact delivery. Destructive files, malware, shells, parser exploits, decompression bombs, system-file reads, and internal fetches are explicitly prohibited.
 
 ## Cross-site request forgery coverage
 

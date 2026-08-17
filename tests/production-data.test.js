@@ -272,6 +272,36 @@ test('CSRF state changes use reversible actions and explicit stopping points', (
   }
 });
 
+test('file-handling coverage spans uploads, downloads, archives, traversal, inclusion, and active formats', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'file-handling.json'), 'utf8'));
+  for (const tag of ['file-type', 'code-execution', 'zip-slip', 'symlink', 'decompression-bomb', 'svg', 'polyglot', 'download', 'path-traversal', 'local-file-inclusion', 'remote-file-inclusion']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const noUpload = deriveContext({ app_type: 'hybrid', features: ['search'] });
+  for (const item of items.filter((candidate) => candidate.applies.any_of?.features?.includes('file_upload'))) {
+    assert.equal(evaluateApplicability(item, noUpload).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+});
+
+test('file-handling safety rules prohibit destructive payloads and sensitive-file access', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'file-handling.json'), 'utf8'));
+  for (const id of [
+    'WAPT-UPLOAD-004', 'WAPT-UPLOAD-005', 'WAPT-UPLOAD-007', 'WAPT-UPLOAD-008',
+    'WAPT-UPLOAD-009', 'WAPT-UPLOAD-010', 'WAPT-UPLOAD-012', 'WAPT-UPLOAD-014',
+    'WAPT-UPLOAD-015', 'WAPT-UPLOAD-016', 'WAPT-UPLOAD-019', 'WAPT-UPLOAD-021',
+    'WAPT-UPLOAD-022', 'WAPT-UPLOAD-025'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+  const inclusion = items.filter(({ tags }) => tags.includes('local-file-inclusion') || tags.includes('remote-file-inclusion'));
+  assert.ok(inclusion.every((item) => item.mappings.wstg.length === 0), 'subsection pages must not invent WSTG scenario IDs');
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

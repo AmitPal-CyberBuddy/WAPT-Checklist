@@ -90,7 +90,7 @@
       "file": "file-handling.json",
       "prefix": "WAPT-UPLOAD",
       "floor": 20,
-      "count": 0,
+      "count": 26,
       "summary": "Assess uploads, downloads, paths, archives, and content handling."
     },
     {
