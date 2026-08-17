@@ -215,6 +215,36 @@ test('dangerous injection families carry strict least-impact boundaries', () => 
   }
 });
 
+test('XSS coverage uses context sub-steps and preserves static-site DOM testing', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'xss.json'), 'utf8'));
+  const contextItem = items.find(({ id }) => id === 'WAPT-XSS-001');
+  for (const contextName of ['HTML text', 'quoted or unquoted attributes', 'JavaScript strings', 'URL attributes']) {
+    assert.ok(contextItem.steps.some((step) => step.includes(contextName)), `missing ${contextName} sub-step`);
+  }
+  for (const tag of ['reflected-xss', 'stored-xss', 'dom-xss', 'mutation-xss', 'svg', 'markdown', 'trusted-types']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.filter((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE).length >= 17);
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-XSS-002'), staticContext).state, APPLICABILITY.NA_CONTEXT);
+});
+
+test('XSS proof guidance prohibits sensitive-data collection', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'xss.json'), 'utf8'));
+  for (const id of [
+    'WAPT-XSS-002', 'WAPT-XSS-003', 'WAPT-XSS-008', 'WAPT-XSS-012',
+    'WAPT-XSS-013', 'WAPT-XSS-015', 'WAPT-XSS-019', 'WAPT-XSS-022',
+    'WAPT-XSS-023', 'WAPT-XSS-024', 'WAPT-XSS-026', 'WAPT-XSS-027',
+    'WAPT-XSS-028', 'WAPT-XSS-030'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+  assert.match(items.find(({ id }) => id === 'WAPT-XSS-030').safety, /Never read or transmit cookies, tokens, personal data, or credentials/);
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

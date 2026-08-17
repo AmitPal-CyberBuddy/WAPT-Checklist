@@ -12,12 +12,16 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 04 | Session management | 25 | 28 | Complete |
 | 05 | Authorization | 35 | 43 | Complete |
 | 06 | Injection | 45 | 55 | Complete |
-| 07 | Cross-site scripting | 25 | 0 | Not started |
+| 07 | Cross-site scripting | 25 | 30 | Complete |
 | 08 | Cross-site request forgery | 15 | 0 | Not started |
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **234**.
+Core floor total: **295**. Current production total: **264**.
+
+## Cross-site scripting coverage
+
+The XSS catalog adds 30 tests for reflected context analysis (HTML text, quoted/unquoted attributes, JavaScript strings/templates/JSON, and URL attributes as sub-steps rather than duplicate items), ordinary and privileged stored paths, URL/message/storage/API/WebSocket DOM flows, HTML and dynamic-code sinks, URL schemes, sanitizers and mutation XSS, rich text/SVG/Markdown, framework escape hatches and client templates, active uploads, JSONP/charset differentials, CSP/WAF interpretation, self-XSS and tooling false positives, dangling markup/base injection, script gadgets, Trusted Types, and safe impact evidence. Proofs never collect cookies, tokens, credentials, or personal data.
 
 ## Injection coverage
 

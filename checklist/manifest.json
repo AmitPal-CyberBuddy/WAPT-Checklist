@@ -70,7 +70,7 @@
       "file": "xss.json",
       "prefix": "WAPT-XSS",
       "floor": 25,
-      "count": 0,
+      "count": 30,
       "summary": "Analyze server and DOM execution in the exact browser context."
     },
     {
