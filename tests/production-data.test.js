@@ -86,6 +86,35 @@ test('HTTP coverage includes CORS variants and safety boundaries for active tech
   }
 });
 
+test('authentication coverage includes modern factors and bounded active testing', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'authentication.json'), 'utf8'));
+  assert.ok(items.filter(({ tags }) => tags.includes('account-enumeration')).length >= 4);
+  assert.ok(items.filter(({ tags }) => tags.includes('mfa')).length >= 8);
+  assert.equal(items.filter(({ tags }) => tags.includes('webauthn')).length, 2);
+  assert.ok(items.find(({ id }) => id === 'WAPT-AUTH-038').applies.any_of.auth_mechanism.includes('saml'));
+  for (const id of [
+    'WAPT-AUTH-003', 'WAPT-AUTH-006', 'WAPT-AUTH-008', 'WAPT-AUTH-014',
+    'WAPT-AUTH-015', 'WAPT-AUTH-016', 'WAPT-AUTH-024', 'WAPT-AUTH-026',
+    'WAPT-AUTH-031', 'WAPT-AUTH-032', 'WAPT-AUTH-034', 'WAPT-AUTH-036',
+    'WAPT-AUTH-039', 'WAPT-AUTH-040', 'WAPT-AUTH-043', 'WAPT-AUTH-045'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
+test('static context removes authentication while no-credential black-box scope keeps blocked roadmap items', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'authentication.json'), 'utf8'));
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+  const blockedContext = deriveContext({ mode: 'black_box', creds: 'none', app_type: 'hybrid', has_login: 'yes' });
+  const credentialItems = items.filter((item) => item.applies.requires?.includes('creds:low|high'));
+  assert.ok(credentialItems.length >= 20);
+  assert.ok(credentialItems.every((item) => evaluateApplicability(item, blockedContext).blocked));
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

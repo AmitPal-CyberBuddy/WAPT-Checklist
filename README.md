@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Reconnaissance and HTTP / Web fundamentals are complete with 63 production items against a combined floor of 55. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Reconnaissance, HTTP / Web fundamentals, and Authentication are complete with 108 production items against a combined floor of 95. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -50,6 +50,7 @@ js/data/presets.mjs        Plain context mappings for quick starts
 checklist/manifest.json    Category metadata and honest production counts
 checklist/reconnaissance.json  Phase 4 production reconnaissance methodology
 checklist/http.json          Phase 4 HTTP and browser protocol methodology
+checklist/authentication.json Phase 4 authentication methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -92,7 +93,7 @@ This repository's original software and content are licensed under the [Apache L
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~
-4. Core production content, categories 01–10 — **in progress (01 Reconnaissance and 02 HTTP complete)**
+4. Core production content, categories 01–10 — **in progress (01 Reconnaissance, 02 HTTP, and 03 Authentication complete)**
 5. Search, filters, statuses, notes, import/export, and report generation
 6. Advanced production content, categories 11–24
 7. Attack chains, contextual payload library, and Burp workflows

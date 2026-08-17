@@ -30,7 +30,7 @@
       "file": "authentication.json",
       "prefix": "WAPT-AUTH",
       "floor": 40,
-      "count": 0,
+      "count": 45,
       "summary": "Test identity proof, recovery, MFA, and account lifecycle controls."
     },
     {

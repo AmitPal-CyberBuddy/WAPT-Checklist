@@ -8,7 +8,7 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 |---:|---|---:|---:|---|
 | 01 | Reconnaissance | 30 | 37 | Complete |
 | 02 | HTTP / Web fundamentals | 25 | 26 | Complete |
-| 03 | Authentication | 40 | 0 | Not started |
+| 03 | Authentication | 40 | 45 | Complete |
 | 04 | Session management | 25 | 0 | Not started |
 | 05 | Authorization | 35 | 0 | Not started |
 | 06 | Injection | 45 | 0 | Not started |
@@ -17,7 +17,11 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **63**.
+Core floor total: **295**. Current production total: **108**.
+
+## Authentication coverage
+
+The authentication catalog adds 45 tests across credential transport, default/bootstrap secrets, account enumeration, username and password policy, brute-force/stuffing/lockout behavior, route/parser bypasses, persistent login, password change and reset, MFA enrollment/challenges/codes/recovery/removal/trusted devices/push, alternate channels and SSO fallback, fail-closed behavior, step-up, notifications/logging, WebAuthn passkeys, and recovery assurance. Active guessing and factor changes carry explicit test ceilings and cleanup guidance.
 
 ## HTTP / Web fundamentals coverage
 
