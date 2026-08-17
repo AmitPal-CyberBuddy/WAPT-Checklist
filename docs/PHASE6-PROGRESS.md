@@ -13,7 +13,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 15 | Request smuggling / desync | 12 | 14 | Complete |
 | 16 | Business logic | 30 | 35 | Complete |
 | 17 | Race conditions | 10 | 12 | Complete |
-| 18 | Client-side security | 25 | 0 | Not started |
+| 18 | Client-side security | 25 | 29 | Complete |
 | 19 | WebSocket | 8 | 0 | Not started |
 | 20 | Security headers | 20 | 0 | Not started |
 | 21 | Cloud / storage | 15 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **131**. Overall production catalog: **479**.
+Advanced floor total: **217**. Current Phase 6 production total: **160**. Overall production catalog: **508**.
+
+## Client-side security coverage
+
+The client-side catalog adds 29 browser-traced tests for DOM and dynamic-code sinks, HTML/redirect/CSS/resource manipulation, CORS/clickjacking, postMessage, storage/IndexedDB, service workers and offline cache, workers/BroadcastChannel, prototype pollution and gadgets, DOM clobbering, window.name, reverse tabnabbing, third-party scripts/SRI, XSSI, source maps, client secrets/WASM, client-only authorization, and Web Crypto key handling. Static delivery intentionally retains this category as Active.
 
 ## Race-condition coverage
 

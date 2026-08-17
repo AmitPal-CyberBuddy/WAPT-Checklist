@@ -517,6 +517,30 @@ test('race methodology prohibits floods and requires fresh disposable resources'
   }
 });
 
+test('client-side methodology preserves static-site coverage and spans browser trust boundaries', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'client-side.json'), 'utf8'));
+  for (const tag of ['dom-xss', 'postmessage', 'browser-storage', 'service-worker', 'web-worker', 'broadcastchannel', 'prototype-pollution', 'dom-clobbering', 'window-name', 'reverse-tabnabbing', 'third-party-script', 'subresource-integrity', 'xssi', 'source-map', 'webcrypto']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+});
+
+test('client-side active proofs use controlled profiles and non-sensitive markers', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'client-side.json'), 'utf8'));
+  for (const id of [
+    'WAPT-CLIENT-003', 'WAPT-CLIENT-004', 'WAPT-CLIENT-005', 'WAPT-CLIENT-006',
+    'WAPT-CLIENT-008', 'WAPT-CLIENT-013', 'WAPT-CLIENT-015', 'WAPT-CLIENT-018',
+    'WAPT-CLIENT-019', 'WAPT-CLIENT-022', 'WAPT-CLIENT-027', 'WAPT-CLIENT-029'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+  assert.ok(items.every((item) => item.examples[0].note.includes('inert local marker')));
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

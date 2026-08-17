@@ -1,0 +1,2207 @@
+{
+  "schema_version": "1.0.0",
+  "category": "client-side",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-CLIENT-001",
+      "title": "Trace DOM sources to dangerous rendering sinks",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether URL, message, storage, API, or DOM data reaches HTML or script execution sinks.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a realistic attacker-controlled source produces harmless same-origin execution",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "dangerous APIs can receive only fixed trusted templates",
+        "manual console changes are not an attacker delivery path"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-XSS-004"
+      ],
+      "tags": [
+        "client-side",
+        "dom-xss",
+        "source-sink",
+        "dangerous-sink"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-002",
+      "title": "Remove dynamic JavaScript evaluation of untrusted strings",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether eval, Function, string timers, script text, or dynamic imports consume user-controlled values.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a victim-reachable controlled value executes as JavaScript in the application origin",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "JSON.parse and function references are not dynamic code execution",
+        "a fixed developer-controlled expression can be safe though undesirable"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for JavaScript Execution",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/02-Testing_for_JavaScript_Execution"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-95"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "javascript-execution",
+        "eval",
+        "code-sink"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-003",
+      "title": "Prevent non-script HTML injection with security impact",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether input can create forms, links, overlays, base elements, or content that spoofs UI or captures synthetic data.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "injected markup changes a trusted interaction or routes a synthetic value to a controlled destination",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "cosmetic formatting can be intentional rich content",
+        "encoding can allow text that resembles tags without parsing"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTML Injection",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/03-Testing_for_HTML_Injection"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-03"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "html-injection",
+        "content-spoofing",
+        "form"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only synthetic page markers and controlled links; never collect credentials or real-user data."
+    },
+    {
+      "id": "WAPT-CLIENT-004",
+      "title": "Allowlist destinations in client-side redirects",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether URL parameters, hashes, messages, or storage can navigate users to an untrusted origin.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a victim-reachable controlled value automatically navigates to an unapproved origin",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "external-link interstitials can intentionally allow user-approved navigation",
+        "same-origin relative navigation can be intended"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side URL Redirect",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/04-Testing_for_Client-side_URL_Redirect"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-04"
+        ],
+        "asvs": [
+          "v5.0.0-3.7.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-601"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "client-redirect",
+        "open-redirect",
+        "navigation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only a controlled non-lookalike destination and never collect credentials or tokens."
+    },
+    {
+      "id": "WAPT-CLIENT-005",
+      "title": "Constrain CSS injection and UI redressing",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker input reaches style sheets, style attributes, selectors, URLs, or custom properties with security impact.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "controlled CSS hides/alters a security control, overlays trusted UI, or loads an unauthorized inert resource",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "theme customization can intentionally allow a constrained property set",
+        "modern browsers block many historical CSS script vectors"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for CSS Injection",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/05-Testing_for_CSS_Injection"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "css-injection",
+        "ui-redress",
+        "style"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only harmless visual changes and local controlled assets; do not hide real security warnings from users."
+    },
+    {
+      "id": "WAPT-CLIENT-006",
+      "title": "Prevent client-side resource URL manipulation",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker-controlled values select script, stylesheet, iframe, image, worker, or module resources from untrusted origins.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a victim-reachable value loads active content or a privileged resource from an unapproved controlled origin",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "image URLs can intentionally support arbitrary public sources",
+        "CSP can block the tested source though the unsafe assignment remains defense-in-depth debt"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-829"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "resource-manipulation",
+        "script-source",
+        "url"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only an inert controlled resource; never serve active exploit code or track real users."
+    },
+    {
+      "id": "WAPT-CLIENT-007",
+      "title": "Verify browser CORS enforcement against actual client credential behavior",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether frontend requests expose non-public API data to an untrusted origin under real cookie/token transport.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "controlled cross-origin JavaScript reads non-public synthetic data",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "public non-credentialed APIs can use wildcard origins",
+        "Authorization header tokens are not sent ambiently"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Cross Origin Resource Sharing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/07-Testing_Cross_Origin_Resource_Sharing"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-07"
+        ],
+        "asvs": [
+          "v5.0.0-3.4.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-942"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "cors",
+        "cross-origin",
+        "credentials"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-008",
+      "title": "Prevent clickjacking on sensitive interactive pages",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an untrusted origin can frame a sensitive action and induce a designated user click.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled frame presents an actionable sensitive UI without effective frame restrictions or interaction defense",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "public embeddable widgets can intentionally allow framing",
+        "a framed page can require reauthentication before sensitive commit"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Clickjacking",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/09-Testing_for_Clickjacking"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-1021"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "clickjacking",
+        "frame-ancestors",
+        "ui-redress"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use a reversible action and controlled framing origin; never trick real users or commit sensitive changes."
+    },
+    {
+      "id": "WAPT-CLIENT-009",
+      "title": "Validate postMessage origins, sources, and schemas",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether untrusted windows can send messages that trigger sensitive DOM, navigation, storage, or network behavior.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a message from a controlled untrusted origin causes a sensitive harmless action or unsafe sink",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "handlers can accept public cosmetic messages safely",
+        "origin checks can occur in a called validation helper"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Web Messaging",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/11-Testing_Web_Messaging"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-11"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.5"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-XSS-005"
+      ],
+      "tags": [
+        "client-side",
+        "postmessage",
+        "origin-validation",
+        "message-schema"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-010",
+      "title": "Send postMessage replies only to validated exact origins",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether sensitive reply data is sent with wildcard or attacker-influenced targetOrigin.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled untrusted window receives non-public synthetic reply data",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "public broadcast messages can intentionally use wildcard",
+        "the receiver can validate content independently before use"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Web Messaging",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/11-Testing_Web_Messaging"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-11"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.5"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "postmessage",
+        "targetorigin",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-011",
+      "title": "Keep sensitive data out of persistent browser storage",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether localStorage, sessionStorage, IndexedDB, cookies, or Cache Storage retain credentials, tokens, personal data, or tenant content unnecessarily.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a reusable secret or sensitive synthetic record persists in script-readable or post-logout storage beyond need",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "non-sensitive preferences can persist safely",
+        "encrypted values can still expose keys if decryption occurs in the same untrusted client"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [
+          "v5.0.0-14.3.3"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-922"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "browser-storage",
+        "sensitive-data",
+        "persistence"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-012",
+      "title": "Treat browser storage as untrusted input",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether editable storage controls authorization, price, role, tenant, workflow, or unsafe rendering.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "changing a synthetic stored value alters a trusted server decision or reaches a dangerous sink",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "storage can safely control cosmetic preferences",
+        "integrity-protected state can be verified server-side before use"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-602"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "browser-storage",
+        "client-trust",
+        "integrity"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-013",
+      "title": "Partition IndexedDB and client databases by identity and tenant",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether logout, account switch, or tenant switch exposes prior cached records.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a designated account/tenant receives another test identity's synthetic offline data",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "shared public catalog data can persist across users",
+        "stale UI can display data while server access remains denied"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [
+          "v5.0.0-14.3.3"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "indexeddb",
+        "multi-tenant",
+        "account-switch"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use synthetic data and designated browser profiles; clear all databases after testing."
+    },
+    {
+      "id": "WAPT-CLIENT-014",
+      "title": "Constrain service-worker scope and registration",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a service worker can be registered from an unintended path/origin or control pages beyond its required scope.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "an attacker-influenceable script or overbroad scope controls a protected page in the test origin",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "root-scope service workers can be intentional for PWAs",
+        "Service-Worker-Allowed can deliberately expand a trusted script's scope"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-829"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "service-worker",
+        "scope",
+        "pwa"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-015",
+      "title": "Prevent service-worker caches from exposing stale private data",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether offline caches retain authenticated responses after logout, account change, or revocation.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a clean/offline designated profile retrieves private synthetic content after session termination or identity switch",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "public app-shell assets should remain cached",
+        "a network request can refresh data rather than serve cache"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [
+          "v5.0.0-14.3.3"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-525"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "service-worker",
+        "cache-storage",
+        "logout"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use synthetic records and a designated browser profile; unregister workers and clear caches afterward."
+    },
+    {
+      "id": "WAPT-CLIENT-016",
+      "title": "Validate Web Worker and SharedWorker message boundaries",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether untrusted pages/ports can send malformed messages, access shared state, or trigger unsafe worker sinks.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled untrusted context obtains synthetic shared data or triggers a sensitive worker operation",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "dedicated workers are reachable only from their owning document",
+        "schema errors can safely terminate one message"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Web Messaging",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/11-Testing_Web_Messaging"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "web-worker",
+        "sharedworker",
+        "message-schema"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-017",
+      "title": "Isolate BroadcastChannel communication by application and account context",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether sibling pages on the same origin can observe or inject sensitive channel messages.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a lower-trust same-origin page receives or injects synthetic account/tenant data or actions",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "BroadcastChannel is intentionally same-origin",
+        "all same-origin applications can be within one equal trust boundary"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Web Messaging",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/11-Testing_Web_Messaging"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-11"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-668"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "broadcastchannel",
+        "same-origin",
+        "message"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-018",
+      "title": "Prevent prototype pollution through client merge and path setters",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether query, JSON, message, or storage keys modify Object.prototype or another shared prototype.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "an inert synthetic property appears on unrelated fresh objects through an attacker-reachable source",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "objects created with null prototypes are unaffected",
+        "a key named proto can be stored as ordinary data without prototype mutation"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for JavaScript Execution",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/02-Testing_for_JavaScript_Execution"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-1321"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "prototype-pollution",
+        "merge",
+        "object-path"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use one inert property name/value in a clean browser profile and reload/clear state immediately."
+    },
+    {
+      "id": "WAPT-CLIENT-019",
+      "title": "Trace prototype-pollution properties into security gadgets",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a polluted property controls script/HTML sinks, URLs, authorization-like UI, or configuration with real impact.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "the inert polluted property reaches a dangerous first-party gadget and produces a harmless security effect",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "prototype mutation without a reachable gadget may be lower impact",
+        "a gadget can use an own-property check and ignore inherited data"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-1321"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "prototype-pollution",
+        "gadget",
+        "dom-xss"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only inert local proof and never load scripts, access data, or persist pollution beyond the test profile."
+    },
+    {
+      "id": "WAPT-CLIENT-020",
+      "title": "Prevent DOM clobbering of trusted variables and APIs",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether injected named elements override expected DOM properties, configuration, forms, or navigation targets.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled named element changes a security-relevant first-party code path or destination",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "modern code using lexical variables and strict selectors can be unaffected",
+        "duplicate IDs can cause cosmetic issues without security impact"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTML Injection",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/03-Testing_for_HTML_Injection"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-03"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "dom-clobbering",
+        "named-property",
+        "html-injection"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-021",
+      "title": "Clear and validate window.name across navigation boundaries",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker-controlled prior-origin window.name data is trusted after navigation into the application.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled external page seeds a value that triggers a sensitive sink/action in the target origin",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "browsers preserve window.name by design but apps can ignore it",
+        "the application can reset and validate the value before use"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "window-name",
+        "cross-origin",
+        "client-trust"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-022",
+      "title": "Prevent reverse tabnabbing from external links",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether new tabs opened to untrusted origins retain opener control over the application tab.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled destination can navigate or manipulate the opener in a realistic link flow",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "modern browsers implicitly noopener for many target=_blank links",
+        "same-origin trusted tools can intentionally coordinate opener windows"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side URL Redirect",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/04-Testing_for_Client-side_URL_Redirect"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-1022"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "reverse-tabnabbing",
+        "opener",
+        "external-link"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use a controlled destination and harmless opener navigation; never spoof credentials or target real users."
+    },
+    {
+      "id": "WAPT-CLIENT-023",
+      "title": "Constrain third-party script execution and supply-chain scope",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether remote scripts have unnecessary origin privilege, broad data access, or ungoverned lifecycle.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "an unowned/unnecessary third-party script executes with access to sensitive application context or lacks an accountable inventory",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "dynamic trusted vendors can make SRI impractical",
+        "first-party aliases can appear as external CDN hosts"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-829"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "third-party-script",
+        "supply-chain",
+        "inventory"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-024",
+      "title": "Apply Subresource Integrity to stable cross-origin assets where practical",
+      "category": "client-side",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether stable externally hosted scripts/styles can change without an integrity check and whether fallback behavior is safe.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a stable security-relevant cross-origin asset is accepted after controlled content change under owner test conditions",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "frequently versioned/dynamic vendor scripts can require another trust model",
+        "same-origin assets can be protected through deployment integrity rather than SRI"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-353"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "subresource-integrity",
+        "third-party",
+        "asset"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-025",
+      "title": "Prevent cross-site script inclusion data disclosure",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether authenticated JavaScript/JSON-like resources can be loaded cross-origin and leak user-specific data through script behavior.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a controlled external origin infers or receives non-public synthetic data from a script resource",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "modern JSON objects are not directly executable as classic scripts",
+        "public localization/configuration scripts can be intentionally cross-origin"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Script Inclusion",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/13-Testing_for_Cross_Site_Script_Inclusion"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-13"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.7"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "xssi",
+        "script-inclusion",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-026",
+      "title": "Review source maps without treating readable client code as a vulnerability",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether production maps disclose embedded secrets, private server source, internal paths, or sensitive configuration beyond delivered client logic.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a map contains a valid secret or confidential non-client source with demonstrated impact",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "client JavaScript is already public even when minified",
+        "developer paths and symbol names can be informational"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-540"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "source-map",
+        "source-disclosure",
+        "javascript"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-027",
+      "title": "Remove secrets and privileged assumptions from client bundles",
+      "category": "client-side",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether scripts, configuration, manifests, or WASM embed reusable credentials, private keys, privileged endpoints, or security decisions.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "a client-extractable value grants protected server/provider authority or bypasses a trusted decision",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "public API identifiers and telemetry keys need not be secret",
+        "feature flags can be public UX settings while server policy remains authoritative"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Client-side Resource Manipulation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/06-Testing_for_Client-side_Resource_Manipulation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-798"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "client-secret",
+        "javascript",
+        "wasm"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Never use an exposed value beyond a harmless owner-approved identity/scope check; redact and rotate it immediately if valid."
+    },
+    {
+      "id": "WAPT-CLIENT-028",
+      "title": "Keep client-side authorization strictly presentational",
+      "category": "client-side",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether route guards, hidden components, feature flags, or decoded token claims are the only barrier to protected functions/data.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "bypassing client logic reaches protected server data or a committed privileged action",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "client guards improve UX while server policy still denies",
+        "offline-only local features can have no server authority"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for JavaScript Execution",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/02-Testing_for_JavaScript_Execution"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-602"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-015"
+      ],
+      "tags": [
+        "client-side",
+        "client-authorization",
+        "route-guard",
+        "feature-flag"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+    },
+    {
+      "id": "WAPT-CLIENT-029",
+      "title": "Use Web Crypto without exporting or hard-coding secret keys",
+      "category": "client-side",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether browser cryptography relies on embedded keys, extractable long-term private material, fixed nonces, or client-only trust.",
+      "prerequisites": [
+        "A clean supported browser profile and first-party application assets/traffic",
+        "A realistic attacker-controlled client source or owner-approved static-code review path"
+      ],
+      "steps": [
+        "Identify the client source, trust boundary, processing code, and final DOM/storage/network/worker sink",
+        "Use a unique inert synthetic marker through a realistic application-controlled path",
+        "Trace behavior in raw responses, loaded code, parsed DOM, storage, messages, and network activity",
+        "Reproduce the harmless effect in a clean profile and clear all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use a clean browser and inert local marker; client-side presence alone is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One URL/message/storage/object/property/resource/navigation/client-state value at a time through a realistic attacker-controlled path",
+      "secure_behavior": "Client code treats all external and persisted values as untrusted data, uses safe DOM/URL/message/storage APIs, minimizes origin privilege, and relies on server controls for security decisions.",
+      "vulnerable_behavior": "extractable/hard-coded key material defeats a claimed confidentiality/authenticity boundary with server impact",
+      "validation": "Trace source to security-relevant sink/effect in a clean browser and establish realistic attacker delivery plus server/origin impact; code patterns alone are insufficient.",
+      "false_positives": [
+        "browser encryption can protect local user data from offline storage access",
+        "public verification keys are intentionally exportable"
+      ],
+      "impact": "A confirmed client-side weakness can execute script, spoof trusted UI, leak browser-held data, load untrusted resources, persist across offline caches/workers, or expose protected server functionality through missing backend controls.",
+      "evidence": [
+        "Source-to-sink trace and relevant first-party code excerpt",
+        "Clean-browser reproduction with inert marker",
+        "Origin, account, storage/worker/message, CSP, and delivery context",
+        "Network/server effect where applicable plus test-profile cleanup"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static JavaScript text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Browser Storage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/12-Testing_Browser_Storage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-12"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-321"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side",
+        "webcrypto",
+        "key-management",
+        "cryptography"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "safety": "Use only synthetic plaintext and test keys; never export, retain, or attempt to recover real user key material."
+    }
+  ]
+}

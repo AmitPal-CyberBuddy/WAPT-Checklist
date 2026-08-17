@@ -180,7 +180,7 @@
       "file": "client-side.json",
       "prefix": "WAPT-CLIENT",
       "floor": 25,
-      "count": 0,
+      "count": 29,
       "summary": "Review DOM, messaging, storage, workers, and browser trust boundaries."
     },
     {
