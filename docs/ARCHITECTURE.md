@@ -1,0 +1,148 @@
+# Architecture
+
+> Phase 1 design baseline — 2026-08-17
+
+WAPT Checklist is a static, context-aware assessment workspace for authorized web application penetration tests. It is not a scanner and does not transmit target, engagement, note, or finding data.
+
+## Architectural drivers
+
+1. **Static first:** GitHub Pages serves HTML, CSS, ES modules, Markdown, fonts, and JSON. There is no build requirement, backend, telemetry, service worker, or runtime package dependency.
+2. **Context is a first-class input:** questionnaire answers and conservative URL hints produce a normalized context. Pure engine functions evaluate content; UI code only renders their results.
+3. **Content is data:** stable IDs, a documented schema, and CI validation let methodology evolve independently of presentation.
+4. **Safe by default:** content assumes explicit authorization. Disruptive techniques require a `safety` note. Destructive or denial-of-service payloads are marked `review_only` and never expanded automatically.
+5. **Portable private state:** one versioned localStorage document stores one active engagement. JSON export/import provides user-controlled portability.
+6. **Progressive loading:** the manifest supplies metadata and counts. Category JSON is fetched on demand with same-origin relative URLs.
+7. **Accessible and dependency-free:** semantic HTML, keyboard operation, visible focus, WCAG AA themes, reduced-motion support, and self-hosted fonts.
+
+## Runtime boundaries
+
+```text
+Browser
+ ├─ Pages: index.html, app.html
+ ├─ UI modules (DOM-aware)
+ │   ├─ wizard / dashboard / search / filters
+ │   └─ import, export, reporting, print
+ ├─ Engine modules (pure, DOM-free)
+ │   ├─ context: normalize answers and derive conservative URL hints
+ │   ├─ applicability: Active | Confirm | N/A (context)
+ │   ├─ priorities: deterministic suggested-next scoring
+ │   └─ state: validate, migrate, serialize, and update wapt.state.v1
+ └─ Same-origin data
+     ├─ checklist/manifest.json → checklist/<category>.json
+     ├─ attack-chains/*.json
+     ├─ payloads/**
+     └─ burp-workflows/*.md
+```
+
+The engine must run unchanged under `node --test`. It may not import browser globals. Storage access belongs in a thin UI adapter; `state.js` receives and returns plain values.
+
+## Data flow
+
+1. The wizard collects optional answers. `Unknown` is represented explicitly, never inferred as `no`.
+2. `context.js` normalizes all attributes to the controlled vocabulary in `docs/TAXONOMY.md`. URL hints are low-confidence suggestions and cannot overwrite answers.
+3. `applicability.js` evaluates each item's declarative `applies` expression and returns a state plus machine-readable reasons.
+4. Active and Confirm items enter search, workflow, and priority calculations. Context-N/A items are hidden by default but remain discoverable and overrideable with a required reason.
+5. `priorities.js` scores only Active/Confirm, Not Tested items. Workflow order is the primary ordering signal; severity, met prerequisites, `priority_when`, and chain unlocks are bounded boosts. Item ID breaks ties, keeping output deterministic.
+6. UI updates item status and notes through immutable state helpers, then persists the entire versioned state document under `wapt.state.v1`.
+
+## Applicability semantics
+
+`applies` supports three conjunction groups:
+
+- `any_of`: at least one listed attribute/value branch must match;
+- `requires`: every token must match;
+- `excludes`: any known match makes the item context-N/A.
+
+Within one token, `|` means alternatives, for example `creds:low|high`. Multi-select attributes match when their set intersects the expected values. An answered mismatch makes a required item N/A. An unknown prerequisite makes it **Confirm**, unless a known exclusion already establishes N/A. Absent `applies` means Active.
+
+Precedence is: known exclusion → known failed requirement/any-of → unknown dependency → active. The evaluator returns all reasons, not only the first. User overrides do not mutate the content expression and require a free-text reason.
+
+Authenticated items in black-box context with `creds:none` are a special **blocked roadmap** presentation: they remain visible, are not suggested as executable next actions, and carry `needs_credentials`. This is derived state, not a status value.
+
+## Context model
+
+Every normalized attribute has `{ value, confidence }`, where confidence is `answer`, `url_hint`, or `unknown`. Multi-select values are arrays. `url_hints` records named booleans and evidence separately; it never promotes a hint into a confirmed stack or feature answer.
+
+URL analysis is deliberately narrow:
+
+- accept only HTTP(S) URLs;
+- detect plain HTTP, ports 8443/9443, exact left-most labels `api`, `admin`, `dev`, and `staging`, and an `xn--` hostname label;
+- reject credentials, control characters, non-HTTP schemes, localhost, loopback, link-local, and private-address hosts from hint analysis;
+- preserve the user's target string locally, but never fetch it or send it anywhere.
+
+The deny-list limits misleading or dangerous parsing. A hint is always labeled “suggested by URL — confirm.”
+
+## Content loading and manifest
+
+The production manifest will contain:
+
+```json
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-17",
+  "categories": [
+    { "slug": "authorization", "file": "authorization.json", "prefix": "WAPT-AUTHZ", "floor": 35, "count": 35 }
+  ]
+}
+```
+
+Each category file contains `{ "schema_version", "category", "items" }`. The Phase 1 `checklist/sample.json` is explicitly marked as a sample and is not a production category or included in live counts.
+
+The homepage's catalog total comes from manifest counts. Engagement values (active, tested, findings) are computed from loaded content plus state; they are never hardcoded.
+
+## State contract
+
+Exactly one browser key is used:
+
+```json
+{
+  "schema_version": 1,
+  "engagement": { "name": "", "targetUrl": "", "started_at": null },
+  "answers": {},
+  "statuses": {},
+  "notes": {},
+  "overrides": {},
+  "retests": {},
+  "updated_at": null
+}
+```
+
+Allowed statuses are `not_tested`, `in_progress`, `passed`, `potential_finding`, `confirmed_finding`, and `na`. A retest flag may be true only while the corresponding item is `confirmed_finding`. Re-running scope does not erase status or notes. Import validates shape and schema version before replacing state; export includes no data beyond this document.
+
+## Security controls
+
+Every HTML response is designed for this CSP, also expressed as a page meta policy on GitHub Pages:
+
+```text
+default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'
+```
+
+No inline scripts/styles, third-party resources, dynamic code evaluation, HTML injection, or remote target requests are permitted. User/content strings render with `textContent`. JSON imports are size-limited, parsed as data, and schema-validated. Exported Markdown treats user text as text and prevents raw HTML injection.
+
+All CSS/JS page URLs carry the same release query value (for example `?v=1.0.0`); one release changes every occurrence together.
+
+## Repository responsibilities
+
+- `js/engine/`: pure policy and state logic.
+- `js/ui/`: DOM, storage adapter, events, rendering, and export download.
+- `checklist/`: validated methodology data; one production file per category.
+- `schema/`: human/tool-readable JSON Schema contracts.
+- `tools/validate.js`: zero-dependency structural and semantic lint.
+- `tests/`: Node standard-library units, scenarios, and data contracts.
+- `docs/`: architecture, taxonomy, content rules, and manual QA.
+
+## Testing strategy
+
+- Unit-test context normalization, every URL hint, applicability precedence, deterministic priority scoring, state migrations, retest invariants, and import/export round trips.
+- Scenario-test every derivation rule and all four presets.
+- Validate all content: IDs, category floors, enums, expression vocabulary, references, mappings, links between entities, duplicate titles, and safety requirements.
+- Keep link checking separate from offline domain/format validation so normal CI remains deterministic.
+- Maintain a manual browser matrix for keyboard, focus, both themes, narrow viewport, print, localStorage, import error handling, and GitHub Pages path behavior.
+
+## Delivery decisions
+
+- Serve from repository root so relative URLs work both at `/WAPT-Checklist/` and under `python3 -m http.server`.
+- Use ASVS **5.0.0**, the latest stable release available before the 2026-08-17 content freeze. Store versioned IDs such as `v5.0.0-8.2.2`; do not silently reuse ASVS 4 IDs.
+- Pin WSTG references to `v42` URLs and versioned mapping IDs (`WSTG-v42-ATHZ-04`).
+- Record OWASP Top 10 mappings by edition because 2025 renumbered several categories.
+- Preserve published item IDs forever. Superseded tests remain as redirects/tombstones in manifest metadata rather than being reassigned.
