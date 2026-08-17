@@ -10,7 +10,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 12 | JWT | 15 | 18 | Complete |
 | 13 | OAuth / SSO / SAML | 18 | 22 | Complete |
 | 14 | SSRF | 12 | 15 | Complete |
-| 15 | Request smuggling / desync | 12 | 0 | Not started |
+| 15 | Request smuggling / desync | 12 | 14 | Complete |
 | 16 | Business logic | 30 | 0 | Not started |
 | 17 | Race conditions | 10 | 0 | Not started |
 | 18 | Client-side security | 25 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **70**. Overall production catalog: **418**.
+Advanced floor total: **217**. Current Phase 6 production total: **84**. Overall production catalog: **432**.
+
+## HTTP request smuggling / desync coverage
+
+The desynchronization catalog adds 14 REVIEW-ONLY tests for topology and framing controls, CL.TE, TE.CL, TE.TE, H2.CL, H2.TE, downgrade header injection, isolated queue confirmation, 0.CL/early-response, client-side and pause-based desync, infrastructure false positives, and remediation parity. No ready-to-run payloads are included; every item requires explicit approval, isolation, one canary pair at a time, monitoring, and immediate stop conditions.
 
 ## SSRF coverage
 

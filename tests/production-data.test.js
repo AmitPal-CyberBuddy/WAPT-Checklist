@@ -438,6 +438,30 @@ test('SSRF runtime guidance never endorses sensitive destinations', () => {
   }
 });
 
+test('request smuggling coverage includes required HTTP/1 and HTTP/2 variants without ready payloads', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'request-smuggling.json'), 'utf8'));
+  for (const tag of ['cl-te', 'te-cl', 'te-te', 'h2-cl', 'h2-te', 'client-side-desync', 'pause-based', 'false-positive', 'retest']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.safety.startsWith('REVIEW ONLY.')));
+  assert.ok(items.every((item) => item.examples.every(({ note }) => /No smuggling payload/.test(note))));
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+});
+
+test('desync methodology requires isolation, canaries, monitoring, and stop conditions', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'request-smuggling.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.safety, /isolated/);
+    assert.match(item.safety, /canary/);
+    assert.match(item.safety, /stop/);
+    assert.ok(item.evidence.some((entry) => /shared traffic|shared-user/i.test(entry)), item.id);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
