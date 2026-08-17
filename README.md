@@ -16,8 +16,10 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - One local state document under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
 - Manifest-driven navigation for all 24 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
-- GitHub Pages deployment and zero-dependency CI workflows.
+- Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
 - Phase 1 architecture, taxonomy, schema, validator, and 20 complete methodology samples.
+
+> **Workflow permission note:** this session's GitHub App cannot push `.github/workflows/**`. GitHub rejected those paths, so the exact `ci.yml` and `deploy.yml` files are carried in [`docs/workflows/`](docs/workflows/README.md) for a maintainer to copy after merge.
 
 ## Run locally
 
@@ -79,7 +81,7 @@ This repository's original software and content are licensed under the [Apache L
 ## Roadmap
 
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
-2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow~~
+2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. Pure adaptive engine with derivation and scenario tests
 4. Core production content, categories 01–10
 5. Search, filters, statuses, notes, import/export, and report generation

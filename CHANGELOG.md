@@ -13,7 +13,7 @@ All notable changes to this project are documented here. The format follows [Kee
 - Manifest-driven 24-category navigation and honest live project/engagement statistics.
 - Independent dark/light design tokens, responsive application layout, print baseline, logo, favicon, and self-hosted Sora and IBM Plex Mono fonts.
 - Restrictive page CSP, authorized-use notices, reduced-motion support, and visible focus treatment.
-- Apache-2.0 license, contributor guide, security policy, sitemap, robots policy, and GitHub Pages/CI workflows.
+- Apache-2.0 license, contributor guide, security policy, sitemap, robots policy, and ready-to-apply GitHub Pages/CI workflow templates.
 - Phase 2 preset and static-shell test coverage.
 
 ## [0.1.0] - 2026-08-17
