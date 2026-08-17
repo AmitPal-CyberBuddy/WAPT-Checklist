@@ -11,13 +11,17 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 03 | Authentication | 40 | 45 | Complete |
 | 04 | Session management | 25 | 28 | Complete |
 | 05 | Authorization | 35 | 43 | Complete |
-| 06 | Injection | 45 | 0 | Not started |
+| 06 | Injection | 45 | 55 | Complete |
 | 07 | Cross-site scripting | 25 | 0 | Not started |
 | 08 | Cross-site request forgery | 15 | 0 | Not started |
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **179**.
+Core floor total: **295**. Current production total: **234**.
+
+## Injection coverage
+
+The injection catalog adds 55 context-aware tests covering SQL and ORM query construction, NoSQL operators/auth/aggregation, LDAP filters and DNs, XPath, XML/XXE/DTD/XInclude, shell command and argument boundaries, server-side templates with stack variants, Java/.NET/Node/Python expression evaluation, CRLF response/log/email paths, parameter pollution, CSV formulas/structure, Host and forwarded authority, SMTP/IMAP, regular expressions/ReDoS, and SSI. Runtime probes use paired inert controls, strict delay/request ceilings, synthetic records, and no destructive commands or sensitive-file retrieval.
 
 ## Authorization coverage
 

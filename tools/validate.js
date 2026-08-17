@@ -88,7 +88,7 @@ const MAPPING_RULES = Object.freeze({
 });
 
 const SOURCE_NAMES = new Set([
-  'OWASP WSTG', 'OWASP ASVS', 'OWASP API Security', 'OWASP Top 10',
+  'OWASP', 'OWASP WSTG', 'OWASP ASVS', 'OWASP API Security', 'OWASP Top 10',
   'PortSwigger', 'CWE', 'IETF', 'W3C', 'WHATWG', 'Official vendor'
 ]);
 

@@ -60,7 +60,7 @@
       "file": "injection.json",
       "prefix": "WAPT-INJ",
       "floor": 45,
-      "count": 0,
+      "count": 55,
       "summary": "Test interpreter boundaries across data stores, templates, and commands."
     },
     {

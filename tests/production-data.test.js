@@ -179,6 +179,42 @@ test('authorization mutations use synthetic state and explicit restoration bound
   }
 });
 
+test('injection coverage spans required interpreters and follows database context', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'injection.json'), 'utf8'));
+  for (const tag of ['sqli', 'nosqli', 'ldap-injection', 'xpath-injection', 'xml-injection', 'command-injection', 'ssti', 'crlf-injection', 'http-parameter-pollution', 'csv-injection', 'host-header']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const ssti = items.find(({ id }) => id === 'WAPT-INJ-030');
+  assert.ok(ssti.variants.length >= 3);
+
+  const sqlContext = deriveContext({ app_type: 'hybrid', database: ['sql'] });
+  const noSqlContext = deriveContext({ app_type: 'hybrid', database: ['nosql'] });
+  for (const item of items.filter(({ tags }) => tags.includes('sqli') || tags.includes('orm-injection'))) {
+    assert.equal(evaluateApplicability(item, sqlContext).state, APPLICABILITY.ACTIVE, item.id);
+    assert.equal(evaluateApplicability(item, noSqlContext).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  for (const item of items.filter(({ tags }) => tags.includes('nosqli'))) {
+    assert.equal(evaluateApplicability(item, noSqlContext).state, APPLICABILITY.ACTIVE, item.id);
+  }
+});
+
+test('dangerous injection families carry strict least-impact boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'injection.json'), 'utf8'));
+  for (const id of [
+    'WAPT-INJ-003', 'WAPT-INJ-021', 'WAPT-INJ-022', 'WAPT-INJ-024',
+    'WAPT-INJ-025', 'WAPT-INJ-026', 'WAPT-INJ-027', 'WAPT-INJ-028',
+    'WAPT-INJ-029', 'WAPT-INJ-030', 'WAPT-INJ-033', 'WAPT-INJ-034',
+    'WAPT-INJ-035', 'WAPT-INJ-036', 'WAPT-INJ-037', 'WAPT-INJ-038',
+    'WAPT-INJ-045', 'WAPT-INJ-048', 'WAPT-INJ-049', 'WAPT-INJ-054',
+    'WAPT-INJ-055'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
