@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css?v=0.3.0">
-  <link rel="stylesheet" href="css/print.css?v=0.3.0" media="print">
-  <script type="module" src="js/ui/app.js?v=0.3.0"></script>
+  <link rel="stylesheet" href="css/styles.css?v=0.5.0">
+  <link rel="stylesheet" href="css/print.css?v=0.5.0" media="print">
+  <script type="module" src="js/ui/app.js?v=0.5.0"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -75,28 +75,32 @@
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>The adaptive engine is ready; progress and Suggested next actions will populate as production checklist content is added.</p></div><a class="button button-primary" href="#wizard">Edit scope</a></div>
+        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>Context-aware coverage, suggested next actions, findings, and portable local reports.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Edit scope</a><button class="button button-primary" type="button" data-export-report>Generate report</button></div></div>
         <div class="dashboard-grid">
           <article class="metric-card"><span>Catalog</span><strong data-dashboard-items>0</strong><small>production tests</small></article>
           <article class="metric-card"><span>Tested</span><strong data-dashboard-tested>0</strong><small>recorded locally</small></article>
           <article class="metric-card"><span>Potential</span><strong data-dashboard-potential>0</strong><small>findings to validate</small></article>
           <article class="metric-card"><span>Confirmed</span><strong data-dashboard-confirmed>0</strong><small>findings</small></article>
         </div>
-        <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">◎</span><h2>Adaptive engine verified</h2><p>Scope answers now drive tested Active, Confirm, context-N/A, blocked-roadmap, variant, and priority decisions. Core production content lands next in Phase 4.</p><a href="#wizard">Complete engagement scope</a></div>
+        <div class="dashboard-columns">
+          <section class="panel dashboard-panel" aria-labelledby="suggested-title"><div class="panel-heading"><div><p class="eyebrow">ADAPTIVE WORKFLOW</p><h2 id="suggested-title">Suggested next</h2></div></div><div data-suggested-next class="loading-line">Loading methodology…</div></section>
+          <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">CATEGORY COVERAGE</p><h2 id="progress-title">Progress</h2></div></div><div data-category-progress class="progress-list"></div></section>
+        </div>
+        <section class="panel dashboard-panel findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
       </section>
 
       <section class="view" data-view="checklist" aria-labelledby="checklist-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">All tests</h1><p>Categories are manifest-driven. The 20 Phase 1 items remain review samples and do not inflate production statistics.</p></div></div>
-        <div class="catalog-grid" data-catalog-grid aria-live="polite"></div>
+        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div>
+        <div class="panel filter-panel" data-checklist-filters></div>
+        <div class="result-summary" data-checklist-summary aria-live="polite"></div>
+        <div class="test-list" data-checklist-results aria-live="polite"></div>
       </section>
 
       <section class="view" data-view="search" aria-labelledby="search-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1></div></div>
-        <div class="panel search-placeholder">
-          <label for="shell-search">Search by objective, technology, tool, tag, or test ID</label>
-          <div class="search-field"><span aria-hidden="true">⌕</span><input id="shell-search" type="search" placeholder="Try CORS, JWT, BOLA, WAPT-AUTHZ-014…" disabled><kbd>/</kbd></div>
-          <p>Search indexing arrives with the production content workspace in Phase 5. The shell is intentionally disabled rather than presenting incomplete results.</p>
-        </div>
+        <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1><p>Search titles, objectives, steps, tags, IDs, tools, technologies, and mappings.</p></div></div>
+        <div class="panel filter-panel" data-search-filters></div>
+        <div class="result-summary" data-search-summary aria-live="polite"></div>
+        <div class="test-list" data-search-results aria-live="polite"></div>
       </section>
 
       <section class="view" data-view="chains" aria-labelledby="chains-title" hidden>
@@ -109,7 +113,7 @@
         <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">›_</span><h2>Safety-reviewed payloads arrive in Phase 7</h2><p>Every entry will explain intended context and caveats. Destructive or denial-of-service material remains review-only and collapsed.</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v0.3.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v0.5.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
     </main>
   </div>
 </body>

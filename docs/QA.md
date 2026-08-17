@@ -2,7 +2,7 @@
 
 Automated tests use Node's standard library. This checklist covers browser behavior that cannot be fully verified in the sandbox. Run it against both `python3 -m http.server` and the GitHub Pages deployment before a release.
 
-## Phase 2 smoke test
+## Browser smoke test (Phases 2–5)
 
 ### Pages and policy
 
@@ -32,6 +32,19 @@ Automated tests use Node's standard library. This checklist covers browser behav
 - [ ] Finish scope and verify the dashboard opens and `started_at` is set once.
 - [ ] Rerun and reset scope; verify existing statuses and notes are retained.
 - [ ] Inspect localStorage and confirm the project writes only `wapt.state.v1`.
+
+### Phase 5 workspace
+
+- [ ] Open one category and confirm its JSON is loaded lazily; global dashboard/search may then load all published categories.
+- [ ] Verify homepage Active tests changes with static, API, and unknown saved scope.
+- [ ] Search `CORS`, `JWT`, `BOLA`, a tool, tag, technology, and exact test ID.
+- [ ] Combine every structured filter and reset it; text fields must retain focus while typing.
+- [ ] Confirm Active and Confirm cards appear by default while context-N/A requires its filter.
+- [ ] Override a context-N/A item with a reason and then clear the override.
+- [ ] Exercise every status, multiline notes, reload persistence, Confirmed Finding retest, and retest clearing after status change.
+- [ ] Export checklist Markdown, JSON state, and report Markdown; inspect warnings, findings, and retest matrix.
+- [ ] Import valid exported JSON plus malformed, wrong-version, and oversized fixtures; only valid v1 state should replace local data.
+- [ ] Print dashboard and a filtered checklist; verify light A4 output and intentionally expanded methodology sections.
 
 ### Keyboard and accessibility
 

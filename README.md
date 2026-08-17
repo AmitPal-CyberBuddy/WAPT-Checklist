@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–4 are implemented. Core categories 01–10 contain 348 production items and every category-specific floor passes. The 20 Phase 1 items remain schema review samples and do not count toward production totals. Phase 5 workspace functionality is next.
+> **Project status:** Phases 1–5 are implemented. The local-first workspace applies the adaptive engine to 348 validated core items with search, filters, progress, statuses, notes, findings, portability, reports, retesting, and print. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -17,7 +17,11 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
 - Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components.
-- Strict JSON state portability helpers, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
+- Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
+- Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
+- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
+- Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, and references.
+- Dashboard metrics, live category progress, Suggested next, findings table, Markdown checklist/report generation, retest matrix, and print view.
 - Manifest-driven navigation for all 24 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
@@ -81,6 +85,7 @@ See:
 
 - [Architecture](docs/ARCHITECTURE.md)
 - [Adaptive engine contract](docs/ENGINE.md)
+- [Engagement workspace](docs/PHASE5-WORKSPACE.md)
 - [Taxonomy and stable identifiers](docs/TAXONOMY.md)
 - [Content authoring guide](docs/CONTENT-GUIDE.md)
 - [Manual browser QA](docs/QA.md)
@@ -101,7 +106,7 @@ This repository's original software and content are licensed under the [Apache L
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
-5. Search, filters, statuses, notes, import/export, and report generation
+5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
 6. Advanced production content, categories 11–24
 7. Attack chains, contextual payload library, and Burp workflows
 8. Reference and mapping verification

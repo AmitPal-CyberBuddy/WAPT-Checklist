@@ -1,6 +1,8 @@
-import { initializeTheme } from './theme.js?v=0.3.0';
-import { createWizard } from './wizard.js?v=0.3.0';
-import { STATE_KEY, createState, normalizeState } from '../engine/state.js?v=0.3.0';
+import { initializeTheme } from './theme.js?v=0.5.0';
+import { createWizard } from './wizard.js?v=0.5.0';
+import { STATE_KEY, createState, normalizeState } from '../engine/state.js?v=0.5.0';
+import { createCatalog } from './catalog.js?v=0.5.0';
+import { createWorkspace } from './workspace.js?v=0.5.0';
 
 const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -17,29 +19,14 @@ function saveState(state) {
 let state = loadState();
 let manifest = { categories: [] };
 let wizard;
+const catalog = createCatalog();
+let workspace;
 
 function updateIdentity() {
   document.querySelector('[data-engagement-name]').textContent = state.engagement.name.trim() || 'Unsaved engagement';
   document.querySelector('[data-engagement-target]').textContent = state.engagement.targetUrl.trim() || 'No target URL set';
 }
 
-function statusCounts() {
-  const statuses = Object.values(state.statuses);
-  return {
-    tested: statuses.filter((status) => status && status !== 'not_tested').length,
-    potential: statuses.filter((status) => status === 'potential_finding').length,
-    confirmed: statuses.filter((status) => status === 'confirmed_finding').length
-  };
-}
-
-function renderDashboard() {
-  const counts = statusCounts();
-  const itemCount = manifest.categories.reduce((sum, category) => sum + category.count, 0);
-  document.querySelector('[data-dashboard-items]').textContent = itemCount.toLocaleString();
-  document.querySelector('[data-dashboard-tested]').textContent = counts.tested.toLocaleString();
-  document.querySelector('[data-dashboard-potential]').textContent = counts.potential.toLocaleString();
-  document.querySelector('[data-dashboard-confirmed]').textContent = counts.confirmed.toLocaleString();
-}
 
 function renderManifest() {
   document.querySelector('[data-category-total]').textContent = manifest.categories.length;
@@ -48,20 +35,24 @@ function renderManifest() {
   navigation.replaceChildren(...manifest.categories.map((category) => {
     const link = document.createElement('a');
     link.href = `#checklist/${category.slug}`;
+    link.dataset.categorySlug = category.slug;
     link.innerHTML = `<span>${String(category.order).padStart(2, '0')}</span><strong></strong><em>${category.count}</em>`;
     link.querySelector('strong').textContent = category.name;
     return link;
   }));
-  grid.replaceChildren(...manifest.categories.map((category) => {
-    const card = document.createElement('a');
-    card.className = 'category-card';
-    card.href = `#checklist/${category.slug}`;
-    card.innerHTML = `<span>${category.prefix}</span><h2></h2><p></p><footer><span>${category.count} production</span><span>floor ${category.floor}</span></footer>`;
-    card.querySelector('h2').textContent = category.name;
-    card.querySelector('p').textContent = category.summary;
-    return card;
-  }));
-  renderDashboard();
+  if (grid) {
+    grid.replaceChildren(...manifest.categories.map((category) => {
+      const card = document.createElement('a');
+      card.className = 'category-card';
+      card.href = `#checklist/${category.slug}`;
+      card.innerHTML = `<span>${category.prefix}</span><h2></h2><p></p><footer><span>${category.count} production</span><span>floor ${category.floor}</span></footer>`;
+      card.querySelector('h2').textContent = category.name;
+      card.querySelector('p').textContent = category.summary;
+      return card;
+    }));
+  }
+  workspace?.setManifest(manifest);
+  route();
 }
 
 async function loadManifest() {
@@ -74,7 +65,8 @@ async function loadManifest() {
     renderManifest();
   } catch (error) {
     document.querySelector('[data-category-nav]').textContent = 'Catalog unavailable';
-    document.querySelector('[data-catalog-grid]').textContent = 'The checklist manifest could not be loaded. Serve the repository over HTTP rather than opening this file directly.';
+    const output = document.querySelector('[data-checklist-results]');
+    if (output) output.textContent = 'The checklist manifest could not be loaded. Serve the repository over HTTP rather than opening this file directly.';
     console.error(error);
   }
 }
@@ -85,7 +77,8 @@ function currentView() {
 }
 
 function route() {
-  const view = currentView();
+  const [viewPart, slug = ''] = location.hash.slice(1).split('/');
+  const view = VIEWS.has(viewPart) ? viewPart : 'wizard';
   document.querySelectorAll('[data-view]').forEach((section) => { section.hidden = section.dataset.view !== view; });
   document.querySelectorAll('[data-view-link]').forEach((link) => {
     if (link.dataset.viewLink === view) link.setAttribute('aria-current', 'page');
@@ -94,7 +87,13 @@ function route() {
   document.querySelector('[data-sidebar-close]')?.click();
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
-  if (view === 'search') setTimeout(() => document.querySelector('#shell-search')?.focus(), 0);
+  if (manifest.categories.length && ['dashboard', 'checklist', 'search'].includes(view)) {
+    workspace.show(view, slug).catch((error) => {
+      const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
+      if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;
+      console.error(error);
+    });
+  }
 }
 
 function resetWizard() {
@@ -113,6 +112,23 @@ function resetWizard() {
 function initializeShell() {
   initializeTheme();
   updateIdentity();
+
+  workspace = createWorkspace({
+    catalog,
+    getState: () => state,
+    onStateChange(nextState) {
+      state = nextState;
+      saveState(state);
+      updateIdentity();
+    },
+    replaceState(nextState) {
+      state = nextState;
+      saveState(state);
+      updateIdentity();
+      wizard?.reset(state);
+    }
+  });
+  workspace.bindActions();
 
   wizard = createWizard(document.querySelector('#wizard-root'), state, {
     onChange(nextState) {

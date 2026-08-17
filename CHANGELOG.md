@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
+- Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
+- Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.
+- Client-side Markdown checklist/report generation, findings summary, retest matrix, strict JSON import/export, HTML-safe notes, and A4 print view.
+- Phase 5 tests for exact CORS indexing, combined filters, category fetch caching, safe Markdown, report/retest composition, and workspace shell controls.
 - Completed Phase 4 categories 01–10 with 348 original, context-aware production items; every core category floor passes without counting review samples.
 - Incremental production-floor validation (`--floors-present`), production document envelope checks, manifest/file count tests, and reconnaissance safety/content QA assertions.
 - Phase 3 pure context, applicability, priority, and state engines shared by the browser and Node tests.

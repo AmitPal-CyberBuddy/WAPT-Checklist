@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['0.3.0']));
+  assert.deepEqual(new Set(versions), new Set(['0.5.0']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -52,6 +52,25 @@ test('manifest matches the architecture taxonomy and production files', () => {
     assert.equal(document.category, category.slug);
     assert.equal(document.items.length, category.count, `${category.slug} manifest count differs`);
   }
+});
+
+test('homepage computes context-active statistics from production category content', () => {
+  const html = read('index.html');
+  const home = read('js/ui/home.js');
+  assert.ok(html.includes('data-stat="active"'));
+  assert.match(home, /evaluateApplicability\(item, context\)/);
+  assert.match(home, /manifest\.categories\.filter\(\(\{ count \}\) => count > 0\)/);
+});
+
+test('workspace shell exposes Phase 5 search, reporting, import, export, and notes surfaces', () => {
+  const html = read('app.html');
+  const workspace = read('js/ui/workspace.js');
+  for (const attribute of ['data-search-filters', 'data-checklist-results', 'data-export-report', 'data-export-json', 'data-import-file', 'data-suggested-next', 'data-findings-table']) {
+    assert.ok(html.includes(attribute), `missing ${attribute}`);
+  }
+  assert.match(workspace, /Tester notes \(stored locally\)/);
+  assert.match(workspace, /Override context N\/A/);
+  assert.doesNotMatch(html, /id="shell-search"[^>]*disabled/);
 });
 
 test('wizard source defines all 14 question keys and the one localStorage key', () => {
