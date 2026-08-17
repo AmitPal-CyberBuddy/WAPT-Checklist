@@ -1,52 +1,90 @@
 # WAPT Checklist
 
-A context-aware Web Application Penetration Testing methodology, checklist, and knowledge base for **authorized security assessments only**.
+A professional, context-aware Web Application Penetration Testing methodology, checklist, knowledge base, and local-first tester workspace for **authorized security assessments only**.
 
-> **Project status:** Phase 1 architecture and taxonomy are ready for maintainer review. The application shell and production catalog have not been implemented yet.
+[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-## Phase 1 review package
+> **Project status:** Phase 2 application shell and scoping wizard are implemented. The adaptive engine and production methodology catalog follow in Phases 3–6. Current catalog statistics intentionally remain at zero; the 20 Phase 1 items are review samples and do not count toward production floors.
 
-- [Architecture and security boundaries](docs/ARCHITECTURE.md)
-- [24-category taxonomy, 512-item floor, IDs, and context vocabulary](docs/TAXONOMY.md)
-- [Content authoring and safety contract](docs/CONTENT-GUIDE.md)
-- [Checklist item JSON Schema](schema/item.schema.json)
-- [20 complete sample items](checklist/sample.json)
-- [Zero-dependency semantic validator](tools/validate.js)
-- [Schema/data contract tests](tests/schema.test.js)
+## What is implemented
 
-Validate this phase with Node.js 18 or newer:
+- Responsive dark/light homepage and app-style workspace with independent CyberBuddy-compatible design tokens.
+- Optional engagement name and target URL fields plus all 14 scoping questions.
+- Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
+- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
+- Conservative low-confidence URL suggestions without any target request or transmission.
+- One local state document under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
+- Manifest-driven navigation for all 24 categories and honest live local/project statistics.
+- Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
+- GitHub Pages deployment and zero-dependency CI workflows.
+- Phase 1 architecture, taxonomy, schema, validator, and 20 complete methodology samples.
+
+## Run locally
+
+No package install or build step is required. Use Node.js 18 or newer for verification:
 
 ```bash
-node tools/validate.js checklist/sample.json
 node --test
+node tools/validate.js checklist/sample.json
+python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
-The 20 sample items intentionally do not count toward production category floors. Floor enforcement becomes a release gate when production category files are authored.
+Open `http://localhost:8000/`. Same-origin JSON fetches mean the site should be served over HTTP rather than opened with a `file:` URL.
 
-## Planned product
+## Repository map
 
-The completed project will be a static GitHub Pages application with:
+```text
+index.html                 Homepage and live statistics
+app.html                   Workspace, wizard, and catalog shell
+css/                       Independent design tokens, responsive UI, print
+js/ui/                     Browser rendering, wizard, storage adapter
+js/data/presets.mjs        Plain context mappings for quick starts
+checklist/manifest.json    Category metadata and honest production counts
+checklist/sample.json      20 Phase 1 review items (not production counts)
+schema/item.schema.json    Checklist item contract
+tools/validate.js          Zero-dependency content validator
+tests/                     Node standard-library tests
+docs/                      Architecture, taxonomy, content rules, and QA
+```
 
-- an optional scoping wizard and editable quick-start presets;
-- pure context, applicability, priority, and state engines;
-- adaptive Active / Confirm / N/A decisions and blocked-roadmap guidance;
-- full-text search, filters, per-item notes, status, findings, and retest tracking;
-- local-only state, JSON portability, Markdown exports, and report generation;
-- 24 validated methodology categories, attack chains, contextual payload references, and Burp workflows;
-- no backend, telemetry, CDN, or runtime dependencies.
+The pure context, applicability, priority, and state modules will live in `js/engine/` beginning in Phase 3. UI modules will consume those functions without mixing policy into DOM rendering.
 
 ## Safety and privacy
 
-Use this material only where you have explicit authorization. Prefer reversible test objects and the least-impacting proof. Coordinate techniques that can affect shared infrastructure. Redact credentials, tokens, personal data, and tenant identifiers from evidence.
+Use this project only where you have explicit authorization. Prefer reversible test objects and the least-impacting proof. Coordinate any technique that can affect shared infrastructure. Never retain real credentials or unredacted tokens, personal data, or tenant identifiers as evidence.
 
-The planned application sends no engagement information anywhere. Target URLs, answers, notes, and statuses remain in the browser's local storage unless the tester explicitly exports them.
+Target URLs, answers, notes, and statuses are designed to remain in the browser's local storage unless the tester explicitly exports them. The application does not fetch the target URL. There is no project-operated backend, telemetry, remote font, or CDN request.
+
+## Quality model
+
+The production release requires 24 categories and at least 512 validated items. Floors are release gates, not quotas. Every item must explain its security objective, prerequisites, controlled steps, secure/vulnerable behavior, validation, likely false positives, realistic impact, redacted evidence, safety where needed, and authoritative references.
+
+See:
+
+- [Architecture](docs/ARCHITECTURE.md)
+- [Taxonomy and stable identifiers](docs/TAXONOMY.md)
+- [Content authoring guide](docs/CONTENT-GUIDE.md)
+- [Manual browser QA](docs/QA.md)
+- [Contributing](CONTRIBUTING.md)
+- [Security policy](SECURITY.md)
 
 ## Standards and attribution
 
-The methodology uses original wording and maps to authoritative material including the [OWASP Web Security Testing Guide 4.2](https://owasp.org/www-project-web-security-testing-guide/v42/), [OWASP ASVS 5.0.0](https://github.com/OWASP/ASVS/tree/v5.0.0), OWASP API Security Top 10, OWASP Top 10 (2021 and 2025), CWE, IETF specifications, WHATWG/W3C specifications, and PortSwigger Web Security Academy.
+The methodology uses original wording and maps to authoritative material including the [OWASP Web Security Testing Guide 4.2](https://owasp.org/www-project-web-security-testing-guide/v42/), [OWASP ASVS 5.0.0](https://github.com/OWASP/ASVS/tree/v5.0.0), OWASP API Security Top 10, OWASP Top 10 (2021 and 2025), CWE, IETF specifications, WHATWG/W3C specifications, official vendor documentation, and PortSwigger Web Security Academy.
 
-OWASP WSTG and ASVS are available under Creative Commons Attribution-ShareAlike licenses. Their names, identifiers, and links are used for attribution and traceability; checklist prose is independently authored. This repository's software and original project content are planned for Apache-2.0 licensing in Phase 2, with third-party attribution retained as required.
+OWASP WSTG and ASVS are available under Creative Commons Attribution-ShareAlike licenses. Their names, identifiers, and links are used for attribution and traceability; checklist prose is independently authored. Sora and IBM Plex Mono are distributed under the SIL Open Font License; notices are retained in `assets/fonts/`.
 
-## Contributing
+This repository's original software and content are licensed under the [Apache License 2.0](LICENSE), except where a third-party notice states otherwise.
 
-Contribution guidance, security policy, project license, and the working site shell are Phase 2 deliverables after this architecture review is accepted.
+## Roadmap
+
+1. ~~Architecture, taxonomy, schema, and 20-item sample~~
+2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow~~
+3. Pure adaptive engine with derivation and scenario tests
+4. Core production content, categories 01–10
+5. Search, filters, statuses, notes, import/export, and report generation
+6. Advanced production content, categories 11–24
+7. Attack chains, contextual payload library, and Burp workflows
+8. Reference and mapping verification
+9. Content and safety QA
+10. Public release hardening and deployment review

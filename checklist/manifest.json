@@ -1,0 +1,31 @@
+{
+  "schema_version": "1.0.0-draft",
+  "lastmod": "2026-08-17",
+  "sample_count": 20,
+  "categories": [
+    {"order": 1, "slug": "reconnaissance", "name": "Reconnaissance", "file": "reconnaissance.json", "prefix": "WAPT-RECON", "floor": 30, "count": 0, "summary": "Discover assets, technologies, routes, and exposed intelligence."},
+    {"order": 2, "slug": "http", "name": "HTTP / Web fundamentals", "file": "http.json", "prefix": "WAPT-HTTP", "floor": 25, "count": 0, "summary": "Verify protocol, routing, caching, origin, and browser fundamentals."},
+    {"order": 3, "slug": "authentication", "name": "Authentication", "file": "authentication.json", "prefix": "WAPT-AUTH", "floor": 40, "count": 0, "summary": "Test identity proof, recovery, MFA, and account lifecycle controls."},
+    {"order": 4, "slug": "session-management", "name": "Session management", "file": "session-management.json", "prefix": "WAPT-SESS", "floor": 25, "count": 0, "summary": "Assess token creation, transport, rotation, expiry, and invalidation."},
+    {"order": 5, "slug": "authorization", "name": "Authorization", "file": "authorization.json", "prefix": "WAPT-AUTHZ", "floor": 35, "count": 0, "summary": "Prove object, function, field, role, and tenant access boundaries."},
+    {"order": 6, "slug": "injection", "name": "Injection", "file": "injection.json", "prefix": "WAPT-INJ", "floor": 45, "count": 0, "summary": "Test interpreter boundaries across data stores, templates, and commands."},
+    {"order": 7, "slug": "xss", "name": "Cross-site scripting", "file": "xss.json", "prefix": "WAPT-XSS", "floor": 25, "count": 0, "summary": "Analyze server and DOM execution in the exact browser context."},
+    {"order": 8, "slug": "csrf", "name": "Cross-site request forgery", "file": "csrf.json", "prefix": "WAPT-CSRF", "floor": 15, "count": 0, "summary": "Verify origin-bound intent for ambient-credential actions."},
+    {"order": 9, "slug": "file-handling", "name": "File handling", "file": "file-handling.json", "prefix": "WAPT-UPLOAD", "floor": 20, "count": 0, "summary": "Assess uploads, downloads, paths, archives, and content handling."},
+    {"order": 10, "slug": "api-security", "name": "API security", "file": "api-security.json", "prefix": "WAPT-API", "floor": 35, "count": 0, "summary": "Cover REST inventory, data exposure, object properties, and abuse."},
+    {"order": 11, "slug": "graphql", "name": "GraphQL", "file": "graphql.json", "prefix": "WAPT-GQL", "floor": 12, "count": 0, "summary": "Test schema exposure, query cost, batching, and field authorization."},
+    {"order": 12, "slug": "jwt", "name": "JSON Web Token", "file": "jwt.json", "prefix": "WAPT-JWT", "floor": 15, "count": 0, "summary": "Verify algorithms, keys, claims, replay, and token lifecycle."},
+    {"order": 13, "slug": "oauth-sso-saml", "name": "OAuth / SSO / SAML", "file": "oauth-sso-saml.json", "prefix": "WAPT-OAUTH", "floor": 18, "count": 0, "summary": "Assess federated flow binding, redirects, assertions, and trust."},
+    {"order": 14, "slug": "ssrf", "name": "Server-side request forgery", "file": "ssrf.json", "prefix": "WAPT-SSRF", "floor": 12, "count": 0, "summary": "Constrain server fetchers across URLs, redirects, and networks."},
+    {"order": 15, "slug": "request-smuggling", "name": "HTTP request smuggling / desync", "file": "request-smuggling.json", "prefix": "WAPT-SMUG", "floor": 12, "count": 0, "summary": "Safely identify message-boundary disagreement across HTTP hops."},
+    {"order": 16, "slug": "business-logic", "name": "Business logic", "file": "business-logic.json", "prefix": "WAPT-BL", "floor": 30, "count": 0, "summary": "Challenge workflow, state, pricing, approval, and process invariants."},
+    {"order": 17, "slug": "race-conditions", "name": "Race conditions", "file": "race-conditions.json", "prefix": "WAPT-RACE", "floor": 10, "count": 0, "summary": "Test atomicity and single-use assumptions with bounded concurrency."},
+    {"order": 18, "slug": "client-side", "name": "Client-side security", "file": "client-side.json", "prefix": "WAPT-CLIENT", "floor": 25, "count": 0, "summary": "Review DOM, messaging, storage, workers, and browser trust boundaries."},
+    {"order": 19, "slug": "websocket", "name": "WebSocket", "file": "websocket.json", "prefix": "WAPT-WS", "floor": 8, "count": 0, "summary": "Verify handshake, message, channel, and subscription authorization."},
+    {"order": 20, "slug": "security-headers", "name": "Security headers", "file": "security-headers.json", "prefix": "WAPT-HDR", "floor": 20, "count": 0, "summary": "Judge browser policies by actual exposure rather than missing-header noise."},
+    {"order": 21, "slug": "cloud-storage", "name": "Cloud / storage", "file": "cloud-storage.json", "prefix": "WAPT-CLOUD", "floor": 15, "count": 0, "summary": "Assess object storage, signed URLs, identity, and metadata boundaries."},
+    {"order": 22, "slug": "information-disclosure", "name": "Information disclosure", "file": "information-disclosure.json", "prefix": "WAPT-INFO", "floor": 15, "count": 0, "summary": "Find actionable secrets, internals, debug output, and source artifacts."},
+    {"order": 23, "slug": "rate-limiting", "name": "Rate limiting / abuse", "file": "rate-limiting.json", "prefix": "WAPT-RATE", "floor": 10, "count": 0, "summary": "Evaluate bounded anti-automation controls around sensitive flows."},
+    {"order": 24, "slug": "advanced", "name": "Advanced topics", "file": "advanced.json", "prefix": "WAPT-ADV", "floor": 15, "count": 0, "summary": "Connect cache, parser, serialization, tenant, and composite risks."}
+  ]
+}

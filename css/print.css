@@ -1,0 +1,7 @@
+@page{size:A4;margin:16mm}
+*{box-shadow:none!important;text-shadow:none!important}
+:root{color-scheme:light;--paper:#fff;--paper-2:#fff;--surface:#fff;--surface-2:#fff;--surface-3:#f3f4f6;--ink:#101828;--ink-2:#344054;--muted:#667085;--line:#d0d5dd;--line-strong:#98a2b3;--brand:#087f6c}
+body{background:#fff!important;color:#101828;font-size:10pt}
+.sidebar,.authorization-bar,.workspace-actions,.mobile-menu,.wizard-footer,.button,.workspace-footer{display:none!important}
+.app-layout{display:block}.workspace-header{position:static;height:auto;padding:0 0 8mm;border-bottom:1px solid #98a2b3}.workspace{display:block}.view{display:none!important;max-width:none;padding:10mm 0}.view:not([hidden]){display:block!important}.wizard-shell,.panel,.metric-card,.category-card{break-inside:avoid;border-color:#d0d5dd;background:#fff}.dashboard-grid{grid-template-columns:repeat(4,1fr)}
+a{color:#101828;text-decoration:underline}.eyebrow,.context-kicker{color:#087f6c}
