@@ -356,6 +356,33 @@ test('GraphQL resource probes carry strict query ceilings', () => {
   }
 });
 
+test('JWT methodology follows auth mechanism context and avoids invented WSTG mappings', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'jwt.json'), 'utf8'));
+  for (const tag of ['signature-verification', 'algorithm-confusion', 'weak-secret', 'issuer', 'audience', 'token-type', 'kid', 'jku', 'refresh-token']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.mappings.wstg.length === 0));
+  const jwt = deriveContext({ app_type: 'spa', auth_mechanism: ['jwt'], creds: 'low' });
+  assert.ok(items.every((item) => evaluateApplicability(item, jwt).state === APPLICABILITY.ACTIVE));
+  const cookie = deriveContext({ app_type: 'hybrid', auth_mechanism: ['cookie'], creds: 'low' });
+  assert.ok(items.every((item) => evaluateApplicability(item, cookie).state === APPLICABILITY.NA_CONTEXT));
+  const unknown = deriveContext();
+  assert.ok(items.every((item) => evaluateApplicability(item, unknown).state === APPLICABILITY.CONFIRM));
+});
+
+test('JWT key, forgery, replay, and refresh tests use synthetic safety boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'jwt.json'), 'utf8'));
+  for (const id of [
+    'WAPT-JWT-004', 'WAPT-JWT-005', 'WAPT-JWT-010', 'WAPT-JWT-011',
+    'WAPT-JWT-012', 'WAPT-JWT-013', 'WAPT-JWT-015', 'WAPT-JWT-016'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

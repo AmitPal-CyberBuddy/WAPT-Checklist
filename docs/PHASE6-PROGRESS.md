@@ -7,7 +7,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | # | Category | Floor | Current | Status |
 |---:|---|---:|---:|---|
 | 11 | GraphQL | 12 | 15 | Complete |
-| 12 | JWT | 15 | 0 | Not started |
+| 12 | JWT | 15 | 18 | Complete |
 | 13 | OAuth / SSO / SAML | 18 | 0 | Not started |
 | 14 | SSRF | 12 | 0 | Not started |
 | 15 | Request smuggling / desync | 12 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **15**. Overall production catalog: **363**.
+Advanced floor total: **217**. Current Phase 6 production total: **33**. Overall production catalog: **381**.
+
+## JWT coverage
+
+The JWT catalog adds 18 tests for signature enforcement, server-side algorithm allowlists, none and algorithm confusion, HMAC secret strength, issuer/audience/type/time/identity/privilege claims, kid and remote/embedded key trust, key rotation, bearer replay, refresh-family rotation, token leakage, and browser storage/transport. WSTG mappings remain empty because WSTG 4.2 has no JWT scenario; references are pinned to RFC 8725 and PortSwigger.
 
 ## GraphQL coverage
 

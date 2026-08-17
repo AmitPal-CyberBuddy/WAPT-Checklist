@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–5 are implemented and Phase 6 advanced content is underway. The local-first workspace currently applies the adaptive engine to 363 validated production items; GraphQL is the first completed advanced category. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–5 are implemented and Phase 6 advanced content is underway. The local-first workspace currently applies the adaptive engine to 381 validated production items; GraphQL and JWT are complete. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -63,6 +63,7 @@ checklist/csrf.json          Phase 4 browser request-intent methodology
 checklist/file-handling.json Phase 4 upload, download, path, and parser methodology
 checklist/api-security.json  Phase 4 API Top 10 and protocol methodology
 checklist/graphql.json      Phase 6 GraphQL methodology
+checklist/jwt.json          Phase 6 JSON Web Token methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -108,7 +109,7 @@ This repository's original software and content are licensed under the [Apache L
 3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
-6. Advanced production content, categories 11–24 — **in progress (11 GraphQL complete)**
+6. Advanced production content, categories 11–24 — **in progress (11 GraphQL and 12 JWT complete)**
 7. Attack chains, contextual payload library, and Burp workflows
 8. Reference and mapping verification
 9. Content and safety QA

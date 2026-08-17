@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Began Phase 6 with 15 context-gated GraphQL production items covering schema, authorization, cost, batching, CSRF, subscriptions, and errors.
+- Phase 6 GraphQL and JWT categories now contain 33 production items covering schema/resolver security and complete JOSE token validation/lifecycle methodology.
 - Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
 - Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
 - Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.

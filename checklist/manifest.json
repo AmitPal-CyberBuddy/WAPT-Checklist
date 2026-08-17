@@ -120,7 +120,7 @@
       "file": "jwt.json",
       "prefix": "WAPT-JWT",
       "floor": 15,
-      "count": 0,
+      "count": 18,
       "summary": "Verify algorithms, keys, claims, replay, and token lifecycle."
     },
     {
