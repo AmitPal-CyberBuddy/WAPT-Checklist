@@ -170,7 +170,7 @@
       "file": "race-conditions.json",
       "prefix": "WAPT-RACE",
       "floor": 10,
-      "count": 0,
+      "count": 12,
       "summary": "Test atomicity and single-use assumptions with bounded concurrency."
     },
     {

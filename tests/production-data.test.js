@@ -490,6 +490,33 @@ test('business-logic evidence requires authoritative state and cleanup', () => {
   }
 });
 
+test('race-condition methodology is bounded, contextual, and authoritative-state driven', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'race-conditions.json'), 'utf8'));
+  for (const tag of ['duplicate-redemption', 'payment', 'inventory', 'toctou', 'single-use-token', 'authorization', 'idempotency-key', 'validation-race', 'partial-construction', 'last-byte-sync']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.safety.startsWith('REVIEW ONLY.')));
+  assert.ok(items.every((item) => /authoritative/.test(item.validation)));
+  const noPayments = deriveContext({ app_type: 'hybrid', creds: 'high', features: ['search'] });
+  for (const item of items.filter((candidate) => candidate.applies.any_of?.features?.includes('payments'))) {
+    assert.equal(evaluateApplicability(item, noPayments).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  const staticContext = deriveContext({ app_type: 'static', creds: 'high', features: ['payments'] });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+});
+
+test('race methodology prohibits floods and requires fresh disposable resources', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'race-conditions.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.safety, /only a few requests/);
+    assert.match(item.examples[0].note, /never use a flood/);
+    assert.ok(item.steps.some((step) => /fresh equivalent disposable resource/.test(step)), item.id);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

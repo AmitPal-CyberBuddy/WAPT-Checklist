@@ -12,7 +12,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 14 | SSRF | 12 | 15 | Complete |
 | 15 | Request smuggling / desync | 12 | 14 | Complete |
 | 16 | Business logic | 30 | 35 | Complete |
-| 17 | Race conditions | 10 | 0 | Not started |
+| 17 | Race conditions | 10 | 12 | Complete |
 | 18 | Client-side security | 25 | 0 | Not started |
 | 19 | WebSocket | 8 | 0 | Not started |
 | 20 | Security headers | 20 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **119**. Overall production catalog: **467**.
+Advanced floor total: **217**. Current Phase 6 production total: **131**. Overall production catalog: **479**.
+
+## Race-condition coverage
+
+The race catalog adds 12 REVIEW-ONLY tests for duplicate redemption/payment, inventory allocation, balance/quota TOCTOU, single-use auth/recovery tokens, authorization state changes, workflow transitions, idempotency keys, file validation/publish, partial construction, synchronized delivery, and remediation parity. Every test uses a fresh disposable resource and only a few synchronized requests; response counts never substitute for authoritative ledger/state evidence.
 
 ## Business logic coverage
 
