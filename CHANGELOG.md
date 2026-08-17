@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Phase 4 categories 01–07 with 264 original, context-aware production items, exceeding their combined floor of 225 without counting review samples.
+- Phase 4 categories 01–08 with 282 original, context-aware production items, exceeding their combined floor of 240 without counting review samples.
 - Incremental production-floor validation (`--floors-present`), production document envelope checks, manifest/file count tests, and reconnaissance safety/content QA assertions.
 - Phase 3 pure context, applicability, priority, and state engines shared by the browser and Node tests.
 - Active, Confirm, and context-N/A evaluation with machine-readable reasons, URL-hint uncertainty, visible blocked credential work, and conditional variants.

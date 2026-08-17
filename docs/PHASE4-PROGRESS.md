@@ -13,11 +13,15 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 05 | Authorization | 35 | 43 | Complete |
 | 06 | Injection | 45 | 55 | Complete |
 | 07 | Cross-site scripting | 25 | 30 | Complete |
-| 08 | Cross-site request forgery | 15 | 0 | Not started |
+| 08 | Cross-site request forgery | 15 | 18 | Complete |
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **264**.
+Core floor total: **295**. Current production total: **282**.
+
+## Cross-site request forgery coverage
+
+The CSRF catalog adds 18 browser-validated tests for ambient-credential action inventory, missing/invalid/session/action-bound tokens, token entropy and leakage, Origin/Referer, actual SameSite behavior with cookie and JWT transport variants, simple media types and method overrides, unsafe GET, login/logout CSRF, multipart uploads, GraphQL mutations, CORS-versus-CSRF false-positive analysis, and critical-action step-up/transaction binding. Every conclusion requires a real browser and committed server state, not Repeater success or status codes alone.
 
 ## Cross-site scripting coverage
 

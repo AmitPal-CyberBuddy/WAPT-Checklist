@@ -245,6 +245,33 @@ test('XSS proof guidance prohibits sensitive-data collection', () => {
   assert.match(items.find(({ id }) => id === 'WAPT-XSS-030').safety, /Never read or transmit cookies, tokens, personal data, or credentials/);
 });
 
+test('CSRF coverage models browser credential transport and protocol-specific actions', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability, selectVariants }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'csrf.json'), 'utf8'));
+  assert.ok(items.every((item) => item.applies.requires?.includes('creds:low|high')));
+  for (const tag of ['token', 'origin-validation', 'samesite', 'login-csrf', 'multipart', 'graphql', 'cors']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const jwtContext = deriveContext({ app_type: 'spa', has_login: 'yes', creds: 'low', auth_mechanism: ['jwt'] });
+  const sameSite = items.find(({ id }) => id === 'WAPT-CSRF-009');
+  assert.equal(evaluateApplicability(sameSite, jwtContext).state, APPLICABILITY.ACTIVE);
+  assert.ok(selectVariants(sameSite, jwtContext).some(({ notes }) => notes.includes('Token format')));
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+});
+
+test('CSRF state changes use reversible actions and explicit stopping points', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'csrf.json'), 'utf8'));
+  for (const id of [
+    'WAPT-CSRF-004', 'WAPT-CSRF-005', 'WAPT-CSRF-012', 'WAPT-CSRF-013',
+    'WAPT-CSRF-014', 'WAPT-CSRF-015', 'WAPT-CSRF-016', 'WAPT-CSRF-018'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

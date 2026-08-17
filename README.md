@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Categories 01–07 are complete with 264 production items against a combined floor of 225. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Categories 01–08 are complete with 282 production items against a combined floor of 240. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -55,6 +55,7 @@ checklist/session-management.json Phase 4 session lifecycle methodology
 checklist/authorization.json Phase 4 object, function, field, and tenant authorization
 checklist/injection.json     Phase 4 interpreter-boundary methodology
 checklist/xss.json           Phase 4 browser execution and context methodology
+checklist/csrf.json          Phase 4 browser request-intent methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -97,7 +98,7 @@ This repository's original software and content are licensed under the [Apache L
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~
-4. Core production content, categories 01–10 — **in progress (categories 01–07 complete)**
+4. Core production content, categories 01–10 — **in progress (categories 01–08 complete)**
 5. Search, filters, statuses, notes, import/export, and report generation
 6. Advanced production content, categories 11–24
 7. Attack chains, contextual payload library, and Burp workflows

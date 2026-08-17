@@ -1,0 +1,1782 @@
+{
+  "schema_version": "1.0.0",
+  "category": "csrf",
+  "lastmod": "2026-08-17",
+  "items": [
+    {
+      "id": "WAPT-CSRF-001",
+      "title": "Inventory sensitive actions that use ambient browser credentials",
+      "category": "csrf",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Identify state-changing routes where the browser automatically attaches cookies, HTTP authentication, or client certificates.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for normal workflows for account, object, administrative, payment, and communication changes",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: normal workflows for account, object, administrative, payment, and communication changes."
+        }
+      ],
+      "manipulate": "normal workflows for account, object, administrative, payment, and communication changes, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a test plan maps each action to credential transport, method, media type, anti-forgery signal, and reversible proof",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "an Authorization header token is usually attached by application code rather than ambiently",
+        "read-only requests can use cookies without creating CSRF impact"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "ambient-credential",
+        "inventory"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-002",
+      "title": "Reject sensitive requests that omit the anti-CSRF token",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a cookie-authenticated sensitive action succeeds when its anti-forgery token is absent.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for one reversible state-changing request on a disposable object",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: one reversible state-changing request on a disposable object."
+        }
+      ],
+      "manipulate": "one reversible state-changing request on a disposable object, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the action commits in a real browser-valid cross-site request without the token",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "the server can return 200 while rejecting the state change",
+        "SameSite can prevent cookie attachment for the tested request context"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "token",
+        "missing-token"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-003",
+      "title": "Reject invalid and attacker-supplied anti-CSRF tokens",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether token validation accepts arbitrary, malformed, empty, or attacker-known values.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for the anti-forgery token field/header on a reversible action",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: the anti-forgery token field/header on a reversible action."
+        }
+      ],
+      "manipulate": "the anti-forgery token field/header on a reversible action, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the action commits with a non-issued value while victim ambient credentials are attached",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "a double-submit design can intentionally compare token and cookie values",
+        "a copied valid victim token is not evidence arbitrary tokens are accepted"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "token",
+        "validation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-004",
+      "title": "Bind anti-CSRF tokens to the authenticated session",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a token issued to attacker account A can authorize a request in victim test account B.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for tokens from two designated account sessions",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: tokens from two designated account sessions."
+        }
+      ],
+      "manipulate": "tokens from two designated account sessions, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "B's action commits using A's token",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "tokens can be intentionally global only if combined with another attacker-unavailable signal",
+        "browser/profile mix-ups can send A's cookies with A's token"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "token",
+        "session-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use two designated accounts and a reversible preference; restore state and destroy captured test tokens."
+    },
+    {
+      "id": "WAPT-CSRF-005",
+      "title": "Bind anti-CSRF tokens to the intended action where risk requires",
+      "category": "csrf",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a token from a low-risk form can authorize a materially different high-risk action.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for tokens from two owner-approved actions in one test session",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: tokens from two owner-approved actions in one test session."
+        }
+      ],
+      "manipulate": "tokens from two owner-approved actions in one test session, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a low-risk token authorizes a high-risk action despite documented action binding",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "many synchronizer tokens are intentionally session-wide and still prevent CSRF",
+        "both forms can use the same safe action family by design"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "token",
+        "action-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use two reversible synthetic actions and do not test payment, deletion, or privilege changes without explicit approval."
+    },
+    {
+      "id": "WAPT-CSRF-006",
+      "title": "Ensure anti-CSRF tokens are unpredictable and non-leaking",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tokens are guessable, derived from public values, or exposed through URLs, logs, referrers, or cross-origin content.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a small approved token sample and its transport paths",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a small approved token sample and its transport paths."
+        }
+      ],
+      "manipulate": "a small approved token sample and its transport paths, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "controlled evidence shows practical prediction or an attacker-accessible disclosure channel",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "encoding or visible timestamps do not prove weak entropy",
+        "a token can be public if another required secret signal provides protection"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "token-entropy",
+        "token-leakage"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-007",
+      "title": "Validate Origin on sensitive browser requests",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether sensitive actions reject untrusted Origin values using exact scheme-host-port comparison.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for Origin on a reversible request emitted from a controlled site",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: Origin on a reversible request emitted from a controlled site."
+        }
+      ],
+      "manipulate": "Origin on a reversible request emitted from a controlled site, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the action commits with an untrusted controlled Origin and no other effective anti-forgery signal",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "some legacy clients omit Origin and use a documented fallback",
+        "Origin validation can be defense in depth when strong tokens already exist"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "origin-validation",
+        "browser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-008",
+      "title": "Use Referer only as a privacy-aware fallback to Origin",
+      "category": "csrf",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether absent, truncated, malformed, or attacker-origin Referer values bypass request-origin checks.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for Referer handling on a reversible sensitive request",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: Referer handling on a reversible sensitive request."
+        }
+      ],
+      "manipulate": "Referer handling on a reversible sensitive request, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a cross-site request commits when Referer is untrusted or suppressed and no stronger signal exists",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "Referrer-Policy can legitimately remove path while retaining origin",
+        "privacy software can omit Referer and trigger a deliberate deny/challenge path"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "referer",
+        "origin-validation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-009",
+      "title": "Account for actual SameSite cookie behavior in CSRF decisions",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the exact method, navigation, redirect, browser, and cookie age allow ambient session cookies cross-site.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a session cookie and one harmless state-changing route",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a session cookie and one harmless state-changing route."
+        }
+      ],
+      "manipulate": "a session cookie and one harmless state-changing route, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a browser attaches the cookie cross-site and the action commits without independent intent validation",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "Lax commonly excludes cross-site POST but permits some top-level navigations",
+        "federated flows can intentionally require None with compensating controls"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "samesite",
+        "cookie"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [
+        {
+          "when": {
+            "auth_mechanism": [
+              "cookie",
+              "mixed"
+            ]
+          },
+          "steps": [
+            "Record the actual SameSite attribute and test the exact browser navigation/method rather than assuming its behavior."
+          ],
+          "notes": "Lax, Strict, None, defaulting, redirects, and recently created cookies differ."
+        },
+        {
+          "when": {
+            "auth_mechanism": [
+              "jwt"
+            ]
+          },
+          "steps": [
+            "Determine whether the JWT is in an ambient cookie; a token attached only by application JavaScript usually is not sent by a cross-site form."
+          ],
+          "notes": "Token format does not determine CSRF applicability."
+        }
+      ],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-010",
+      "title": "Reject simple-request media types for JSON-only sensitive operations",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an endpoint accepts form, text/plain, or omitted Content-Type variants that avoid CORS preflight.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a JSON state-changing body converted to one safelisted request shape",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a JSON state-changing body converted to one safelisted request shape."
+        }
+      ],
+      "manipulate": "a JSON state-changing body converted to one safelisted request shape, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the equivalent action commits through a browser-emittable simple request without anti-forgery validation",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "the parser can accept syntax but reject before state change",
+        "CORS can block reading while still allowing the request to be sent"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "content-type",
+        "simple-request"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-011",
+      "title": "Keep method overrides from bypassing CSRF controls",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether query, body, or header method overrides reach a sensitive verb through a request shape with weaker anti-forgery checks.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for an observed method-override mechanism on a reversible action",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: an observed method-override mechanism on a reversible action."
+        }
+      ],
+      "manipulate": "an observed method-override mechanism on a reversible action, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a browser-emittable request commits the effective sensitive method without required intent validation",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "override headers not safelisted by CORS can require preflight",
+        "the framework can normalize overrides before applying the same CSRF policy"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "method-override",
+        "http-methods"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-012",
+      "title": "Prevent state changes through cross-site GET navigation",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether links, images, redirects, or top-level navigation can trigger a mutation using a safe HTTP method.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a route suspected of changing state on GET or HEAD",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a route suspected of changing state on GET or HEAD."
+        }
+      ],
+      "manipulate": "a route suspected of changing state on GET or HEAD, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a controlled cross-site navigation commits a sensitive change with ambient credentials",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "access logs and last-viewed timestamps are ordinary GET side effects",
+        "SameSite Strict can block cookies but does not fix unsafe method semantics"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "safe-method",
+        "state-change"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use only a reversible synthetic preference or object and restore it immediately."
+    },
+    {
+      "id": "WAPT-CSRF-013",
+      "title": "Prevent login CSRF and attacker-account session planting",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an attacker can cause a victim browser to log into an attacker-controlled account or bind an unintended identity.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for the login or federated callback flow using only designated attacker/victim test profiles",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: the login or federated callback flow using only designated attacker/victim test profiles."
+        }
+      ],
+      "manipulate": "the login or federated callback flow using only designated attacker/victim test profiles, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the victim profile becomes authenticated as the attacker-selected identity without a flow-bound signal or informed action",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "seamless SSO can intentionally log the browser into its own correct enterprise identity",
+        "password managers or existing sessions can alter which credentials are submitted"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "login-csrf",
+        "session-planting"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use only two controlled test identities and browsers; never cause real users to enter attacker-controlled sessions."
+    },
+    {
+      "id": "WAPT-CSRF-014",
+      "title": "Prevent forced logout through cross-site requests",
+      "category": "csrf",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether another site can terminate a victim session without an intent signal.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for the logout route in a disposable authenticated browser",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: the logout route in a disposable authenticated browser."
+        }
+      ],
+      "manipulate": "the logout route in a disposable authenticated browser, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a cross-site form, image, or navigation ends the session",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "logout CSRF often has availability rather than account-compromise impact",
+        "global IdP logout can require different user interaction semantics"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "logout",
+        "availability"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use only a disposable session and coordinate federated logout because it may affect multiple relying parties."
+    },
+    {
+      "id": "WAPT-CSRF-015",
+      "title": "Protect multipart and file-processing actions from CSRF",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cross-site multipart forms can upload, import, attach, or replace content using ambient credentials.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a small inert file action on a disposable record",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a small inert file action on a disposable record."
+        }
+      ],
+      "manipulate": "a small inert file action on a disposable record, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a controlled cross-site multipart form commits the file operation",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "custom upload headers can force preflight in the normal client",
+        "the upload can be staged but require a separately protected confirmation"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "multipart",
+        "file-upload"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use a tiny inert file and disposable record; remove the upload and do not trigger heavy processing."
+    },
+    {
+      "id": "WAPT-CSRF-016",
+      "title": "Protect GraphQL mutations from browser request forgery",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether GraphQL mutations accept GET, form, text/plain, or other simple cross-site transports with ambient credentials.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a harmless GraphQL mutation and each enabled transport",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a harmless GraphQL mutation and each enabled transport."
+        }
+      ],
+      "manipulate": "a harmless GraphQL mutation and each enabled transport, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a controlled cross-site request executes the mutation without an anti-forgery signal",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "GraphQL POST with application/json normally triggers preflight but alternate transports may not",
+        "a mutation can require an Authorization header not available cross-site"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "graphql",
+        "mutation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "graphql"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Use a reversible mutation on a synthetic object and restore it immediately.",
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-CSRF-017",
+      "title": "Distinguish CORS response access from CSRF request impact",
+      "category": "csrf",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether testing correctly separates browser permission to read a response from the ability to send a state-changing request.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for a controlled cross-site request and its observable server state",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: a controlled cross-site request and its observable server state."
+        }
+      ],
+      "manipulate": "a controlled cross-site request and its observable server state, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "the action commits even though JavaScript cannot read the response, or sensitive data is readable through a separate CORS flaw",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "missing ACAO does not prevent simple requests",
+        "permissive ACAO alone does not prove a state change or credentials"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "cors",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations."
+    },
+    {
+      "id": "WAPT-CSRF-018",
+      "title": "Require step-up or transaction binding for critical cross-site-reachable actions",
+      "category": "csrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether high-impact actions rely only on a generic CSRF token instead of recent authentication and action-specific confirmation.",
+      "prerequisites": [
+        "A designated test account and controlled cross-site origin",
+        "A reversible sensitive action or owner-approved stopping point"
+      ],
+      "steps": [
+        "Capture the normal request for an owner-defined critical action stopped before irreversible commit",
+        "Identify ambient credentials, token, Origin/Referer, SameSite, method, and media-type defenses",
+        "Build one browser-valid cross-site request changing only the defense under test",
+        "Verify authoritative state, restore it, and repeat a clean control"
+      ],
+      "examples": [
+        {
+          "note": "Use a controlled cross-site page and reversible action only. Target: an owner-defined critical action stopped before irreversible commit."
+        }
+      ],
+      "manipulate": "an owner-defined critical action stopped before irreversible commit, changing one anti-forgery signal or browser request shape at a time",
+      "secure_behavior": "The browser request is rejected unless it carries a validated attacker-unavailable intent signal appropriate to the action.",
+      "vulnerable_behavior": "a stolen/reused generic intent token is sufficient without required step-up or transaction detail binding",
+      "validation": "Reproduce in a real browser with actual cookie/token behavior and confirm committed server state; Repeater success or a 200 response alone is insufficient.",
+      "false_positives": [
+        "ordinary low-risk changes do not require transaction signing",
+        "a valid recent high-assurance session can satisfy documented policy"
+      ],
+      "impact": "Confirmed CSRF can induce victim-authorized state changes with impact determined by the action and victim privilege; inability to read the response does not prevent request impact.",
+      "evidence": [
+        "Normal and cross-site browser request flows",
+        "Cookie/token/origin attributes with secrets fully redacted",
+        "Before/after authoritative state and cleanup confirmation",
+        "Victim identity, browser, method, navigation, and interaction requirements"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cross Site Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/05-Testing_for_Cross_Site_Request_Forgery"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-05"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/csrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csrf",
+        "step-up-authentication",
+        "transaction-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed",
+            "jwt",
+            "oauth",
+            "saml"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Require synchronizer tokens or equivalent origin-bound intent signals for ambient-credential actions, validate Origin, choose purpose-appropriate SameSite, and use step-up for critical operations.",
+      "safety": "Stop before payment, deletion, privilege grant, or irreversible commit; prefer owner design/configuration evidence."
+    }
+  ]
+}
