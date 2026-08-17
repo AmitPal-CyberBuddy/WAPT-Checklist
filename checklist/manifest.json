@@ -40,7 +40,7 @@
       "file": "session-management.json",
       "prefix": "WAPT-SESS",
       "floor": 25,
-      "count": 0,
+      "count": 28,
       "summary": "Assess token creation, transport, rotation, expiry, and invalidation."
     },
     {

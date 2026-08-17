@@ -9,7 +9,7 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 01 | Reconnaissance | 30 | 37 | Complete |
 | 02 | HTTP / Web fundamentals | 25 | 26 | Complete |
 | 03 | Authentication | 40 | 45 | Complete |
-| 04 | Session management | 25 | 0 | Not started |
+| 04 | Session management | 25 | 28 | Complete |
 | 05 | Authorization | 35 | 0 | Not started |
 | 06 | Injection | 45 | 0 | Not started |
 | 07 | Cross-site scripting | 25 | 0 | Not started |
@@ -17,7 +17,11 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **108**.
+Core floor total: **295**. Current production total: **136**.
+
+## Session management coverage
+
+The session catalog adds 28 tests for token inventory and transport, cookie attributes/scope/lifetime, token entropy and contents, fixation and rotation, concurrency, logout and device revocation, idle/absolute/server expiry, URL and browser-storage exposure, disablement and credential-change termination, puzzling and cross-application isolation, account switching, federated logout and user intent, distributed revocation, and rotated-token replay. Token values are explicitly redacted throughout.
 
 ## Authentication coverage
 

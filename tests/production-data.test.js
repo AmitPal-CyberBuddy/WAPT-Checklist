@@ -115,6 +115,40 @@ test('static context removes authentication while no-credential black-box scope 
   assert.ok(credentialItems.every((item) => evaluateApplicability(item, blockedContext).blocked));
 });
 
+test('session coverage handles cookie and token lifecycles contextually', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'session-management.json'), 'utf8'));
+  assert.ok(items.filter(({ tags }) => tags.includes('cookie')).length >= 5);
+  assert.ok(items.filter(({ tags }) => tags.includes('session-revocation')).length >= 3);
+  assert.ok(items.every((item) => item.applies.requires?.includes('creds:low|high')));
+  const jwtContext = deriveContext({ app_type: 'spa', has_login: 'yes', creds: 'low', auth_mechanism: ['jwt'] });
+  for (const item of items.filter((candidate) => candidate.applies.any_of?.auth_mechanism?.includes('cookie'))) {
+    assert.equal(evaluateApplicability(item, jwtContext).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  const cookieContext = deriveContext({ app_type: 'hybrid', has_login: 'yes', creds: 'low', auth_mechanism: ['cookie'] });
+  assert.ok(items.filter((item) => evaluateApplicability(item, cookieContext).state === APPLICABILITY.ACTIVE).length >= 24);
+});
+
+test('session techniques that alter identity state carry cleanup boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'session-management.json'), 'utf8'));
+  for (const id of [
+    'WAPT-SESS-009', 'WAPT-SESS-011', 'WAPT-SESS-020', 'WAPT-SESS-021',
+    'WAPT-SESS-022', 'WAPT-SESS-023', 'WAPT-SESS-024', 'WAPT-SESS-026',
+    'WAPT-SESS-027', 'WAPT-SESS-028'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
+test('sample mappings do not claim a non-existent WSTG 4.2 JWT scenario', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'sample.json'), 'utf8'));
+  const jwt = items.find(({ id }) => id === 'WAPT-JWT-001');
+  assert.deepEqual(jwt.mappings.wstg, []);
+  assert.ok(jwt.references.every(({ url }) => !url.includes('Testing_JSON_Web_Tokens')));
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
