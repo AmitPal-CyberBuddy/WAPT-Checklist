@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Phase 6 GraphQL, JWT, and OAuth / SSO / SAML categories now contain 55 production items covering schema/resolver security, JOSE validation/lifecycle, OAuth BCP, and SAML trust.
+- Phase 6 categories 11–14 now contain 70 production items covering GraphQL, JWT, federation, and safe-by-default SSRF methodology.
 - Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
 - Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
 - Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.

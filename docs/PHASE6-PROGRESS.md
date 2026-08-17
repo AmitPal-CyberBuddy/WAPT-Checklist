@@ -9,7 +9,7 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 11 | GraphQL | 12 | 15 | Complete |
 | 12 | JWT | 15 | 18 | Complete |
 | 13 | OAuth / SSO / SAML | 18 | 22 | Complete |
-| 14 | SSRF | 12 | 0 | Not started |
+| 14 | SSRF | 12 | 15 | Complete |
 | 15 | Request smuggling / desync | 12 | 0 | Not started |
 | 16 | Business logic | 30 | 0 | Not started |
 | 17 | Race conditions | 10 | 0 | Not started |
@@ -21,7 +21,11 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **55**. Overall production catalog: **403**.
+Advanced floor total: **217**. Current Phase 6 production total: **70**. Overall production catalog: **418**.
+
+## SSRF coverage
+
+The SSRF catalog adds 15 safe-by-default tests for direct and blind fetches, scheme/host/IP/port/parser validation, redirects and connection-time DNS, cloud metadata controls with AWS/GCP/Azure variants, response handling, webhooks, document/media renderers, stored second-order URLs, and egress architecture. Every item prohibits private, loopback, link-local, metadata, internal, or third-party runtime targets.
 
 ## OAuth / SSO / SAML coverage
 

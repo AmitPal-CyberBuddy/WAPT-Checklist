@@ -413,6 +413,31 @@ test('federation redirect, token, assertion, and role tests use controlled ident
   }
 });
 
+test('SSRF methodology covers parser, redirect, metadata, renderer, and egress boundaries', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability, selectVariants }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'ssrf.json'), 'utf8'));
+  for (const tag of ['blind-ssrf', 'scheme', 'host-allowlist', 'ip-address', 'redirect', 'dns-rebinding', 'cloud-metadata', 'parser-differential', 'document-renderer', 'second-order', 'egress']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.safety?.length > 80));
+  const staticContext = deriveContext({ app_type: 'static' });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+  const aws = deriveContext({ app_type: 'hybrid', cloud: 'aws' });
+  const metadata = items.find(({ id }) => id === 'WAPT-SSRF-008');
+  assert.ok(selectVariants(metadata, aws).some(({ notes }) => notes.includes('169.254.169.254')));
+  assert.equal(evaluateApplicability(metadata, aws).state, APPLICABILITY.ACTIVE);
+});
+
+test('SSRF runtime guidance never endorses sensitive destinations', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'ssrf.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.safety, /never|Never|Do not/);
+    assert.ok(item.evidence.some((entry) => /callback|egress|destination/i.test(entry)), item.id);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

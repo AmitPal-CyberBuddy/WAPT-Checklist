@@ -140,7 +140,7 @@
       "file": "ssrf.json",
       "prefix": "WAPT-SSRF",
       "floor": 12,
-      "count": 0,
+      "count": 15,
       "summary": "Constrain server fetchers across URLs, redirects, and networks."
     },
     {
