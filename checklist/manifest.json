@@ -190,7 +190,7 @@
       "file": "websocket.json",
       "prefix": "WAPT-WS",
       "floor": 8,
-      "count": 0,
+      "count": 10,
       "summary": "Verify handshake, message, channel, and subscription authorization."
     },
     {

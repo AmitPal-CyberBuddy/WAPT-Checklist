@@ -14,14 +14,18 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 16 | Business logic | 30 | 35 | Complete |
 | 17 | Race conditions | 10 | 12 | Complete |
 | 18 | Client-side security | 25 | 29 | Complete |
-| 19 | WebSocket | 8 | 0 | Not started |
+| 19 | WebSocket | 8 | 10 | Complete |
 | 20 | Security headers | 20 | 0 | Not started |
 | 21 | Cloud / storage | 15 | 0 | Not started |
 | 22 | Information disclosure | 15 | 0 | Not started |
 | 23 | Rate limiting / abuse | 10 | 0 | Not started |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **160**. Overall production catalog: **508**.
+Advanced floor total: **217**. Current Phase 6 production total: **170**. Overall production catalog: **518**.
+
+## WebSocket coverage
+
+The WebSocket catalog adds 10 protocol-gated tests for WSS, Origin, explicit socket authentication, token leakage, per-message and subscription authorization, schema/parser boundaries, bounded message/rate/fan-out/subscription resources, replay/idempotency, and revocation/reconnect after session or permission changes. HTTP 101 is never treated as proof of application authentication or authorization.
 
 ## Client-side security coverage
 

@@ -541,6 +541,30 @@ test('client-side active proofs use controlled profiles and non-sensitive marker
   assert.ok(items.every((item) => item.examples[0].note.includes('inert local marker')));
 });
 
+test('WebSocket methodology follows protocol context and separates handshake from application authority', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'websocket.json'), 'utf8'));
+  for (const tag of ['wss', 'origin-validation', 'authentication', 'token-leakage', 'message-authorization', 'subscription', 'message-schema', 'resource-consumption', 'replay', 'revocation']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const websocket = deriveContext({ api_style: ['websocket'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, websocket).state === APPLICABILITY.ACTIVE));
+  const rest = deriveContext({ api_style: ['rest'], creds: 'high' });
+  assert.ok(items.every((item) => evaluateApplicability(item, rest).state === APPLICABILITY.NA_CONTEXT));
+  const unknown = deriveContext();
+  assert.ok(items.every((item) => evaluateApplicability(item, unknown).state === APPLICABILITY.CONFIRM));
+  assert.ok(items.every((item) => /HTTP 101/.test(item.validation)));
+});
+
+test('WebSocket resource, replay, and revocation probes are bounded', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'websocket.json'), 'utf8'));
+  for (const id of ['WAPT-WS-008', 'WAPT-WS-009', 'WAPT-WS-010']) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
