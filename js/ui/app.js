@@ -1,48 +1,16 @@
-import { initializeTheme } from './theme.js?v=0.2.0';
-import { createWizard, QUESTIONS } from './wizard.js?v=0.2.0';
+import { initializeTheme } from './theme.js?v=0.3.0';
+import { createWizard } from './wizard.js?v=0.3.0';
+import { STATE_KEY, createState, normalizeState } from '../engine/state.js?v=0.3.0';
 
-const STORAGE_KEY = 'wapt.state.v1';
 const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
-function initialAnswers() {
-  return Object.fromEntries(QUESTIONS.map((question) => [question.key, question.multi ? ['unknown'] : 'unknown']));
-}
-
-function defaultState() {
-  return {
-    schema_version: 1,
-    engagement: { name: '', targetUrl: '', started_at: null },
-    answers: initialAnswers(),
-    statuses: {},
-    notes: {},
-    overrides: {},
-    retests: {},
-    updated_at: null
-  };
-}
-
-function normalizeState(candidate) {
-  const base = defaultState();
-  if (!candidate || typeof candidate !== 'object' || candidate.schema_version !== 1) return base;
-  return {
-    ...base,
-    engagement: { ...base.engagement, ...(candidate.engagement && typeof candidate.engagement === 'object' ? candidate.engagement : {}) },
-    answers: { ...base.answers, ...(candidate.answers && typeof candidate.answers === 'object' ? candidate.answers : {}) },
-    statuses: candidate.statuses && typeof candidate.statuses === 'object' ? candidate.statuses : {},
-    notes: candidate.notes && typeof candidate.notes === 'object' ? candidate.notes : {},
-    overrides: candidate.overrides && typeof candidate.overrides === 'object' ? candidate.overrides : {},
-    retests: candidate.retests && typeof candidate.retests === 'object' ? candidate.retests : {},
-    updated_at: typeof candidate.updated_at === 'string' ? candidate.updated_at : null
-  };
-}
-
 function loadState() {
-  try { return normalizeState(JSON.parse(localStorage.getItem(STORAGE_KEY))); }
-  catch { return defaultState(); }
+  try { return normalizeState(JSON.parse(localStorage.getItem(STATE_KEY))); }
+  catch { return createState(); }
 }
 
 function saveState(state) {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(state)); }
   catch (error) { console.warn('WAPT state could not be persisted locally.', error); }
 }
 
@@ -130,7 +98,7 @@ function route() {
 }
 
 function resetWizard() {
-  const reset = defaultState();
+  const reset = createState();
   state = {
     ...state,
     engagement: reset.engagement,

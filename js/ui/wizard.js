@@ -1,4 +1,5 @@
-import { PRESET_LIST } from '../data/presets.mjs?v=0.2.0';
+import { PRESET_LIST } from '../data/presets.mjs?v=0.3.0';
+import { deriveUrlHints } from '../engine/context.js?v=0.3.0';
 
 const UNKNOWN = 'unknown';
 
@@ -26,22 +27,8 @@ const HINT_LABELS = Object.freeze({
 });
 
 function safeUrlHints(raw) {
-  if (!raw || /[\u0000-\u001f\u007f]/.test(raw)) return [];
-  let parsed;
-  try { parsed = new URL(raw); } catch { return []; }
-  if (!['http:', 'https:'].includes(parsed.protocol) || parsed.username || parsed.password) return [];
-  const host = parsed.hostname.toLowerCase().replace(/\.$/, '');
-  if (!host || host === 'localhost' || host.endsWith('.localhost') || host === '::1') return [];
-  if (/^(?:127\.|10\.|169\.254\.|192\.168\.|172\.(?:1[6-9]|2\d|3[01])\.)/.test(host)) return [];
-  const first = host.split('.')[0];
-  const hints = [];
-  if (parsed.protocol === 'http:') hints.push('plain_http');
-  if (['8443', '9443'].includes(parsed.port)) hints.push('unusual_tls_port');
-  if (first === 'api') hints.push('api_subdomain');
-  if (first === 'admin') hints.push('admin_subdomain');
-  if (first === 'dev' || first === 'staging') hints.push('nonproduction_subdomain');
-  if (host.split('.').some((label) => label.startsWith('xn--'))) hints.push('punycode_hostname');
-  return hints;
+  const derived = deriveUrlHints(raw);
+  return Object.entries(derived.hints).filter(([, enabled]) => enabled).map(([key]) => key);
 }
 
 function escapeHtml(value) {

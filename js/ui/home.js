@@ -1,4 +1,4 @@
-import { initializeTheme } from './theme.js?v=0.2.0';
+import { initializeTheme } from './theme.js?v=0.3.0';
 
 const STORAGE_KEY = 'wapt.state.v1';
 

@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phase 2 application shell and scoping wizard are implemented. The adaptive engine and production methodology catalog follow in Phases 3–6. Current catalog statistics intentionally remain at zero; the 20 Phase 1 items are review samples and do not count toward production floors.
+> **Project status:** Phases 1–3 are implemented: architecture, static application shell, scoping wizard, and the pure adaptive engine. Production methodology authoring begins in Phase 4. Current catalog statistics intentionally remain at zero; the 20 Phase 1 items are review samples and do not count toward production floors.
 
 ## What is implemented
 
@@ -13,7 +13,11 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
 - Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
 - Conservative low-confidence URL suggestions without any target request or transmission.
-- One local state document under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
+- One validated local state document under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
+- Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
+- Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
+- Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components.
+- Strict JSON state portability helpers, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
 - Manifest-driven navigation for all 24 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
@@ -40,6 +44,7 @@ index.html                 Homepage and live statistics
 app.html                   Workspace, wizard, and catalog shell
 css/                       Independent design tokens, responsive UI, print
 js/ui/                     Browser rendering, wizard, storage adapter
+js/engine/                 Pure context, applicability, priority, state policy
 js/data/presets.mjs        Plain context mappings for quick starts
 checklist/manifest.json    Category metadata and honest production counts
 checklist/sample.json      20 Phase 1 review items (not production counts)
@@ -49,7 +54,7 @@ tests/                     Node standard-library tests
 docs/                      Architecture, taxonomy, content rules, and QA
 ```
 
-The pure context, applicability, priority, and state modules will live in `js/engine/` beginning in Phase 3. UI modules will consume those functions without mixing policy into DOM rendering.
+The pure context, applicability, priority, and state modules live in `js/engine/`; see the [adaptive engine contract](docs/ENGINE.md). UI modules consume these functions without mixing policy into DOM rendering.
 
 ## Safety and privacy
 
@@ -64,6 +69,7 @@ The production release requires 24 categories and at least 512 validated items. 
 See:
 
 - [Architecture](docs/ARCHITECTURE.md)
+- [Adaptive engine contract](docs/ENGINE.md)
 - [Taxonomy and stable identifiers](docs/TAXONOMY.md)
 - [Content authoring guide](docs/CONTENT-GUIDE.md)
 - [Manual browser QA](docs/QA.md)
@@ -82,7 +88,7 @@ This repository's original software and content are licensed under the [Apache L
 
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
-3. Pure adaptive engine with derivation and scenario tests
+3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. Core production content, categories 01–10
 5. Search, filters, statuses, notes, import/export, and report generation
 6. Advanced production content, categories 11–24

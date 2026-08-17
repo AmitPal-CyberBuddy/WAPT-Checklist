@@ -1,6 +1,6 @@
 # Architecture
 
-> Phase 1 design baseline — 2026-08-17
+> Phase 1 design baseline; Phase 3 engine implemented — 2026-08-17
 
 WAPT Checklist is a static, context-aware assessment workspace for authorized web application penetration tests. It is not a scanner and does not transmit target, engagement, note, or finding data.
 
@@ -34,7 +34,7 @@ Browser
      └─ burp-workflows/*.md
 ```
 
-The engine must run unchanged under `node --test`. It may not import browser globals. Storage access belongs in a thin UI adapter; `state.js` receives and returns plain values.
+The engine runs unchanged under `node --test`. It does not import browser globals. Storage access belongs in the thin `js/ui/app.js` adapter; `state.js` receives and returns plain values. A directory-scoped `js/engine/package.json` marks these `.js` files as ES modules without changing the repository's CommonJS validator and test harness.
 
 ## Data flow
 

@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css?v=0.2.0">
-  <link rel="stylesheet" href="css/print.css?v=0.2.0" media="print">
-  <script type="module" src="js/ui/app.js?v=0.2.0"></script>
+  <link rel="stylesheet" href="css/styles.css?v=0.3.0">
+  <link rel="stylesheet" href="css/print.css?v=0.3.0" media="print">
+  <script type="module" src="js/ui/app.js?v=0.3.0"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -75,14 +75,14 @@
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>Assessment progress and suggested next actions will appear here as production checklist content is added.</p></div><a class="button button-primary" href="#wizard">Edit scope</a></div>
+        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>The adaptive engine is ready; progress and Suggested next actions will populate as production checklist content is added.</p></div><a class="button button-primary" href="#wizard">Edit scope</a></div>
         <div class="dashboard-grid">
           <article class="metric-card"><span>Catalog</span><strong data-dashboard-items>0</strong><small>production tests</small></article>
           <article class="metric-card"><span>Tested</span><strong data-dashboard-tested>0</strong><small>recorded locally</small></article>
           <article class="metric-card"><span>Potential</span><strong data-dashboard-potential>0</strong><small>findings to validate</small></article>
           <article class="metric-card"><span>Confirmed</span><strong data-dashboard-confirmed>0</strong><small>findings</small></article>
         </div>
-        <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">◎</span><h2>Methodology catalog in progress</h2><p>Phase 2 establishes the workspace and scoping flow. Core category content lands in Phase 4 after the adaptive engine is scenario-tested.</p><a href="#wizard">Complete engagement scope</a></div>
+        <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">◎</span><h2>Adaptive engine verified</h2><p>Scope answers now drive tested Active, Confirm, context-N/A, blocked-roadmap, variant, and priority decisions. Core production content lands next in Phase 4.</p><a href="#wizard">Complete engagement scope</a></div>
       </section>
 
       <section class="view" data-view="checklist" aria-labelledby="checklist-title" hidden>
@@ -109,7 +109,7 @@
         <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">›_</span><h2>Safety-reviewed payloads arrive in Phase 7</h2><p>Every entry will explain intended context and caveats. Destructive or denial-of-service material remains review-only and collapsed.</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v0.2.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v0.3.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
     </main>
   </div>
 </body>

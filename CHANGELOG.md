@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Phase 3 pure context, applicability, priority, and state engines shared by the browser and Node tests.
+- Active, Confirm, and context-N/A evaluation with machine-readable reasons, URL-hint uncertainty, visible blocked credential work, and conditional variants.
+- Deterministic Suggested next scoring with bounded workflow, severity, prerequisite, context, and attack-chain components.
+- Strict local-state normalization, immutable item updates, reasoned overrides, JSON import/export, and Confirmed Finding retest rules.
+- Unit and scenario coverage for every derivation rule, all four presets, URL-hint hardening, state round trips, and priority behavior.
 - Phase 2 static homepage and application workspace shell.
 - Four editable quick-start scoping presets.
 - Optional target and engagement fields plus all 14 context questions.
