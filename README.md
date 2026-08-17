@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–3 are implemented: architecture, static application shell, scoping wizard, and the pure adaptive engine. Production methodology authoring begins in Phase 4. Current catalog statistics intentionally remain at zero; the 20 Phase 1 items are review samples and do not count toward production floors.
+> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Reconnaissance is the first completed production category with 37 reviewed items against a floor of 30. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -32,6 +32,7 @@ No package install or build step is required. Use Node.js 18 or newer for verifi
 ```bash
 node --test
 node tools/validate.js checklist/sample.json
+node tools/validate.js --floors-present
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
@@ -47,6 +48,7 @@ js/ui/                     Browser rendering, wizard, storage adapter
 js/engine/                 Pure context, applicability, priority, state policy
 js/data/presets.mjs        Plain context mappings for quick starts
 checklist/manifest.json    Category metadata and honest production counts
+checklist/reconnaissance.json  Phase 4 production reconnaissance methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -89,7 +91,7 @@ This repository's original software and content are licensed under the [Apache L
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~
-4. Core production content, categories 01–10
+4. Core production content, categories 01–10 — **in progress (01 Reconnaissance complete)**
 5. Search, filters, statuses, notes, import/export, and report generation
 6. Advanced production content, categories 11–24
 7. Attack chains, contextual payload library, and Burp workflows

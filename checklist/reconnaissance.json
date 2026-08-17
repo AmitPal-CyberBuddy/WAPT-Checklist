@@ -1,0 +1,2766 @@
+{
+  "schema_version": "1.0.0",
+  "category": "reconnaissance",
+  "lastmod": "2026-08-17",
+  "items": [
+    {
+      "id": "WAPT-RECON-001",
+      "title": "Inventory publicly indexed application assets and documents",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Build a bounded inventory of in-scope hosts, routes, file types, and public documents already exposed through search indexes.",
+      "prerequisites": [
+        "Written scope containing approved domains and brands",
+        "A search service used within its terms and engagement constraints"
+      ],
+      "steps": [
+        "Query exact in-scope domains before using brand terms",
+        "Group results by hostname, route, and document type",
+        "Record cached snippets without opening out-of-scope hosts",
+        "Ask the owner to classify uncertain assets before active testing"
+      ],
+      "examples": [
+        {
+          "note": "Example passive query: site:example.com; treat every result as an unconfirmed lead until ownership is established."
+        }
+      ],
+      "manipulate": "Search operators limited to approved domains, file types, and owner-approved brand names",
+      "secure_behavior": "Search results expose only intentionally public content and current in-scope entry points.",
+      "vulnerable_behavior": "Results reveal a sensitive document, secret-bearing snippet, obsolete application, or privileged route with a demonstrable security consequence.",
+      "validation": "Open only confirmed in-scope results, verify the current origin response, and distinguish stale index snippets from live exposure.",
+      "false_positives": [
+        "Search indexes can retain stale snippets after content removal",
+        "Brand terms can identify unrelated third-party or similarly named organizations"
+      ],
+      "impact": "Public indexing can reveal attack-surface leads; report risk only when a live sensitive exposure or unsafe asset is confirmed.",
+      "evidence": [
+        "Search query and timestamp",
+        "Result URL and redacted snippet",
+        "Owner scope confirmation",
+        "Current response when safely verified"
+      ],
+      "tools": [
+        "Search engine",
+        "Asset inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Conduct Search Engine Discovery Reconnaissance for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/01-Conduct_Search_Engine_Discovery_Reconnaissance_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "passive-recon",
+        "search-index",
+        "asset-inventory"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive public content at its source, require authorization where appropriate, return correct cache directives, and request de-indexing only after the exposure is fixed."
+    },
+    {
+      "id": "WAPT-RECON-002",
+      "title": "Derive candidate hostnames from certificate transparency records",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Identify historical and current hostname candidates disclosed in public certificate transparency logs without assuming they remain owned or reachable.",
+      "prerequisites": [
+        "Approved registrable domains",
+        "A certificate transparency query source"
+      ],
+      "steps": [
+        "Query exact approved domain suffixes",
+        "Normalize wildcard and case variants",
+        "Separate current certificates from expired historical entries",
+        "Resolve candidates passively and submit uncertain ownership for confirmation"
+      ],
+      "examples": [
+        {
+          "note": "A certificate name such as api.example.com is a candidate, not proof that the host exists or is in scope."
+        }
+      ],
+      "manipulate": "Certificate log queries for exact approved DNS suffixes",
+      "secure_behavior": "Certificate names align with the current asset inventory or point to safely retired names with no controllable dependency.",
+      "vulnerable_behavior": "A certificate-derived name leads to an untracked live service or a reclaimable external dependency after separate confirmation.",
+      "validation": "Correlate log entries with current DNS, certificate dates, and owner inventory; do not probe an unresolved or third-party address without approval.",
+      "false_positives": [
+        "Expired certificates preserve names for retired systems",
+        "Wildcard certificates do not prove every possible subdomain exists"
+      ],
+      "impact": "Certificate logs can expand asset discovery; impact depends on a separately verified exposed or reclaimable service.",
+      "evidence": [
+        "Log entry identifier and timestamp",
+        "Normalized candidate hostname",
+        "Current passive DNS result",
+        "Owner classification"
+      ],
+      "tools": [
+        "Certificate transparency search",
+        "DNS resolver"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Conduct Search Engine Discovery Reconnaissance for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/01-Conduct_Search_Engine_Discovery_Reconnaissance_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "passive-recon",
+        "certificate-transparency",
+        "subdomain"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Maintain a certificate and hostname inventory, retire DNS and external dependencies with services, and avoid unnecessary names in publicly trusted certificates."
+    },
+    {
+      "id": "WAPT-RECON-003",
+      "title": "Map authoritative DNS records and external service dependencies",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Document in-scope DNS records, delegation, aliases, mail and service records, and third-party targets that define the reachable application boundary.",
+      "prerequisites": [
+        "Approved domains",
+        "Permission for standard DNS queries"
+      ],
+      "steps": [
+        "Query authoritative NS, A, AAAA, CNAME, MX, TXT, and relevant SRV records",
+        "Follow aliases without crossing into active testing of third parties",
+        "Record TTLs and provider ownership",
+        "Flag dangling-looking targets for controlled provider-specific validation"
+      ],
+      "examples": [
+        {
+          "note": "A CNAME to an unresolvable provider name is a lead only; claimability must be proven safely with the owner and provider rules."
+        }
+      ],
+      "manipulate": "DNS query type and exact approved name",
+      "secure_behavior": "Records point to owned, expected, and actively managed destinations; retired services have no residual aliases.",
+      "vulnerable_behavior": "A record delegates trust to an unintended or demonstrably reclaimable destination, or exposes an untracked in-scope service.",
+      "validation": "Confirm answers from authoritative servers and verify ownership/claimability without registering or taking control of any resource.",
+      "false_positives": [
+        "Split-horizon DNS can intentionally differ by resolver location",
+        "A provider target may be reserved to the customer even when it does not resolve publicly"
+      ],
+      "impact": "Unsafe DNS dependencies can expose shadow services or enable domain-level trust abuse if a target is genuinely reclaimable.",
+      "evidence": [
+        "Authoritative DNS answer with timestamp",
+        "Alias chain",
+        "Provider ownership evidence",
+        "Owner-approved claimability assessment"
+      ],
+      "tools": [
+        "dig",
+        "DNS inventory"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Enumerate Applications on Webserver",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/04-Enumerate_Applications_on_Webserver"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dns",
+        "subdomain",
+        "third-party"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove stale records atomically with service retirement, continuously inventory aliases, and verify external resource ownership before deployment.",
+      "safety": "Do not register, claim, or modify a suspected dangling service. Validate ownership with the application owner and provider documentation."
+    },
+    {
+      "id": "WAPT-RECON-004",
+      "title": "Correlate resolved addresses with approved hosting boundaries",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Determine which resolved addresses, networks, and delivery providers belong to the approved application path without expanding scope by IP association alone.",
+      "prerequisites": [
+        "Confirmed in-scope hostnames",
+        "Owner guidance on shared hosting, CDN, and cloud boundaries"
+      ],
+      "steps": [
+        "Resolve approved hostnames from an agreed vantage point",
+        "Record address family, ASN, and reverse name as contextual evidence",
+        "Identify CDN or shared-hosting indicators",
+        "Request owner confirmation before treating adjacent names or addresses as targets"
+      ],
+      "examples": [
+        {
+          "note": "Multiple customers can share one CDN address; co-residence never makes neighboring hosts in scope."
+        }
+      ],
+      "manipulate": "Passive DNS and registry lookups for addresses already returned by approved names",
+      "secure_behavior": "The resolved delivery path matches documented providers and does not reveal an unexpected directly reachable origin.",
+      "vulnerable_behavior": "A confirmed in-scope address exposes an unintended origin or management service after separate, authorized verification.",
+      "validation": "Correlate DNS, certificate, response, and owner evidence; avoid reverse-IP lists as proof of ownership.",
+      "false_positives": [
+        "CDN and shared-hosting addresses serve unrelated tenants",
+        "Reverse DNS names commonly identify provider infrastructure rather than the application owner"
+      ],
+      "impact": "Accurate hosting boundaries prevent missed origins and, equally, prevent unauthorized testing of unrelated tenants.",
+      "evidence": [
+        "Hostname-to-address observations",
+        "ASN/provider context",
+        "Owner boundary decision",
+        "Any confirmed origin relationship"
+      ],
+      "tools": [
+        "dig",
+        "WHOIS/RDAP client",
+        "Asset inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "network-boundary",
+        "cdn",
+        "origin-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Document delivery providers and origin exposure, restrict origins to trusted edges, and keep scope records aligned with DNS changes."
+    },
+    {
+      "id": "WAPT-RECON-005",
+      "title": "Identify reachable web services on owner-approved ports",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Discover HTTP-speaking services on explicitly approved hosts and ports using conservative connection limits.",
+      "prerequisites": [
+        "An owner-approved host and port range",
+        "Rate and time-window limits"
+      ],
+      "steps": [
+        "Start with ports declared by the owner and URL hints",
+        "Open a bounded TCP connection and send a harmless HTTP request",
+        "Record protocol, redirect, certificate, and response title",
+        "Stop on instability and classify each service before deeper testing"
+      ],
+      "examples": [
+        {
+          "request": "HEAD / HTTP/1.1\nHost: app.example.com\nConnection: close",
+          "response": "HTTP/1.1 301 Moved Permanently\nLocation: https://app.example.com/"
+        }
+      ],
+      "manipulate": "Destination port, HTTP version, and TLS negotiation within the approved list",
+      "secure_behavior": "Only expected, supported services are reachable and each redirects or responds according to its documented purpose.",
+      "vulnerable_behavior": "An unexpected in-scope service exposes a sensitive interface or obsolete component after targeted confirmation.",
+      "validation": "Repeat with the correct Host value and protocol; distinguish a generic shared listener from an application-specific service.",
+      "false_positives": [
+        "A load balancer can return the same default response on many ports",
+        "A TCP listener may not belong to the scoped application despite sharing an address"
+      ],
+      "impact": "Unexpected services enlarge the attack surface; severity depends on the functionality and weakness confirmed there.",
+      "evidence": [
+        "Approved scan bounds",
+        "Connection timestamp",
+        "Request and response metadata",
+        "Service classification"
+      ],
+      "tools": [
+        "curl",
+        "nmap with an approved port list",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Enumerate Applications on Webserver",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/04-Enumerate_Applications_on_Webserver"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "service-discovery",
+        "port",
+        "attack-surface"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove unnecessary listeners, restrict management services by network and identity, and maintain an owner-reviewed service inventory.",
+      "priority_when": {
+        "url_hints.unusual_tls_port": [
+          true
+        ]
+      },
+      "safety": "Use the owner-approved port list, low concurrency, and connection timeouts. Do not run broad Internet-scale or denial-of-service service detection."
+    },
+    {
+      "id": "WAPT-RECON-006",
+      "title": "Fingerprint the web server from multiple response characteristics",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Form a confidence-rated web-server hypothesis from headers, error behavior, protocol details, and default content rather than one banner.",
+      "prerequisites": [
+        "Two representative in-scope routes",
+        "Permission for one harmless missing-path request"
+      ],
+      "steps": [
+        "Record normal response headers and protocol behavior",
+        "Request a unique missing path",
+        "Compare error layout, header ordering, cookie style, and redirect syntax",
+        "Document supporting and contradictory signals"
+      ],
+      "examples": [
+        {
+          "request": "GET /wapt-confirmed-missing-7f3a HTTP/1.1\nHost: app.example.com",
+          "response": "HTTP/1.1 404 Not Found"
+        }
+      ],
+      "manipulate": "A unique non-existent path and harmless Accept value",
+      "secure_behavior": "Responses minimize precise product detail and no identified component is shown to be exploitable.",
+      "vulnerable_behavior": "A precise obsolete server version is consistently exposed and tied to a reachable, applicable weakness.",
+      "validation": "Require at least two independent signals and verify claimed versions against owner or package evidence before reporting risk.",
+      "false_positives": [
+        "Proxies rewrite Server headers and error pages",
+        "Custom error templates can imitate another server"
+      ],
+      "impact": "Fingerprinting guides testing but is informational unless a supported exploit path or sensitive disclosure is separately proven.",
+      "evidence": [
+        "Paired normal and missing-path responses",
+        "Signal comparison",
+        "Confidence and contradictions"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "curl"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Fingerprint Web Server",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/02-Fingerprint_Web_Server"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "fingerprinting",
+        "web-server",
+        "technology-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Suppress unnecessary version details, replace default error pages, and keep every server and proxy layer supported and patched."
+    },
+    {
+      "id": "WAPT-RECON-007",
+      "title": "Inventory TLS certificate names and endpoint relationships",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Use certificates presented by approved HTTPS endpoints to identify related names and delivery boundaries without treating SAN membership as scope authorization.",
+      "prerequisites": [
+        "Approved HTTPS hostnames and ports"
+      ],
+      "steps": [
+        "Capture the leaf and issuing chain from each approved endpoint",
+        "Record SAN names, issuer, validity, and wildcard coverage",
+        "Deduplicate names and compare with the owner inventory",
+        "Submit new names for scope confirmation before requests"
+      ],
+      "examples": [
+        {
+          "note": "A SAN entry is an ownership clue, not permission to connect to that hostname."
+        }
+      ],
+      "manipulate": "TLS SNI using already approved hostnames",
+      "secure_behavior": "Certificates cover expected services and do not reveal unmanaged application endpoints.",
+      "vulnerable_behavior": "A certificate-derived name leads to a confirmed unmanaged or sensitive in-scope service after owner approval.",
+      "validation": "Confirm certificate observations from the correct SNI endpoint and obtain explicit scope for every newly discovered name.",
+      "false_positives": [
+        "Multi-tenant certificates can contain names owned by other customers",
+        "Historical or wildcard names do not prove a live service"
+      ],
+      "impact": "Certificate relationships improve inventory completeness; direct security impact requires a separately confirmed exposed asset.",
+      "evidence": [
+        "Endpoint and SNI",
+        "Certificate fingerprint and validity",
+        "Relevant SAN names",
+        "Owner classification"
+      ],
+      "tools": [
+        "openssl s_client",
+        "Browser certificate viewer"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "tls",
+        "certificate",
+        "asset-inventory"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use managed certificate inventories, remove obsolete names during renewal, and monitor issuance for unexpected approved-domain certificates."
+    },
+    {
+      "id": "WAPT-RECON-008",
+      "title": "Review robots directives without treating hidden paths as authorization",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Identify paths disclosed through robots.txt and determine whether any lead exposes sensitive functionality independently of crawler directives.",
+      "prerequisites": [
+        "An approved web origin"
+      ],
+      "steps": [
+        "Request /robots.txt once",
+        "Parse User-agent, Allow, Disallow, and Sitemap values",
+        "Resolve only same-origin paths",
+        "Test access controls on sensitive-looking paths separately and conservatively"
+      ],
+      "examples": [
+        {
+          "request": "GET /robots.txt HTTP/1.1\nHost: app.example.com",
+          "response": "HTTP/1.1 200 OK\nContent-Type: text/plain\n\nUser-agent: *\nDisallow: /internal-preview/"
+        }
+      ],
+      "manipulate": "The standard robots.txt path and same-origin paths it explicitly lists",
+      "secure_behavior": "Directives contain no unnecessary sensitive route names, and listed paths enforce their own authentication and authorization.",
+      "vulnerable_behavior": "A listed path exposes sensitive data or functionality without required access control; the directive itself is only discovery evidence.",
+      "validation": "Request the listed path in the correct auth context and prove the underlying exposure rather than reporting Disallow alone.",
+      "false_positives": [
+        "Disallow is a crawler preference, not an access-control mechanism",
+        "Paths may be obsolete or intentionally public"
+      ],
+      "impact": "Robots directives can disclose useful route names, but impact derives from the confirmed weakness at a listed path.",
+      "evidence": [
+        "robots.txt response",
+        "Listed path classification",
+        "Separate authorization evidence when applicable"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webserver Metafiles for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-03"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "robots-txt",
+        "route-discovery",
+        "metafile"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Avoid advertising sensitive implementation paths and enforce authentication and authorization independently of crawler directives."
+    },
+    {
+      "id": "WAPT-RECON-009",
+      "title": "Enumerate sitemap entries and reconcile them with the route inventory",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Use declared sitemaps to identify public routes, locales, content families, and obsolete entries while preserving same-origin scope.",
+      "prerequisites": [
+        "An approved web origin"
+      ],
+      "steps": [
+        "Discover Sitemap directives and request standard sitemap locations",
+        "Parse nested indexes with a strict document and URL limit",
+        "Normalize same-origin URLs and group route patterns",
+        "Classify redirects, missing pages, and sensitive-looking routes"
+      ],
+      "examples": [
+        {
+          "request": "GET /sitemap.xml HTTP/1.1\nHost: app.example.com",
+          "response": "HTTP/1.1 200 OK\nContent-Type: application/xml"
+        }
+      ],
+      "manipulate": "Standard sitemap paths and same-origin URLs declared by them",
+      "secure_behavior": "Sitemaps list intended public content and do not expose unauthorized resources or stale sensitive routes.",
+      "vulnerable_behavior": "A sitemap entry leads to a live sensitive resource that lacks required access control or reveals confidential content.",
+      "validation": "Verify current response and intended audience; a stale URL or public route name alone is not a finding.",
+      "false_positives": [
+        "Sitemaps often retain URLs that now redirect or return 404",
+        "Localized duplicates can appear to be separate applications"
+      ],
+      "impact": "Sitemaps improve route coverage; impact depends on a confirmed exposure behind an entry.",
+      "evidence": [
+        "Sitemap URL and retrieval time",
+        "Normalized route family",
+        "Current response and classification"
+      ],
+      "tools": [
+        "Browser",
+        "XML parser",
+        "Asset inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webserver Metafiles for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-03"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "sitemap",
+        "route-discovery",
+        "metafile"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Generate sitemaps from intended public routes, remove retired entries, and enforce resource authorization regardless of listing."
+    },
+    {
+      "id": "WAPT-RECON-010",
+      "title": "Inspect standardized well-known resources for security and identity metadata",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Identify intentionally published security contacts, identity metadata, and protocol configuration under standardized well-known paths.",
+      "prerequisites": [
+        "An approved origin",
+        "A protocol-informed list of relevant well-known names"
+      ],
+      "steps": [
+        "Request /.well-known/security.txt",
+        "Request only well-known resources relevant to observed identity or application protocols",
+        "Record redirects and declared endpoints",
+        "Classify metadata as intended publication, stale configuration, or a lead requiring protocol-specific testing"
+      ],
+      "examples": [
+        {
+          "request": "GET /.well-known/security.txt HTTP/1.1\nHost: app.example.com",
+          "response": "HTTP/1.1 200 OK\nContent-Type: text/plain"
+        }
+      ],
+      "manipulate": "A short allowlist of standardized /.well-known/ resource names",
+      "secure_behavior": "Published metadata is current, minimally scoped, and points only to intended endpoints.",
+      "vulnerable_behavior": "Stale or unsafe metadata redirects trust to an unintended endpoint or exposes a demonstrable sensitive configuration.",
+      "validation": "Verify the governing standard and active consumer behavior; metadata presence or absence alone is not a vulnerability.",
+      "false_positives": [
+        "Many well-known resources are intentionally public",
+        "An unused protocol document may have no security effect"
+      ],
+      "impact": "Metadata can reveal protocol surfaces or create trust redirection when actively consumed and misconfigured.",
+      "evidence": [
+        "Well-known path and response",
+        "Relevant standard/protocol",
+        "Current endpoint ownership",
+        "Consumer behavior if risk is claimed"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webserver Metafiles for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/03-Review_Webserver_Metafiles_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-03"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "well-known",
+        "security-txt",
+        "identity-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Publish only required well-known metadata, keep endpoints and contacts current, and remove configuration for retired protocols."
+    },
+    {
+      "id": "WAPT-RECON-011",
+      "title": "Enumerate distinct applications behind approved hostnames and base paths",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Separate applications, tenant portals, management surfaces, and route roots that share an approved hostname or delivery address.",
+      "prerequisites": [
+        "Approved hostnames",
+        "Owner guidance on shared infrastructure"
+      ],
+      "steps": [
+        "Compare titles, cookies, headers, CSP, and redirect behavior across known base paths",
+        "Group routes that share an authentication and deployment boundary",
+        "Identify management or tenant-specific roots from links and redirects",
+        "Record each application as a separate inventory object"
+      ],
+      "examples": [
+        {
+          "note": "Distinct cookies and login redirects under /portal and /admin can indicate separate applications even on one origin."
+        }
+      ],
+      "manipulate": "Known base paths and owner-approved virtual host values",
+      "secure_behavior": "Every reachable application is inventoried, supported, and protected according to its intended audience.",
+      "vulnerable_behavior": "An untracked application exposes sensitive functionality or an obsolete component after separate testing.",
+      "validation": "Use multiple boundary signals and owner confirmation; visual differences alone may reflect one application's theme or route.",
+      "false_positives": [
+        "One application can use different frontends for routes or locales",
+        "A default virtual-host page may not represent a separate deployed application"
+      ],
+      "impact": "Accurate application boundaries prevent coverage gaps; finding severity depends on a weakness confirmed in an untracked application.",
+      "evidence": [
+        "Hostname and base path",
+        "Boundary signals",
+        "Authentication relationship",
+        "Owner application classification"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Browser developer tools",
+        "Burp Comparer"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Enumerate Applications on Webserver",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/04-Enumerate_Applications_on_Webserver"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "application-enumeration",
+        "virtual-host",
+        "attack-surface"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Maintain a route-to-application inventory, remove default sites, and apply consistent ownership and lifecycle controls to every deployed application."
+    },
+    {
+      "id": "WAPT-RECON-012",
+      "title": "Compare approved virtual hosts for routing and default-site behavior",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine how the front end routes approved Host values and whether an unintended default site exposes application or management content.",
+      "prerequisites": [
+        "An owner-approved hostname list",
+        "A shared front-end address confirmed by the owner"
+      ],
+      "steps": [
+        "Capture a baseline for each approved hostname",
+        "Send a request with an owner-approved alternate Host to the same address",
+        "Use one reserved invalid Host as a default-site control",
+        "Compare certificate, status, redirects, cookies, and body identity"
+      ],
+      "examples": [
+        {
+          "request": "GET / HTTP/1.1\nHost: invalid.example.test\nConnection: close",
+          "response": "HTTP/1.1 421 Misdirected Request"
+        }
+      ],
+      "manipulate": "The Host field using approved names and one reserved invalid control",
+      "secure_behavior": "Unknown hosts are rejected and each approved host routes only to its intended application.",
+      "vulnerable_behavior": "An unrecognized or lower-trust host reaches a sensitive default application or bypasses a host-specific control.",
+      "validation": "Pin the connection only where authorized and reproduce with controls; redirects to a canonical public host are usually benign.",
+      "false_positives": [
+        "A canonical redirect for every unknown host can be intentional",
+        "CDN edge behavior may differ from the origin while still enforcing application controls"
+      ],
+      "impact": "Unsafe virtual-host routing can expose hidden applications or undermine host-based security assumptions.",
+      "evidence": [
+        "Connection target and SNI",
+        "Baseline and altered Host requests",
+        "Application identity comparison"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "curl --resolve"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Enumerate Applications on Webserver",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/04-Enumerate_Applications_on_Webserver"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "virtual-host",
+        "host-header",
+        "routing"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Configure an explicit deny-by-default virtual host, validate accepted hosts, and keep management applications on separately controlled origins.",
+      "safety": "Use only owner-approved connection targets and Host values plus a reserved invalid control; do not brute-force third-party virtual hosts."
+    },
+    {
+      "id": "WAPT-RECON-013",
+      "title": "Review HTML comments, metadata, and disabled interface fragments",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Identify comments, metadata, hidden fields, and disabled markup that disclose sensitive implementation details or reachable functions.",
+      "prerequisites": [
+        "Representative public and authenticated pages"
+      ],
+      "steps": [
+        "Inspect raw HTML rather than only the rendered DOM",
+        "Search comments, meta elements, hidden inputs, templates, and disabled controls",
+        "Extract route or identifier leads without assuming they are secret",
+        "Verify any sensitive value or reachable function separately"
+      ],
+      "examples": [
+        {
+          "response": "<!-- TODO remove /legacy-admin before release -->",
+          "note": "A comment is a lead; report only live sensitive exposure or secret material."
+        }
+      ],
+      "manipulate": "Normal page navigation and view-source inspection",
+      "secure_behavior": "Markup contains no credentials, secrets, confidential comments, or reliance on hidden controls for authorization.",
+      "vulnerable_behavior": "Source includes a valid secret or leads to a live unauthorized sensitive function after confirmation.",
+      "validation": "Test whether values are current and whether referenced routes enforce server-side controls; redact secrets immediately.",
+      "false_positives": [
+        "Placeholder keys can resemble production secrets",
+        "Disabled controls can represent intentionally inaccessible or unfinished UI with correct server authorization"
+      ],
+      "impact": "Disclosed internals can accelerate attacks; valid secrets or unauthorized functions can have direct confidentiality or access impact.",
+      "evidence": [
+        "Redacted source excerpt",
+        "Page URL and auth context",
+        "Secret validity or route authorization confirmation"
+      ],
+      "tools": [
+        "Browser view source",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "html-comment",
+        "metadata",
+        "route-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive build comments and secrets, keep server authorization independent of UI visibility, and scan release artifacts for confidential markers."
+    },
+    {
+      "id": "WAPT-RECON-014",
+      "title": "Extract routes and service origins from first-party JavaScript",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Expand the route inventory from first-party script literals, request constructors, routers, and environment configuration.",
+      "prerequisites": [
+        "First-party scripts loaded by an approved page",
+        "A bounded parser that does not execute downloaded code"
+      ],
+      "steps": [
+        "Inventory same-origin and owner-confirmed first-party script assets",
+        "Search statically for URL literals, route declarations, request calls, and service origins",
+        "Normalize and deduplicate candidates",
+        "Confirm scope before requesting newly identified origins or routes"
+      ],
+      "examples": [
+        {
+          "response": "const apiBase = '/api/v2';",
+          "note": "Static text can be dead code or a build-time fallback."
+        }
+      ],
+      "manipulate": "Downloaded first-party text processed offline; no script execution",
+      "secure_behavior": "Client artifacts expose only intended public routing knowledge and no secret-bearing configuration.",
+      "vulnerable_behavior": "An artifact contains a valid secret or reveals a live sensitive endpoint that lacks required protection after separate confirmation.",
+      "validation": "Trace candidates to live application behavior or owner documentation; distinguish source text, dead code, and third-party libraries.",
+      "false_positives": [
+        "Bundled dead code can reference retired endpoints",
+        "Library examples and source comments can look like application routes"
+      ],
+      "impact": "Script analysis improves endpoint coverage; direct impact requires a valid secret or confirmed weakness at a discovered endpoint.",
+      "evidence": [
+        "Script URL and digest",
+        "Minimal route/config excerpt",
+        "Normalized candidate",
+        "Scope and live-behavior confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Static text search",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "javascript",
+        "endpoint-discovery",
+        "static-analysis"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "app_type": [
+            "spa",
+            "hybrid",
+            "server_rendered",
+            "static"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Exclude secrets and private environment configuration from client builds, remove dead endpoints, and treat every client-visible route as public knowledge."
+    },
+    {
+      "id": "WAPT-RECON-015",
+      "title": "Locate and classify JavaScript source maps",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Determine whether deployed scripts reference source maps and whether those maps disclose non-public source, paths, or configuration.",
+      "prerequisites": [
+        "First-party JavaScript assets from approved pages"
+      ],
+      "steps": [
+        "Inspect SourceMap and sourceMappingURL references",
+        "Request only maps explicitly referenced by first-party assets",
+        "Record sources, embedded content, paths, and names",
+        "Search locally for secrets and sensitive routes, then validate any lead"
+      ],
+      "examples": [
+        {
+          "response": "//# sourceMappingURL=app.js.map"
+        }
+      ],
+      "manipulate": "Explicit source-map URLs declared by approved first-party scripts",
+      "secure_behavior": "Production maps are absent, access-controlled where appropriate, or contain no sensitive source/configuration beyond intended public code.",
+      "vulnerable_behavior": "A map exposes valid secrets, confidential source, or security-relevant implementation details with demonstrated impact.",
+      "validation": "Confirm map ownership and secret validity; readable source alone is not automatically a vulnerability for client-delivered code.",
+      "false_positives": [
+        "Minified client code is already public even without a map",
+        "Paths and variable names can be non-sensitive developer metadata"
+      ],
+      "impact": "Source maps can reduce reverse-engineering effort or expose embedded secrets and internal paths.",
+      "evidence": [
+        "Script and map URLs",
+        "Map digest",
+        "Redacted sensitive excerpt",
+        "Validity and impact confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Static text search"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "source-map",
+        "javascript",
+        "source-disclosure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "app_type": [
+            "spa",
+            "hybrid",
+            "server_rendered",
+            "static"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Disable production source-map publication or restrict access, strip embedded secrets, and keep client artifacts free of confidential server code."
+    },
+    {
+      "id": "WAPT-RECON-016",
+      "title": "Catalog forms, controls, and client-visible input constraints",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Inventory user-controlled fields, submission targets, methods, encodings, and client-side constraints across representative workflows.",
+      "prerequisites": [
+        "Representative pages and approved test roles"
+      ],
+      "steps": [
+        "Record each form action, method, encoding, and submit control",
+        "List visible, hidden, disabled, and dynamically created fields",
+        "Capture browser validation attributes and JavaScript preprocessing",
+        "Map each control to its resulting request parameter"
+      ],
+      "examples": [
+        {
+          "request": "POST /profile HTTP/1.1\nHost: app.example.com\nContent-Type: application/x-www-form-urlencoded\n\ndisplayName=Tester"
+        }
+      ],
+      "manipulate": "Normal form values on designated test data",
+      "secure_behavior": "All intended inputs are inventoried and server-side controls do not rely solely on client constraints.",
+      "vulnerable_behavior": "A client-hidden or constrained field changes a security-sensitive server decision after separate validation.",
+      "validation": "Correlate each UI control with the actual request and server behavior; client-only min/max or disabled state is not a finding by itself.",
+      "false_positives": [
+        "Hidden fields can be harmless state or anti-CSRF values",
+        "Client constraints may be usability controls backed by correct server validation"
+      ],
+      "impact": "A complete input map enables targeted validation and authorization testing; impact comes from a confirmed server-side weakness.",
+      "evidence": [
+        "Page and role",
+        "Form/action inventory",
+        "Control-to-parameter mapping",
+        "Observed client transformations"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "input-mapping",
+        "form",
+        "attack-surface"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Document server input contracts, enforce them server-side, and avoid placing authoritative security state in client-editable fields."
+    },
+    {
+      "id": "WAPT-RECON-017",
+      "title": "Inventory request parameters across URL, body, headers, and cookies",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Build a deduplicated parameter inventory including location, data type, examples, authentication context, and observed server use.",
+      "prerequisites": [
+        "Captured traffic from representative workflows",
+        "Designated test accounts"
+      ],
+      "steps": [
+        "Walk approved workflows through an intercepting proxy",
+        "Record path, query, body, header, and cookie inputs",
+        "Infer types only from repeated observations",
+        "Mark identifiers, redirect targets, URLs, filenames, and structured values for later tests"
+      ],
+      "examples": [
+        {
+          "request": "GET /orders?status=open&page=2 HTTP/1.1\nHost: app.example.com\nCookie: session=REDACTED"
+        }
+      ],
+      "manipulate": "Normal workflow values; active mutation belongs to the relevant later methodology item",
+      "secure_behavior": "The inventory matches documented inputs and no unexpected client-controlled security decision is identified.",
+      "vulnerable_behavior": "A parameter later proves to control a sensitive action without required validation or authorization; discovery alone is not a finding.",
+      "validation": "Replay a baseline to confirm the parameter reaches the intended route, avoiding mutation during inventory collection.",
+      "false_positives": [
+        "Analytics and tracing parameters may not reach application logic",
+        "Framework-generated fields can be integrity-protected or ignored"
+      ],
+      "impact": "Parameter coverage is a prerequisite for complete injection, access-control, SSRF, redirect, and file-handling testing.",
+      "evidence": [
+        "Redacted baseline request",
+        "Parameter name, location, and type",
+        "Route and auth context",
+        "Observed purpose/confidence"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Logger",
+        "Inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "parameter-discovery",
+        "input-mapping",
+        "request"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Maintain explicit input contracts, reject unknown fields where appropriate, and keep security decisions on trusted server state."
+    },
+    {
+      "id": "WAPT-RECON-018",
+      "title": "Map route and HTTP method combinations from observed traffic",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Create a canonical route-method inventory that distinguishes read, mutation, upload, authentication, and administrative operations.",
+      "prerequisites": [
+        "Representative proxy history",
+        "An agreed route normalization rule"
+      ],
+      "steps": [
+        "Normalize concrete identifiers into route templates",
+        "Group requests by method, content type, response family, and role",
+        "Preserve distinct methods for one route",
+        "Highlight unobserved but documented operations for later confirmation"
+      ],
+      "examples": [
+        {
+          "note": "Normalize /api/orders/10293 to /api/orders/{id} while retaining GET and PATCH as separate operations."
+        }
+      ],
+      "manipulate": "Offline normalization of captured request metadata",
+      "secure_behavior": "The resulting inventory is explainable by intended workflows and documented interfaces.",
+      "vulnerable_behavior": "A route-method combination exposes an undocumented sensitive operation after separate authorization or method testing.",
+      "validation": "Compare normalized entries with raw requests so IDs, versions, and nested resources are not accidentally merged.",
+      "false_positives": [
+        "Different concrete paths can share a shape but route to distinct handlers",
+        "HEAD and OPTIONS may be generated by infrastructure rather than application features"
+      ],
+      "impact": "A reliable operation inventory prevents gaps in method, authorization, and input testing.",
+      "evidence": [
+        "Normalization rule",
+        "Route-method table",
+        "Representative redacted request per template",
+        "Role coverage"
+      ],
+      "tools": [
+        "Burp Logger",
+        "Proxy history export",
+        "Inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "route-discovery",
+        "http-methods",
+        "inventory"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Maintain a versioned API and route inventory, remove obsolete handlers, and enforce controls for every method independently."
+    },
+    {
+      "id": "WAPT-RECON-019",
+      "title": "Trace multi-step application execution paths and state transitions",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Document valid workflow states, transitions, prerequisites, terminal outcomes, and rollback paths before testing sequence abuse.",
+      "prerequisites": [
+        "Representative business workflows",
+        "Disposable test records",
+        "Owner-defined stopping points for consequential actions"
+      ],
+      "steps": [
+        "Perform each workflow normally with a test record",
+        "Name each server-observable state and transition request",
+        "Record tokens, identifiers, roles, and expiry assumptions",
+        "Diagram alternate, cancellation, retry, and error paths"
+      ],
+      "examples": [
+        {
+          "note": "Example state path: draft → reviewed → approved → fulfilled; record the exact request that advances each transition."
+        }
+      ],
+      "manipulate": "Normal workflow navigation and reversible test records",
+      "secure_behavior": "Observed transitions match documented business rules and preserve required identity, approval, and state prerequisites.",
+      "vulnerable_behavior": "A later test confirms a transition can be skipped, replayed, or performed by an unauthorized actor; the map itself is not a finding.",
+      "validation": "Verify states from fresh server responses or owner-approved records rather than relying only on client labels.",
+      "false_positives": [
+        "UI step numbers may not correspond to server states",
+        "Asynchronous workflows can expose temporary intermediate states by design"
+      ],
+      "impact": "Execution-path mapping enables precise workflow, race, authorization, and replay testing with less production risk.",
+      "evidence": [
+        "State diagram",
+        "Transition request IDs",
+        "Role and test-record context",
+        "Approved stop/cleanup points"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Diagramming tool",
+        "Browser"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Execution Paths Through Application",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/07-Map_Execution_Paths_Through_Application"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-07"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "workflow-mapping",
+        "state-machine",
+        "business-logic"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Document and enforce server-side state machines with explicit transition authorization, idempotency, and safe rollback behavior.",
+      "safety": "Use disposable records, stop before payments/fulfillment or irreversible actions, and document cleanup for every traversed path."
+    },
+    {
+      "id": "WAPT-RECON-020",
+      "title": "Identify authentication, reauthentication, and step-up entry points",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Catalog every route and protocol that establishes, refreshes, elevates, or re-verifies user identity.",
+      "prerequisites": [
+        "A confirmed login or identity flow",
+        "Available test roles or owner documentation"
+      ],
+      "steps": [
+        "Record primary login requests and redirects",
+        "Locate reauthentication and step-up prompts in sensitive workflows",
+        "Identify token issuance, refresh, logout, and device-trust endpoints",
+        "Separate local, federated, API, and alternate-channel flows"
+      ],
+      "examples": [
+        {
+          "note": "Record both /login and an IdP redirect/callback pair when the application uses federation."
+        }
+      ],
+      "manipulate": "Normal identity flows with designated test accounts",
+      "secure_behavior": "All identity entry points are inventoried and apply controls appropriate to their assurance and channel.",
+      "vulnerable_behavior": "An alternate entry point later proves weaker and can establish or elevate identity without equivalent assurance.",
+      "validation": "Confirm each endpoint's identity effect using a test account; route names alone do not establish authentication behavior.",
+      "false_positives": [
+        "A login-looking page can be a static redirector",
+        "Token endpoints may belong to a separate, out-of-scope identity provider"
+      ],
+      "impact": "Missing alternate identity paths can leave authentication, MFA, session, and recovery coverage incomplete.",
+      "evidence": [
+        "Flow diagram",
+        "Redacted requests and redirects",
+        "Token/session effect",
+        "Provider and scope ownership"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "authentication",
+        "entry-point",
+        "identity-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain one reviewed identity-flow inventory and apply equivalent assurance, logging, and lifecycle controls across every entry point."
+    },
+    {
+      "id": "WAPT-RECON-021",
+      "title": "Map registration, invitation, recovery, and account-change flows",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Document account lifecycle flows, trust transitions, tokens, communication channels, and identity attributes before targeted abuse testing.",
+      "prerequisites": [
+        "Owner-approved lifecycle flows",
+        "Disposable addresses and test accounts"
+      ],
+      "steps": [
+        "Run registration or invitation through its approved stopping point",
+        "Map verification, activation, recovery, email/phone change, and cancellation",
+        "Record token transport, expiry, account state, and identity-binding fields",
+        "Identify alternate channels and support-assisted transitions"
+      ],
+      "examples": [
+        {
+          "note": "Use only controlled inboxes and never trigger messages to real users during lifecycle mapping."
+        }
+      ],
+      "manipulate": "Normal lifecycle inputs for designated test identities",
+      "secure_behavior": "Every lifecycle transition has a documented identity proof, bounded token, and consistent final account state.",
+      "vulnerable_behavior": "A later test confirms an unverified or unauthorized transition; discovery of a flow alone is not a vulnerability.",
+      "validation": "Confirm account state through a fresh session or owner-approved record and distinguish UI completion from server activation.",
+      "false_positives": [
+        "Invitation and open registration can be intentionally different assurance paths",
+        "A generic success message may intentionally conceal whether an account exists"
+      ],
+      "impact": "Lifecycle mapping enables complete enumeration, recovery, token, MFA, and account-binding tests.",
+      "evidence": [
+        "Lifecycle diagram",
+        "Controlled identities and channels",
+        "Redacted token locations",
+        "Observed account states"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Proxy",
+        "Controlled test inbox"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Execution Paths Through Application",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/07-Map_Execution_Paths_Through_Application"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-07"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "registration",
+        "account-recovery",
+        "account-lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "registration": [
+            "yes"
+          ],
+          "has_login": [
+            "yes"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Document lifecycle assurance requirements, bind single-use expiring tokens to the intended account/action, and verify sensitive identity changes.",
+      "safety": "Use controlled addresses and numbers, cap messages, avoid support burden, and remove disposable accounts when testing ends."
+    },
+    {
+      "id": "WAPT-RECON-022",
+      "title": "Discover API base paths, versions, and content types",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Build an evidence-based inventory of HTTP API roots, versions, media types, and consumers from observed application traffic.",
+      "prerequisites": [
+        "Representative browser or mobile-backend traffic",
+        "Approved API origins"
+      ],
+      "steps": [
+        "Filter captured requests for structured response media types and API path patterns",
+        "Group operations by origin, base path, and version",
+        "Record JSON, XML, form, multipart, and custom media types",
+        "Reconcile old and current versions with owner documentation"
+      ],
+      "examples": [
+        {
+          "request": "GET /api/v2/profile HTTP/1.1\nHost: api.example.com\nAccept: application/json",
+          "response": "HTTP/1.1 200 OK\nContent-Type: application/json"
+        }
+      ],
+      "manipulate": "Normal API requests generated by approved clients",
+      "secure_behavior": "Reachable API versions and media types are inventoried, supported, and intentionally exposed.",
+      "vulnerable_behavior": "An undocumented or retired API version exposes weaker controls or sensitive data after separate testing.",
+      "validation": "Confirm operations from actual traffic or documentation; do not infer a complete API from a path naming convention.",
+      "false_positives": [
+        "A path containing api may return static content",
+        "Multiple media types can be intentional representations of one operation"
+      ],
+      "impact": "API inventory completeness is required for authorization, input, data exposure, and version-retirement testing.",
+      "evidence": [
+        "API origin and base path",
+        "Version/media-type matrix",
+        "Representative redacted operations",
+        "Owner lifecycle status"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Browser developer tools",
+        "API inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rest-api",
+        "api-version",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "graphql",
+            "grpc"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Maintain a consumer-aware API inventory, publish supported versions, and remove or equivalently secure deprecated operations."
+    },
+    {
+      "id": "WAPT-RECON-023",
+      "title": "Locate OpenAPI and interactive API documentation",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "automated",
+      "objective": "Find owner-intended API schemas and interactive documentation, then compare their operation inventory and exposure with deployed behavior.",
+      "prerequisites": [
+        "An approved API origin or owner-confirmed documentation location"
+      ],
+      "steps": [
+        "Check links and standard documentation paths only on approved origins",
+        "Record schema version, servers, operations, security schemes, and examples",
+        "Determine intended audience and access control",
+        "Compare documented versions with observed traffic"
+      ],
+      "examples": [
+        {
+          "request": "GET /openapi.json HTTP/1.1\nHost: api.example.com",
+          "response": "HTTP/1.1 200 OK\nContent-Type: application/json"
+        }
+      ],
+      "manipulate": "A short reviewed list of documentation paths such as /openapi.json and linked schema URLs",
+      "secure_behavior": "Documentation exposure matches its intended audience, contains no secrets, and accurately represents supported operations.",
+      "vulnerable_behavior": "A schema exposes sensitive internal-only operations, valid credentials, or reachable undocumented administrative functions with demonstrated impact.",
+      "validation": "Confirm operation reachability and intended audience; public API documentation is not inherently a vulnerability.",
+      "false_positives": [
+        "Public APIs intentionally publish complete schemas",
+        "Example tokens and hosts may be inert placeholders"
+      ],
+      "impact": "Schemas accelerate attack-surface discovery; direct impact requires sensitive content or an improperly exposed operation.",
+      "evidence": [
+        "Documentation URL and access context",
+        "Schema digest/version",
+        "Relevant redacted operation or secret",
+        "Reachability and audience confirmation"
+      ],
+      "tools": [
+        "Browser",
+        "Burp Repeater",
+        "OpenAPI viewer used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "openapi",
+        "api-documentation",
+        "endpoint-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_docs": [
+            "openapi"
+          ],
+          "api_style": [
+            "rest"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Publish schemas deliberately, remove secrets and internal-only operations, require appropriate access, and keep deployed and documented inventories synchronized."
+    },
+    {
+      "id": "WAPT-RECON-024",
+      "title": "Confirm GraphQL endpoint locations and transport modes",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Identify confirmed GraphQL endpoints, supported HTTP methods, content types, subscriptions, and authentication contexts before GraphQL-specific testing.",
+      "prerequisites": [
+        "GraphQL selected or suggested during scope",
+        "Observed client traffic or owner documentation"
+      ],
+      "steps": [
+        "Trace application requests for GraphQL operation documents",
+        "Record endpoint, method, content type, operation name, and auth context",
+        "Identify GET, POST, persisted-query, multipart, and subscription transports actually used",
+        "Use a minimal typename query only when explicitly permitted"
+      ],
+      "examples": [
+        {
+          "request": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"query ScopeCheck { __typename }\"}",
+          "response": "HTTP/1.1 200 OK\nContent-Type: application/json"
+        }
+      ],
+      "manipulate": "A minimal owner-approved GraphQL operation and observed transport fields",
+      "secure_behavior": "GraphQL is exposed only at intended endpoints and each transport enters the same authentication and authorization boundary.",
+      "vulnerable_behavior": "An alternate endpoint or transport later proves to bypass required controls; endpoint confirmation alone is not a finding.",
+      "validation": "Require a GraphQL-shaped response or owner confirmation; a route named graphql that returns generic errors is insufficient.",
+      "false_positives": [
+        "REST endpoints can use JSON fields named query",
+        "A development IDE path can exist while the GraphQL service remains correctly protected"
+      ],
+      "impact": "Transport inventory prevents gaps in GraphQL authorization, complexity, batching, upload, and subscription testing.",
+      "evidence": [
+        "Endpoint and transport matrix",
+        "Minimal redacted operation",
+        "Authentication context",
+        "GraphQL response signature"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "graphql",
+        "endpoint-discovery",
+        "transport"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "graphql"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain one GraphQL endpoint inventory and apply consistent authentication, authorization, parser, and resource controls to every transport.",
+      "priority_when": {
+        "api_style": [
+          "graphql"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-RECON-025",
+      "title": "Identify WebSocket and server-sent event channels",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Catalog persistent browser channels, handshake URLs, subprotocols, authentication transport, and message or event families.",
+      "prerequisites": [
+        "A feature using live updates, chat, notifications, or streaming",
+        "A designated test account"
+      ],
+      "steps": [
+        "Observe browser network activity during real-time features",
+        "Record WebSocket handshakes and EventSource requests",
+        "Identify cookies, query tokens, subprotocols, reconnect behavior, and channel identifiers",
+        "Classify representative inbound and outbound message types without mutation"
+      ],
+      "examples": [
+        {
+          "request": "GET /socket HTTP/1.1\nHost: app.example.com\nUpgrade: websocket\nConnection: Upgrade\nOrigin: https://app.example.com"
+        }
+      ],
+      "manipulate": "Normal feature actions that establish or subscribe to a designated test channel",
+      "secure_behavior": "Every persistent channel is inventoried and uses intended authentication, origin, subscription, and message boundaries.",
+      "vulnerable_behavior": "An alternate channel or subscription later permits unauthorized data or action; channel existence alone is not a finding.",
+      "validation": "Correlate the channel with a user action and test identity; distinguish first-party channels from third-party analytics or support widgets.",
+      "false_positives": [
+        "Third-party widgets can open channels outside application ownership",
+        "Public event feeds may intentionally require no authentication"
+      ],
+      "impact": "Channel inventory enables complete handshake, message authorization, subscription, replay, and origin testing.",
+      "evidence": [
+        "Handshake or EventSource request",
+        "Origin and auth transport",
+        "Message/event type inventory",
+        "Owner/scope classification"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "server-sent-events",
+        "real-time"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "websocket"
+          ],
+          "features": [
+            "chat"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Document persistent channels and enforce consistent identity, origin, subscription, message-schema, and lifecycle controls."
+    },
+    {
+      "id": "WAPT-RECON-026",
+      "title": "Fingerprint server-side application frameworks with corroborating signals",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Identify likely server-side frameworks from independent cookies, headers, paths, error forms, and generated markup with an explicit confidence level.",
+      "prerequisites": [
+        "Representative normal and missing-path responses"
+      ],
+      "steps": [
+        "Collect framework indicators from at least two response classes",
+        "Separate generic language/runtime signals from framework-specific markers",
+        "Compare signals with official framework documentation",
+        "Record conflicting indicators and avoid assigning a version without proof"
+      ],
+      "examples": [
+        {
+          "note": "A JSESSIONID cookie suggests a Java servlet environment but does not identify the framework or version."
+        }
+      ],
+      "manipulate": "A harmless missing path and normal content negotiation",
+      "secure_behavior": "Framework details are minimized and deployed versions remain supported; obscurity is not treated as the primary control.",
+      "vulnerable_behavior": "A precisely confirmed obsolete framework exposes a reachable applicable weakness after separate validation.",
+      "validation": "Require multiple independent signals or owner/build evidence; automated fingerprint labels alone are insufficient.",
+      "false_positives": [
+        "Applications can retain legacy cookie names after migration",
+        "Reverse proxies and shared templates can add framework-like markers"
+      ],
+      "impact": "Framework confidence focuses later template, serialization, routing, and configuration tests; it is normally informational alone.",
+      "evidence": [
+        "Independent redacted indicators",
+        "Official comparison source",
+        "Confidence and contradictory evidence",
+        "Owner confirmation when available"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Fingerprint Web Application Framework",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/08-Fingerprint_Web_Application_Framework"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-08"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "fingerprinting",
+        "framework",
+        "technology-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove unnecessary framework disclosures, standardize safe errors, track dependencies, and keep frameworks supported and patched."
+    },
+    {
+      "id": "WAPT-RECON-027",
+      "title": "Identify packaged applications and content management systems",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Determine whether an in-scope site is a known packaged application or CMS using multiple current, non-invasive markers.",
+      "prerequisites": [
+        "An approved application origin",
+        "A marker set that uses harmless public requests"
+      ],
+      "steps": [
+        "Inspect generator metadata, public assets, route conventions, and cookies",
+        "Request only a small set of high-confidence public markers",
+        "Compare at least two independent indicators",
+        "Record product/version confidence separately and avoid broad plugin enumeration"
+      ],
+      "examples": [
+        {
+          "note": "A /wp-content/ asset is a WordPress-family indicator, not proof of an exact core or plugin version."
+        }
+      ],
+      "manipulate": "A bounded list of public product marker paths",
+      "secure_behavior": "The application exposes no unnecessary precise versions and supported components are maintained.",
+      "vulnerable_behavior": "A confirmed obsolete product or extension has a reachable applicable weakness after controlled validation.",
+      "validation": "Use multiple markers and owner/package evidence where possible; do not map a banner directly to a CVE.",
+      "false_positives": [
+        "CDNs and migrations can preserve old product asset paths",
+        "Themes can copy marker files from another application"
+      ],
+      "impact": "Product identification directs relevant tests; direct risk requires confirmed version, reachability, and exploitability.",
+      "evidence": [
+        "Marker requests and responses",
+        "Product/version confidence",
+        "Conflicting evidence",
+        "Owner confirmation"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "WhatWeb with a bounded target",
+        "Browser"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Fingerprint Web Application",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/09-Fingerprint_Web_Application"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "fingerprinting",
+        "cms",
+        "packaged-application"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove default/version artifacts where practical, maintain an accurate component inventory, and promptly update or retire packaged applications and extensions.",
+      "safety": "Disable aggressive plugin/path enumeration and keep requests to a short reviewed marker list with normal rate limits."
+    },
+    {
+      "id": "WAPT-RECON-028",
+      "title": "Map reverse proxies, CDNs, gateways, and application tiers",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Develop a confidence-rated model of request hops and trust boundaries from protocol, headers, caching, errors, DNS, and owner evidence.",
+      "prerequisites": [
+        "Representative routes and responses",
+        "Owner architecture input when available"
+      ],
+      "steps": [
+        "Record DNS and TLS delivery-provider indicators",
+        "Compare headers, request IDs, caching, and errors across routes",
+        "Identify gateway-added versus origin-added behavior",
+        "Diagram browser, edge, gateway, service, identity, and data boundaries with confidence labels"
+      ],
+      "examples": [
+        {
+          "note": "Via, trace, and CDN headers are clues; absence does not prove a direct-to-origin architecture."
+        }
+      ],
+      "manipulate": "Normal requests to representative public and authenticated routes",
+      "secure_behavior": "The observed path matches documented architecture and trust-bearing headers are created and consumed only at intended hops.",
+      "vulnerable_behavior": "A later test confirms a trust-boundary bypass, exposed origin, or inconsistent control between paths; the inferred diagram alone is not a finding.",
+      "validation": "Reconcile external observations with owner diagrams or logs and preserve uncertainty where components cannot be distinguished.",
+      "false_positives": [
+        "Header names can be application-generated rather than proxy-generated",
+        "Different route behavior can reflect configuration rather than separate tiers"
+      ],
+      "impact": "Architecture mapping is essential for host trust, cache, smuggling, origin, authorization, and logging tests.",
+      "evidence": [
+        "Confidence-rated architecture diagram",
+        "Supporting response excerpts",
+        "Route differences",
+        "Owner-confirmed boundaries"
+      ],
+      "tools": [
+        "Burp Comparer",
+        "Burp Proxy",
+        "DNS/TLS tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "architecture",
+        "reverse-proxy",
+        "cdn",
+        "trust-boundary"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Document and minimize trust boundaries, authenticate internal hops, strip untrusted forwarding headers, and keep controls consistent across every route to origin."
+    },
+    {
+      "id": "WAPT-RECON-029",
+      "title": "Compare edge and suspected origin behavior without bypassing scope",
+      "category": "reconnaissance",
+      "severity": "medium",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether an owner-confirmed origin is directly reachable and applies security controls equivalent to the intended edge path.",
+      "prerequisites": [
+        "Owner confirmation of the origin address or hostname",
+        "Explicit approval for direct-origin requests",
+        "A harmless comparison route"
+      ],
+      "steps": [
+        "Capture a baseline through the normal public hostname",
+        "Connect to the owner-confirmed origin using correct SNI and Host",
+        "Compare authentication, routing, filtering, caching, and security headers",
+        "Stop if the origin serves unrelated tenants or unexpected content"
+      ],
+      "examples": [
+        {
+          "note": "Never derive and probe suspected cloud addresses without owner confirmation; shared infrastructure can host unrelated customers."
+        }
+      ],
+      "manipulate": "Connection destination while preserving approved SNI, Host, route, and harmless method",
+      "secure_behavior": "Origins reject untrusted direct access or enforce controls equivalent to the approved edge path.",
+      "vulnerable_behavior": "Direct access to a confirmed origin bypasses a security-relevant edge control with demonstrable impact.",
+      "validation": "Show a paired edge/origin difference using the same request and verify the missing control is actually security-relevant.",
+      "false_positives": [
+        "Diagnostic headers can differ while security decisions remain equivalent",
+        "The address can belong to shared infrastructure or a retired origin"
+      ],
+      "impact": "A direct-origin bypass can evade authentication gates, filtering, rate controls, or cache protections depending on architecture.",
+      "evidence": [
+        "Owner origin confirmation",
+        "Paired edge/origin requests",
+        "SNI and Host context",
+        "Demonstrated control difference"
+      ],
+      "tools": [
+        "curl --resolve",
+        "Burp Repeater",
+        "Burp Comparer"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "origin-discovery",
+        "cdn",
+        "control-bypass"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Restrict origins to authenticated edge traffic, enforce critical controls at the trusted service layer, and monitor direct access attempts.",
+      "safety": "Do not probe guessed origins. Use only an owner-confirmed destination, one harmless route, correct SNI/Host, and stop on unrelated content."
+    },
+    {
+      "id": "WAPT-RECON-030",
+      "title": "Reconcile administrative and non-production hostnames with scope",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Identify admin, development, staging, test, and preview hostname candidates and determine ownership, exposure, and lifecycle status before testing.",
+      "prerequisites": [
+        "Approved parent domains",
+        "Passive hostname sources or URL hints"
+      ],
+      "steps": [
+        "Collect exact environment-label candidates from approved passive sources",
+        "Resolve and inspect certificates without brute-forcing names",
+        "Ask the owner to classify each live candidate",
+        "Apply active testing only after explicit inclusion and environment safety guidance"
+      ],
+      "examples": [
+        {
+          "note": "staging.example.com is a low-confidence environment clue; the label does not prove weaker controls or permission to test."
+        }
+      ],
+      "manipulate": "Passive records and owner-approved hostname requests",
+      "secure_behavior": "Administrative and non-production services are intentionally exposed, access-restricted, inventoried, and free of production secrets/data.",
+      "vulnerable_behavior": "A confirmed in-scope environment exposes sensitive access, data, or exploitable weak controls after separate validation.",
+      "validation": "Confirm ownership, environment purpose, and data sensitivity; labels and login pages alone are not findings.",
+      "false_positives": [
+        "Environment-like labels can front production services",
+        "A hostname may resolve to a generic deny page or shared edge"
+      ],
+      "impact": "Unmanaged environments can expose weaker controls or sensitive data, but impact must be demonstrated in the confirmed environment.",
+      "evidence": [
+        "Passive source or URL hint",
+        "DNS/TLS result",
+        "Owner classification",
+        "Environment-specific test constraints"
+      ],
+      "tools": [
+        "Certificate transparency search",
+        "DNS resolver",
+        "Asset inventory worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Enumerate Applications on Webserver",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/04-Enumerate_Applications_on_Webserver"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "nonproduction",
+        "admin",
+        "subdomain"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Inventory and access-restrict every environment, prohibit production secrets/data in lower tiers, and remove DNS when environments are retired.",
+      "priority_when": {
+        "url_hints.nonproduction_subdomain": [
+          true
+        ]
+      },
+      "safety": "Do not actively test a discovered admin or non-production host until the owner confirms scope, data handling, and safe test limits."
+    },
+    {
+      "id": "WAPT-RECON-031",
+      "title": "Inventory third-party scripts, frames, APIs, and identity dependencies",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Document external origins that receive data, execute in the page, frame content, provide identity, or supply security-relevant application functions.",
+      "prerequisites": [
+        "Representative pages and workflows",
+        "Owner distinction between first and third parties"
+      ],
+      "steps": [
+        "Extract external origins from network traffic, markup, CSP, and redirects",
+        "Classify scripts, frames, APIs, analytics, support, payment, storage, and identity services",
+        "Record data sent and browser privilege",
+        "Confirm whether each provider is in scope, dependency-only, or separately authorized"
+      ],
+      "examples": [
+        {
+          "note": "Loading a script from a provider gives it page execution privilege but does not authorize testing the provider."
+        }
+      ],
+      "manipulate": "Normal application workflows while observing external requests",
+      "secure_behavior": "Every external dependency is approved, minimally privileged, data-appropriate, and governed by an owner.",
+      "vulnerable_behavior": "A dependency relationship later enables sensitive data leakage, unsafe trust, or a confirmed integration weakness; presence alone is not a finding.",
+      "validation": "Separate first-party aliases from third parties and verify actual transmitted fields with secrets and personal data redacted.",
+      "false_positives": [
+        "A DNS alias can make a first-party service appear external",
+        "Browser extensions can inject unrelated third-party requests"
+      ],
+      "impact": "Third-party inventory defines supply-chain, privacy, CSP, postMessage, OAuth, payment, and unsafe-consumption test boundaries.",
+      "evidence": [
+        "External origin",
+        "Request initiator and page",
+        "Data category with values redacted",
+        "Privilege and scope classification"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "CSP parser"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "third-party",
+        "supply-chain",
+        "trust-boundary"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Maintain an approved dependency inventory, minimize shared data and browser privilege, pin/integrity-protect suitable assets, and remove unused integrations."
+    },
+    {
+      "id": "WAPT-RECON-032",
+      "title": "Catalog browser storage keys and client configuration namespaces",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Identify localStorage, sessionStorage, IndexedDB, Cache Storage, and non-session cookie namespaces used by representative application flows.",
+      "prerequisites": [
+        "A designated browser profile",
+        "Representative public and authenticated workflows"
+      ],
+      "steps": [
+        "Record storage before interacting with the application",
+        "Repeat after login and representative features",
+        "Classify keys by purpose without retaining secret values",
+        "Map keys to scripts and requests that create or consume them"
+      ],
+      "examples": [
+        {
+          "note": "Record a key as auth.token = [redacted, JWT-like] rather than copying the token into evidence."
+        }
+      ],
+      "manipulate": "Normal browser workflows in a designated test profile",
+      "secure_behavior": "Client storage use is inventoried, purpose-limited, and does not retain unnecessary sensitive data.",
+      "vulnerable_behavior": "A later test confirms sensitive data exposure or unsafe trust in editable storage; a key name alone is not a finding.",
+      "validation": "Clear the profile and repeat to distinguish application state from extensions, stale origins, and unrelated tabs.",
+      "false_positives": [
+        "Browser extensions can add storage entries",
+        "Opaque identifiers may be non-sensitive preferences rather than credentials"
+      ],
+      "impact": "Storage inventory supports token, DOM, offline cache, service worker, and client-side trust testing.",
+      "evidence": [
+        "Origin and storage type",
+        "Key names with values classified/redacted",
+        "Creation workflow",
+        "Consumer script/request"
+      ],
+      "tools": [
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "browser-storage",
+        "client-configuration",
+        "token-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "app_type": [
+            "spa",
+            "hybrid",
+            "server_rendered",
+            "static"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Keep sensitive state server-side where possible, minimize browser retention, and never trust editable client storage for authorization decisions."
+    },
+    {
+      "id": "WAPT-RECON-033",
+      "title": "Identify upload, download, import, and export entry points",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Catalog every route that accepts, generates, transforms, previews, imports, or returns user-influenced files.",
+      "prerequisites": [
+        "Representative roles and workflows",
+        "Owner-approved inert test files"
+      ],
+      "steps": [
+        "Trace UI controls and API calls for upload, attachment, avatar, import, export, and preview functions",
+        "Record methods, multipart fields, media types, limits, identifiers, and storage origins",
+        "Map asynchronous processing and download routes",
+        "Note role and tenant context for later file-specific tests"
+      ],
+      "examples": [
+        {
+          "request": "POST /api/attachments HTTP/1.1\nHost: app.example.com\nContent-Type: multipart/form-data; boundary=BOUNDARY",
+          "note": "Use an inert text canary during mapping."
+        }
+      ],
+      "manipulate": "Normal inert file operations on disposable test records",
+      "secure_behavior": "All file entry points are inventoried and consistently apply documented type, size, storage, authorization, and lifecycle controls.",
+      "vulnerable_behavior": "A later file-handling test confirms execution, traversal, unauthorized access, or unsafe processing; discovery alone is not a finding.",
+      "validation": "Correlate UI, request, processing status, and retrieval route; distinguish direct application handling from third-party storage widgets.",
+      "false_positives": [
+        "A file picker can upload directly to an out-of-scope provider",
+        "Export buttons can generate reports without accepting user files"
+      ],
+      "impact": "Complete file-flow inventory is required for upload, download, inclusion, archive, parser, and authorization coverage.",
+      "evidence": [
+        "Entry-point route and role",
+        "Field/media/limit metadata",
+        "Processing and storage flow",
+        "Retrieval authorization context"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "file-upload",
+        "file-download",
+        "entry-point"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain one file-flow inventory and apply centralized validation, isolated storage/processing, authorization, quotas, and cleanup controls.",
+      "safety": "Use inert, small canary files and disposable records; do not upload active content or trigger heavy document processing during discovery."
+    },
+    {
+      "id": "WAPT-RECON-034",
+      "title": "Map search, filtering, sorting, and reporting inputs",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Inventory query-building features and their structured inputs before injection, authorization, and resource-abuse testing.",
+      "prerequisites": [
+        "Representative searchable data in a test account"
+      ],
+      "steps": [
+        "Exercise search, filters, sorting, pagination, saved views, and reports normally",
+        "Record parameter names, operators, encodings, and defaults",
+        "Identify free text versus structured expression inputs",
+        "Map export or asynchronous report-generation paths"
+      ],
+      "examples": [
+        {
+          "request": "GET /api/orders?query=test&sort=createdAt:desc&page=1 HTTP/1.1\nHost: app.example.com"
+        }
+      ],
+      "manipulate": "Normal search terms and filter controls using non-sensitive test data",
+      "secure_behavior": "Search inputs and supported operators are documented and consistently constrained by authorization and resource budgets.",
+      "vulnerable_behavior": "A later test confirms interpreter injection, cross-user data access, or disproportionate resource use; flexible search alone is not a finding.",
+      "validation": "Correlate each control to request syntax and response behavior; do not assume backend technology from operator names.",
+      "false_positives": [
+        "Client-only filtering can resemble server query parameters",
+        "Search syntax may be intentionally expressive but safely parsed and authorized"
+      ],
+      "impact": "Search inventory focuses injection, BOLA, excessive-data, pagination, and rate-abuse testing.",
+      "evidence": [
+        "Feature and role",
+        "Redacted request examples",
+        "Operator/type inventory",
+        "Response and pagination behavior"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Identify Application Entry Points",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/06-Identify_Application_Entry_Points"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-06"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "search",
+        "filter",
+        "parameter-discovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "search"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define explicit query grammars, parameterize backend operations, enforce object authorization, and bound result size and computational cost."
+    },
+    {
+      "id": "WAPT-RECON-035",
+      "title": "Record error-response families without forcing exceptional load",
+      "category": "reconnaissance",
+      "severity": "low",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Classify validation, authentication, authorization, missing-route, and server error responses to guide later differential testing.",
+      "prerequisites": [
+        "Representative routes",
+        "Harmless malformed values and missing paths"
+      ],
+      "steps": [
+        "Capture normal success responses",
+        "Trigger one harmless validation error and one unique missing path",
+        "Record status, media type, body schema, correlation ID, and cache behavior",
+        "Use naturally observed server errors rather than attempting to crash the service"
+      ],
+      "examples": [
+        {
+          "request": "GET /wapt-confirmed-missing-b81e HTTP/1.1\nHost: app.example.com",
+          "response": "HTTP/1.1 404 Not Found\nContent-Type: application/problem+json"
+        }
+      ],
+      "manipulate": "A unique missing path and one type-safe invalid value",
+      "secure_behavior": "Errors are consistent, minimally informative, traceable for operators, and do not reveal secrets or internal stack details.",
+      "vulnerable_behavior": "An error discloses valid secrets or sensitive internals with demonstrated utility, or creates a differential that later confirms a security weakness.",
+      "validation": "Repeat against a control and distinguish application errors from proxy, CDN, WAF, and browser-generated pages.",
+      "false_positives": [
+        "Correlation IDs and generic error codes are usually operationally useful",
+        "A product-like error page can be generated by an upstream proxy"
+      ],
+      "impact": "Error families support reliable false-positive analysis and can reveal sensitive implementation detail when disclosure is substantive.",
+      "evidence": [
+        "Baseline and error requests",
+        "Response family table",
+        "Layer attribution",
+        "Redacted sensitive details if present"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "error-handling",
+        "response-analysis",
+        "fingerprinting"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Return generic client errors, log detailed diagnostics only in protected systems, avoid secret-bearing exceptions, and preserve safe correlation identifiers."
+    },
+    {
+      "id": "WAPT-RECON-036",
+      "title": "Establish role, tenant, and account test matrices from observed functionality",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Create a coverage matrix linking available test identities to roles, tenants, ownership states, and reachable functions before authorization testing.",
+      "prerequisites": [
+        "Owner-approved test identities",
+        "Known roles or a plan to discover them",
+        "No use of real-user accounts"
+      ],
+      "steps": [
+        "Record each designated account's role, tenant, groups, and lifecycle state",
+        "Browse the same top-level functions with each identity",
+        "List objects owned, shared, and unowned by each account",
+        "Identify missing comparison accounts and mark blocked authorization work"
+      ],
+      "examples": [
+        {
+          "note": "Matrix columns can be tenant A member, tenant A admin, tenant B member, and unauthenticated; never include credentials in the sheet."
+        }
+      ],
+      "manipulate": "Normal navigation using designated test identities",
+      "secure_behavior": "Test coverage can represent every important authorization boundary without using production-user accounts.",
+      "vulnerable_behavior": "A later comparison confirms unauthorized function or object access; menu differences or role names alone are not findings.",
+      "validation": "Confirm role and tenant attributes from owner records or safe account UI, and verify that each account is designated for testing.",
+      "false_positives": [
+        "Hidden menus can coexist with correct server authorization",
+        "Role labels can differ while effective permissions are identical"
+      ],
+      "impact": "A complete matrix is necessary to detect horizontal, vertical, object, field, and cross-tenant authorization failures.",
+      "evidence": [
+        "Redacted account aliases",
+        "Role/tenant matrix",
+        "Owned test-object map",
+        "Blocked coverage and requested access"
+      ],
+      "tools": [
+        "Role matrix worksheet",
+        "Browser profiles",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Execution Paths Through Application",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/07-Map_Execution_Paths_Through_Application"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-07"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "role-matrix",
+        "multi-tenant",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Provision dedicated least-privilege comparison accounts for assessments and maintain an authoritative role/tenant permission model.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ],
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-RECON-037",
+      "title": "Create the confirmed in-scope attack-surface register",
+      "category": "reconnaissance",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Consolidate approved assets, applications, operations, identities, data flows, dependencies, confidence, ownership, and test constraints into one traceable register.",
+      "prerequisites": [
+        "Completed initial passive and active reconnaissance",
+        "Owner available to resolve scope questions"
+      ],
+      "steps": [
+        "Merge hostname, application, route, API, identity, file, channel, and dependency inventories",
+        "Assign owner, environment, data sensitivity, and confidence",
+        "Separate confirmed in-scope, dependency-only, pending, and excluded entries",
+        "Record safe-test limits and link every later methodology item to applicable surfaces"
+      ],
+      "examples": [
+        {
+          "note": "A useful entry records asset, application, environment, owner, evidence, scope state, confidence, data class, and test constraints."
+        }
+      ],
+      "manipulate": "Inventory records only; no additional target interaction",
+      "secure_behavior": "Every tested surface has explicit scope, ownership, data handling, and safety context, with uncertainty visibly tracked.",
+      "vulnerable_behavior": "A material live surface remains unowned or outside the agreed assessment plan after owner confirmation; the register itself does not create a vulnerability.",
+      "validation": "Review the register with the owner and reconcile each pending item before active tests; preserve evidence for every inclusion decision.",
+      "false_positives": [
+        "Duplicate DNS names can represent one application",
+        "A third-party dependency can be relevant to architecture without being authorized for testing"
+      ],
+      "impact": "The register controls coverage, prevents unauthorized activity, and provides the basis for context-aware applicability and reporting.",
+      "evidence": [
+        "Versioned attack-surface register",
+        "Owner review decision",
+        "Evidence links",
+        "Pending/blocked coverage list"
+      ],
+      "tools": [
+        "Asset inventory worksheet",
+        "Diagramming tool"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Map Application Architecture",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/10-Map_Application_Architecture"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "scope",
+        "asset-inventory",
+        "attack-surface"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Assign durable ownership, lifecycle, data classification, and assessment constraints to every application asset and update the register as architecture changes."
+    }
+  ]
+}

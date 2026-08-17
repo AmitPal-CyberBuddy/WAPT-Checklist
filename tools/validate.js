@@ -352,8 +352,33 @@ function discoverFiles(args) {
   if (args.length) return args.map((file) => path.resolve(ROOT, file));
   const checklist = path.join(ROOT, 'checklist');
   return fs.readdirSync(checklist)
-    .filter((name) => name.endsWith('.json') && name !== 'manifest.json')
+    .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
     .map((name) => path.join(checklist, name));
+}
+
+function validateDocument(document, file, errors) {
+  const at = path.relative(ROOT, file);
+  if (!hasText(document.schema_version)) errors.push(`${at}.schema_version: required`);
+  if (!Array.isArray(document.items)) {
+    errors.push(`${at}.items: must be an array`);
+    return false;
+  }
+
+  if (document.sample === true) {
+    const extra = Object.keys(document).filter((key) => !['schema_version', 'sample', 'description', 'items'].includes(key));
+    if (extra.length) errors.push(`${at}: unknown sample document fields: ${extra.join(', ')}`);
+    return true;
+  }
+
+  const allowed = ['schema_version', 'category', 'lastmod', 'items'];
+  const extra = Object.keys(document).filter((key) => !allowed.includes(key));
+  if (extra.length) errors.push(`${at}: unknown production document fields: ${extra.join(', ')}`);
+  if (!Object.hasOwn(CATEGORIES, document.category)) errors.push(`${at}.category: unknown production category ${JSON.stringify(document.category)}`);
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(document.lastmod || '')) errors.push(`${at}.lastmod: must use YYYY-MM-DD`);
+  if (Object.hasOwn(CATEGORIES, document.category) && path.basename(file) !== `${document.category}.json`) {
+    errors.push(`${at}: production filename must be ${document.category}.json`);
+  }
+  return true;
 }
 
 function validateFiles(files, options = {}) {
@@ -376,16 +401,15 @@ function validateFiles(files, options = {}) {
       errors.push(`${path.relative(ROOT, file)}: top level must be an object`);
       continue;
     }
-    if (!hasText(document.schema_version)) errors.push(`${path.relative(ROOT, file)}.schema_version: required`);
-    if (!Array.isArray(document.items)) {
-      errors.push(`${path.relative(ROOT, file)}.items: must be an array`);
-      continue;
-    }
+    if (!validateDocument(document, file, errors)) continue;
     documents.push({ file, document });
     document.items.forEach((item, index) => {
       const at = `${path.relative(ROOT, file)}.items[${index}]`;
       validateItem(item, at, errors);
-      if (isObject(item)) allItems.push({ item, at });
+      if (document.sample !== true && isObject(item) && item.category !== document.category) {
+        errors.push(`${at}.category: must match document category ${document.category}`);
+      }
+      if (isObject(item)) allItems.push({ item, at, sample: document.sample === true });
     });
   }
 
@@ -411,23 +435,35 @@ function validateFiles(files, options = {}) {
   }
 
   const productionDocuments = documents.filter(({ document }) => document.sample !== true);
-  if (options.enforceFloors && productionDocuments.length) {
-    const counts = Object.fromEntries(Object.keys(CATEGORIES).map((category) => [category, 0]));
-    for (const { item } of allItems) if (Object.hasOwn(counts, item.category)) counts[item.category] += 1;
-    for (const [category, meta] of Object.entries(CATEGORIES)) {
-      if (counts[category] < meta.floor) errors.push(`floor.${category}: ${counts[category]} items; requires ${meta.floor}`);
+  const counts = Object.fromEntries(Object.keys(CATEGORIES).map((category) => [category, 0]));
+  for (const { item, sample } of allItems) {
+    if (!sample && Object.hasOwn(counts, item.category)) counts[item.category] += 1;
+  }
+  if ((options.enforceFloors || options.enforcePresentFloors) && productionDocuments.length) {
+    const requiredCategories = options.enforceFloors
+      ? Object.keys(CATEGORIES)
+      : [...new Set(productionDocuments.map(({ document }) => document.category))];
+    for (const category of requiredCategories) {
+      const meta = CATEGORIES[category];
+      if (meta && counts[category] < meta.floor) errors.push(`floor.${category}: ${counts[category]} items; requires ${meta.floor}`);
     }
   }
 
-  return { errors, itemCount: allItems.length, documentCount: documents.length };
+  return { errors, itemCount: allItems.length, documentCount: documents.length, counts };
 }
 
 function main() {
   const args = process.argv.slice(2);
   const enforceFloors = args.includes('--floors');
-  const paths = args.filter((arg) => arg !== '--floors');
+  const enforcePresentFloors = args.includes('--floors-present');
+  if (enforceFloors && enforcePresentFloors) {
+    console.error('Choose either --floors or --floors-present, not both.');
+    process.exitCode = 2;
+    return;
+  }
+  const paths = args.filter((arg) => !['--floors', '--floors-present'].includes(arg));
   const files = discoverFiles(paths);
-  const result = validateFiles(files, { enforceFloors });
+  const result = validateFiles(files, { enforceFloors, enforcePresentFloors });
 
   if (result.errors.length) {
     console.error(`Validation failed with ${result.errors.length} error(s):`);
@@ -436,7 +472,9 @@ function main() {
     return;
   }
   console.log(`Validated ${result.itemCount} item(s) in ${result.documentCount} file(s).`);
-  if (!enforceFloors) console.log('Category floors were not enforced (Phase 1 sample mode).');
+  if (enforceFloors) console.log('All 24 category floors satisfied.');
+  else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
+  else console.log('Category floors were not enforced.');
 }
 
 if (require.main === module) main();

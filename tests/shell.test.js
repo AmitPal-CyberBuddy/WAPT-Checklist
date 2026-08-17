@@ -37,12 +37,21 @@ test('font assets are self-hosted WOFF2 files', () => {
   assert.doesNotMatch(css, /https?:\/\//);
 });
 
-test('manifest matches the architecture taxonomy without hardcoded production counts', () => {
+test('manifest matches the architecture taxonomy and production files', () => {
   const manifest = JSON.parse(read('checklist/manifest.json'));
   assert.equal(manifest.categories.length, 24);
   assert.equal(manifest.sample_count, 20);
-  assert.ok(manifest.categories.every(({ count }) => count === 0));
   assert.equal(manifest.categories.reduce((sum, category) => sum + category.floor, 0), 512);
+  for (const category of manifest.categories) {
+    const file = path.join(ROOT, 'checklist', category.file);
+    if (!fs.existsSync(file)) {
+      assert.equal(category.count, 0, `${category.slug} has a count but no production file`);
+      continue;
+    }
+    const document = JSON.parse(fs.readFileSync(file, 'utf8'));
+    assert.equal(document.category, category.slug);
+    assert.equal(document.items.length, category.count, `${category.slug} manifest count differs`);
+  }
 });
 
 test('wizard source defines all 14 question keys and the one localStorage key', () => {

@@ -17,5 +17,7 @@ jobs:
           node-version: 22
       - name: Run tests
         run: node --test
-      - name: Validate Phase 1 sample
+      - name: Validate schema review sample
         run: node tools/validate.js checklist/sample.json
+      - name: Validate production content and present category floors
+        run: node tools/validate.js --floors-present
