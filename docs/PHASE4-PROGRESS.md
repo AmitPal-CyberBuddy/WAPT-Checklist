@@ -10,14 +10,18 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 02 | HTTP / Web fundamentals | 25 | 26 | Complete |
 | 03 | Authentication | 40 | 45 | Complete |
 | 04 | Session management | 25 | 28 | Complete |
-| 05 | Authorization | 35 | 0 | Not started |
+| 05 | Authorization | 35 | 43 | Complete |
 | 06 | Injection | 45 | 0 | Not started |
 | 07 | Cross-site scripting | 25 | 0 | Not started |
 | 08 | Cross-site request forgery | 15 | 0 | Not started |
 | 09 | File handling | 20 | 0 | Not started |
 | 10 | API security | 35 | 0 | Not started |
 
-Core floor total: **295**. Current production total: **136**.
+Core floor total: **295**. Current production total: **179**.
+
+## Authorization coverage
+
+The authorization catalog adds 43 detailed tests spanning unauthenticated and horizontal object access, reads/writes/deletes/collections/bulk/nested/files/reports/jobs, vertical functions and role/ownership/property manipulation, field-level policy, multi-tenant isolation and invitations, groups and delegation, workflow approvals and impersonation, stale authorization caches/claims, batched and real-time operations, search and existence oracles, signed capabilities, confused-deputy integrations, deny-by-default, administrative layering, state/version/representation parity, and auditability. Mutation tests use synthetic objects with explicit restoration guidance.
 
 ## Session management coverage
 

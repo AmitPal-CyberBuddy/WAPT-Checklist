@@ -1,0 +1,3737 @@
+{
+  "schema_version": "1.0.0",
+  "category": "authorization",
+  "lastmod": "2026-08-17",
+  "items": [
+    {
+      "id": "WAPT-AUTHZ-001",
+      "title": "Build and verify the role-permission matrix",
+      "category": "authorization",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Establish expected function, object, field, tenant, and workflow permissions for each designated role before mutation testing.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "List designated roles, tenants, and account states",
+        "Map normal functions and object ownership for each",
+        "Record expected allow/deny decisions with the owner",
+        "Identify missing comparison accounts as blocked coverage"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: build and verify the role-permission matrix."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Authorization expectations are explicit, reviewable, and represented by safe test identities.",
+      "vulnerable_behavior": "A material permission boundary is undocumented or cannot be tested, creating a confirmed control-coverage gap.",
+      "validation": "Review expectations with the owner; UI visibility alone does not define the policy.",
+      "false_positives": [
+        "Roles with different names can intentionally share permissions",
+        "Some permissions can depend on object state rather than role alone"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.1.1",
+          "v5.0.0-8.1.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "role-matrix",
+        "authorization",
+        "scope"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain a versioned policy matrix covering function, data, field, tenant, and state constraints, and provision dedicated comparison accounts.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-002",
+      "title": "Reject unauthenticated access to protected functions",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether removing all credentials still permits a function intended only for authenticated users.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture an authorized harmless request",
+        "Remove cookies, bearer tokens, and client identity",
+        "Repeat from a clean client",
+        "Verify response data and server-side state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: reject unauthenticated access to protected functions."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The trusted service rejects the request before protected processing.",
+      "vulnerable_behavior": "An unauthenticated request reads protected data or performs a protected action.",
+      "validation": "Confirm no ambient credentials remain and distinguish public preview/status content.",
+      "false_positives": [
+        "A route can intentionally expose a public subset",
+        "A 200 response can contain a login shell rather than protected data"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-862"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "missing-authorization",
+        "unauthenticated",
+        "function"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Deny by default at the trusted service layer and require authenticated identity before every protected handler."
+    },
+    {
+      "id": "WAPT-AUTHZ-003",
+      "title": "Enforce horizontal read authorization on object references",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether account B can read an object owned only by account A by changing its identifier.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create one synthetic object for each of two designated accounts",
+        "Capture A's authorized read",
+        "Replay with B's session changing only the object reference",
+        "Compare with B's own object and a nonexistent control"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce horizontal read authorization on object references."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "B receives 403 or a consistent 404 for A-only objects.",
+      "vulnerable_behavior": "B receives A's non-shared object or sensitive attributes.",
+      "validation": "Confirm ownership and sharing policy with two objects; exclude cache replay.",
+      "false_positives": [
+        "Objects can be intentionally public or shared",
+        "A cache can replay an earlier authorized body without a fresh origin decision"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "idor",
+        "bola",
+        "horizontal-access"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize every object operation against principal, action, object, and tenant; never rely on identifier secrecy."
+    },
+    {
+      "id": "WAPT-AUTHZ-004",
+      "title": "Enforce horizontal update authorization on object references",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether one account can modify another account's object through an identifier change.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create reversible objects for accounts A and B",
+        "Capture A updating its own object",
+        "Replay as B targeting A with one harmless marker",
+        "Read both objects fresh and restore state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce horizontal update authorization on object references."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Only an authorized owner or collaborator can update the object.",
+      "vulnerable_behavior": "B's request changes A's object without permission.",
+      "validation": "Confirm committed state through a fresh read; an accepted/queued response alone is insufficient.",
+      "false_positives": [
+        "Shared editors can legitimately update the same object",
+        "Eventual consistency can delay visibility without changing authorization"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "idor",
+        "bola",
+        "object-update"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply object authorization before mutation and enforce ownership/tenant constraints inside the transaction.",
+      "safety": "Use synthetic reversible objects and harmless markers; restore any unauthorized change immediately."
+    },
+    {
+      "id": "WAPT-AUTHZ-005",
+      "title": "Enforce horizontal delete authorization on object references",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether one account can delete or archive another account's object.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create disposable objects for two designated accounts",
+        "Capture A deleting its own disposable object",
+        "Create a fresh A object and replay as B targeting it",
+        "Verify authoritative state and avoid cascading data"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce horizontal delete authorization on object references."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Unauthorized users cannot delete, archive, cancel, or detach the object.",
+      "vulnerable_behavior": "B removes or changes lifecycle state of A's object.",
+      "validation": "Confirm the object was not intentionally shared and verify committed state.",
+      "false_positives": [
+        "Archive can hide an object only from the current viewer",
+        "Collaborators can have documented deletion permission"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "idor",
+        "bola",
+        "object-delete"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize destructive transitions against object ownership and role, enforce transactionally, and audit deletion.",
+      "safety": "Delete only disposable synthetic objects with no dependencies, and restore or recreate them after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-006",
+      "title": "Filter collection responses by the caller's object permissions",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether list, search, feed, or history endpoints return objects outside the caller's authorized set.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Seed distinct canary objects under accounts A and B",
+        "Request the collection as each account",
+        "Vary only documented pagination and filters",
+        "Search responses for the other account's canary"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: filter collection responses by the caller's object permissions."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every collection applies authorization before filtering, sorting, and pagination.",
+      "vulnerable_behavior": "A collection exposes another user's or tenant's object or sensitive metadata.",
+      "validation": "Use unique synthetic canaries and distinguish intentionally shared/global objects.",
+      "false_positives": [
+        "Counts can include public/shared objects",
+        "Search indexes can be eventually consistent after ownership changes"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bola",
+        "collection",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply row/object authorization in the query itself and test all list, search, export, and pagination paths."
+    },
+    {
+      "id": "WAPT-AUTHZ-007",
+      "title": "Authorize bulk object operations per member",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether batch reads or mutations validate every supplied object rather than only the first or container.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create one authorized and one unauthorized synthetic object",
+        "Capture a valid bulk request",
+        "Add the unauthorized ID in each list position",
+        "Verify per-object response and committed state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize bulk object operations per member."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The service denies or safely omits every unauthorized member without processing it.",
+      "vulnerable_behavior": "Including one authorized object causes unauthorized members to be read or changed.",
+      "validation": "Check each object independently and exclude all-or-nothing documented semantics that correctly deny the batch.",
+      "false_positives": [
+        "A batch can intentionally fail entirely on one unauthorized member",
+        "Public objects can legitimately appear beside private ones"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bulk-operation",
+        "bola",
+        "batch"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize each object inside bulk handlers and transactions; never infer authorization from one member or parent request.",
+      "safety": "Use small batches of disposable objects and harmless updates; restore all state after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-008",
+      "title": "Validate parent-child authorization on nested resources",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing a parent or child identifier crosses ownership boundaries in nested routes.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create parent/child objects for accounts A and B",
+        "Capture A's valid nested request",
+        "Mix A's child with B's parent and reverse the combination",
+        "Compare direct child and nested route decisions"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: validate parent-child authorization on nested resources."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The service validates both relationship integrity and caller permission for parent and child.",
+      "vulnerable_behavior": "A mismatched parent/child pair exposes or mutates an unauthorized resource.",
+      "validation": "Confirm actual parentage and avoid assuming path nesting enforces a relationship.",
+      "false_positives": [
+        "The parent segment can be cosmetic routing metadata",
+        "A child can be intentionally movable or shared across parents"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "nested-resource",
+        "bola",
+        "parent-child"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Load and authorize the canonical relationship server-side; reject mismatched hierarchy and tenant context."
+    },
+    {
+      "id": "WAPT-AUTHZ-009",
+      "title": "Treat indirect and opaque references as authorization inputs, not secrets",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tokens, slugs, UUIDs, hashes, or filenames grant access without a permission check.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Obtain opaque references only from designated accounts",
+        "Replay A's reference as B",
+        "Test read and one harmless operation separately",
+        "Assess guessability only after authorization behavior"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: treat indirect and opaque references as authorization inputs, not secrets."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Possession of an identifier does not replace authorization unless it is an intentionally scoped capability.",
+      "vulnerable_behavior": "Any holder of a leaked/observed reference gains access beyond intended sharing.",
+      "validation": "Distinguish a documented capability URL from an ordinary object ID and assess expiry/scope.",
+      "false_positives": [
+        "Signed share links can intentionally be bearer capabilities",
+        "UUID unpredictability reduces discovery but does not show authorization"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "opaque-identifier",
+        "uuid",
+        "idor"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize ordinary references; for deliberate capabilities use high entropy, narrow scope, expiry, revocation, and no referrer leakage."
+    },
+    {
+      "id": "WAPT-AUTHZ-010",
+      "title": "Authorize direct file and media object retrieval",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether filenames, storage keys, CDN paths, and attachment IDs expose another user's files.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Upload distinct inert files under accounts A and B",
+        "Capture each retrieval route including redirects",
+        "Request A's file as B and unauthenticated",
+        "Check origin/CDN and transformed variants"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize direct file and media object retrieval."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every original and derivative enforces ownership/share policy or uses a deliberate scoped capability.",
+      "vulnerable_behavior": "B retrieves A's private file or derivative without permission.",
+      "validation": "Verify file privacy, avoid real content, and follow only approved storage origins.",
+      "false_positives": [
+        "Avatars and public media can be intentionally world-readable",
+        "A signed URL can be a documented short-lived share capability"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "file-download",
+        "idor",
+        "media"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize file metadata before delivery, protect derivatives equally, and use short-lived scoped signed URLs where direct storage delivery is required.",
+      "safety": "Use only inert synthetic files and approved storage origins; delete test artifacts afterward."
+    },
+    {
+      "id": "WAPT-AUTHZ-011",
+      "title": "Authorize generated reports and export artifacts",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether report job IDs, download links, or export files can be accessed by other users or tenants.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Generate distinct minimal reports for accounts A and B",
+        "Record creation, status, and download references",
+        "Request A's status/result as B",
+        "Test expired and regenerated links"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize generated reports and export artifacts."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Job metadata and artifacts remain bound to creator, tenant, and authorized recipients.",
+      "vulnerable_behavior": "B observes job details or downloads A's report.",
+      "validation": "Use synthetic report data and confirm link capability semantics and expiry.",
+      "false_positives": [
+        "A report can be intentionally shared with a team",
+        "A one-time signed export URL can be transferable by design"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "report-export",
+        "async-job",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize job and artifact separately, bind tenant/creator, expire files, and make sharing explicit and revocable.",
+      "safety": "Generate only small synthetic reports and remove artifacts after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-012",
+      "title": "Authorize asynchronous job status, cancellation, and results",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether predictable job identifiers permit cross-user monitoring, cancellation, or result access.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Start harmless jobs under accounts A and B",
+        "Capture status and cancellation operations",
+        "Replay A's job ID as B for status then safe cancellation only if approved",
+        "Verify final state and output"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize asynchronous job status, cancellation, and results."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every job operation authorizes caller, tenant, and permitted action.",
+      "vulnerable_behavior": "B reads, cancels, retries, or obtains results for A's job.",
+      "validation": "Confirm job ownership and committed effect; generic queue metadata may be intentionally public.",
+      "false_positives": [
+        "Shared team queues can expose common job status",
+        "Cancellation may be accepted but ignored after completion"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "async-job",
+        "bola",
+        "workflow"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Store job ownership and authorize each operation; avoid global sequential identifiers as the only boundary.",
+      "safety": "Use disposable harmless jobs and cancel only owner-approved test work; do not affect shared or production processing."
+    },
+    {
+      "id": "WAPT-AUTHZ-013",
+      "title": "Reject low-privilege access to administrative functions",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a standard user can invoke administrator-only routes or operations directly.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture a harmless admin operation with a designated admin",
+        "Replay as a low-privilege test user",
+        "Try the documented API and UI route only",
+        "Compare authorization and audit behavior"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: reject low-privilege access to administrative functions."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The trusted service denies the low-privilege principal regardless of route knowledge.",
+      "vulnerable_behavior": "A standard user executes or reads an administrator-only function.",
+      "validation": "Confirm role expectations and actual effect; a visible admin page shell is insufficient.",
+      "false_positives": [
+        "Read-only administrative metadata can be intentionally delegated",
+        "A low-privilege support role can have documented scoped admin rights"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "vertical-access",
+        "admin",
+        "bfla"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce function authorization server-side from a central policy and deny by default.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-014",
+      "title": "Enforce function authorization across alternate HTTP methods",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing method reaches an administrative or privileged handler with weaker checks.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture a denied low-privilege request and an authorized control",
+        "Use only methods the route or documentation suggests",
+        "Preserve body and identity while changing method",
+        "Verify handler and committed state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce function authorization across alternate http methods."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every supported method enforces the same function policy; unsupported methods are rejected.",
+      "vulnerable_behavior": "An alternate method invokes a function denied through the normal method.",
+      "validation": "Prove protected data/action, not only a different status.",
+      "false_positives": [
+        "OPTIONS can disclose method metadata safely",
+        "Framework fallbacks can return 200 without invoking the operation"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-4.1.4"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-285"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bfla",
+        "http-methods",
+        "vertical-access"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize after method normalization inside each handler and keep gateway/application method policies aligned.",
+      "safety": "Use read-only or reversible administrator functions and designated accounts."
+    },
+    {
+      "id": "WAPT-AUTHZ-015",
+      "title": "Ignore client-side visibility as an authorization control",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether hidden buttons, disabled fields, or omitted routes remain invokable by unauthorized users.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Compare UI and traffic for two designated roles",
+        "Identify one function hidden from the lower role",
+        "Replay the underlying request as that role",
+        "Verify server denial and state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: ignore client-side visibility as an authorization control."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "UI adapts for usability while the server independently enforces permission.",
+      "vulnerable_behavior": "A user invokes a hidden/disabled function because only the client suppressed it.",
+      "validation": "Confirm actual protected effect; DOM manipulation alone is not a vulnerability.",
+      "false_positives": [
+        "Feature flags can hide unfinished but server-denied routes",
+        "A button can be hidden for UX while the operation is permitted through another workflow"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-602"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-side-control",
+        "forced-browsing",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use client visibility only for UX and enforce policy at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-AUTHZ-016",
+      "title": "Reject client-controlled role and permission selection",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether registration, profile, token, or request fields can assign a stronger role or permission set.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture a normal self-service create/update request",
+        "Add or change one role/permission/group field",
+        "Retrieve account state fresh",
+        "Attempt only a harmless privileged identity endpoint"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: reject client-controlled role and permission selection."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Role assignment comes from authorized server-side workflows, not self-service input.",
+      "vulnerable_behavior": "A standard user grants itself or another user elevated permission.",
+      "validation": "Confirm effective permission, not echoed or ignored fields.",
+      "false_positives": [
+        "A role field can select among equally privileged public account types",
+        "The server can echo unknown input without persisting it"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023",
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "role-manipulation",
+        "mass-assignment",
+        "privilege-escalation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use explicit writable-field allowlists and separate authorized role-management functions with audit and approval.",
+      "safety": "Use a disposable account and harmless privilege check; remove any unexpected elevation immediately."
+    },
+    {
+      "id": "WAPT-AUTHZ-017",
+      "title": "Prevent ownership reassignment through client-controlled fields",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether owner, user, account, or tenant fields can transfer an object without authorized workflow.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture an object update as its owner",
+        "Add or alter one ownership field toward designated account B",
+        "Read object as both accounts",
+        "Restore ownership if changed"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: prevent ownership reassignment through client-controlled fields."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Ownership fields are server-managed or changed only through explicit authorized transfer.",
+      "vulnerable_behavior": "A client update silently transfers ownership or tenant context.",
+      "validation": "Confirm authoritative ownership and resulting access; echoed fields are insufficient.",
+      "false_positives": [
+        "Objects can support an explicit transfer workflow",
+        "An assignee field can differ from security ownership"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.3"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "ownership",
+        "mass-assignment",
+        "object-property"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Allowlist writable fields and implement transfer as an explicit policy-checked, consented, audited transition.",
+      "safety": "Use disposable objects and designated accounts; restore ownership and access after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-018",
+      "title": "Filter sensitive object properties by read permission",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether low-privilege responses include fields reserved for owners, admins, or another tenant.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture the same object type under high and low roles",
+        "Compare response fields and nested structures",
+        "Request sparse/expanded representations if documented",
+        "Check errors, exports, and alternate serializers"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: filter sensitive object properties by read permission."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Serialization includes only fields the caller may read.",
+      "vulnerable_behavior": "A caller receives a sensitive field without field-level permission.",
+      "validation": "Confirm field sensitivity and intended role; schema presence with null/redacted values is not exposure.",
+      "false_positives": [
+        "Public schemas can name fields without returning values",
+        "Support roles can intentionally see selected operational metadata"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.3"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bopla",
+        "field-level",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply field-level authorization before serialization across every representation and export."
+    },
+    {
+      "id": "WAPT-AUTHZ-019",
+      "title": "Reject unauthorized writes to protected object properties",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user can modify admin-only, financial, status, ownership, or verification fields.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture an allowed update",
+        "Add one protected candidate field",
+        "Retrieve the object fresh and test resulting behavior",
+        "Restore any changed state"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: reject unauthorized writes to protected object properties."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Each action binds an explicit writable-field allowlist and separately authorizes sensitive fields.",
+      "vulnerable_behavior": "The server persists or acts on a field the caller may not write.",
+      "validation": "Prove persistence/security effect; accepted unknown JSON is insufficient.",
+      "false_positives": [
+        "The parser can ignore extra fields",
+        "The role can legitimately write the tested property in that workflow"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.3"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bopla",
+        "field-level",
+        "mass-assignment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use per-action DTOs/allowlists, field authorization, immutable server-managed properties, and audit sensitive changes.",
+      "safety": "Use one harmless field on a disposable object and restore state immediately."
+    },
+    {
+      "id": "WAPT-AUTHZ-020",
+      "title": "Bind tenant context to trusted identity rather than request input",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether host, path, header, query, or body tenant selectors can move a user into another tenant.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create designated users in tenants A and B",
+        "Capture A's normal tenant selection",
+        "Change one tenant selector while retaining A's identity",
+        "Request a harmless tenant identity/summary"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: bind tenant context to trusted identity rather than request input."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Tenant context is derived from authorized memberships and validated on every request.",
+      "vulnerable_behavior": "A user selects an unauthorized tenant by changing client input.",
+      "validation": "Confirm tenant identity and membership; tenant display labels alone are insufficient.",
+      "false_positives": [
+        "Users can legitimately belong to multiple tenants",
+        "A tenant selector can change branding before authorization"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "multi-tenant",
+        "tenant-context",
+        "isolation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Derive candidate tenant from canonical routing then authorize membership server-side; never trust selectors alone.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-021",
+      "title": "Prevent cross-tenant object-level access",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user in tenant B can read or mutate an object owned only by tenant A.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create canary objects in tenants A and B",
+        "Capture A's request",
+        "Replay with B's identity and A's object reference",
+        "Test read and one reversible mutation separately"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: prevent cross-tenant object-level access."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every object query constrains both object permission and tenant boundary.",
+      "vulnerable_behavior": "Tenant B accesses or changes tenant A's private object.",
+      "validation": "Confirm tenant ownership and exclude deliberate cross-tenant sharing.",
+      "false_positives": [
+        "Marketplace/public objects can cross tenant boundaries intentionally",
+        "A super-admin test role can have documented global access"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "multi-tenant",
+        "bola",
+        "tenant-isolation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Include tenant in authorization and data-access predicates, use composite keys/row policies, and test every operation.",
+      "safety": "Use synthetic tenant data and harmless reversible changes; never access real customer records.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-022",
+      "title": "Clear object and permission state when switching tenants",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tenant switching preserves cached IDs, pending actions, or authorization from the prior tenant.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Open a synthetic object in tenant A",
+        "Switch normally to tenant B",
+        "Replay the old view/action request",
+        "Check client caches and fresh server responses"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: clear object and permission state when switching tenants."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Switching tenant resets client/server context and every old object request is reauthorized.",
+      "vulnerable_behavior": "Tenant B context retains access or can commit a pending action from A.",
+      "validation": "Separate stale UI display from server access and confirm active tenant identity.",
+      "false_positives": [
+        "Client history can display stale data while network access is denied",
+        "Users with membership in both tenants can access both under explicit context"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "multi-tenant",
+        "tenant-switch",
+        "state-confusion"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Bind every operation to explicit authorized tenant context, cancel pending work, and clear caches on switch.",
+      "safety": "Use designated tenants and synthetic objects; cancel pending actions and clear test caches afterward."
+    },
+    {
+      "id": "WAPT-AUTHZ-023",
+      "title": "Authorize tenant invitations and assigned roles",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether members can invite arbitrary users, choose elevated roles, or accept invitations for another tenant/account.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create a controlled invitation from an authorized role",
+        "Replay creation as a lower role",
+        "Alter tenant, invitee, and role one at a time",
+        "Accept only with designated identities and remove membership"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize tenant invitations and assigned roles."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Only authorized roles invite; tenant/invitee/role are bound and acceptance is single-purpose.",
+      "vulnerable_behavior": "A lower role creates an invitation, elevates its role, or redeems it into another tenant/account.",
+      "validation": "Confirm effective membership and role; message generation alone is insufficient.",
+      "false_positives": [
+        "Self-service tenant creation can grant inviter owner role intentionally",
+        "Invitation administrators can have delegated scoped rights"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "multi-tenant",
+        "invitation",
+        "role-assignment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize invitation creation and role ceiling, bind signed single-use tokens to tenant/invitee, and notify/audit changes.",
+      "safety": "Use controlled addresses and test tenants; cap messages and remove all test memberships/invitations."
+    },
+    {
+      "id": "WAPT-AUTHZ-024",
+      "title": "Authorize group and team membership changes",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can add themselves or others to groups that confer unauthorized access.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture an authorized membership change",
+        "Replay as a role below the management threshold",
+        "Alter group and user identifiers separately",
+        "Verify effective permissions and restore membership"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize group and team membership changes."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Only authorized managers change membership within their delegated scope.",
+      "vulnerable_behavior": "A user joins a privileged group or modifies membership without permission.",
+      "validation": "Confirm permissions derived from membership, not only list display.",
+      "false_positives": [
+        "Open collaboration groups can allow self-join",
+        "Group managers can intentionally administer only their own teams"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "group-membership",
+        "rbac",
+        "privilege-escalation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce delegated membership policy, role ceilings, tenant scope, approval for privileged groups, and audit changes.",
+      "safety": "Use disposable groups and designated accounts; undo membership changes immediately.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-025",
+      "title": "Preserve scope and expiry for delegated and shared access",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether delegated access, shares, or grants exceed intended object, action, recipient, or lifetime.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create a narrow share for a synthetic object",
+        "Test another object/action with the same grant",
+        "Test after revocation/expiry",
+        "Check onward sharing only where approved"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: preserve scope and expiry for delegated and shared access."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Delegation is recipient/object/action scoped, time-bounded, visible, and revocable.",
+      "vulnerable_behavior": "A narrow grant accesses other objects/actions or remains usable after revocation.",
+      "validation": "Confirm documented share semantics; transferable public links can intentionally be bearer capabilities.",
+      "false_positives": [
+        "Team shares can cover a collection rather than one object",
+        "Expiry can have a documented small clock tolerance"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "delegated-access",
+        "sharing",
+        "capability"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Model grants explicitly with least scope, expiry, recipient binding where needed, revocation, and audit.",
+      "safety": "Use synthetic objects and controlled recipients; revoke every grant after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-026",
+      "title": "Enforce authorization on every workflow state transition",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user can approve, publish, refund, close, or otherwise transition an object without the required permission.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Map a reversible transition with owner-approved roles",
+        "Capture the authorized transition",
+        "Replay as an unauthorized role while preserving object state",
+        "Verify authoritative state and audit trail"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce authorization on every workflow state transition."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Each transition checks actor permission and current state atomically.",
+      "vulnerable_behavior": "An unauthorized role advances or reverses a protected workflow state.",
+      "validation": "Confirm committed state and role expectation; UI button visibility is insufficient.",
+      "false_positives": [
+        "Object owners can have state-specific delegated rights",
+        "A transition request can queue review without changing state"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "workflow",
+        "state-transition",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize transition and state together inside one transaction and audit actor, prior state, and result.",
+      "safety": "Use a disposable workflow object and stop before financial, publication, fulfillment, or irreversible transitions."
+    },
+    {
+      "id": "WAPT-AUTHZ-027",
+      "title": "Maintain separation of duties for approvals",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the requester can also approve a transaction that requires independent review.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create a synthetic request as account A",
+        "Attempt approval with A despite role overlap",
+        "Test a designated independent approver as control",
+        "Check reassignment and alternate approval routes"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: maintain separation of duties for approvals."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Approval requires an eligible distinct principal where policy demands separation.",
+      "vulnerable_behavior": "The initiator self-approves or bypasses required independent approval.",
+      "validation": "Confirm the business policy and committed approved state.",
+      "false_positives": [
+        "Low-value transactions can intentionally allow self-approval",
+        "Emergency workflows can have documented audited override"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "separation-of-duties",
+        "approval",
+        "workflow"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce actor separation server-side, define thresholds and emergency override, and audit approval lineage.",
+      "safety": "Use a synthetic zero-impact request and do not approve real financial or operational actions.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-028",
+      "title": "Constrain administrator impersonation and support access",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether impersonation is authorized, scoped, visible, auditable, and unable to silently escalate.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Use designated support/admin and synthetic target accounts",
+        "Start impersonation through the normal flow",
+        "Test scope, tenant, sensitive actions, and exit behavior",
+        "Review user/admin indicators and audit evidence"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: constrain administrator impersonation and support access."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Only authorized staff impersonate; sessions are clearly marked, scoped, time-limited, and audited with sensitive actions restricted.",
+      "vulnerable_behavior": "A lower role starts impersonation, crosses scope, or performs prohibited actions without trace.",
+      "validation": "Confirm staff policy and logs; seeing customer data can be an intended support permission.",
+      "false_positives": [
+        "Support roles can intentionally access scoped customer context",
+        "Some systems log impersonation in a separate audit stream"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.4.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "impersonation",
+        "support",
+        "admin"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Require strong step-up, explicit reason, scope/expiry, visible banners, action restrictions, immutable audit, and user notification where appropriate.",
+      "safety": "Use synthetic target accounts and harmless reads; never impersonate real users or perform sensitive actions.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-029",
+      "title": "Apply role revocation without stale authorization caches",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether removed permissions continue through cached policy, sessions, or service replicas.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create a session with a temporary test permission",
+        "Have the owner revoke that permission",
+        "Retry a harmless protected function across relevant services",
+        "Measure against documented propagation"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: apply role revocation without stale authorization caches."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Permission removal takes effect within the justified bound and stale sessions cannot retain authority indefinitely.",
+      "vulnerable_behavior": "Revoked permission remains usable materially beyond policy.",
+      "validation": "Confirm the same session and authoritative role state; asynchronous propagation can have a documented short window.",
+      "false_positives": [
+        "Distributed policy caches can have an accepted bounded delay",
+        "A different role can independently grant the same permission"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "role-revocation",
+        "authorization-cache",
+        "stale-permission"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use short cache TTLs or invalidation events, version policy/session claims, and deny stale high-risk decisions.",
+      "safety": "Use a temporary synthetic permission and harmless function; restore account state after measuring propagation."
+    },
+    {
+      "id": "WAPT-AUTHZ-030",
+      "title": "Reject stale self-contained role claims after authorization changes",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether long-lived token claims preserve removed roles or tenant memberships.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Issue a test token with a temporary role",
+        "Remove the role or membership",
+        "Replay the old token at a harmless protected endpoint",
+        "Compare expiry, introspection, policy version, and revocation behavior"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: reject stale self-contained role claims after authorization changes."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "High-risk authorization changes invalidate, introspect, or rapidly outlive stale claims.",
+      "vulnerable_behavior": "An old token retains revoked high-impact permission beyond the documented risk window.",
+      "validation": "Confirm claim age and policy; short-lived accepted tokens can be an explicit trade-off.",
+      "false_positives": [
+        "Self-contained tokens commonly remain valid until a short expiry",
+        "A backend can override stale claims with current policy"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "token-claim",
+        "role-revocation",
+        "jwt"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "jwt",
+            "oauth",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use short access-token lifetime, policy/version checks, introspection for high risk, and revocable refresh/session families.",
+      "safety": "Use temporary synthetic roles and a harmless endpoint; revoke all test tokens afterward."
+    },
+    {
+      "id": "WAPT-AUTHZ-031",
+      "title": "Authorize each operation in multiplexed or batched requests",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether GraphQL aliases, JSON batches, or RPC envelopes check every operation independently.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create one allowed and one denied harmless operation",
+        "Submit each separately as controls",
+        "Combine them in one documented batch/envelope",
+        "Vary operation order and inspect per-operation results"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize each operation in multiplexed or batched requests."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every operation and object receives an independent authorization decision.",
+      "vulnerable_behavior": "An allowed operation causes a denied sibling operation to execute.",
+      "validation": "Confirm per-operation effect; one HTTP 200 can contain a correctly denied result.",
+      "false_positives": [
+        "GraphQL commonly returns HTTP 200 with field-level errors",
+        "Batches can intentionally fail atomically"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "batch",
+        "graphql",
+        "operation-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize inside each resolver/operation, isolate contexts, and avoid treating envelope authentication as function authorization.",
+      "safety": "Use small batches and harmless operations; do not create resource-exhaustion conditions."
+    },
+    {
+      "id": "WAPT-AUTHZ-032",
+      "title": "Apply object authorization before search and filter evaluation",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether search terms, filters, facets, counts, or sorting reveal unauthorized objects.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Seed unique canaries in two account/tenant scopes",
+        "Search as each caller using exact and partial values",
+        "Inspect results, counts, facets, autocomplete, and errors",
+        "Test exports separately if present"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: apply object authorization before search and filter evaluation."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Authorization constrains the candidate set before search, aggregation, and pagination.",
+      "vulnerable_behavior": "A caller learns another scope's object, sensitive field, existence, or aggregate through search.",
+      "validation": "Use synthetic canaries and distinguish public/shared index data.",
+      "false_positives": [
+        "Global aggregate counts can be intentionally public",
+        "Search indexes can briefly retain deleted synthetic entries"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "search",
+        "authorization",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply authorization filters in the search query/index, partition tenants, and protect counts, facets, suggestions, and exports."
+    },
+    {
+      "id": "WAPT-AUTHZ-033",
+      "title": "Avoid authorization existence oracles where concealment is required",
+      "category": "authorization",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether response differences reveal private object existence to unauthorized callers.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Use one private synthetic object and one nonexistent reference",
+        "Request both as an unauthorized designated account",
+        "Compare status, body, timing, headers, and side effects",
+        "Repeat controls and assess whether existence itself is sensitive"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: avoid authorization existence oracles where concealment is required."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Unauthorized and nonexistent objects are indistinguishable where object existence is confidential.",
+      "vulnerable_behavior": "A reliable difference enumerates sensitive private objects with realistic impact.",
+      "validation": "Do not require 404 universally; 403 can be correct when existence is not sensitive.",
+      "false_positives": [
+        "APIs can intentionally distinguish forbidden from missing",
+        "Timing noise can reflect cache or database differences"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-204"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "existence-oracle",
+        "authorization",
+        "privacy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Choose 403 or consistent 404 from the threat model, normalize external errors where concealment matters, and log precise reasons internally."
+    },
+    {
+      "id": "WAPT-AUTHZ-034",
+      "title": "Scope and revoke signed object URLs",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether signed download/upload URLs are limited by object, action, content constraints, recipient where needed, and lifetime.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Generate a signed URL for a synthetic object",
+        "Try a different object, method, and safe content property",
+        "Test after expiry or explicit revocation where supported",
+        "Observe referrer and logging exposure"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: scope and revoke signed object urls."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The capability is high entropy, narrowly signed, short-lived, and revocable/one-time where risk requires.",
+      "vulnerable_behavior": "One URL accesses other objects/actions or remains useful materially beyond intended scope.",
+      "validation": "Confirm documented bearer-sharing semantics; transferability alone can be intentional.",
+      "false_positives": [
+        "Signed URLs are deliberately bearer capabilities",
+        "Clock skew can create a small accepted expiry tolerance"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Insecure Direct Object References",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/04-Testing_for_Insecure_Direct_Object_References"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-04"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "signed-url",
+        "capability",
+        "object-storage"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Sign canonical object/action/constraints, minimize lifetime, prevent referrer/log leakage, and use revocable indirection for high-risk assets.",
+      "safety": "Use synthetic objects and controlled clients; never share signed URLs externally and delete artifacts afterward."
+    },
+    {
+      "id": "WAPT-AUTHZ-035",
+      "title": "Authorize real-time channel subscriptions and messages",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a connected user can subscribe to another user's or tenant's channel or invoke privileged messages.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Connect designated accounts through the normal channel",
+        "Capture each account's synthetic subscription",
+        "Change channel/object identifiers under the other identity",
+        "Send one harmless message type and inspect delivered data"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: authorize real-time channel subscriptions and messages."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every subscription and message is authorized against current principal, object, tenant, and action.",
+      "vulnerable_behavior": "A user receives another scope's events or invokes a denied message.",
+      "validation": "Confirm channel ownership and exclude intentionally public broadcasts.",
+      "false_positives": [
+        "Public notification topics can be unauthenticated",
+        "Connection authentication does not by itself show missing per-message authorization"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023",
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "subscription",
+        "message-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "websocket"
+          ],
+          "features": [
+            "chat"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize at subscribe and message time, recheck on permission changes, namespace tenants, and remove stale subscriptions.",
+      "safety": "Use synthetic channels/messages and designated accounts; never subscribe to real-user channels."
+    },
+    {
+      "id": "WAPT-AUTHZ-036",
+      "title": "Prevent confused-deputy access through backend integrations",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the application uses its stronger service identity to fetch or modify a resource the caller cannot access.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Identify a feature that acts through a backend service",
+        "Choose synthetic resources with distinct caller permissions",
+        "Request an operation referencing an unauthorized resource",
+        "Verify both application and downstream authorization context"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: prevent confused-deputy access through backend integrations."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "The service constrains delegated operations to the originating caller's permissions and intended resource.",
+      "vulnerable_behavior": "A low-privilege caller induces the service account to access a resource only the service may reach.",
+      "validation": "Confirm downstream access and caller lack of permission; normal server mediation is not a flaw.",
+      "false_positives": [
+        "The application can intentionally expose a curated service-owned resource",
+        "Downstream systems may enforce caller context independently"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.3"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-441"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "confused-deputy",
+        "service-account",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Propagate verifiable caller/delegation context, enforce policy before service calls, use least-privilege service identities, and constrain resource references.",
+      "safety": "Use only synthetic downstream resources and harmless read operations unless explicit mutation approval exists."
+    },
+    {
+      "id": "WAPT-AUTHZ-037",
+      "title": "Deny new and undocumented functions by default",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether newly added, versioned, debug, or undocumented operations inherit an allow-by-default policy.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Compare route/schema inventory with the authorization matrix",
+        "Select owner-confirmed new or undocumented harmless operations",
+        "Call as unauthenticated and low-privilege users",
+        "Verify explicit policy and logs"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: deny new and undocumented functions by default."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every operation is denied until an explicit policy grants required principals.",
+      "vulnerable_behavior": "A new/undocumented function is reachable because no policy rule exists.",
+      "validation": "Confirm operation effect and intended audience; undocumented does not mean unauthorized.",
+      "false_positives": [
+        "Internal documentation can exist outside tester access",
+        "Public health/version routes can intentionally allow anonymous access"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-862"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "deny-by-default",
+        "undocumented-endpoint",
+        "bfla"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Make deny-by-default the framework baseline, require policy metadata in code review/CI, and inventory every operation."
+    },
+    {
+      "id": "WAPT-AUTHZ-038",
+      "title": "Constrain administrative interfaces with layered authorization",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether admin interfaces require the intended role, context, and step-up rather than network location or obscurity alone.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Identify an owner-approved harmless admin view",
+        "Test as a standard user from the normal network path",
+        "Assess required role, recent authentication, device/network context, and direct API",
+        "Verify denial and audit evidence"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: constrain administrative interfaces with layered authorization."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Admin access combines explicit function authorization with risk-appropriate step-up and contextual controls.",
+      "vulnerable_behavior": "A lower-assurance user reaches administrative authority by satisfying only location, route secrecy, or one weak layer.",
+      "validation": "Confirm effective admin capability; a branded login page or network denial alone is not access.",
+      "false_positives": [
+        "Some low-risk admin read views can use normal role authentication",
+        "Network controls can be valid defense in depth when server authorization also exists"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.4.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "admin-interface",
+        "step-up",
+        "defense-in-depth"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce admin role at the service, require phishing-resistant step-up for high risk, layer network/device context, and audit all decisions.",
+      "priority_when": {
+        "roles": [
+          "many"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AUTHZ-039",
+      "title": "Recheck authorization when object state changes",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether permissions established in one state persist after transfer, closure, publication, or revocation.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Create a synthetic object and capture access in state A",
+        "Move it through an approved transition changing access expectations",
+        "Replay the old read/action request",
+        "Check caches, shares, and asynchronous jobs"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: recheck authorization when object state changes."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every operation evaluates current object state and policy; stale grants are invalidated.",
+      "vulnerable_behavior": "Access valid in state A continues after a transition that should revoke it.",
+      "validation": "Confirm the state transition and documented permission change; some historical read access can be intentional.",
+      "false_positives": [
+        "Completed workflows can intentionally preserve read-only history",
+        "Distributed caches can have a documented bounded invalidation delay"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "object-state",
+        "authorization-cache",
+        "workflow"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Bind authorization to current state/version, invalidate derived grants/caches transactionally, and cancel stale queued actions.",
+      "safety": "Use a disposable workflow object and reversible transition; stop before publication, payment, or fulfillment."
+    },
+    {
+      "id": "WAPT-AUTHZ-040",
+      "title": "Keep authorization decisions independent of user-controlled display attributes",
+      "category": "authorization",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether usernames, email domains, profile flags, locale, or client labels are trusted as roles or tenant membership.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Identify profile/account attributes echoed near authorization decisions",
+        "Change one self-service attribute on a disposable account",
+        "Retry a harmless protected function",
+        "Compare trusted role/membership records"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: keep authorization decisions independent of user-controlled display attributes."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Authorization uses trusted immutable principal and policy attributes, not self-editable display data.",
+      "vulnerable_behavior": "Changing a self-service attribute grants role, tenant, or function access.",
+      "validation": "Confirm effective permission and causality; matching an admin-like display name is insufficient.",
+      "false_positives": [
+        "Email-domain onboarding can intentionally trigger a separately verified invitation flow",
+        "Profile flags can influence UI only"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Privilege Escalation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/03-Testing_for_Privilege_Escalation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-03"
+        ],
+        "asvs": [
+          "v5.0.0-8.3.1"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-807"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "role-manipulation",
+        "client-trust",
+        "profile"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Separate trusted authorization attributes from profile data, control their writers, and verify domain/membership through explicit workflows.",
+      "safety": "Use synthetic attributes on a disposable account and restore the profile after testing."
+    },
+    {
+      "id": "WAPT-AUTHZ-041",
+      "title": "Enforce authorization consistently across API versions",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether deprecated or alternate versions omit object, function, field, or tenant checks present in the current API.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Identify owner-approved equivalent operations across versions",
+        "Capture the current-version denial control",
+        "Repeat as the same principal against the older version",
+        "Compare data fields, function effect, and tenant/object decisions"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce authorization consistently across api versions."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Every supported version enforces equivalent policy or is removed from exposure.",
+      "vulnerable_behavior": "An older version grants data/function access denied by the current version.",
+      "validation": "Confirm equivalent business operation and intended support status.",
+      "false_positives": [
+        "Versions can intentionally expose different public product scopes",
+        "An old route can redirect to the current implementation"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-8.2.1",
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023",
+          "API9:2023"
+        ],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "api-version",
+        "authorization",
+        "legacy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Centralize policy below versioned controllers, test parity, sunset old versions, and block unsupported deployments."
+    },
+    {
+      "id": "WAPT-AUTHZ-042",
+      "title": "Enforce authorization on error, preview, and metadata representations",
+      "category": "authorization",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether preview, validation, HEAD, error detail, or metadata endpoints expose protected object information.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Capture an authorized primary representation",
+        "Identify related preview, metadata, validation, or error routes",
+        "Request as an unauthorized designated account",
+        "Compare sensitive fields and object existence"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: enforce authorization on error, preview, and metadata representations."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "All representations derive from the same object authorization decision.",
+      "vulnerable_behavior": "An alternate representation exposes protected content or metadata without permission.",
+      "validation": "Confirm sensitivity and relationship; public thumbnails or titles can be intentional.",
+      "false_positives": [
+        "HEAD can safely disclose generic length/status for public resources",
+        "Public previews can intentionally reveal a limited subset"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [
+          "v5.0.0-8.2.2"
+        ],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "alternate-representation",
+        "metadata",
+        "authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Authorize before rendering any representation and define explicit field policy for previews, errors, metadata, and validation."
+    },
+    {
+      "id": "WAPT-AUTHZ-043",
+      "title": "Verify authorization audit events without leaking protected data",
+      "category": "authorization",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether denied and high-risk allowed decisions are traceable with actor, action, object, tenant, and policy result.",
+      "prerequisites": [
+        "Two designated test identities with different ownership, role, or tenant context",
+        "Synthetic objects and an owner-reviewed authorization expectation"
+      ],
+      "steps": [
+        "Use owner-approved sanitized logs or event evidence",
+        "Perform one allowed and one denied harmless action",
+        "Correlate principal, role, tenant, object alias, action, result, and request ID",
+        "Verify logs omit sensitive object content and full tokens"
+      ],
+      "examples": [
+        {
+          "note": "Change only the principal, object reference, role, tenant, field, or action needed to test: verify authorization audit events without leaking protected data."
+        }
+      ],
+      "manipulate": "One identity, object reference, function, field, tenant selector, or workflow state at a time",
+      "secure_behavior": "Security-relevant decisions are auditable with protected, minimally necessary context.",
+      "vulnerable_behavior": "Material authorization abuse cannot be investigated, or logs expose protected data/secrets.",
+      "validation": "Lack of tester log access is not proof of missing logs; use owner evidence.",
+      "false_positives": [
+        "High-volume ordinary reads may be sampled under documented policy",
+        "Detailed audit can reside in a separate restricted system"
+      ],
+      "impact": "A confirmed failure can expose or alter another user or tenant’s data, escalate privileges, bypass approvals, or compromise administrative functions.",
+      "evidence": [
+        "Paired authorized and unauthorized raw requests",
+        "Responses and fresh authoritative before/after state",
+        "Redacted account, role, tenant, object, and ownership context",
+        "Expected policy and confirmed security effect"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Comparer",
+        "Role matrix worksheet"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authorization Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/05-Authorization_Testing/02-Testing_for_Bypassing_Authorization_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHZ-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-778"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "authorization-logging",
+        "audit",
+        "monitoring"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Emit structured authorization events for failures and high-risk actions, protect integrity/access, redact secrets/data, and alert on abuse patterns."
+    }
+  ]
+}

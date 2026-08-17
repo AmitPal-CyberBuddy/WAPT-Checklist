@@ -50,7 +50,7 @@
       "file": "authorization.json",
       "prefix": "WAPT-AUTHZ",
       "floor": 35,
-      "count": 0,
+      "count": 43,
       "summary": "Prove object, function, field, role, and tenant access boundaries."
     },
     {

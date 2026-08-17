@@ -149,6 +149,36 @@ test('sample mappings do not claim a non-existent WSTG 4.2 JWT scenario', () => 
   assert.ok(jwt.references.every(({ url }) => !url.includes('Testing_JSON_Web_Tokens')));
 });
 
+test('authorization coverage is detailed across object, function, field, and tenant boundaries', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'authorization.json'), 'utf8'));
+  assert.ok(items.filter(({ tags }) => tags.includes('bola') || tags.includes('idor')).length >= 10);
+  assert.ok(items.filter(({ tags }) => tags.includes('multi-tenant')).length >= 4);
+  assert.ok(items.filter(({ tags }) => tags.includes('field-level') || tags.includes('bopla')).length >= 2);
+  assert.ok(items.every((item) => item.applies.requires?.includes('creds:low|high')));
+
+  const singleTenant = deriveContext({ app_type: 'hybrid', has_login: 'yes', creds: 'high', features: ['search'] });
+  for (const item of items.filter((candidate) => candidate.applies.any_of?.features?.includes('multi_tenant'))) {
+    assert.equal(evaluateApplicability(item, singleTenant).state, APPLICABILITY.NA_CONTEXT, item.id);
+  }
+  const multiTenant = deriveContext({ app_type: 'hybrid', has_login: 'yes', creds: 'high', features: ['multi_tenant'], roles: 'many' });
+  assert.ok(items.filter((item) => evaluateApplicability(item, multiTenant).state === APPLICABILITY.ACTIVE).length >= 38);
+});
+
+test('authorization mutations use synthetic state and explicit restoration boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'authorization.json'), 'utf8'));
+  for (const id of [
+    'WAPT-AUTHZ-004', 'WAPT-AUTHZ-005', 'WAPT-AUTHZ-007', 'WAPT-AUTHZ-016',
+    'WAPT-AUTHZ-017', 'WAPT-AUTHZ-019', 'WAPT-AUTHZ-021', 'WAPT-AUTHZ-023',
+    'WAPT-AUTHZ-024', 'WAPT-AUTHZ-026', 'WAPT-AUTHZ-027', 'WAPT-AUTHZ-028',
+    'WAPT-AUTHZ-029', 'WAPT-AUTHZ-030', 'WAPT-AUTHZ-034', 'WAPT-AUTHZ-035'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([
