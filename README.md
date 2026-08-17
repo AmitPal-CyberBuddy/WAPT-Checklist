@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–3 are implemented and Phase 4 production authoring is underway. Categories 01–09 are complete with 308 production items against a combined floor of 260. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–4 are implemented. Core categories 01–10 contain 348 production items and every category-specific floor passes. The 20 Phase 1 items remain schema review samples and do not count toward production totals. Phase 5 workspace functionality is next.
 
 ## What is implemented
 
@@ -32,7 +32,7 @@ No package install or build step is required. Use Node.js 18 or newer for verifi
 ```bash
 node --test
 node tools/validate.js checklist/sample.json
-node tools/validate.js --floors-present
+node tools/validate.js --core-floors
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
@@ -57,6 +57,7 @@ checklist/injection.json     Phase 4 interpreter-boundary methodology
 checklist/xss.json           Phase 4 browser execution and context methodology
 checklist/csrf.json          Phase 4 browser request-intent methodology
 checklist/file-handling.json Phase 4 upload, download, path, and parser methodology
+checklist/api-security.json  Phase 4 API Top 10 and protocol methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -99,7 +100,7 @@ This repository's original software and content are licensed under the [Apache L
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~
-4. Core production content, categories 01–10 — **in progress (categories 01–09 complete)**
+4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. Search, filters, statuses, notes, import/export, and report generation
 6. Advanced production content, categories 11–24
 7. Attack chains, contextual payload library, and Burp workflows

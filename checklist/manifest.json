@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0-draft",
-  "lastmod": "2026-08-17",
+  "lastmod": "2026-08-18",
   "sample_count": 20,
   "categories": [
     {
@@ -100,7 +100,7 @@
       "file": "api-security.json",
       "prefix": "WAPT-API",
       "floor": 35,
-      "count": 0,
+      "count": 40,
       "summary": "Cover REST inventory, data exposure, object properties, and abuse."
     },
     {

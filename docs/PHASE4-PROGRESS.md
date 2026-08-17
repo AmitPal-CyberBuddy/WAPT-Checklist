@@ -1,6 +1,6 @@
 # Phase 4 — core content progress
 
-> In progress — 2026-08-17
+> Complete — 2026-08-18
 
 Phase 4 authors production methodology for categories 01–10. Floors remain release gates, not quotas. A category is marked complete only when its production JSON, manifest count, semantic validation, and focused content/safety tests pass.
 
@@ -15,9 +15,13 @@ Phase 4 authors production methodology for categories 01–10. Floors remain rel
 | 07 | Cross-site scripting | 25 | 30 | Complete |
 | 08 | Cross-site request forgery | 15 | 18 | Complete |
 | 09 | File handling | 20 | 26 | Complete |
-| 10 | API security | 35 | 0 | Not started |
+| 10 | API security | 35 | 40 | Complete |
 
-Core floor total: **295**. Current production total: **308**.
+Core floor total: **295**. Current production total: **348**.
+
+## API security coverage
+
+The API catalog adds 40 tests mapped across all OWASP API Security Top 10: object authorization, authentication and token scope, property-level authorization and mass assignment, bounded resources and paid side effects, function-level authorization, sensitive business-flow automation/state/idempotency, safe URL fetching, production configuration and management surfaces, version/shadow/documentation inventory, and strict consumption of third-party data, failures, TLS/redirects, and credentials. REST, SOAP, gRPC, GraphQL, WebSocket, mobile-backend, and URL-hint contexts are declarative; URL hints produce Confirm rather than asserted scope.
 
 ## File handling coverage
 
@@ -69,8 +73,8 @@ Every item includes distinct objectives and steps, secure/vulnerable decision bo
 During phased authoring, run:
 
 ```bash
-node tools/validate.js --floors-present
+node tools/validate.js --core-floors
 node --test
 ```
 
-`--floors-present` enforces the floor for every production category file currently present without failing categories not authored yet. The final Phase 4 gate will additionally require categories 01–10 and at least 295 core items. The eventual full release uses `--floors` for all 24 categories.
+`--core-floors` now enforces every category floor for categories 01–10 and is the completed Phase 4 release gate. `--floors-present` remains useful while authoring later categories. The eventual full release uses `--floors` for all 24 categories.

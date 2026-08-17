@@ -439,10 +439,12 @@ function validateFiles(files, options = {}) {
   for (const { item, sample } of allItems) {
     if (!sample && Object.hasOwn(counts, item.category)) counts[item.category] += 1;
   }
-  if ((options.enforceFloors || options.enforcePresentFloors) && productionDocuments.length) {
+  if ((options.enforceFloors || options.enforceCoreFloors || options.enforcePresentFloors) && productionDocuments.length) {
     const requiredCategories = options.enforceFloors
       ? Object.keys(CATEGORIES)
-      : [...new Set(productionDocuments.map(({ document }) => document.category))];
+      : options.enforceCoreFloors
+        ? Object.keys(CATEGORIES).slice(0, 10)
+        : [...new Set(productionDocuments.map(({ document }) => document.category))];
     for (const category of requiredCategories) {
       const meta = CATEGORIES[category];
       if (meta && counts[category] < meta.floor) errors.push(`floor.${category}: ${counts[category]} items; requires ${meta.floor}`);
@@ -455,15 +457,16 @@ function validateFiles(files, options = {}) {
 function main() {
   const args = process.argv.slice(2);
   const enforceFloors = args.includes('--floors');
+  const enforceCoreFloors = args.includes('--core-floors');
   const enforcePresentFloors = args.includes('--floors-present');
-  if (enforceFloors && enforcePresentFloors) {
-    console.error('Choose either --floors or --floors-present, not both.');
+  if ([enforceFloors, enforceCoreFloors, enforcePresentFloors].filter(Boolean).length > 1) {
+    console.error('Choose one floor mode: --floors, --core-floors, or --floors-present.');
     process.exitCode = 2;
     return;
   }
-  const paths = args.filter((arg) => !['--floors', '--floors-present'].includes(arg));
+  const paths = args.filter((arg) => !['--floors', '--core-floors', '--floors-present'].includes(arg));
   const files = discoverFiles(paths);
-  const result = validateFiles(files, { enforceFloors, enforcePresentFloors });
+  const result = validateFiles(files, { enforceFloors, enforceCoreFloors, enforcePresentFloors });
 
   if (result.errors.length) {
     console.error(`Validation failed with ${result.errors.length} error(s):`);
@@ -473,6 +476,7 @@ function main() {
   }
   console.log(`Validated ${result.itemCount} item(s) in ${result.documentCount} file(s).`);
   if (enforceFloors) console.log('All 24 category floors satisfied.');
+  else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');
 }

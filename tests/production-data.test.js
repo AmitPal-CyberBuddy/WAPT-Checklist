@@ -13,9 +13,12 @@ const productionFiles = () => fs.readdirSync(CHECKLIST)
   .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
   .map((name) => path.join(CHECKLIST, name));
 
-test('every production category currently present passes its release floor', () => {
-  const result = validateFiles(productionFiles(), { enforcePresentFloors: true });
+test('all Phase 4 core categories are present and pass their release floors', () => {
+  const files = productionFiles();
+  const result = validateFiles(files, { enforceCoreFloors: true });
   assert.deepEqual(result.errors, []);
+  assert.equal(files.length, 10);
+  assert.equal(Object.values(result.counts).slice(0, 10).reduce((sum, count) => sum + count, 0), 348);
 });
 
 test('reconnaissance IDs are contiguous and exceed the quality floor without duplicate objectives', () => {
@@ -300,6 +303,34 @@ test('file-handling safety rules prohibit destructive payloads and sensitive-fil
   }
   const inclusion = items.filter(({ tags }) => tags.includes('local-file-inclusion') || tags.includes('remote-file-inclusion'));
   assert.ok(inclusion.every((item) => item.mappings.wstg.length === 0), 'subsection pages must not invent WSTG scenario IDs');
+});
+
+test('API security covers every 2023 risk and responds to protocol and URL-hint context', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'api-security.json'), 'utf8'));
+  for (let risk = 1; risk <= 10; risk += 1) {
+    assert.ok(items.some(({ mappings }) => mappings.api_top10.includes(`API${risk}:2023`)), `missing API${risk}:2023`);
+  }
+  const noApi = deriveContext({ api_style: ['none'], features: ['search'] });
+  assert.ok(items.every((item) => evaluateApplicability(item, noApi).state === APPLICABILITY.NA_CONTEXT));
+  const rest = deriveContext({ api_style: ['rest'], features: ['search'], creds: 'high' });
+  assert.ok(items.filter((item) => evaluateApplicability(item, rest).state === APPLICABILITY.ACTIVE).length >= 35);
+  const hinted = deriveContext({}, 'https://api.example.com');
+  assert.ok(items.every((item) => evaluateApplicability(item, hinted).state === APPLICABILITY.CONFIRM));
+});
+
+test('API resource, business-flow, SSRF, and upstream tests carry safety ceilings', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'api-security.json'), 'utf8'));
+  for (const id of [
+    'WAPT-API-015', 'WAPT-API-016', 'WAPT-API-017', 'WAPT-API-018',
+    'WAPT-API-019', 'WAPT-API-024', 'WAPT-API-025', 'WAPT-API-026',
+    'WAPT-API-027', 'WAPT-API-028', 'WAPT-API-035', 'WAPT-API-037',
+    'WAPT-API-038', 'WAPT-API-039', 'WAPT-API-040'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
 });
 
 test('disruptive reconnaissance techniques include safety boundaries', () => {

@@ -61,6 +61,7 @@ test('a URL hint suggests confirmation rather than asserting a fact', async () =
   const evaluated = evaluateApplicability(target, deriveContext({}, 'https://api.example.com'));
   assert.equal(evaluated.state, APPLICABILITY.CONFIRM);
   assert.ok(evaluated.reasons.some(({ code }) => code === 'hint_any_of_confirmation'));
+  assert.equal(evaluateApplicability(target, deriveContext({}, 'https://www.example.com')).state, APPLICABILITY.NA_CONTEXT);
 });
 
 test('methodology variants are selected without duplicating items', async () => {

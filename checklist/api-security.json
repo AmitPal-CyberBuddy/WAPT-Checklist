@@ -1,0 +1,3718 @@
+{
+  "schema_version": "1.0.0",
+  "category": "api-security",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-API-001",
+      "title": "Enforce object authorization on API reads",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing an API object identifier returns another user's or tenant's resource.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a resource URL, query, body, or RPC object reference",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a resource URL, query, body, or RPC object reference."
+        }
+      ],
+      "manipulate": "a resource URL, query, body, or RPC object reference; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a designated non-owner receives the private synthetic object",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "the object is intentionally public or shared",
+        "an upstream cache replays a prior authorized response"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-003"
+      ],
+      "tags": [
+        "bola",
+        "idor",
+        "object-read"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-002",
+      "title": "Enforce object authorization on API mutations",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing an identifier permits unauthorized update, delete, cancel, or state transition.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a reversible object mutation under two designated accounts",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a reversible object mutation under two designated accounts."
+        }
+      ],
+      "manipulate": "a reversible object mutation under two designated accounts; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the non-owner commits a change to the owner's synthetic object",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "a collaborator can intentionally edit the object",
+        "an accepted asynchronous response can later fail authorization"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-004"
+      ],
+      "tags": [
+        "bola",
+        "object-write",
+        "mutation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use only synthetic reversible objects and restore any unauthorized change immediately."
+    },
+    {
+      "id": "WAPT-API-003",
+      "title": "Authorize nested and related API resources",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether parent, child, tenant, or relationship identifiers are all validated together.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a nested resource route or relationship operation",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a nested resource route or relationship operation."
+        }
+      ],
+      "manipulate": "a nested resource route or relationship operation; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "mixing authorized and unauthorized parent/child IDs exposes or changes the resource",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "path nesting can be cosmetic while canonical relationship checks remain correct",
+        "children can intentionally be shared across parents"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-008"
+      ],
+      "tags": [
+        "bola",
+        "nested-resource",
+        "relationship"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-004",
+      "title": "Authorize bulk and batch API object members independently",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether each ID in a bulk request receives its own object-level decision.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a small batch containing one authorized and one unauthorized synthetic object",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a small batch containing one authorized and one unauthorized synthetic object."
+        }
+      ],
+      "manipulate": "a small batch containing one authorized and one unauthorized synthetic object; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the authorized member causes the unauthorized member to be read or processed",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "the API can correctly reject the whole batch atomically",
+        "public objects can coexist with private members"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-007"
+      ],
+      "tags": [
+        "bola",
+        "batch",
+        "bulk-operation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use a tiny batch of disposable objects and harmless operations."
+    },
+    {
+      "id": "WAPT-API-005",
+      "title": "Constrain mobile API object access across accounts and tenants",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether identifiers recovered from a mobile client can access other accounts or tenants.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a documented mobile-backend object operation with designated test identities",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a documented mobile-backend object operation with designated test identities."
+        }
+      ],
+      "manipulate": "a documented mobile-backend object operation with designated test identities; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a mobile token accesses a private object outside its owner or tenant boundary",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "mobile clients can use public catalog objects",
+        "a high-privilege test token can intentionally cross tenant scope"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API1:2023 Broken Object Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa1-broken-object-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API1:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-021"
+      ],
+      "tags": [
+        "bola",
+        "mobile-api",
+        "multi-tenant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "mobile_api",
+            "multi_tenant"
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-006",
+      "title": "Reject missing, malformed, and alternate API credentials consistently",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether protected operations accept absent, malformed, duplicated, or alternate credential transports.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an API operation protected by bearer, cookie, key, certificate, or signature authentication",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an API operation protected by bearer, cookie, key, certificate, or signature authentication."
+        }
+      ],
+      "manipulate": "an API operation protected by bearer, cookie, key, certificate, or signature authentication; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the operation establishes identity or returns protected data without a valid credential",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "a public operation can ignore credentials intentionally",
+        "a gateway can return operation metadata before backend authentication"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API2:2023 Broken Authentication",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTH-017"
+      ],
+      "tags": [
+        "api-authentication",
+        "credential",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-007",
+      "title": "Keep API keys scoped, revocable, and out of client-distributed secrets",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether API keys are long-lived shared secrets embedded in public clients or granted excessive scope.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an owner-approved API key lifecycle and harmless identity/scope operation",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an owner-approved API key lifecycle and harmless identity/scope operation."
+        }
+      ],
+      "manipulate": "an owner-approved API key lifecycle and harmless identity/scope operation; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a public/client-extractable or revoked key grants broad protected access",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "a publishable key can intentionally identify a client without authenticating it",
+        "mobile package strings can include non-secret environment identifiers"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API2:2023 Broken Authentication",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "api-key",
+        "secret",
+        "mobile-api"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use only owner-issued test keys, redact them completely, and revoke test credentials after validation."
+    },
+    {
+      "id": "WAPT-API-008",
+      "title": "Bind API authentication tokens to intended audience and token type",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tokens issued for another API, client, tenant, or purpose are accepted.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for owner-issued test tokens with distinct audience, client, or type",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: owner-issued test tokens with distinct audience, client, or type."
+        }
+      ],
+      "manipulate": "owner-issued test tokens with distinct audience, client, or type; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a mismatched token authenticates to the target API with unintended authority",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "shared audiences can be intentional across one trust boundary",
+        "an identity token can be exchanged server-side rather than directly accepted"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API2:2023 Broken Authentication",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTH-038"
+      ],
+      "tags": [
+        "token-audience",
+        "token-type",
+        "api-authentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-009",
+      "title": "Apply equivalent API authentication across versions and alternate protocols",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether legacy versions, content types, RPC routes, or mobile endpoints provide weaker authentication.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for equivalent protected operations across owner-approved API variants",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: equivalent protected operations across owner-approved API variants."
+        }
+      ],
+      "manipulate": "equivalent protected operations across owner-approved API variants; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a weaker variant issues or accepts credentials that bypass current assurance",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "variants can use different but equivalent authentication mechanisms",
+        "an old route can redirect or proxy to the current policy layer"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API2:2023 Broken Authentication",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa2-broken-authentication/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTH-037"
+      ],
+      "tags": [
+        "api-version",
+        "alternate-channel",
+        "api-authentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-010",
+      "title": "Filter sensitive object properties from API responses",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether responses expose fields the caller may not read.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for the same object representation under high and low designated roles",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: the same object representation under high and low designated roles."
+        }
+      ],
+      "manipulate": "the same object representation under high and low designated roles; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the lower role receives a sensitive owner/admin/tenant field",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "schemas can name fields while values remain null or redacted",
+        "support roles can intentionally receive selected operational metadata"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-018"
+      ],
+      "tags": [
+        "bopla",
+        "excessive-data",
+        "field-level"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-011",
+      "title": "Reject unauthorized API property updates",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether callers can write protected fields such as role, owner, tenant, price, status, or verification.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a normal update plus one protected candidate property",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a normal update plus one protected candidate property."
+        }
+      ],
+      "manipulate": "a normal update plus one protected candidate property; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the protected field persists or changes security behavior",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "the parser can safely ignore unknown properties",
+        "the caller can legitimately write that field in a separate workflow"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-019"
+      ],
+      "tags": [
+        "bopla",
+        "mass-assignment",
+        "field-level"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use a disposable object and harmless field value; restore state immediately."
+    },
+    {
+      "id": "WAPT-API-012",
+      "title": "Use per-action writable schemas instead of broad model binding",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether create, patch, replace, and admin actions accidentally share an overbroad binding model.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for equivalent object fields submitted to distinct API actions",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: equivalent object fields submitted to distinct API actions."
+        }
+      ],
+      "manipulate": "equivalent object fields submitted to distinct API actions; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a low-privilege action binds a field intended only for another action",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "echoed request fields need not be persisted",
+        "PUT and PATCH can intentionally use different documented schemas"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-016"
+      ],
+      "tags": [
+        "mass-assignment",
+        "schema",
+        "data-binding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-013",
+      "title": "Apply field authorization to sparse, expanded, and alternate representations",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether fields hidden in default responses reappear through expand, include, fields, GraphQL-like selection, XML, or export.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for documented field-selection and representation controls",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: documented field-selection and representation controls."
+        }
+      ],
+      "manipulate": "documented field-selection and representation controls; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a lower role retrieves a protected field through an alternate representation",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "field expansion can intentionally expose public related data",
+        "unsupported selectors can be ignored safely"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bopla",
+        "sparse-fieldset",
+        "representation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-014",
+      "title": "Prevent API response overfetching beyond the operation contract",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether backend/client filtering exposes complete records before the consumer removes sensitive fields.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a response consumed by web or mobile clients and its raw network body",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a response consumed by web or mobile clients and its raw network body."
+        }
+      ],
+      "manipulate": "a response consumed by web or mobile clients and its raw network body; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the raw API response contains sensitive fields absent from the UI and unauthorized for the caller",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "UI-hidden fields can still be authorized for the same user",
+        "developer diagnostics can be enabled only in an isolated environment"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API3:2023 Broken Object Property Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa3-broken-object-property-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API3:2023"
+        ],
+        "cwe": [
+          "CWE-915"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "excessive-data",
+        "mobile-api",
+        "response"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-015",
+      "title": "Bound API page size, result windows, and response expansion",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether pagination or expansion parameters allow disproportionate database, memory, or bandwidth use.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a collection endpoint with owner-approved small boundary values",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a collection endpoint with owner-approved small boundary values."
+        }
+      ],
+      "manipulate": "a collection endpoint with owner-approved small boundary values; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "small parameter growth causes unbounded work or bypasses documented maximums",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "large pages can be legitimate for privileged export roles",
+        "cold caches can make one request unusually slow"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "pagination",
+        "resource-consumption",
+        "expansion"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use tiny incremental boundary values, one request at a time, and stop on latency or errors."
+    },
+    {
+      "id": "WAPT-API-016",
+      "title": "Limit request body, array, and batch sizes before processing",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether oversized JSON, XML, multipart, arrays, or operation batches consume resources before rejection.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for documented request and batch limits using small near-limit fixtures",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: documented request and batch limits using small near-limit fixtures."
+        }
+      ],
+      "manipulate": "documented request and batch limits using small near-limit fixtures; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the service parses/allocates beyond limits or accepts an unbounded batch",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "wire size and decoded object size can differ",
+        "streaming parsers can reject safely without a fast response"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "request-size",
+        "batch",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Never send very large bodies. Use only small near-limit fixtures under operations monitoring."
+    },
+    {
+      "id": "WAPT-API-017",
+      "title": "Bound expensive API filters, sorts, searches, and joins",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether user-selected query complexity causes disproportionate backend work.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a search/filter endpoint and one complexity dimension",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a search/filter endpoint and one complexity dimension."
+        }
+      ],
+      "manipulate": "a search/filter endpoint and one complexity dimension; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "modest controlled complexity causes nonlinear cost without a budget",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "one uncached query can be slow while controls normalize",
+        "advanced analytics can intentionally have a separate quota"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "query-complexity",
+        "search",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Increase one dimension in tiny steps, avoid broad datasets, and stop at the first nonlinear signal."
+    },
+    {
+      "id": "WAPT-API-018",
+      "title": "Limit API-triggered paid and asynchronous side effects",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether requests can generate unbounded email, SMS, calls, AI jobs, exports, or third-party cost.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a sandboxed or owner-approved side-effect operation",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a sandboxed or owner-approved side-effect operation."
+        }
+      ],
+      "manipulate": "a sandboxed or owner-approved side-effect operation; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a low request count creates duplicate/unbounded billable work without quota or confirmation",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "provider sandbox actions can have no real cost",
+        "queued jobs can deduplicate after accepting requests"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cost-amplification",
+        "async-job",
+        "quota"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use provider sandboxes or stop before external dispatch; never generate real charges, messages, calls, or heavy jobs."
+    },
+    {
+      "id": "WAPT-API-019",
+      "title": "Enforce concurrent and distributed API abuse controls",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether parallel requests or source distribution bypass per-account and business-resource budgets.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an owner-approved harmless operation and very small concurrency ceiling",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an owner-approved harmless operation and very small concurrency ceiling."
+        }
+      ],
+      "manipulate": "an owner-approved harmless operation and very small concurrency ceiling; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "bounded concurrency bypasses an invariant or all meaningful throttling",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "per-IP limits can be only one layer of an account-based design",
+        "a safe test ceiling can be below adaptive-defense thresholds"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API4:2023"
+        ],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "concurrency",
+        "distributed"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "REVIEW ONLY. Use a disposable account, tiny concurrency, and stop on latency, errors, or duplicate effects."
+    },
+    {
+      "id": "WAPT-API-020",
+      "title": "Reject low-privilege calls to administrative API functions",
+      "category": "api-security",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a standard token can invoke admin-only operations discovered through schemas, clients, or traffic.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a harmless administrative operation and standard-user token",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a harmless administrative operation and standard-user token."
+        }
+      ],
+      "manipulate": "a harmless administrative operation and standard-user token; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the low role receives admin data or commits the function",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "support roles can have documented scoped admin permission",
+        "an endpoint can return a UI/schema shell while denying execution"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-285"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-013"
+      ],
+      "tags": [
+        "bfla",
+        "admin",
+        "vertical-access"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-021",
+      "title": "Enforce API function policy across methods and route aliases",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether alternate verbs, aliases, RPC names, or trailing/version routes reach a privileged handler with weaker checks.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a denied function and its documented aliases/methods",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a denied function and its documented aliases/methods."
+        }
+      ],
+      "manipulate": "a denied function and its documented aliases/methods; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "an alternate route or method executes the denied function",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "OPTIONS can disclose methods safely",
+        "aliases can converge on one correctly protected handler"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-285"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-014"
+      ],
+      "tags": [
+        "bfla",
+        "http-methods",
+        "route-alias"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-022",
+      "title": "Constrain API role and membership management functions",
+      "category": "api-security",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether lower roles can assign roles, groups, service accounts, invitations, or tenant membership.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a synthetic role/membership operation among designated accounts",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a synthetic role/membership operation among designated accounts."
+        }
+      ],
+      "manipulate": "a synthetic role/membership operation among designated accounts; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the caller grants authority above its delegated ceiling",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "open groups can intentionally allow self-join",
+        "tenant owners can have broad documented membership rights"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-285"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-024"
+      ],
+      "tags": [
+        "bfla",
+        "role-management",
+        "membership"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use disposable groups/accounts and undo all membership or role changes immediately."
+    },
+    {
+      "id": "WAPT-API-023",
+      "title": "Deny undocumented and newly deployed API functions by default",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether routes absent from the policy inventory inherit public or generic authenticated access.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an owner-confirmed new, debug, or undocumented harmless operation",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an owner-confirmed new, debug, or undocumented harmless operation."
+        }
+      ],
+      "manipulate": "an owner-confirmed new, debug, or undocumented harmless operation; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the operation lacks an explicit required permission and executes for an unintended caller",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "public health/version endpoints can be intentionally anonymous",
+        "internal documentation can exist outside tester access"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API5:2023 Broken Function Level Authorization",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa5-broken-function-level-authorization/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API5:2023"
+        ],
+        "cwe": [
+          "CWE-285"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-037"
+      ],
+      "tags": [
+        "bfla",
+        "deny-by-default",
+        "shadow-api"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-024",
+      "title": "Protect high-value business flows from automated API abuse",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether purchasing, reservation, posting, invitation, redemption, or account creation can be automated beyond intended use.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a sandboxed sensitive business operation and owner-defined limits",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a sandboxed sensitive business operation and owner-defined limits."
+        }
+      ],
+      "manipulate": "a sandboxed sensitive business operation and owner-defined limits; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a small bounded automation sample bypasses account/resource/business limits with realistic abuse impact",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "high throughput can be an intended partner API feature",
+        "rate limiting alone may be replaced by inventory/payment/business controls"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API6:2023 Unrestricted Access to Sensitive Business Flows",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa6-unrestricted-access-to-sensitive-business-flows/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-799"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "business-flow",
+        "automation",
+        "abuse"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use sandbox or synthetic resources, strict request ceilings, and never consume inventory, money, messages, or real-user opportunities."
+    },
+    {
+      "id": "WAPT-API-025",
+      "title": "Preserve API workflow sequence and state prerequisites",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether clients can skip, replay, or reorder required business transitions.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a reversible multi-step API workflow on a synthetic object",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a reversible multi-step API workflow on a synthetic object."
+        }
+      ],
+      "manipulate": "a reversible multi-step API workflow on a synthetic object; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "an unauthorized sequence reaches a protected final state",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "idempotent retries can intentionally repeat safe transitions",
+        "asynchronous state can make intermediate responses appear out of order"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API6:2023 Unrestricted Access to Sensitive Business Flows",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa6-unrestricted-access-to-sensitive-business-flows/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-799"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-026"
+      ],
+      "tags": [
+        "business-flow",
+        "workflow",
+        "state-machine"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use a disposable workflow object and stop before financial, fulfillment, publication, or irreversible states."
+    },
+    {
+      "id": "WAPT-API-026",
+      "title": "Enforce idempotency and one-time semantics on API transactions",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether replayed or retried requests duplicate a transaction, credit, booking, or side effect.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a sandboxed one-time operation with an idempotency key where supported",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a sandboxed one-time operation with an idempotency key where supported."
+        }
+      ],
+      "manipulate": "a sandboxed one-time operation with an idempotency key where supported; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "one logical operation commits more than once or a key is not bound to caller/action/body",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "duplicate success responses can map to one committed transaction",
+        "some naturally repeatable operations need no idempotency"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API6:2023 Unrestricted Access to Sensitive Business Flows",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa6-unrestricted-access-to-sensitive-business-flows/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-799"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "idempotency",
+        "replay",
+        "transaction"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use a zero-value sandbox transaction or synthetic resource and at most one replay; verify the authoritative ledger."
+    },
+    {
+      "id": "WAPT-API-027",
+      "title": "Restrict API URL-fetching parameters to intended destinations",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether import, webhook test, avatar, preview, or callback URLs make the API contact an unintended controlled host.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a URL-consuming API field and controlled HTTPS callback",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a URL-consuming API field and controlled HTTPS callback."
+        }
+      ],
+      "manipulate": "a URL-consuming API field and controlled HTTPS callback; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a unique server-originated callback reaches a destination outside the intended allowlist",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "the user's browser or a third-party scanner can make the callback",
+        "a documented arbitrary webhook feature can intentionally reach public HTTPS hosts"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API7:2023 Server Side Request Forgery",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa7-server-side-request-forgery/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "url-fetcher",
+        "callback"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use only a controlled public HTTPS callback; never target internal hosts, metadata, alternate protocols, or ports."
+    },
+    {
+      "id": "WAPT-API-028",
+      "title": "Revalidate API fetch redirects and resolved addresses",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an allowed initial URL redirects or resolves to a prohibited destination after validation.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an owner-approved controlled redirect/DNS setup remaining on public test addresses",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an owner-approved controlled redirect/DNS setup remaining on public test addresses."
+        }
+      ],
+      "manipulate": "an owner-approved controlled redirect/DNS setup remaining on public test addresses; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the fetcher follows to a destination class that policy should block",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "the client browser can follow the redirect instead of the server",
+        "DNS/CDN address changes can be legitimate and still checked at connection time"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API7:2023 Server Side Request Forgery",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa7-server-side-request-forgery/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "redirect",
+        "dns-rebinding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Keep every hop on controlled public documentation addresses; never redirect or resolve to private, loopback, link-local, or metadata networks."
+    },
+    {
+      "id": "WAPT-API-029",
+      "title": "Reject unsupported API methods and media types",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether unused methods or parser fallbacks expose operations or weaker validation.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for representative API routes with documented method and media contracts",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: representative API routes with documented method and media contracts."
+        }
+      ],
+      "manipulate": "representative API routes with documented method and media contracts; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "an unsupported method/media type reaches protected logic or bypasses validation",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "OPTIONS can be intentionally enabled for CORS",
+        "a parser can accept syntax but reject before business processing"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API8:2023 Security Misconfiguration",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "misconfiguration",
+        "http-methods",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-030",
+      "title": "Remove API debug modes, stack traces, and verbose internals",
+      "category": "api-security",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether production API errors expose code paths, queries, secrets, environment data, or framework debug functions.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for harmless malformed and missing-resource controls",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: harmless malformed and missing-resource controls."
+        }
+      ],
+      "manipulate": "harmless malformed and missing-resource controls; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a response exposes actionable sensitive internals or valid secrets",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "correlation IDs and generic problem details are useful and safe",
+        "upstream gateways can generate product-like errors"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API8:2023 Security Misconfiguration",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "misconfiguration",
+        "debug",
+        "error-handling"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-031",
+      "title": "Configure API CORS by exact origin and credential need",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether API responses are readable from untrusted origins, especially with ambient credentials.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a harmless identity-specific API response fetched from a controlled origin",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a harmless identity-specific API response fetched from a controlled origin."
+        }
+      ],
+      "manipulate": "a harmless identity-specific API response fetched from a controlled origin; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "untrusted JavaScript reads non-public data under victim context",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "wildcard CORS is valid for intentionally public non-credentialed data",
+        "Authorization headers are not attached ambiently by browsers"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API8:2023 Security Misconfiguration",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "misconfiguration",
+        "cors",
+        "cross-origin"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-032",
+      "title": "Protect API schemas, consoles, metrics, and management endpoints",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether documentation, GraphQL/REST consoles, actuator, metrics, health detail, or admin tooling exposes sensitive functions or data.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for owner-approved standard and discovered management/documentation paths",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: owner-approved standard and discovered management/documentation paths."
+        }
+      ],
+      "manipulate": "owner-approved standard and discovered management/documentation paths; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "an unintended audience obtains sensitive configuration, credentials, operations, or management authority",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "public APIs can intentionally publish complete schemas",
+        "basic health status can be intentionally anonymous"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API8:2023 Security Misconfiguration",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa8-security-misconfiguration/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-16"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "misconfiguration",
+        "api-documentation",
+        "management"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-033",
+      "title": "Maintain an inventory of API hosts, base paths, protocols, and owners",
+      "category": "api-security",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether every reachable API has an owner, environment, data class, consumers, and lifecycle state.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for observed REST, SOAP, gRPC, GraphQL, mobile, webhook, and realtime surfaces",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: observed REST, SOAP, gRPC, GraphQL, mobile, webhook, and realtime surfaces."
+        }
+      ],
+      "manipulate": "observed REST, SOAP, gRPC, GraphQL, mobile, webhook, and realtime surfaces; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a live material API remains unowned or omitted from the authorized assessment/inventory",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "third-party endpoints can be dependencies rather than test targets",
+        "one host can intentionally expose multiple versions"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API9:2023 Improper Inventory Management",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa9-improper-inventory-management/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [
+          "CWE-1059"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "api-inventory",
+        "ownership",
+        "attack-surface"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-034",
+      "title": "Identify and retire deprecated API versions",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether older versions remain reachable with weaker controls, excess fields, or unsupported components.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for equivalent harmless operations across owner-approved versions",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: equivalent harmless operations across owner-approved versions."
+        }
+      ],
+      "manipulate": "equivalent harmless operations across owner-approved versions; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a deprecated version exposes behavior/data denied by the supported version or remains unintentionally public",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "old versions can remain supported under a documented migration window",
+        "a legacy route can redirect to current policy"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API9:2023 Improper Inventory Management",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa9-improper-inventory-management/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [
+          "CWE-1059"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "api-version",
+        "deprecated",
+        "lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        },
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-035",
+      "title": "Discover shadow and environment-specific API deployments safely",
+      "category": "api-security",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether development, staging, preview, regional, or mobile hosts expose unmanaged API copies.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for passive URL/DNS/client hints submitted for owner confirmation",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: passive URL/DNS/client hints submitted for owner confirmation."
+        }
+      ],
+      "manipulate": "passive URL/DNS/client hints submitted for owner confirmation; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a confirmed in-scope deployment exposes sensitive data or weaker controls after separate validation",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "environment-like labels can front production",
+        "shared providers can serve generic deny pages"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API9:2023 Improper Inventory Management",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa9-improper-inventory-management/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [
+          "CWE-1059"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "shadow-api",
+        "nonproduction",
+        "environment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Do not actively test discovered hosts until the owner confirms scope, data handling, and rate/safety limits."
+    },
+    {
+      "id": "WAPT-API-036",
+      "title": "Reconcile API documentation with deployed operations",
+      "category": "api-security",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether schemas omit live routes or describe retired/incorrect authentication, fields, and servers.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for an owner-approved schema plus observed traffic and route inventory",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: an owner-approved schema plus observed traffic and route inventory."
+        }
+      ],
+      "manipulate": "an owner-approved schema plus observed traffic and route inventory; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a security-relevant live operation/version is undocumented or a documented sensitive route is unintentionally exposed",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "internal documentation can exist outside tester access",
+        "generated schemas can omit dynamic routes intentionally"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API9:2023 Improper Inventory Management",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa9-improper-inventory-management/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API9:2023"
+        ],
+        "cwe": [
+          "CWE-1059"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "api-documentation",
+        "inventory",
+        "schema"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+    },
+    {
+      "id": "WAPT-API-037",
+      "title": "Validate and authorize data received from third-party APIs",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether external API fields are treated as trusted commands, identity, price, role, URL, or markup without validation.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for a sandboxed third-party response or owner-provided fixture",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: a sandboxed third-party response or owner-provided fixture."
+        }
+      ],
+      "manipulate": "a sandboxed third-party response or owner-provided fixture; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a controlled upstream field bypasses local validation/authorization or reaches a dangerous sink",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "contract-validated partners can intentionally supply authoritative fields",
+        "mock data can differ from signed production responses"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API10:2023 Unsafe Consumption of APIs",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xaa-unsafe-consumption-of-apis/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "unsafe-consumption",
+        "third-party",
+        "input-validation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use provider sandboxes or owner fixtures; never tamper with real third-party traffic or accounts."
+    },
+    {
+      "id": "WAPT-API-038",
+      "title": "Apply strict timeouts, size limits, and failure handling to consumed APIs",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether slow, oversized, malformed, or unavailable upstream responses exhaust resources or fail open.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for owner-controlled mock responses or fault-injection evidence",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: owner-controlled mock responses or fault-injection evidence."
+        }
+      ],
+      "manipulate": "owner-controlled mock responses or fault-injection evidence; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a bounded upstream fault causes unbounded wait/allocation or bypasses a security decision",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "resilience layers can retry within safe budgets",
+        "test mocks can omit production gateway limits"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API10:2023 Unsafe Consumption of APIs",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xaa-unsafe-consumption-of-apis/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "unsafe-consumption",
+        "timeout",
+        "resource-consumption"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Prefer owner-controlled mocks. Use small delays/bodies and never disrupt a real provider or production dependency."
+    },
+    {
+      "id": "WAPT-API-039",
+      "title": "Verify third-party TLS identity and redirect policy",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether API clients validate certificates/hostnames and constrain redirects before sending credentials or sensitive data.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for owner-controlled mock endpoints and client configuration evidence",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: owner-controlled mock endpoints and client configuration evidence."
+        }
+      ],
+      "manipulate": "owner-controlled mock endpoints and client configuration evidence; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "the client sends secrets to an untrusted redirect/identity or accepts invalid TLS under realistic configuration",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "test environments can intentionally use private CAs",
+        "a library can reject before application-visible error"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API10:2023 Unsafe Consumption of APIs",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xaa-unsafe-consumption-of-apis/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "unsafe-consumption",
+        "tls",
+        "redirect"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Use only owner-controlled mock endpoints and synthetic credentials; never intercept or redirect real provider traffic."
+    },
+    {
+      "id": "WAPT-API-040",
+      "title": "Keep upstream API credentials least-privileged and server-side",
+      "category": "api-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether third-party credentials are exposed to browsers/mobile apps, shared across environments, or granted excessive scope.",
+      "prerequisites": [
+        "An owner-approved API operation and protocol contract",
+        "Designated accounts, synthetic objects, or controlled upstream fixtures as applicable"
+      ],
+      "steps": [
+        "Map the normal API contract for credential placement, scope, rotation, and sandbox evidence with values redacted",
+        "Capture a stable authorized/public baseline and relevant control identity",
+        "Change one object, field, function, limit, destination, version, or upstream condition",
+        "Compare raw protocol responses and authoritative downstream state, then clean test data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic identifiers/data and alter one API condition at a time. Target: credential placement, scope, rotation, and sandbox evidence with values redacted."
+        }
+      ],
+      "manipulate": "credential placement, scope, rotation, and sandbox evidence with values redacted; change only the API object, property, function, limit, version, destination, or upstream field under test",
+      "secure_behavior": "The API enforces its documented identity, authorization, schema, resource, business, destination, inventory, and upstream trust boundaries.",
+      "vulnerable_behavior": "a client-extractable or overprivileged credential grants unintended provider access",
+      "validation": "Confirm a repeatable security effect through authoritative state or controlled evidence; status differences, schema presence, or scanner output alone are insufficient.",
+      "false_positives": [
+        "publishable client identifiers are not secrets",
+        "short-lived delegated tokens can intentionally reach clients with narrow scope"
+      ],
+      "impact": "A confirmed API weakness can expose or modify account/tenant data, escalate functions, automate sensitive flows, exhaust paid resources, reach internal services, or compromise downstream trust.",
+      "evidence": [
+        "Baseline and modified protocol-level requests",
+        "Paired responses and authoritative before/after state",
+        "Identity, role, tenant, client, version, and object context",
+        "Limits, cleanup, upstream fixture, and false-positive exclusions"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "API schema/client used offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP API Security",
+          "title": "API10:2023 Unsafe Consumption of APIs",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xaa-unsafe-consumption-of-apis/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "unsafe-consumption",
+        "api-key",
+        "secret-management"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "rest",
+            "soap",
+            "grpc",
+            "graphql",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ],
+          "url_hints.api_subdomain": [
+            true
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "safety": "Never copy credentials into evidence or invoke provider operations beyond a harmless owner-approved scope; revoke test credentials afterward."
+    }
+  ]
+}

@@ -24,6 +24,11 @@ function result(kind, details = {}) {
 
 function compare(context, key, expected) {
   const entry = contextEntry(context, key);
+  // URL hints are suggestion triggers, not answer attributes. A missing pattern does
+  // not add uncertainty; a positive low-confidence hint still yields Confirm.
+  if (key.startsWith('url_hints.') && entry.value === false) {
+    return result('mismatch', { key, expected, actual: entry.value });
+  }
   if (contextIsUnknown(context, key)) return result('unknown', { key, expected, actual: entry.value });
   if (contextHas(context, key, expected)) {
     return result(entry.confidence === 'url_hint' ? 'suggested' : 'match', { key, expected, actual: entry.value });
