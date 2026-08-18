@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed (Layout density — reported: every scope question needed scrolling on a laptop)
+
+- **Scope wizard fits one screen.** The wizard spent 697 px of vertical chrome before the first option, so a 4-option question rendered a 974 px page against a ~650 px laptop viewport. Now 330 px of chrome and a 534 px page: compact heading, one-line intro (hidden below 720 px tall), the local-storage explanation collapsed into a `<details>` summary instead of a permanent block, the step counter merged into the question heading, denser option cards, and the removal of the fixed `min-height` on `.wizard-body` (including a 500 px phone rule).
+- **Continue is always reachable** — the wizard footer is sticky, so the longest question (11 options, now laid out in three columns) keeps Back / Use Unknown / Continue on screen.
+- **Step changes land on the question** — focus moves without scrolling and the shell scrolls itself back to the top, instead of inheriting the previous step's scroll position.
+- **Workspace views tightened** — `.view` padding 4rem → 1.75rem, heading `h1` 3.1rem → 2rem, heading margin 2.5rem → 1.1rem: 300 px → 218 px of chrome before content on the dashboard, families board, and family workspace.
+- The review step no longer prints the local-storage warning twice.
+- `tests/wizard-layout.test.js` re-derives the vertical budget from the stylesheet and fails if the chrome grows past 400 px or a question stops fitting a 650 px viewport.
+
 ### Added (Product round — CyberBuddy patterns translated to an engagement workflow)
 
 - **Family operator contract** (derived, no new prose): every family states **Needs** (scope prerequisites read from the items' `applies` expressions — "a second tenant", "an upload feature", "two accounts"), **Mode** (manual / mixed / tool-assisted), **Tools** (linked to the Burp workflow pages), **Maps to** (WSTG · ASVS · OWASP · API · CWE), and its top severity. Rendered from one component on the board, in the family header, and on gap rows.

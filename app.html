@@ -76,13 +76,18 @@
         </div>
       </header>
 
-      <section class="view" data-view="wizard" aria-labelledby="wizard-page-title">
-        <div class="view-heading compact-heading">
+      <section class="view wizard-view" data-view="wizard" aria-labelledby="wizard-page-title">
+        <div class="view-heading compact-heading wizard-heading">
           <div><p class="eyebrow">START A WAPT</p><h1 id="wizard-page-title">Build the right test plan</h1></div>
-          <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
+          <div class="wizard-heading-actions">
+            <details class="local-persistence-notice compact" data-persistence-note>
+              <summary>Saved locally on this device</summary>
+              <span>Engagements, progress, findings, and notes stay in this site&rsquo;s local storage until you delete them or clear browser data. There is no cloud backup or cross-device sync; export JSON regularly and handle exports as sensitive.</span>
+            </details>
+            <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
+          </div>
         </div>
-        <p class="view-intro">Questions adapt to earlier answers, so irrelevant scope fields are skipped. Choose “Not confirmed yet” whenever scope is uncertain—the engine will keep affected tests visible for confirmation.</p>
-        <aside class="local-persistence-notice" role="note"><strong>Automatic local save</strong><span>You can close this page and continue later on this browser. Engagements, progress, findings, and notes remain only in this site’s local storage until you delete them or clear browser data. There is no cloud backup or cross-device sync; export JSON regularly and handle exports as sensitive.</span></aside>
+        <p class="view-intro wizard-intro">Questions adapt to earlier answers. Choose &ldquo;Not confirmed yet&rdquo; whenever scope is uncertain &mdash; affected tests stay visible for confirmation.</p>
         <div id="wizard-root" class="wizard-shell" aria-live="polite"></div>
       </section>
 
