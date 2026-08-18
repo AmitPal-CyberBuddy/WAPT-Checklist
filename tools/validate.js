@@ -74,7 +74,7 @@ const REQUIRED = [
   'applies', 'variants'
 ];
 
-const OPTIONAL = new Set(['priority_when', 'safety', 'remediation']);
+const OPTIONAL = new Set(['priority_when', 'safety', 'remediation', 'do_not_report', 'retest_guidance']);
 const ALLOWED_FIELDS = new Set([...REQUIRED, ...OPTIONAL]);
 const ARRAY_FIELDS = [
   'prerequisites', 'steps', 'examples', 'false_positives', 'evidence', 'tools',
@@ -300,8 +300,17 @@ function validateItem(item, at, errors) {
   for (const field of ['id', 'title', 'objective', 'manipulate', 'secure_behavior', 'vulnerable_behavior', 'validation', 'impact']) {
     if (!hasText(item[field])) errors.push(`${at}.${field}: must be a non-empty string`);
   }
-  for (const field of ['safety', 'remediation']) {
+  for (const field of ['safety', 'remediation', 'retest_guidance']) {
     if (item[field] !== undefined && !hasText(item[field])) errors.push(`${at}.${field}: must be a non-empty string`);
+  }
+  if (item.do_not_report !== undefined) {
+    if (!Array.isArray(item.do_not_report) || item.do_not_report.length === 0) errors.push(`${at}.do_not_report: must be a non-empty array`);
+    else {
+      validateStringArray(item.do_not_report, `${at}.do_not_report`, errors, true);
+      for (const entry of item.do_not_report) {
+        if (typeof entry === 'string' && entry.length < 25) errors.push(`${at}.do_not_report: entries must be specific (minimum 25 characters)`);
+      }
+    }
   }
 
   for (const field of ARRAY_FIELDS) {

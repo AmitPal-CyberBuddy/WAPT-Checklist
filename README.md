@@ -21,7 +21,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
-- Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, and references.
+- Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, explicit reporting boundaries (`do_not_report`), retest guidance, and references.
 - Dashboard metrics, live category progress, Suggested next, findings table, Markdown checklist/report generation, retest matrix, and print view.
 - Directed attack-chain graphs with checklist links, unlock hints, and priority boosts.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.

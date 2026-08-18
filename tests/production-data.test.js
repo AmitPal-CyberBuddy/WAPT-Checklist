@@ -817,3 +817,33 @@ test('release-r4 scope wiring: intermediary, outbound fetch, asynchronous jobs, 
   assert.ok(llm.safety.includes('Never'));
   assert.ok(llm.mappings.cwe.includes('CWE-20'));
 });
+
+test('Phase 2 reportability: boundary-prone items carry specific do-not-report guidance', () => {
+  const read = (file) => JSON.parse(fs.readFileSync(path.join(CHECKLIST, file), 'utf8'));
+  const expectedIds = [
+    'WAPT-HTTP-001', 'WAPT-HTTP-015', 'WAPT-HTTP-016', 'WAPT-HTTP-017', 'WAPT-HTTP-018', 'WAPT-HTTP-019',
+    'WAPT-API-031', 'WAPT-INFO-004', 'WAPT-INFO-009', 'WAPT-INFO-010', 'WAPT-INFO-015',
+    'WAPT-RECON-003', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-CLIENT-026'
+  ];
+  const items = {};
+  for (const file of ['http.json', 'api-security.json', 'information-disclosure.json', 'reconnaissance.json',
+    'jwt.json', 'session-management.json', 'client-side.json', 'security-headers.json', 'rate-limiting.json']) {
+    for (const item of read(file).items) items[item.id] = item;
+  }
+  const needsBoundary = (item) => expectedIds.includes(item.id) || item.category === 'security-headers' || item.category === 'rate-limiting';
+  for (const item of Object.values(items)) {
+    if (!needsBoundary(item)) continue;
+    assert.ok(Array.isArray(item.do_not_report) && item.do_not_report.length > 0, `${item.id} needs do_not_report`);
+    for (const entry of item.do_not_report) assert.ok(entry.length >= 25, `${item.id} boundary must be specific`);
+  }
+  const allEntries = new Map();
+  for (const item of Object.values(items)) for (const entry of item.do_not_report || []) {
+    const key = entry.toLocaleLowerCase('en-US').replace(/\s+/g, ' ').trim();
+    assert.ok(!allEntries.has(key), `${item.id} boundary duplicated with ${allEntries.get(key)}`);
+    allEntries.set(key, item.id);
+  }
+  for (const id of ['WAPT-HDR-002', 'WAPT-HDR-003', 'WAPT-HDR-015', 'WAPT-HDR-018', 'WAPT-HTTP-015',
+    'WAPT-HTTP-016', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-RATE-001', 'WAPT-RATE-002', 'WAPT-RATE-012', 'WAPT-INFO-010']) {
+    assert.ok(items[id].retest_guidance?.length >= 40, `${id} needs concrete retest guidance`);
+  }
+});

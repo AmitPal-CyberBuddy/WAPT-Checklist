@@ -6,6 +6,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Phase 2 reportability layer: optional `do_not_report` (minimum 25 characters, verbatim reuse rejected) and `retest_guidance` (minimum 40 characters) fields in the item contract, validator, and content audit.
+- Explicit reporting boundaries authored for all 24 security-header tests, all 12 rate-limiting tests, CORS (HTTP-015–019, API-031), version/source-map/directory/robots disclosure, DNS records, JWT and session token storage, client-code readability, and HTTP method findings — 51 items total, each entry item-specific.
+- Concrete retest guidance for policy deployment, CORS allowlists, throttling, token-storage migration, and version-disclosure remediations (12 items).
+- Methodology cards surface "Reporting boundary" and "Retest guidance" sections.
+- Content-audit rules: boundary-prone items must carry `do_not_report`; duplicated boundary wording fails; audit report metrics track `doNotReport` and `retestGuidance`.
 - Three new adaptive scoping questions: intermediary layers (CDN, reverse proxy/gateway, WAF), server-side outbound URL fetching (webhooks/callbacks, import/preview/rendering), and asynchronous jobs. The wizard now exposes 18 questions; static delivery with no API reconciles outbound-fetch and asynchronous-job answers automatically.
 - Category gate for SSRF on confirmed outbound URL fetching, with unknown scope keeping the whole suite visible as Confirm.
 - `ai_llm` feature option plus a gated LLM prompt/tool-call authority test (WAPT-ADV-019) mapped to PortSwigger Web LLM attacks and the OWASP Top 10 for LLM Applications, with CWE-20; production catalog is now 609 items.

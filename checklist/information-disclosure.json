@@ -323,7 +323,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "do_not_report": [
+        "Do not report source maps merely for being present; report only when maps disclose valid secrets, unreleased source, or configuration beyond what the shipped bundle already reveals."
+      ]
     },
     {
       "id": "WAPT-INFO-005",
@@ -721,7 +724,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "do_not_report": [
+        "Do not report directory listing of public content or benign filenames; require sensitive filenames, credentials, tenant keys, or private documents to be exposed by the listing."
+      ]
     },
     {
       "id": "WAPT-INFO-010",
@@ -802,7 +808,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "do_not_report": [
+        "Do not report version headers or default pages without a known exploitable vulnerability for that exact version; obsolete version disclosure without an exploit path is informational."
+      ],
+      "retest_guidance": "After disclosure remediation, retest headers, error pages, assets, JavaScript bundles, and default files across all hosts and API versions; version strings often persist in secondary components."
     },
     {
       "id": "WAPT-INFO-011",
@@ -1203,7 +1213,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "do_not_report": [
+        "Do not report robots.txt or sitemap entries as vulnerabilities; use them as reconnaissance leads and report only a reachable sensitive resource that lacks its own controls."
+      ]
     },
     {
       "id": "WAPT-INFO-016",

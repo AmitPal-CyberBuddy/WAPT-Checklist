@@ -12,6 +12,8 @@
     "uniqueReferences": 124,
     "relatedLinks": 32,
     "chainMemberships": 20,
+    "doNotReport": 51,
+    "retestGuidance": 12,
     "attackChains": 5,
     "payloadReferences": 40,
     "burpWorkflows": 12,

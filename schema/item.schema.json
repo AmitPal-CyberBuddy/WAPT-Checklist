@@ -91,7 +91,9 @@
     },
     "priority_when": { "$ref": "#/$defs/conditionMap" },
     "safety": { "$ref": "#/$defs/nonEmptyString" },
-    "remediation": { "$ref": "#/$defs/nonEmptyString" }
+    "remediation": { "$ref": "#/$defs/nonEmptyString" },
+    "do_not_report": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "retest_guidance": { "$ref": "#/$defs/nonEmptyString" }
   },
   "$defs": {
     "nonEmptyString": { "type": "string", "minLength": 1, "pattern": "\\S" },

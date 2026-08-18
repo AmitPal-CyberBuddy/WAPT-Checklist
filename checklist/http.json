@@ -79,7 +79,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Allowlist methods in routing and enforce authentication, authorization, and action semantics inside every handler."
+      "remediation": "Allowlist methods in routing and enforce authentication, authorization, and action semantics inside every handler.",
+      "do_not_report": [
+        "Do not report TRACE or OPTIONS responses as vulnerabilities by themselves; report them only when the method enables a demonstrated attack, such as header reflection on TRACE reaching a victim or a state-changing OPTIONS path."
+      ]
     },
     {
       "id": "WAPT-HTTP-002",
@@ -1161,7 +1164,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Compare parsed origins by exact scheme, host, and port against a fixed allowlist; never use substring, suffix-only, or blind reflection checks."
+      "remediation": "Compare parsed origins by exact scheme, host, and port against a fixed allowlist; never use substring, suffix-only, or blind reflection checks.",
+      "do_not_report": [
+        "Do not report ACAO reflection by itself; demonstrate that an attacker-controlled origin can read a sensitive, user-specific response under the application credential model. Public or unauthenticated data is not a CORS finding."
+      ],
+      "retest_guidance": "After CORS fixes, retest with a credentialed fetch from the previously rejected origin, confirm both preflight and simple-request paths deny reads, and verify legitimate integrations still receive their exact allowlisted origins."
     },
     {
       "id": "WAPT-HTTP-016",
@@ -1271,7 +1278,11 @@
           "notes": "A header-only token usually requires a separate token exposure or trusted client behavior."
         }
       ],
-      "remediation": "Use an exact origin allowlist, minimize credentialed CORS, set purpose-appropriate SameSite cookies, and authorize every resource server-side."
+      "remediation": "Use an exact origin allowlist, minimize credentialed CORS, set purpose-appropriate SameSite cookies, and authorize every resource server-side.",
+      "do_not_report": [
+        "Do not report credentialed CORS without proving a readable cross-origin response containing private data; verify that ambient credentials are actually sent and readable, not just that ACAO echoes the origin."
+      ],
+      "retest_guidance": "Retest by reproducing the attacker origin credentialed request, confirming the sensitive field is no longer readable, and checking alternate response types such as JSON, multipart, and streaming for the same exposure."
     },
     {
       "id": "WAPT-HTTP-017",
@@ -1348,7 +1359,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Avoid allowlisting null for sensitive resources; use explicit authenticated clients, scoped capabilities, and non-browser channels for exceptional cases."
+      "remediation": "Avoid allowlisting null for sensitive resources; use explicit authenticated clients, scoped capabilities, and non-browser channels for exceptional cases.",
+      "do_not_report": [
+        "Do not report acceptance of the null origin without an attacker-reachable sandboxed or opaque context that can read sensitive credentialed data through the accepted origin."
+      ]
     },
     {
       "id": "WAPT-HTTP-018",
@@ -1429,7 +1443,10 @@
       "applies": {},
       "variants": [],
       "remediation": "Do not use preflight as the sole CSRF defense; restrict media types/methods and require origin-bound anti-forgery signals for ambient credentials.",
-      "safety": "Use a reversible action on a designated account and restore state immediately; never test payments, deletion, or real-user communication."
+      "safety": "Use a reversible action on a designated account and restore state immediately; never test payments, deletion, or real-user communication.",
+      "do_not_report": [
+        "Do not report preflight-less simple requests as a CORS bypass unless a state-changing operation is reachable cross-site with ambient credentials; reading access is the reportable boundary, not request transmission."
+      ]
     },
     {
       "id": "WAPT-HTTP-019",
@@ -1508,7 +1525,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Minimize exposed headers, never place reusable secrets in response headers readable by clients, and combine with exact origin policy."
+      "remediation": "Minimize exposed headers, never place reusable secrets in response headers readable by clients, and combine with exact origin policy.",
+      "do_not_report": [
+        "Do not report exposed headers unless the listed headers actually carry secrets or sensitive metadata readable from the permitted origin; exposing benign headers is not a finding."
+      ]
     },
     {
       "id": "WAPT-HTTP-020",

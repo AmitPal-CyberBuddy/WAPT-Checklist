@@ -189,8 +189,10 @@ function renderCard(record, state, categoryNames, onState) {
   body.append(behavior);
   body.append(section('Validation', item.validation));
   body.append(section('False positives', item.false_positives));
+  if (item.do_not_report?.length) body.append(section('Reporting boundary', item.do_not_report));
   body.append(section('Impact', item.impact));
   if (item.remediation) body.append(section('Root-cause remediation', item.remediation));
+  if (item.retest_guidance) body.append(section('Retest guidance', item.retest_guidance));
   if (item.safety) body.append(section('Safety boundary', item.safety));
   body.append(section('Evidence', item.evidence));
   body.append(section('Tools', item.tools));

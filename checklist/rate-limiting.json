@@ -106,7 +106,11 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report password guessing as unmitigated because a handful of attempts succeeded; measure the lockout or throttling threshold, the entropy of the credential, and whether the observed rate enables practical compromise within the policy window."
+      ],
+      "retest_guidance": "After throttle remediation, retest across account, IP, and device dimensions, confirm the threshold holds under parallel attempts, and verify legitimate multi-user login from shared NAT is not blocked."
     },
     {
       "id": "WAPT-RATE-002",
@@ -209,7 +213,11 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report credential stuffing from a single-IP test; demonstrate account-centric or device-based controls failing across distributed sources, and note when breached-credential screening already covers the risk."
+      ],
+      "retest_guidance": "Retest credential stuffing with distributed source addresses and device fingerprints to confirm account-centric or risk-based controls trigger, and verify synthetic breached pairs are blocked without harming normal login."
     },
     {
       "id": "WAPT-RATE-003",
@@ -312,7 +320,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report OTP verification as unthrottled without proving repeated guesses within one code lifetime; a short-lived single-use code can make online guessing impractical even without visible throttling."
+      ]
     },
     {
       "id": "WAPT-RATE-004",
@@ -415,7 +426,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report push fatigue from a handful of approval prompts; demonstrate that repeated approvals can be induced at scale and that prompts lack number matching or clear context without a practical abuse path."
+      ]
     },
     {
       "id": "WAPT-RATE-005",
@@ -515,7 +529,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report reset-email flooding without measuring the per-recipient cap and the practical cost or abuse potential; sending a few reset emails to your own test account is normal behavior, not a finding."
+      ]
     },
     {
       "id": "WAPT-RATE-006",
@@ -612,7 +629,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report open registration itself as a vulnerability; demonstrate mass account creation that enables spam, fraud, or abuse beyond the intended public signup model."
+      ]
     },
     {
       "id": "WAPT-RATE-007",
@@ -721,7 +741,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report API rate limits as absent because responses are fast; quantify per-principal and per-operation budgets, measure expensive endpoints separately, and demonstrate a disproportionate cost or abuse path."
+      ]
     },
     {
       "id": "WAPT-RATE-008",
@@ -824,7 +847,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report search or export volume alone; show that enumeration or extraction reaches protected data at scale beyond the intended access model, with account-appropriate authorization."
+      ]
     },
     {
       "id": "WAPT-RATE-009",
@@ -926,7 +952,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report upload limits as missing without measuring documented quotas; demonstrate storage or processing exhaustion that affects other tenants or creates cost, not just consumption of your own quota."
+      ]
     },
     {
       "id": "WAPT-RATE-010",
@@ -1030,7 +1059,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report notification fan-out without a recipient-impact test; sending messages to your own test accounts within the documented limit is normal functionality."
+      ]
     },
     {
       "id": "WAPT-RATE-011",
@@ -1133,7 +1165,10 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report commerce flows as automatable because repeated test transactions succeed; demonstrate card testing, coupon enumeration, inventory hoarding, or settlement abuse with concrete business impact."
+      ]
     },
     {
       "id": "WAPT-RATE-012",
@@ -1230,7 +1265,11 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
-      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout.",
+      "do_not_report": [
+        "Do not report header-based limits as bypassable just because X-Forwarded-For is accepted; prove the spoofed value actually changes the limiting decision on a protected operation."
+      ],
+      "retest_guidance": "After header-handling fixes, retest with each spoofed identifier such as X-Forwarded-For, Forwarded, and X-Real-IP, confirm the limiting decision ignores client-controlled values, and verify proxied legitimate traffic is still attributed correctly."
     }
   ]
 }

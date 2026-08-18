@@ -98,3 +98,9 @@ test('wizard source defines all 18 question keys and the one localStorage key', 
   assert.match(themeBoot, /STORAGE_KEY = 'wapt\.state\.v1'/);
   assert.doesNotMatch(`${theme}\n${themeBoot}`, /sessionStorage/);
 });
+
+test('methodology cards surface reportability and retest boundaries', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /section\('Reporting boundary', item\.do_not_report\)/);
+  assert.match(workspace, /section\('Retest guidance', item\.retest_guidance\)/);
+});

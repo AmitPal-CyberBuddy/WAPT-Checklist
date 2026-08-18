@@ -1738,7 +1738,11 @@
           "mixed"
         ]
       },
-      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "do_not_report": [
+        "Do not report JWTs in localStorage by itself; evaluate the XSS surface, token lifetime, and refresh model. A short-lived token in a hardened single-page application is not automatically a finding."
+      ],
+      "retest_guidance": "After storage remediation, retest that the token class moved to the intended store such as an HttpOnly cookie or memory, that no copy remains in localStorage after logout, and that the new transport still supports the documented session lifetime."
     }
   ]
 }

@@ -2081,7 +2081,10 @@
         ]
       },
       "variants": [],
-      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."
+      "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
+      "do_not_report": [
+        "Do not report readable client-side code as a vulnerability; report only valid secrets, hard-coded privileged logic, or client-side authorization decisions that actually grant access."
+      ]
     },
     {
       "id": "WAPT-CLIENT-027",

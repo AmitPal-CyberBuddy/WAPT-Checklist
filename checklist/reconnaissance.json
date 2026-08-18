@@ -212,7 +212,10 @@
       "applies": {},
       "variants": [],
       "remediation": "Remove stale records atomically with service retirement, continuously inventory aliases, and verify external resource ownership before deployment.",
-      "safety": "Do not register, claim, or modify a suspected dangling service. Validate ownership with the application owner and provider documentation."
+      "safety": "Do not register, claim, or modify a suspected dangling service. Validate ownership with the application owner and provider documentation.",
+      "do_not_report": [
+        "Do not report the existence of DNS records, CDN aliases, or mail records as findings; report only misconfigurations with security impact such as dangling references, exposed management services, or mail-security failures enabling impersonation."
+      ]
     },
     {
       "id": "WAPT-RECON-004",
