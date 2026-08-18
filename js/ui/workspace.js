@@ -651,6 +651,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let activeCategory = '';
   let checklistFilters = { ...EMPTY_FILTERS };
   let checklistMode = 'testing';
+  let recentTouched = [];
   let searchFilters = { ...EMPTY_FILTERS };
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
@@ -661,7 +662,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   const makeRecords = (items) => items.map((item) => effectiveRecord(item, getState(), context()));
 
   function commit(nextState) {
+    const before = getState().statuses;
     onStateChange(nextState);
+    const changed = Object.keys(nextState.statuses || {}).filter((id) => before[id] !== nextState.statuses[id]);
+    if (changed.length) {
+      recentTouched = [...changed, ...recentTouched].filter((id, index, all) => all.indexOf(id) === index).slice(0, 8);
+    }
     records = makeRecords(records.map(({ item }) => item));
     if (activeView === 'checklist') renderChecklist();
     if (activeView === 'search') renderSearch();
@@ -889,7 +895,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses, chainStore);
 
     const suggestedRoot = document.querySelector('[data-suggested-next]');
-    const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
+    const familiesMap = new Map();
+    for (const list of familyByCategory.values()) for (const family of list) familiesMap.set(family.id, family.items);
+    const relatedByItem = new Map();
+    for (const item of itemList) if (item.related?.length) relatedByItem.set(item.id, item.related);
+    const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8, recent: recentTouched, families: familiesMap, relatedByItem });
     if (!suggestions.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
     else suggestedRoot.replaceChildren(...suggestions.map(({ item, applicability, contextReasons, unlockedBy }) => {
       const link = element('a', 'suggested-row');

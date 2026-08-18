@@ -77,9 +77,49 @@ export function scoreItem(item, context, options = {}) {
 export function suggestedNext(items, context, options = {}) {
   const statuses = options.statuses || {};
   const limit = Number.isInteger(options.limit) ? Math.max(0, options.limit) : 8;
+  const recent = Array.isArray(options.recent) ? options.recent : [];
+  const families = options.families instanceof Map ? options.families : new Map();
+  const relatedByItem = options.relatedByItem instanceof Map ? options.relatedByItem : new Map();
+
+  // Tester-aware signals: related to recently touched work, and continuing a
+  // family the tester is part-way through. Bounded, deterministic, additive.
+  const recentSet = new Set(recent);
+  const relatedTargets = new Set();
+  for (const id of recent) for (const target of relatedByItem.get(id) || []) relatedTargets.add(target);
+  const activeFamilies = new Set();
+  for (const [familyId, memberIds] of families) {
+    if (recent.some((id) => memberIds.includes(id))) activeFamilies.add(familyId);
+  }
+  const relatedBoost = 18;
+  const familyBoost = 16;
+
   return Object.freeze(items
     .filter((item) => (statuses[item.id] || 'not_tested') === 'not_tested')
-    .map((item) => scoreItem(item, context, options))
+    .map((item) => {
+      const base = scoreItem(item, context, options);
+      const testerReasons = [];
+      let bonus = 0;
+      if (relatedTargets.has(item.id)) {
+        bonus += relatedBoost;
+        testerReasons.push('related to a test you just worked on');
+      }
+      if (families.size) {
+        for (const [familyId, memberIds] of families) {
+          if (activeFamilies.has(familyId) && memberIds.includes(item.id)) {
+            bonus += familyBoost;
+            testerReasons.push('continues a family you are part-way through');
+            break;
+          }
+        }
+      }
+      if (!bonus) return base;
+      return Object.freeze({
+        ...base,
+        score: base.score + bonus,
+        breakdown: Object.freeze({ ...base.breakdown, tester: bonus }),
+        contextReasons: Object.freeze([...base.contextReasons, ...testerReasons])
+      });
+    })
     .filter(({ applicability }) => isExecutable(applicability))
     .sort((left, right) => right.score - left.score || left.item.id.localeCompare(right.item.id))
     .slice(0, limit));

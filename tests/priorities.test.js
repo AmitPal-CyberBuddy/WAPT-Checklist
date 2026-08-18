@@ -66,3 +66,33 @@ test('suggested next excludes tested, context-N/A, and credential-blocked work',
   });
   assert.deepEqual(result, []);
 });
+
+test('tester-aware signals boost related and same-family suggestions deterministically', async () => {
+  const [{ suggestedNext }] = [await import('../js/engine/priorities.js')];
+  const { deriveContext } = await import('../js/engine/context.js');
+  const context = deriveContext({});
+  const items = [
+    { id: 'WAPT-AUTHZ-001', category: 'authorization', severity: 'medium', applies: {}, variants: [] },
+    { id: 'WAPT-AUTHZ-002', category: 'authorization', severity: 'medium', applies: {}, variants: [] },
+    { id: 'WAPT-AUTHZ-003', category: 'authorization', severity: 'medium', applies: {}, variants: [], related: [] },
+    { id: 'WAPT-API-001', category: 'api-security', severity: 'medium', applies: {}, variants: [] }
+  ];
+  const families = new Map([
+    ['authorization-object-level', ['WAPT-AUTHZ-001', 'WAPT-AUTHZ-002', 'WAPT-AUTHZ-003']]
+  ]);
+  const relatedByItem = new Map([['WAPT-AUTHZ-001', ['WAPT-API-001']]]);
+  const options = { recent: ['WAPT-AUTHZ-001'], families, relatedByItem };
+  const suggestions = suggestedNext(items, context, options);
+  const api = suggestions.find(({ item }) => item.id === 'WAPT-API-001');
+  const sibling = suggestions.find(({ item }) => item.id === 'WAPT-AUTHZ-002');
+  assert.ok(api, 'related target appears');
+  assert.ok(api.contextReasons.includes('related to a test you just worked on'));
+  assert.ok(api.breakdown.tester === 18);
+  assert.ok(sibling, 'family sibling appears');
+  assert.ok(sibling.contextReasons.includes('continues a family you are part-way through'));
+  assert.ok(sibling.breakdown.tester === 16);
+  const again = suggestedNext(items, context, options);
+  assert.deepEqual(again.map(({ item }) => item.id), suggestions.map(({ item }) => item.id));
+  const cold = suggestedNext(items, context, {});
+  assert.ok(cold.every(({ contextReasons }) => !contextReasons.some((reason) => reason.includes('part-way through'))));
+});
