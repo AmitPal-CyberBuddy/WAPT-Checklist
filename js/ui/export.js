@@ -1,7 +1,8 @@
-import { serializeState } from '../engine/state.js?v=1.0.0-r3';
+import { serializeState } from '../engine/state.js?v=1.0.0-r6';
+import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r6';
 
 export const STATUS_LABELS = Object.freeze({
-  not_tested: 'Not Tested', in_progress: 'In Progress', passed: 'Passed',
+  not_tested: 'Not Started', in_progress: 'Active', passed: 'Not Vulnerable',
   potential_finding: 'Potential Finding', confirmed_finding: 'Confirmed Finding', na: 'N/A'
 });
 
@@ -72,11 +73,31 @@ export function composeReportMarkdown(items, state, categoryNames = {}) {
   for (const item of findings) {
     lines.push(`| ${item.id} | ${cell(item.title)} | ${cell(categoryNames[item.category] || item.category)} | ${item.severity} | ${STATUS_LABELS[statusOf(item, state)]} | Not scored | ${cell(state.notes?.[item.id] || '')} |`);
   }
-  lines.push('', '## Retest matrix', '', '| ID | Finding | Retest requested | Retest guidance |', '|---|---|---|---|');
+  lines.push('', '## Evidence packs', '');
+  const packs = Array.isArray(state.findings) ? state.findings : [];
+  if (!packs.length) lines.push('| — | No structured evidence packs recorded | — | — | — | — | — | — | — |');
+  else {
+    lines.push('| ID | Item | Title | Severity | Endpoint | Method | Exploitability | Reportable | Retest verdict |');
+    lines.push('|---|---|---|---|---|---|---|---|---|');
+    for (const pack of packs) {
+      lines.push(`| ${pack.id} | ${pack.item_id} | ${cell(pack.title) || '—'} | ${pack.severity} | ${cell(pack.endpoint) || '—'} | ${cell(pack.method) || '—'} | ${pack.exploitability} | ${pack.reportable ? 'Yes' : 'No'} | ${pack.retest_verdict} |`);
+      if (pack.observed_behavior) lines.push(`| | | Observed: ${cell(pack.observed_behavior)} | | | | | | |`);
+      if (pack.cleanup_performed) lines.push(`| | | Cleanup: ${cell(pack.cleanup_performed)} | | | | | | |`);
+    }
+  }
+  lines.push('', '## Retest matrix', '', '| ID | Finding | Retest requested | Verdict | Residual risk / guidance |', '|---|---|---|---|---|');
   const confirmedItems = findings.filter((item) => statusOf(item, state) === 'confirmed_finding');
-  if (!confirmedItems.length) lines.push('| — | No confirmed findings recorded | — | — |');
+  const verdictFor = (itemId) => packs.find(({ item_id: id }) => id === itemId)?.retest_verdict || null;
+  if (!confirmedItems.length && !packs.length) lines.push('| — | No confirmed findings recorded | — | — | — |');
   for (const item of confirmedItems) {
-    lines.push(`| ${item.id} | ${cell(item.title)} | ${state.retests?.[item.id] ? 'Yes' : 'No'} | Reproduce the original evidence, verify root-cause remediation, then test adjacent variants and authorization contexts. |`);
+    const verdict = verdictFor(item.id);
+    const residual = verdict ? RETEST_GUIDANCE[verdict] : 'Reproduce the original evidence, verify root-cause remediation, then test adjacent variants and authorization contexts.';
+    lines.push(`| ${item.id} | ${cell(item.title)} | ${state.retests?.[item.id] ? 'Yes' : 'No'} | ${verdict || '—'} | ${residual} |`);
+  }
+  for (const pack of packs) {
+    if (!confirmedItems.some((item) => item.id === pack.item_id)) {
+      lines.push(`| ${pack.id} | ${cell(pack.title) || pack.item_id} | — | ${pack.retest_verdict} | ${RETEST_GUIDANCE[pack.retest_verdict] || 'Reproduce the original evidence and re-verify root cause.'} |`);
+    }
   }
   lines.push('', '## Reporting quality gate', '',
     '- Do not report informational observations as vulnerabilities.',

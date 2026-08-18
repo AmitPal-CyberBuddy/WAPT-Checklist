@@ -15,10 +15,13 @@ export const ATTRIBUTE_OPTIONS = Object.freeze({
   api_style: Object.freeze(['rest', 'graphql', 'soap', 'websocket', 'grpc', 'none', UNKNOWN]),
   database: Object.freeze(['sql', 'nosql', 'ldap', 'other', 'none', UNKNOWN]),
   cloud: Object.freeze(['aws', 'gcp', 'azure', 'self_hosted', 'none', 'other', UNKNOWN]),
-  features: Object.freeze(['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'other', 'none', UNKNOWN])
+  features: Object.freeze(['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'ai_llm', 'other', 'none', UNKNOWN]),
+  intermediary: Object.freeze(['cdn', 'proxy', 'waf', 'none', UNKNOWN]),
+  outbound_fetch: Object.freeze(['webhooks', 'import', 'none', UNKNOWN]),
+  async_jobs: Object.freeze(['yes', 'no', UNKNOWN])
 });
 
-export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features']));
+export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch']));
 export const URL_HINT_KEYS = Object.freeze([
   'plain_http', 'unusual_tls_port', 'api_subdomain', 'admin_subdomain',
   'nonproduction_subdomain', 'punycode_hostname'
@@ -105,6 +108,8 @@ export function normalizeScopeAnswers(answers = {}) {
   if (normalized.app_type === 'static' && normalized.api_style.includes('none')) {
     normalized.backend = ['none'];
     normalized.database = ['none'];
+    normalized.outbound_fetch = ['none'];
+    normalized.async_jobs = 'no';
   }
   return normalized;
 }

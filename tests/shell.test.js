@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r3']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r6']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -39,9 +39,9 @@ test('font assets are self-hosted WOFF2 files', () => {
 
 test('manifest matches the architecture taxonomy and production files', () => {
   const manifest = JSON.parse(read('checklist/manifest.json'));
-  assert.equal(manifest.categories.length, 24);
+  assert.equal(manifest.categories.length, 25);
   assert.equal(manifest.sample_count, 20);
-  assert.equal(manifest.categories.reduce((sum, category) => sum + category.floor, 0), 512);
+  assert.equal(manifest.categories.reduce((sum, category) => sum + category.floor, 0), 520);
   for (const category of manifest.categories) {
     const file = path.join(ROOT, 'checklist', category.file);
     if (!fs.existsSync(file)) {
@@ -83,18 +83,79 @@ test('workspace shell exposes rendered Phase 7 chain and payload browsers', () =
   assert.match(workspace, /payloadStore\.render/);
 });
 
-test('wizard source defines all 15 question keys and the one localStorage key', () => {
+test('wizard source defines all 18 question keys and the one localStorage key', () => {
   const wizard = read('js/ui/wizard.js');
   const app = read('js/ui/app.js');
   const engineState = read('js/engine/state.js');
   const theme = read('js/ui/theme.js');
   const themeBoot = read('js/ui/theme-boot.js');
   const questionKeys = [...wizard.matchAll(/\{ key: '([a-z_]+)'/g)].map((match) => match[1]);
-  assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features']);
+  assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features', 'intermediary', 'outbound_fetch', 'async_jobs']);
   assert.match(engineState, /STATE_KEY = 'wapt\.state\.v1'/);
   assert.match(app, /localStorage\.setItem\(STATE_KEY/);
   assert.equal((app.match(/localStorage\.setItem/g) || []).length, 1);
   assert.match(theme, /STORAGE_KEY = 'wapt\.state\.v1'/);
   assert.match(themeBoot, /STORAGE_KEY = 'wapt\.state\.v1'/);
   assert.doesNotMatch(`${theme}\n${themeBoot}`, /sessionStorage/);
+});
+
+test('methodology cards surface reportability and retest boundaries', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /section\('Reporting boundary', item\.do_not_report\)/);
+  assert.match(workspace, /section\('Retest guidance', item\.retest_guidance\)/);
+});
+
+test('report generator includes evidence packs and retest verdicts with residual guidance', async () => {
+  const { composeReportMarkdown } = await import('../js/ui/export.js');
+  const items = [{ id: 'WAPT-AUTHZ-003', category: 'authorization', title: 'Enforce horizontal read authorization', severity: 'high' }];
+  const state = {
+    engagement: { name: 'Review <script>alert(1)</script>', targetUrl: 'https://app.example.com', started_at: '2026-08-18T00:00:00.000Z' },
+    statuses: { 'WAPT-AUTHZ-003': 'confirmed_finding' },
+    notes: { 'WAPT-AUTHZ-003': 'Account B object readable <b>as</b> account A.' },
+    retests: { 'WAPT-AUTHZ-003': true },
+    findings: [{
+      id: 'find-0001', item_id: 'WAPT-AUTHZ-003', title: 'Cross-account read', severity: 'high',
+      endpoint: 'GET /api/objects/1001', method: 'GET', parameter: 'id', auth_context: 'account A',
+      precondition: 'Two accounts.', baseline_request: 'GET /api/objects/1000', test_request: 'GET /api/objects/1001',
+      observed_behavior: 'Response contains account B object.', exploitability: 'proven', reportable: true,
+      cleanup_performed: 'Synthetic data removed.', root_cause: 'No per-object check.',
+      retest_verdict: 'partial', retest_note: 'Bulk endpoint still reproduces.', created_at: '2026-08-18T00:00:00.000Z', updated_at: '2026-08-18T00:00:00.000Z'
+    }],
+    updated_at: '2026-08-18T00:00:00.000Z'
+  };
+  const markdown = composeReportMarkdown(items, state, { authorization: 'Authorization' });
+  assert.match(markdown, /## Evidence packs/);
+  assert.match(markdown, /find-0001/);
+  assert.match(markdown, /partial/);
+  assert.match(markdown, /adjacent variant still reproduces/);
+  assert.doesNotMatch(markdown, /<script>alert\(1\)<\/script>/);
+  assert.doesNotMatch(markdown, /<b>as<\/b>/);
+  assert.match(markdown, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
+
+test('Phase 5 dashboard composition, retest queue, chain overview, and shortcuts', () => {
+  const appHtml = read('app.html');
+  const app = read('js/ui/app.js');
+  const workspace = read('js/ui/workspace.js');
+  const chains = read('js/ui/chains.js');
+  for (const marker of ['data-dashboard-blocked', 'data-dashboard-na', 'data-retest-queue', 'data-chain-overview',
+    'data-coverage-summary', 'id="shortcuts-dialog"', 'data-shortcuts-open', 'id="findings-panel"']) {
+    assert.ok(appHtml.includes(marker), `app.html missing ${marker}`);
+  }
+  assert.match(app, /shortcutsDialog\.showModal\(\)/);
+  assert.match(app, /pendingShortcut/);
+  assert.match(app, /event\.key === '\?'/);
+  assert.match(app, /if \(editable \|\| event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey\)/);
+  assert.match(workspace, /function renderRetestQueue\(/);
+  assert.match(workspace, /function renderChainOverview\(/);
+  assert.match(workspace, /SEVERITY_GLYPHS = Object\.freeze/);
+  assert.match(workspace, /STATUS_GLYPHS = Object\.freeze/);
+  assert.match(workspace, /filter-chips/);
+  assert.match(chains, /STATUS_GLYPHS\[status\]/);
+});
+
+test('checklist page renders family groups for authored categories', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /groupByFamily/);
+  assert.match(workspace, /familyByCategory\.get\(fixed\)/);
 });

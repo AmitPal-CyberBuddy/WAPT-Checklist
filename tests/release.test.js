@@ -14,7 +14,7 @@ test('release manifest matches catalog and connected-library counts', () => {
   const chains = JSON.parse(read('attack-chains/manifest.json'));
   const payloads = JSON.parse(read('payloads/manifest.json'));
   assert.equal(release.version, '1.0.0');
-  assert.equal(release.cache_version, '1.0.0-r3');
+  assert.equal(release.cache_version, '1.0.0-r6');
   assert.equal(release.status, 'release-candidate');
   assert.equal(release.production_items, manifest.categories.reduce((sum, category) => sum + category.count, 0));
   assert.equal(release.categories, manifest.categories.length);
@@ -27,7 +27,7 @@ test('release cache version is consistent across pages and browser modules', () 
   const files = ['index.html', 'app.html', ...fs.readdirSync(path.join(ROOT, 'js/ui')).filter((file) => file.endsWith('.js')).map((file) => `js/ui/${file}`)];
   const versions = files.flatMap((file) => [...read(file).matchAll(/\?v=([0-9]+\.[0-9]+\.[0-9]+(?:-[a-z0-9.]+)?)/g)].map((match) => match[1]));
   assert.ok(versions.length >= 20);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r3']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r6']));
   assert.match(read('app.html'), /WAPT Checklist v1\.0\.0/);
 });
 

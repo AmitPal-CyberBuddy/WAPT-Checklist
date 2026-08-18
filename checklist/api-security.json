@@ -2541,7 +2541,10 @@
           "url_hints.api_subdomain": [
             true
           ]
-        }
+        },
+        "requires": [
+          "outbound_fetch:webhooks|import"
+        ]
       },
       "variants": [],
       "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
@@ -2631,7 +2634,10 @@
           "url_hints.api_subdomain": [
             true
           ]
-        }
+        },
+        "requires": [
+          "outbound_fetch:webhooks|import"
+        ]
       },
       "variants": [],
       "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
@@ -2906,7 +2912,10 @@
         ]
       },
       "variants": [],
-      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries."
+      "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
+      "do_not_report": [
+        "Do not report API CORS configuration without a readable sensitive response from an untrusted origin; a permissive ACAO over public API data is not a finding."
+      ]
     },
     {
       "id": "WAPT-API-032",

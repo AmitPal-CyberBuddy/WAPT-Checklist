@@ -43,6 +43,8 @@ Optional fields:
 - `safety`: required by policy for rate bursts, race concurrency, smuggling/desync, resource exhaustion, destructive state changes, cloud metadata access, or other production-impacting actions.
 - `priority_when`: context boosts using the controlled condition vocabulary.
 - `remediation`: root-cause direction; recommended for production content even though report recommendations may be engagement-specific.
+- `do_not_report`: explicit reporting boundaries for false-positive-prone techniques. Required by the content audit for the entire `security-headers` and `rate-limiting` categories and for a pinned set of CORS, disclosure, token-storage, DNS, and client-code items. Entries must be item-specific (minimum 25 characters; verbatim reuse across items fails the audit). An entry must state what must be demonstrated before the observation becomes reportable, e.g. "Do not report ACAO reflection by itself; demonstrate that an attacker-controlled origin can read a sensitive, user-specific response…".
+- `retest_guidance`: concrete re-verification steps for remediations that are easy to verify incompletely (policy deployment, CORS allowlists, throttling, token-storage migration). Minimum 40 characters and it must describe the re-test, not restate the remediation.
 
 ## Safety language
 

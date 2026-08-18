@@ -8,12 +8,12 @@ Responsiveness is implemented as layout recomposition, not global scaling. Typog
 
 | Viewport | Intended composition |
 |---|---|
-| 2560–1920 px monitor | Centered content capped at 1180 px on the homepage and 1240 px in the workspace; persistent 272 px app sidebar; two-column hero; four dashboard metrics; two-column methodology/chain/payload surfaces where useful. Extra monitor width becomes calm margin rather than overlong lines. |
-| 1440–1280 px desktop/laptop | Persistent sidebar; full workspace header; four dashboard metrics where space permits; filter grid reflows across rows; cards preserve side-by-side controls. |
+| 2560–1920 px monitor | Centered content capped at 1180 px on the homepage and 1240 px in the workspace; persistent 272 px app sidebar; two-column hero; six dashboard metrics in three columns plus retest-queue and attack-path panels; homepage shows five project metrics and a six-step pipeline in one row. Extra monitor width becomes calm margin rather than overlong lines. |
+| 1440–1280 px desktop/laptop | Persistent sidebar; full workspace header; six dashboard metrics where space permits; filter grid reflows across rows with removable active-filter chips; cards preserve side-by-side controls. |
 | 1024 px small laptop | Persistent sidebar remains usable; dashboard changes to two metrics per row and one dashboard content column; homepage hero intentionally becomes one column; filters use four/two logical columns rather than shrinking controls. |
 | 960–768 px tablet | Sidebar becomes an off-canvas drawer with scrim, focus transfer, Escape close, `inert`, and `aria-hidden` while closed; workspace receives the full screen width; filters become two columns; dashboard panels stack. |
-| 600–390 px phone | One-column cards, filters, option/preset grids, chains, and payloads; compact search button; action groups wrap; tables scroll horizontally; methodology behavior columns stack; no desktop sidebar footprint. |
-| 380–320 px compact phone | Wizard footer becomes a vertical action stack; dashboard metrics become one compact row-card each; panel actions and workflow links become one column; smaller page gutters while preserving touch targets. |
+| 600–390 px phone | One-column cards, filters, option/preset grids, chains, and payloads; compact search button; action groups wrap; tables scroll horizontally; methodology behavior columns stack; the homepage pipeline becomes a vertical flow with down arrows; no desktop sidebar footprint. |
+| 380–320 px compact phone | Wizard footer becomes a vertical action stack; dashboard metrics become one compact row-card each; panel actions and workflow links become one column; the engagement manager compresses to an icon-labelled New control plus a retained, visible delete button (the 1.0.0-r3 build hid delete here); smaller page gutters while preserving touch targets. |
 
 ## Structural protections
 
@@ -24,11 +24,14 @@ Responsiveness is implemented as layout recomposition, not global scaling. Typog
 - Sidebar navigation is removed from the mobile focus order while off-canvas.
 - Mobile menu open moves focus to Close; Escape/close returns focus to the menu button.
 - Reduced-motion rules disable meaningful transitions.
+- Coarse-pointer devices get 44 px minimum touch targets on primary controls.
+- Compact-phone typography floors raised: chips stay at 0.54rem and the authorization bar at 0.62rem instead of sub-0.5rem text.
+- Skeleton shimmer is a single CSS animation, disabled under prefers-reduced-motion.
 - Print is a separate A4 composition rather than a screenshot of the desktop layout.
 
 ## Automated assertions
 
-`tests/responsive.test.js` verifies breakpoint presence and the expected structural changes for dashboard columns, sidebar drawer, filters, wizard actions, chains/payloads, tables, and long text. These checks prevent accidental removal during CSS refactoring.
+`tests/responsive.test.js` verifies breakpoint presence and the expected structural changes for dashboard columns, sidebar drawer, filters, wizard actions, chains/payloads, tables, and long text. These checks prevent accidental removal during CSS refactoring. `tests/privacy.test.js` additionally pins the same-origin fetch, single-storage-key, and CSP invariants.
 
 ## Manual visual sign-off still required
 

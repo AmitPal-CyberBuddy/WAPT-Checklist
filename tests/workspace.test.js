@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const filtersModule = import('../js/ui/filters.js');
 const exportModule = import('../js/ui/export.js');
 const contextModule = import('../js/engine/context.js');
@@ -97,13 +98,56 @@ test('catalog loader fetches each category once and caches it', async () => {
   global.fetch = async () => ({ ok: true, json: async () => { calls += 1; return document; } });
   try {
     const catalog = createCatalog();
-    catalog.setManifest({ categories: [{ slug: 'reconnaissance', file: 'reconnaissance.json', count: 37 }] });
+    catalog.setManifest({ categories: [{ slug: 'reconnaissance', file: 'reconnaissance.json', count: 38 }] });
     const first = await catalog.loadCategory('reconnaissance');
     const second = await catalog.loadCategory('reconnaissance');
-    assert.equal(first.length, 37);
+    assert.equal(first.length, 38);
     assert.equal(second, first);
     assert.equal(calls, 1);
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+test('workspace surfaces coverage, evidence packs, retest verdicts, and chain node states', () => {
+  const workspace = read('js/ui/workspace.js');
+  const chains = read('js/ui/chains.js');
+  const appHtml = read('app.html');
+  assert.match(workspace, /computeCoverage\(itemList, context\(\)/);
+  assert.match(workspace, /renderCoverageSummary\(/);
+  assert.match(workspace, /renderEvidencePacks\(/);
+  assert.match(workspace, /classifyReportability\(collect\(\)/);
+  assert.match(workspace, /setRetestVerdict\(getState\(\), pack\.id/);
+  assert.match(workspace, /removeFinding\(getState\(\), pack\.id\)/);
+  assert.match(workspace, /addFinding\(getState\(\), collect\(\)\)/);
+  assert.match(appHtml, /data-coverage-summary/);
+  assert.match(appHtml, /data-evidence-packs/);
+  assert.match(chains, /status-chip/);
+  assert.match(chains, /unlocked\.add\(edge\.to\)/);
+  assert.match(workspace, /statuses: getState\(\)\.statuses/);
+});
+
+test('renderChainOverview receives the chain store as a parameter (runtime crash regression)', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /function renderChainOverview\(root, itemList, statuses, chainsStore\)/);
+  assert.match(workspace, /renderChainOverview\(document\.querySelector\('\x5bdata-chain-overview\x5d'\), itemList, state\.statuses, chainStore\)/);
+  assert.doesNotMatch(workspace, /function renderChainOverview[\s\S]{0,120}const chains = chainStore\.getChains/);
+});
+
+test('tester-first card: four disclosure levels with preserved knowledge base', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /quick-check/);
+  assert.match(workspace, /Don't miss & related/);
+  assert.match(workspace, /Detailed methodology/);
+  assert.match(workspace, /References & mappings/);
+  assert.match(workspace, /Tester notes & evidence/);
+  assert.match(workspace, /item\.steps\.slice\(0, 4\)/);
+  assert.match(workspace, /quick-validate/);
+  assert.match(workspace, /related-chip/);
+  assert.match(workspace, /Next in family/);
+  assert.match(workspace, /familyByItem\.get\(item\.id\)/);
+  assert.match(workspace, /section\('Steps', item\.steps, true\)/);
+  assert.match(workspace, /section\('Safety boundary', item\.safety\)/);
+  assert.match(workspace, /fetch\('checklist\/families\.json'/);
+  assert.match(workspace, /familyHeader\(family, members\)/);
 });

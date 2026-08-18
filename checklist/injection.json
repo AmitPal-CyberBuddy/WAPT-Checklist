@@ -738,7 +738,10 @@
           "database": [
             "sql"
           ]
-        }
+        },
+        "requires": [
+          "async_jobs:yes"
+        ]
       },
       "variants": [],
       "remediation": "Keep untrusted data out of interpreter syntax by using parameterized or structured APIs, strict typed schemas, contextual escaping, least privilege, and removal of unsafe dynamic evaluation.",
@@ -2518,6 +2521,9 @@
       "applies": {
         "excludes": [
           "app_type:static"
+        ],
+        "requires": [
+          "async_jobs:yes"
         ]
       },
       "variants": [],

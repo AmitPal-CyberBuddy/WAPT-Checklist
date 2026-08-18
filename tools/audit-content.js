@@ -3,7 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { CATEGORIES, validatePhase7 } = require('./validate.js');
+const { CATEGORIES, validatePhase7, validateFamilies } = require('./validate.js');
 const { offlineCheck } = require('./check-references.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -60,10 +60,13 @@ function audit(items) {
     references: items.reduce((sum, { references }) => sum + references.length, 0),
     uniqueReferences: new Set(items.flatMap(({ references }) => references.map(({ url }) => url))).size,
     relatedLinks: items.reduce((sum, { related }) => sum + related.length, 0),
-    chainMemberships: items.reduce((sum, { attack_chains }) => sum + attack_chains.length, 0)
+    chainMemberships: items.reduce((sum, { attack_chains }) => sum + attack_chains.length, 0),
+    doNotReport: items.filter(({ do_not_report }) => do_not_report?.length).length,
+    retestGuidance: items.filter(({ retest_guidance }) => Boolean(retest_guidance)).length
   };
   const byId = new Map(items.map((item) => [item.id, item]));
   const titles = new Map(); const objectives = new Map();
+  const sharedBoundaries = new Map();
 
   for (const item of items) {
     const at = item.id;
@@ -85,8 +88,44 @@ function audit(items) {
     if (item.category === 'security-headers' && !/scanner output|missing|absence/i.test(item.validation + item.false_positives.join(' '))) errors.push(`${at}: header test lacks missing-header false-positive guard`);
     if (['X-XSS-Protection','HPKP','Expect-CT'].some((term) => item.title.includes(term)) && !item.tags.includes('obsolete')) errors.push(`${at}: obsolete header lacks obsolete tag`);
     if (item.safety && /(?:rm -rf|fork bomb|credential dump|web shell)/i.test(item.safety)) errors.push(`${at}: unsafe destructive phrase in safety guidance`);
+    if (item.retest_guidance && item.retest_guidance.length < 40) errors.push(`${at}: retest guidance must describe concrete re-verification steps`);
+    if (item.do_not_report) {
+      for (const entry of item.do_not_report) {
+        if (entry.length < 25) errors.push(`${at}: do-not-report entries must be specific, not generic`);
+        const key = entry.toLocaleLowerCase('en-US').replace(/\s+/g, ' ').trim();
+        if (sharedBoundaries.has(key)) errors.push(`${at}: do-not-report entry duplicated verbatim with ${sharedBoundaries.get(key)}`);
+        else sharedBoundaries.set(key, at);
+      }
+    }
     for (const id of item.related) if (!byId.has(id)) errors.push(`${at}: unresolved related item ${id}`);
   }
+
+  const reportabilityBoundaries = new Set([
+    'WAPT-HTTP-001', 'WAPT-HTTP-015', 'WAPT-HTTP-016', 'WAPT-HTTP-017', 'WAPT-HTTP-018', 'WAPT-HTTP-019',
+    'WAPT-API-031', 'WAPT-INFO-004', 'WAPT-INFO-009', 'WAPT-INFO-010', 'WAPT-INFO-015',
+    'WAPT-RECON-003', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-CLIENT-026'
+  ]);
+  for (const item of items) {
+    const needsBoundary = reportabilityBoundaries.has(item.id) || item.category === 'security-headers' || item.category === 'rate-limiting';
+    if (needsBoundary && !item.do_not_report?.length) {
+      errors.push(`${item.id}: reportability-prone test requires an explicit do-not-report boundary`);
+    }
+  }
+
+  const severitySpread = new Map();
+  for (const item of items) {
+    const severities = severitySpread.get(item.category) || new Set();
+    severities.add(item.severity);
+    severitySpread.set(item.category, severities);
+  }
+  for (const [category, severities] of severitySpread) {
+    if (severities.size < 2) errors.push(`${category}: category contains fewer than two severity levels (possible padding or misrated content)`);
+  }
+
+  const families = validateFamilies(items.map((item) => ({ item, sample: false })));
+  errors.push(...families.errors.map((error) => `families: ${error}`));
+  metrics.families = families.familyCount;
+  metrics.familyCategories = new Set(items.map(({ category }) => category).filter((category) => families.familyMap.size && [...families.familyMap.values()].length)).size;
 
   const phase7 = validatePhase7(new Set(items.map(({ id }) => id)));
   errors.push(...phase7.errors.map((error) => `phase7: ${error}`));

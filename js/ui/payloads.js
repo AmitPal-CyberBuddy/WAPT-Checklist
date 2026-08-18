@@ -64,6 +64,19 @@ export function createPayloadStore() {
     body.append(node('h4', '', 'Intended use'), node('p', '', payload.intended_use));
     body.append(node('h4', '', 'Reference value'));
     body.append(node('pre', '', payload.payload));
+    const copy = node('button', 'copy-button', 'Copy');
+    copy.type = 'button';
+    copy.setAttribute('aria-label', `Copy ${payload.id} reference value`);
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(String(payload.payload || ''));
+        copy.textContent = 'Copied';
+        setTimeout(() => { copy.textContent = 'Copy'; }, 1200);
+      } catch {
+        copy.textContent = 'Unavailable';
+      }
+    });
+    body.append(copy);
     body.append(node('h4', '', 'Caveats'));
     const caveats = node('ul'); payload.caveats.forEach((value) => caveats.append(node('li', '', value))); body.append(caveats);
     body.append(node('p', 'payload-safety', `Safety: ${payload.safety}`));
@@ -92,6 +105,7 @@ export function createPayloadStore() {
     const safety = document.createElement('select'); safety.append(new Option('All references', ''), new Option('Safe controls', 'safe'), new Option('REVIEW ONLY', 'review')); safetyLabel.append(safety);
     filters.append(searchLabel, categoryLabel, safetyLabel);
     const summary = node('p', 'result-summary');
+    summary.setAttribute('role', 'status');
     const grid = node('div', 'payload-grid');
     const apply = () => {
       const query = search.value.toLocaleLowerCase('en-US').trim();
@@ -102,7 +116,12 @@ export function createPayloadStore() {
           && (!safety.value || (safety.value === 'review' ? item.review_only : !item.review_only));
       });
       summary.textContent = `${filtered.length} of ${payloads.length} references shown`;
-      grid.replaceChildren(...filtered.map(payloadCard));
+      if (!filtered.length) {
+        const empty = node('p', 'empty-copy', 'No payload references match these filters. Clear the search or category filter to browse the library again.');
+        grid.replaceChildren(empty);
+      } else {
+        grid.replaceChildren(...filtered.map(payloadCard));
+      }
     };
     search.addEventListener('input', apply); category.addEventListener('change', apply); safety.addEventListener('change', apply);
     root.append(filters, summary, grid);

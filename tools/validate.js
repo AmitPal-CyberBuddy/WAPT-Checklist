@@ -31,7 +31,8 @@ const CATEGORIES = Object.freeze({
   'cloud-storage': { prefix: 'WAPT-CLOUD', floor: 15 },
   'information-disclosure': { prefix: 'WAPT-INFO', floor: 15 },
   'rate-limiting': { prefix: 'WAPT-RATE', floor: 10 },
-  advanced: { prefix: 'WAPT-ADV', floor: 15 }
+  advanced: { prefix: 'WAPT-ADV', floor: 15 },
+  'ai-llm-security': { prefix: 'WAPT-AI', floor: 8 }
 });
 
 const OPTIONS = Object.freeze({
@@ -49,7 +50,10 @@ const OPTIONS = Object.freeze({
   api_style: ['rest', 'graphql', 'soap', 'websocket', 'grpc', 'none', 'unknown'],
   database: ['sql', 'nosql', 'ldap', 'other', 'none', 'unknown'],
   cloud: ['aws', 'gcp', 'azure', 'self_hosted', 'none', 'other', 'unknown'],
-  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'other', 'none', 'unknown']
+  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'ai_llm', 'other', 'none', 'unknown'],
+  intermediary: ['cdn', 'proxy', 'waf', 'none', 'unknown'],
+  outbound_fetch: ['webhooks', 'import', 'none', 'unknown'],
+  async_jobs: ['yes', 'no', 'unknown']
 });
 
 const URL_HINTS = new Set([
@@ -71,7 +75,7 @@ const REQUIRED = [
   'applies', 'variants'
 ];
 
-const OPTIONAL = new Set(['priority_when', 'safety', 'remediation']);
+const OPTIONAL = new Set(['priority_when', 'safety', 'remediation', 'do_not_report', 'retest_guidance']);
 const ALLOWED_FIELDS = new Set([...REQUIRED, ...OPTIONAL]);
 const ARRAY_FIELDS = [
   'prerequisites', 'steps', 'examples', 'false_positives', 'evidence', 'tools',
@@ -124,7 +128,7 @@ function referenceUrlAllowed(raw) {
   if (url.protocol !== 'https:' || url.username || url.password || url.hash) return false;
 
   const host = url.hostname.toLowerCase();
-  if (host === 'owasp.org') return true;
+  if (host === 'owasp.org' || host === 'genai.owasp.org') return true;
   if (host === 'portswigger.net') return url.pathname === '/web-security' || url.pathname.startsWith('/web-security/');
   if (host === 'www.rfc-editor.org') return /^\/rfc\/rfc\d+\/?$/.test(url.pathname);
   if (host === 'cwe.mitre.org') return url.pathname.startsWith('/data/definitions/');
@@ -297,8 +301,17 @@ function validateItem(item, at, errors) {
   for (const field of ['id', 'title', 'objective', 'manipulate', 'secure_behavior', 'vulnerable_behavior', 'validation', 'impact']) {
     if (!hasText(item[field])) errors.push(`${at}.${field}: must be a non-empty string`);
   }
-  for (const field of ['safety', 'remediation']) {
+  for (const field of ['safety', 'remediation', 'retest_guidance']) {
     if (item[field] !== undefined && !hasText(item[field])) errors.push(`${at}.${field}: must be a non-empty string`);
+  }
+  if (item.do_not_report !== undefined) {
+    if (!Array.isArray(item.do_not_report) || item.do_not_report.length === 0) errors.push(`${at}.do_not_report: must be a non-empty array`);
+    else {
+      validateStringArray(item.do_not_report, `${at}.do_not_report`, errors, true);
+      for (const entry of item.do_not_report) {
+        if (typeof entry === 'string' && entry.length < 25) errors.push(`${at}.do_not_report: entries must be specific (minimum 25 characters)`);
+      }
+    }
   }
 
   for (const field of ARRAY_FIELDS) {
@@ -355,7 +368,7 @@ function discoverFiles(args) {
   if (args.length) return args.map((file) => path.resolve(ROOT, file));
   const checklist = path.join(ROOT, 'checklist');
   return fs.readdirSync(checklist)
-    .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
+    .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json', 'families.json'].includes(name))
     .map((name) => path.join(checklist, name));
 }
 
@@ -523,6 +536,9 @@ function validateFiles(files, options = {}) {
     }
   }
 
+  const familiesResult = validateFamilies(allItems);
+  errors.push(...familiesResult.errors);
+
   let phase7 = null;
   if (options.validateAuxiliary) {
     phase7 = validatePhase7(new Set(idOwners.keys()));
@@ -554,7 +570,55 @@ function validateFiles(files, options = {}) {
     }
   }
 
-  return { errors, itemCount: allItems.length, documentCount: documents.length, counts, phase7 };
+  return { errors, itemCount: allItems.length, documentCount: documents.length, counts, phase7, families: familiesResult };
+}
+
+function validateFamilies(allItems, overrideDocument = null) {
+  const errors = [];
+  const file = path.join(ROOT, 'checklist', 'families.json');
+  const document = overrideDocument !== null ? overrideDocument : (fs.existsSync(file) ? parseJson(file, errors) : null);
+  const families = Array.isArray(document?.families) ? document.families : [];
+  if (!families.length) errors.push('checklist/families.json: no families defined');
+  const production = allItems.filter(({ sample }) => !sample);
+  if (!production.length) return { errors, familyCount: families.length, familyMap: new Map() };
+  const itemCategory = new Map(production.map(({ item }) => [item.id, item.category]));
+  const categoryItems = new Map();
+  for (const { item } of production) {
+    const set = categoryItems.get(item.category) || new Set();
+    set.add(item.id);
+    categoryItems.set(item.category, set);
+  }
+  const membership = new Map();
+  const covered = new Map();
+  const familyIds = new Set();
+  for (const family of families) {
+    const at = `checklist/families.json.${family?.id || 'unknown'}`;
+    if (!/^[a-z0-9-]{4,80}$/.test(family?.id || '')) errors.push(`${at}: invalid family id`);
+    if (familyIds.has(family?.id)) errors.push(`${at}: duplicate family id`);
+    familyIds.add(family?.id);
+    if (!Object.hasOwn(CATEGORIES, family?.category)) errors.push(`${at}: unknown category ${family?.category}`);
+    if (!hasText(family?.title) || !hasText(family?.summary)) errors.push(`${at}: title and summary are required`);
+    if (!Array.isArray(family?.items) || family.items.length === 0) errors.push(`${at}: items must be a non-empty array`);
+    for (const id of family?.items || []) {
+      if (!itemCategory.has(id)) errors.push(`${at}.items: unresolved item ${id}`);
+      else if (itemCategory.get(id) !== family.category) errors.push(`${at}.items: ${id} belongs to ${itemCategory.get(id)}`);
+      if (membership.has(id)) errors.push(`${at}.items: ${id} already assigned to family ${membership.get(id)}`);
+      else membership.set(id, family.id);
+      const set = covered.get(family.category) || new Set();
+      set.add(id);
+      covered.set(family.category, set);
+    }
+    if (!Array.isArray(family?.dont_miss) || family.dont_miss.length === 0) errors.push(`${at}: dont_miss must be a non-empty array`);
+    for (const entry of family?.dont_miss || []) {
+      if (!hasText(entry) || String(entry).length < 25) errors.push(`${at}.dont_miss: entries must be specific (minimum 25 characters)`);
+    }
+  }
+  for (const [category, assigned] of covered) {
+    const all = categoryItems.get(category) || new Set();
+    for (const id of all) if (!assigned.has(id)) errors.push(`families.${category}: item ${id} is not assigned to any family`);
+    for (const id of assigned) if (!all.has(id)) errors.push(`families.${category}: assigned item ${id} is not a production item`);
+  }
+  return { errors, familyCount: families.length, familyMap: membership };
 }
 
 function main() {
@@ -578,13 +642,13 @@ function main() {
     return;
   }
   console.log(`Validated ${result.itemCount} item(s) in ${result.documentCount} file(s).`);
-  if (enforceFloors) console.log('All 24 category floors satisfied.');
+  if (enforceFloors) console.log('All category floors satisfied.');
   else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');
-  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), and 12 Burp workflow(s).`);
+  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), 12 Burp workflow(s), and ${result.families.familyCount} test families.`);
 }
 
 if (require.main === module) main();
 
-module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, referenceUrlAllowed };
+module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, validateFamilies, referenceUrlAllowed };

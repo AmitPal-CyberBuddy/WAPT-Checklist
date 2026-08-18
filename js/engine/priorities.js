@@ -6,7 +6,7 @@ export const WORKFLOW_CATEGORIES = Object.freeze([
   'injection', 'xss', 'csrf', 'file-handling', 'business-logic', 'race-conditions',
   'api-security', 'graphql', 'jwt', 'oauth-sso-saml', 'websocket', 'client-side',
   'security-headers', 'cloud-storage', 'information-disclosure', 'rate-limiting',
-  'ssrf', 'request-smuggling', 'advanced'
+  'ssrf', 'request-smuggling', 'ai-llm-security', 'advanced'
 ]);
 
 const SEVERITY_WEIGHT = Object.freeze({ critical: 50, high: 40, medium: 28, low: 16, informational: 6 });
@@ -30,6 +30,8 @@ function contextualBoost(item, context) {
   if (['business-logic', 'race-conditions'].includes(item.category) && contextHas(context, 'features', ['payments'])) add(28, 'payments');
   if (item.category === 'session-management' && contextHas(context, 'auth_mechanism', ['cookie', 'mixed'])) add(20, 'cookie_session');
   if (item.category === 'api-security' && contextHas(context, 'url_hints.api_subdomain', [true])) add(10, 'api_url_hint');
+  if (item.category === 'request-smuggling' && contextHas(context, 'intermediary', ['cdn', 'proxy', 'waf'])) add(24, 'intermediary_hops');
+  if (item.category === 'ai-llm-security' && contextHas(context, 'features', ['ai_llm'])) add(28, 'ai_llm');
 
   if (item.priority_when && Object.keys(item.priority_when).length) {
     const condition = evaluateConditionMap(item.priority_when, context);
@@ -75,9 +77,49 @@ export function scoreItem(item, context, options = {}) {
 export function suggestedNext(items, context, options = {}) {
   const statuses = options.statuses || {};
   const limit = Number.isInteger(options.limit) ? Math.max(0, options.limit) : 8;
+  const recent = Array.isArray(options.recent) ? options.recent : [];
+  const families = options.families instanceof Map ? options.families : new Map();
+  const relatedByItem = options.relatedByItem instanceof Map ? options.relatedByItem : new Map();
+
+  // Tester-aware signals: related to recently touched work, and continuing a
+  // family the tester is part-way through. Bounded, deterministic, additive.
+  const recentSet = new Set(recent);
+  const relatedTargets = new Set();
+  for (const id of recent) for (const target of relatedByItem.get(id) || []) relatedTargets.add(target);
+  const activeFamilies = new Set();
+  for (const [familyId, memberIds] of families) {
+    if (recent.some((id) => memberIds.includes(id))) activeFamilies.add(familyId);
+  }
+  const relatedBoost = 18;
+  const familyBoost = 16;
+
   return Object.freeze(items
     .filter((item) => (statuses[item.id] || 'not_tested') === 'not_tested')
-    .map((item) => scoreItem(item, context, options))
+    .map((item) => {
+      const base = scoreItem(item, context, options);
+      const testerReasons = [];
+      let bonus = 0;
+      if (relatedTargets.has(item.id)) {
+        bonus += relatedBoost;
+        testerReasons.push('related to a test you just worked on');
+      }
+      if (families.size) {
+        for (const [familyId, memberIds] of families) {
+          if (activeFamilies.has(familyId) && memberIds.includes(item.id)) {
+            bonus += familyBoost;
+            testerReasons.push('continues a family you are part-way through');
+            break;
+          }
+        }
+      }
+      if (!bonus) return base;
+      return Object.freeze({
+        ...base,
+        score: base.score + bonus,
+        breakdown: Object.freeze({ ...base.breakdown, tester: bonus }),
+        contextReasons: Object.freeze([...base.contextReasons, ...testerReasons])
+      });
+    })
     .filter(({ applicability }) => isExecutable(applicability))
     .sort((left, right) => right.score - left.score || left.item.id.localeCompare(right.item.id))
     .slice(0, limit));

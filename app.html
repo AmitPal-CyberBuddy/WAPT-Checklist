@@ -8,10 +8,10 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r3"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r3">
-  <link rel="stylesheet" href="css/print.css?v=1.0.0-r3" media="print">
-  <script type="module" src="js/ui/app.js?v=1.0.0-r3"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r6"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r6">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r6" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r6"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -86,45 +86,65 @@
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>Context-aware coverage, suggested next actions, findings, and portable local reports.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Edit scope</a><button class="button button-primary" type="button" data-export-report>Generate report</button></div></div>
-        <div class="dashboard-grid">
+        <div class="dashboard-metrics">
           <article class="metric-card"><span>Catalog</span><strong data-dashboard-items>0</strong><small>production tests</small></article>
           <article class="metric-card"><span>Tested</span><strong data-dashboard-tested>0</strong><small>recorded locally</small></article>
           <article class="metric-card"><span>Potential</span><strong data-dashboard-potential>0</strong><small>findings to validate</small></article>
           <article class="metric-card"><span>Confirmed</span><strong data-dashboard-confirmed>0</strong><small>findings</small></article>
+          <article class="metric-card"><span>Blocked</span><strong data-dashboard-blocked>0</strong><small>needs credentials</small></article>
+          <article class="metric-card"><span>Scoped out</span><strong data-dashboard-na>0</strong><small>context-N/A</small></article>
         </div>
         <div class="dashboard-columns">
-          <section class="panel dashboard-panel" aria-labelledby="suggested-title"><div class="panel-heading"><div><p class="eyebrow">ADAPTIVE WORKFLOW</p><h2 id="suggested-title">Suggested next</h2></div></div><div data-suggested-next class="loading-line">Loading methodology…</div></section>
+          <section class="panel dashboard-panel" aria-labelledby="suggested-title"><div class="panel-heading"><div><p class="eyebrow">ADAPTIVE WORKFLOW</p><h2 id="suggested-title">Suggested next</h2></div></div><div data-suggested-next><span class="sr-only">Loading methodology…</span><div class="skeleton-stack" aria-hidden="true"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div></div></section>
           <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">CATEGORY COVERAGE</p><h2 id="progress-title">Progress</h2></div></div><div data-category-progress class="progress-list"></div></section>
         </div>
-        <section class="panel dashboard-panel findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
+        <section class="panel dashboard-panel coverage-panel" aria-labelledby="coverage-title"><div class="panel-heading"><div><p class="eyebrow">COVERAGE CONFIDENCE</p><h2 id="coverage-title">Coverage</h2></div></div><div data-coverage-summary></div></section>
+        <div class="dashboard-columns">
+          <section class="panel dashboard-panel" aria-labelledby="retest-title"><div class="panel-heading"><div><p class="eyebrow">RETEST QUEUE</p><h2 id="retest-title">Retest queue</h2></div></div><div data-retest-queue class="loading-line">Loading queue…</div></section>
+          <section class="panel dashboard-panel" aria-labelledby="paths-title"><div class="panel-heading"><div><p class="eyebrow">ATTACK PATHS</p><h2 id="paths-title">Attack chains</h2></div></div><div data-chain-overview class="loading-line">Loading chains…</div></section>
+        </div>
+        <section class="panel dashboard-panel findings-panel" id="findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="evidence-packs-kicker">EVIDENCE PACKS · RETEST VERDICTS</p><div data-evidence-packs></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
       </section>
 
       <section class="view" data-view="checklist" aria-labelledby="checklist-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div>
+        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p><p class="category-rationale" data-category-rationale hidden></p></div><div class="heading-actions"><div class="view-mode-toggle" role="group" aria-label="Checklist view mode"><button type="button" data-checklist-mode="testing" aria-pressed="true">Testing</button><button type="button" data-checklist-mode="coverage" aria-pressed="false">Coverage</button></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div></div>
         <div class="panel filter-panel" data-checklist-filters></div>
         <div class="result-summary" data-checklist-summary aria-live="polite"></div>
-        <div class="test-list" data-checklist-results aria-live="polite"></div>
+        <div class="test-list" data-checklist-results></div>
       </section>
 
       <section class="view" data-view="search" aria-labelledby="search-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1><p>Search titles, objectives, steps, tags, IDs, tools, technologies, and mappings.</p></div></div>
         <div class="panel filter-panel" data-search-filters></div>
         <div class="result-summary" data-search-summary aria-live="polite"></div>
-        <div class="test-list" data-search-results aria-live="polite"></div>
+        <div class="test-list" data-search-results></div>
       </section>
 
       <section class="view" data-view="chains" aria-labelledby="chains-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">CONNECTED TESTING</p><h1 id="chains-title">Attack chains</h1><p>Directed hypotheses over stable test IDs. A chain never substitutes for validating every prerequisite and safety boundary.</p></div></div>
-        <div class="chain-browser" data-chain-browser aria-live="polite"><p class="loading-line">Loading attack chains…</p></div>
+        <div class="chain-browser" data-chain-browser><p class="loading-line">Loading attack chains…</p></div>
       </section>
 
       <section class="view" data-view="payloads" aria-labelledby="payloads-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1><p>Every value includes intended context, caveats, related tests, and a safety boundary. REVIEW-ONLY entries never auto-expand.</p></div></div>
-        <div data-payload-browser aria-live="polite"><p class="loading-line">Loading payload references…</p></div>
+        <div data-payload-browser><p class="loading-line">Loading payload references…</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span><button class="shortcut-hint" type="button" data-shortcuts-open>Shortcuts <kbd>?</kbd></button></footer>
     </main>
   </div>
+  <dialog class="shortcuts-dialog" id="shortcuts-dialog" aria-labelledby="shortcuts-title">
+    <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+    <p>Shortcuts are disabled while typing in inputs, notes, and filters.</p>
+    <ul class="shortcuts-grid">
+      <li><kbd>/</kbd><span>Search the methodology</span></li>
+      <li><kbd>g</kbd> <kbd>d</kbd><span>Dashboard</span></li>
+      <li><kbd>g</kbd> <kbd>c</kbd><span>All tests</span></li>
+      <li><kbd>g</kbd> <kbd>f</kbd><span>Findings</span></li>
+      <li><kbd>?</kbd><span>This dialog</span></li>
+      <li><kbd>Esc</kbd><span>Close drawer or dialog</span></li>
+    </ul>
+    <button class="button button-quiet dialog-close" type="button" data-shortcuts-close>Close</button>
+  </dialog>
 </body>
 </html>

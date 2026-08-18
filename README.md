@@ -4,29 +4,31 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
+> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
 ## What is implemented
 
-- Responsive dark/light homepage and app-style workspace with independent CyberBuddy-compatible design tokens.
-- Optional engagement name and target URL fields plus all 15 adaptive scoping questions.
+- Responsive dark/light homepage and app-style workspace with professional operator tooling: project metrics, an assessment-loop pipeline, an attack-chain preview, skeleton loading, filter chips, and a shortcuts dialog.
+- Optional engagement name and target URL fields plus all 18 adaptive scoping questions, including intermediary, outbound-fetch, and asynchronous-job scope.
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
-- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
+- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, visible keyboard focus, and safe shortcuts (`/`, `g d`, `g c`, `g f`, `?`, `Esc`).
 - Conservative low-confidence URL suggestions without any target request or transmission.
+- Intermediary (CDN/proxy/WAF), outbound URL-fetching (webhooks/imports), and asynchronous-job scoping with category gates for SSRF and cache-poisoning/deception suites.
 - Multiple resumable engagements in one validated local portfolio under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
-- Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components.
-- Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
+- Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components, and per-recommendation explanations (state, category, severity, reasons, chain unlocks).
+- Strict JSON import/export with automatic schema v1 → v2 state migration, reasoned applicability overrides, per-item notes, evidence-pack records, and Confirmed Finding retest invariants.
+- Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
-- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
-- Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, and references.
-- Dashboard metrics, live category progress, Suggested next, findings table, Markdown checklist/report generation, retest matrix, and print view.
-- Directed attack-chain graphs with checklist links, unlock hints, and priority boosts.
+- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips, a Testing/Coverage view toggle, and 196 validated test families that group every checklist item so testers can work an attack surface without losing context.
+- Tester-first cards with four disclosure levels — always-visible Quick Test and Validate, Don't miss & related (family don't-miss lists, related chips, next-in-family), the full detailed methodology, and references — plus a Tester notes & evidence drawer with a second quick status control.
+- Dashboard command center: catalog/tested/potential/confirmed/blocked/scoped-out metrics, live category progress, coverage confidence (executable work excluding context-N/A), Suggested next with explanations, a retest queue, attack-chain progress, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, retest matrix, and print view.
+- Directed attack-chain graphs with checklist links, per-node test status, unlock hints, and priority boosts; the homepage previews the same chains.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
 - Designed methodology, security, contributing, license, project-documentation, and Burp-workflow pages—no user-facing raw Markdown redirects.
-- Manifest-driven navigation for all 24 categories and honest live local/project statistics.
+- Manifest-driven navigation for all 25 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
 - Phase 1 architecture, taxonomy, schema, validator, and 20 complete methodology samples.
@@ -113,6 +115,9 @@ See:
 - [Adaptive engine contract](docs/ENGINE.md)
 - [Engagement workspace](docs/PHASE5-WORKSPACE.md)
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
+- [Evidence, reportability, and retest workflow](docs/EVIDENCE-WORKFLOW.md)
+- [Feature verification matrix](docs/FEATURE-VERIFICATION.md)
+- [Functional test report](docs/FUNCTIONAL-TEST-REPORT.md) — application-level runs: 41/41 checks, two scripted user journeys, runtime privacy audit
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
 - [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
 - [Version 1.0.0 release and deployment runbook](docs/RELEASE.md)
@@ -138,8 +143,14 @@ This repository's original software and content are licensed under the [Apache L
 3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
-6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
+6. ~~Advanced production content, categories 11–24~~ — **261 items; all 24 catalog floors pass**
 7. ~~Attack chains, contextual payload library, and Burp workflows~~
 8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
 9. ~~Content and safety QA~~ — **0 errors and 0 unresolved warnings**
 10. ~~Release hardening and deployment review~~ — **deployment pending maintainer workflow installation and merge**
+11. ~~Post-release review~~ — **609-item baseline verified; five defects fixed; scope dimensions, Suggested-next explanations, and privacy regression suite**
+12. ~~Reportability layer~~ — **do-not-report boundaries and retest guidance on 59+17 items**
+13. ~~Modern coverage~~ — **gated AI/LLM category, XS-Leaks, bfcache, subdomain-takeover identification (623 items / 25 categories)**
+14. ~~Evidence and retesting~~ — **state v2 evidence packs, reportability gate, coverage confidence, retest verdicts**
+15. ~~UI/UX modernization~~ — **dashboard command center, homepage loop, shortcuts, skeletons, filter chips**
+16. ~~QA and release hardening~~ — **vocabulary parity, severity diversity, end-to-end workflow test, evidence documentation**

@@ -1,14 +1,24 @@
 import { normalizeScopeAnswers } from './context.js';
 
 export const STATE_KEY = 'wapt.state.v1';
-export const STATE_SCHEMA_VERSION = 1;
+export const STATE_SCHEMA_VERSION = 2;
+export const LEGACY_STATE_SCHEMA_VERSIONS = Object.freeze([1]);
 export const ITEM_STATUSES = Object.freeze([
   'not_tested', 'in_progress', 'passed', 'potential_finding', 'confirmed_finding', 'na'
 ]);
 
+export const FINDING_SEVERITIES = Object.freeze(['critical', 'high', 'medium', 'low', 'informational']);
+export const EXPLOITABILITY_LEVELS = Object.freeze(['not_demonstrated', 'likely', 'proven']);
+export const RETEST_VERDICTS = Object.freeze(['pending', 'pass', 'partial', 'fail']);
+export const MAX_FINDINGS = 200;
+
 const STATUS_SET = new Set(ITEM_STATUSES);
+const SEVERITY_SET = new Set(FINDING_SEVERITIES);
+const EXPLOITABILITY_SET = new Set(EXPLOITABILITY_LEVELS);
+const VERDICT_SET = new Set(RETEST_VERDICTS);
 const ITEM_ID = /^WAPT-[A-Z]+-\d{3}$/;
-const MAX_IMPORT_BYTES = 1_000_000;
+const FINDING_ID = /^find-[a-z0-9-]{4,100}$/;
+const MAX_IMPORT_BYTES = 5_000_000;
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -27,6 +37,14 @@ function nowIso(now) {
 
 function cleanText(value, maximum) {
   return typeof value === 'string' ? value.slice(0, maximum) : '';
+}
+
+function cleanBoolean(value) {
+  return value === true;
+}
+
+function cleanEnum(value, allowed, fallback) {
+  return allowed.has(value) ? value : fallback;
 }
 
 function cleanStatusMap(value) {
@@ -70,6 +88,46 @@ function cleanRetests(value, statuses) {
   return output;
 }
 
+function cleanFinding(value) {
+  if (!isObject(value) || typeof value.id !== 'string' || !FINDING_ID.test(value.id.trim())) return null;
+  if (!ITEM_ID.test(value.item_id || '')) return null;
+  return {
+    id: value.id.trim().slice(0, 100),
+    item_id: value.item_id,
+    title: cleanText(value.title, 120),
+    severity: cleanEnum(value.severity, SEVERITY_SET, 'medium'),
+    endpoint: cleanText(value.endpoint, 300),
+    method: cleanText(value.method, 20),
+    parameter: cleanText(value.parameter, 200),
+    auth_context: cleanText(value.auth_context, 200),
+    precondition: cleanText(value.precondition, 2_000),
+    baseline_request: cleanText(value.baseline_request, 8_000),
+    test_request: cleanText(value.test_request, 8_000),
+    observed_behavior: cleanText(value.observed_behavior, 2_000),
+    exploitability: cleanEnum(value.exploitability, EXPLOITABILITY_SET, 'not_demonstrated'),
+    reportable: cleanBoolean(value.reportable),
+    cleanup_performed: cleanText(value.cleanup_performed, 2_000),
+    root_cause: cleanText(value.root_cause, 2_000),
+    retest_verdict: cleanEnum(value.retest_verdict, VERDICT_SET, 'pending'),
+    retest_note: cleanText(value.retest_note, 2_000),
+    created_at: isoOrNull(value.created_at),
+    updated_at: isoOrNull(value.updated_at)
+  };
+}
+
+function cleanFindings(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  const seen = new Set();
+  for (const candidate of value.slice(0, MAX_FINDINGS)) {
+    const finding = cleanFinding(candidate);
+    if (!finding || seen.has(finding.id)) continue;
+    seen.add(finding.id);
+    output.push(finding);
+  }
+  return output;
+}
+
 export function createState() {
   return {
     schema_version: STATE_SCHEMA_VERSION,
@@ -79,20 +137,15 @@ export function createState() {
     notes: {},
     overrides: {},
     retests: {},
+    findings: [],
     updated_at: null
   };
 }
 
-export function normalizeState(candidate, options = {}) {
-  if (!isObject(candidate) || candidate.schema_version !== STATE_SCHEMA_VERSION) {
-    if (options.strict) throw new TypeError(`State must use schema_version ${STATE_SCHEMA_VERSION}.`);
-    return createState();
-  }
-
+function normalizeFields(candidate) {
   const engagement = isObject(candidate.engagement) ? candidate.engagement : {};
   const statuses = cleanStatusMap(candidate.statuses);
   return {
-    schema_version: STATE_SCHEMA_VERSION,
     engagement: {
       name: cleanText(engagement.name, 120),
       targetUrl: cleanText(engagement.targetUrl, 2048),
@@ -104,6 +157,24 @@ export function normalizeState(candidate, options = {}) {
     overrides: cleanOverrides(candidate.overrides),
     retests: cleanRetests(candidate.retests, statuses),
     updated_at: isoOrNull(candidate.updated_at)
+  };
+}
+
+export function normalizeState(candidate, options = {}) {
+  if (!isObject(candidate)) {
+    if (options.strict) throw new TypeError(`State must use schema_version ${STATE_SCHEMA_VERSION}.`);
+    return createState();
+  }
+  const version = candidate.schema_version;
+  const isLegacy = LEGACY_STATE_SCHEMA_VERSIONS.includes(version);
+  if (!isLegacy && version !== STATE_SCHEMA_VERSION) {
+    if (options.strict) throw new TypeError(`State must use schema_version ${STATE_SCHEMA_VERSION} (legacy version 1 is migrated).`);
+    return createState();
+  }
+  return {
+    schema_version: STATE_SCHEMA_VERSION,
+    ...normalizeFields(candidate),
+    findings: cleanFindings(candidate.findings)
   };
 }
 
@@ -190,13 +261,122 @@ export function setRetestFlag(state, id, enabled, now) {
   return touch(current, { retests }, now);
 }
 
+function makeFindingId(existing) {
+  let id;
+  do {
+    id = globalThis.crypto?.randomUUID?.()
+      ? `find-${globalThis.crypto.randomUUID()}`
+      : `find-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
+  } while (existing.has(id));
+  return id;
+}
+
+const FINDING_FIELDS = Object.freeze([
+  'title', 'severity', 'endpoint', 'method', 'parameter', 'auth_context', 'precondition',
+  'baseline_request', 'test_request', 'observed_behavior', 'exploitability', 'reportable',
+  'cleanup_performed', 'root_cause'
+]);
+
+function findingFieldValue(field, value) {
+  if (field === 'title') return cleanText(value, 120);
+  if (field === 'severity') return cleanEnum(value, SEVERITY_SET, 'medium');
+  if (field === 'endpoint') return cleanText(value, 300);
+  if (field === 'method') return cleanText(value, 20);
+  if (field === 'parameter') return cleanText(value, 200);
+  if (field === 'auth_context') return cleanText(value, 200);
+  if (field === 'precondition') return cleanText(value, 2_000);
+  if (field === 'baseline_request') return cleanText(value, 8_000);
+  if (field === 'test_request') return cleanText(value, 8_000);
+  if (field === 'observed_behavior') return cleanText(value, 2_000);
+  if (field === 'exploitability') return cleanEnum(value, EXPLOITABILITY_SET, 'not_demonstrated');
+  if (field === 'reportable') return cleanBoolean(value);
+  if (field === 'cleanup_performed') return cleanText(value, 2_000);
+  if (field === 'root_cause') return cleanText(value, 2_000);
+  return undefined;
+}
+
+export function addFinding(state, fields, now) {
+  const current = normalizeState(state);
+  const itemId = fields?.item_id;
+  assertItemId(itemId);
+  if (current.statuses[itemId] !== 'confirmed_finding') {
+    throw new TypeError('An evidence pack can be recorded only for a Confirmed Finding.');
+  }
+  if (current.findings.length >= MAX_FINDINGS) {
+    throw new RangeError(`A maximum of ${MAX_FINDINGS} evidence packs is supported per engagement.`);
+  }
+  const patch = isObject(fields) ? fields : {};
+  const timestamp = nowIso(now);
+  const finding = {
+    id: makeFindingId(new Set(current.findings.map(({ id }) => id))),
+    item_id: itemId,
+    title: cleanText(patch.title, 120),
+    severity: cleanEnum(patch.severity, SEVERITY_SET, 'medium'),
+    endpoint: cleanText(patch.endpoint, 300),
+    method: cleanText(patch.method, 20),
+    parameter: cleanText(patch.parameter, 200),
+    auth_context: cleanText(patch.auth_context, 200),
+    precondition: cleanText(patch.precondition, 2_000),
+    baseline_request: cleanText(patch.baseline_request, 8_000),
+    test_request: cleanText(patch.test_request, 8_000),
+    observed_behavior: cleanText(patch.observed_behavior, 2_000),
+    exploitability: cleanEnum(patch.exploitability, EXPLOITABILITY_SET, 'not_demonstrated'),
+    reportable: cleanBoolean(patch.reportable),
+    cleanup_performed: cleanText(patch.cleanup_performed, 2_000),
+    root_cause: cleanText(patch.root_cause, 2_000),
+    retest_verdict: 'pending',
+    retest_note: '',
+    created_at: timestamp,
+    updated_at: timestamp
+  };
+  return touch(current, { findings: [...current.findings, finding] }, timestamp);
+}
+
+export function updateFinding(state, id, patch, now) {
+  const current = normalizeState(state);
+  const index = current.findings.findIndex(({ id: existing }) => existing === id);
+  if (index < 0) throw new TypeError('Unknown evidence pack ID.');
+  if (!isObject(patch)) throw new TypeError('An evidence pack update requires a field patch.');
+  const updated = { ...current.findings[index] };
+  for (const field of FINDING_FIELDS) {
+    if (Object.hasOwn(patch, field)) updated[field] = findingFieldValue(field, patch[field]);
+  }
+  const timestamp = nowIso(now);
+  updated.updated_at = timestamp;
+  const findings = [...current.findings];
+  findings[index] = updated;
+  return touch(current, { findings }, timestamp);
+}
+
+export function setRetestVerdict(state, id, verdict, note, now) {
+  const current = normalizeState(state);
+  const index = current.findings.findIndex(({ id: existing }) => existing === id);
+  if (index < 0) throw new TypeError('Unknown evidence pack ID.');
+  if (!VERDICT_SET.has(verdict)) throw new TypeError(`Invalid retest verdict: ${verdict}`);
+  const updated = {
+    ...current.findings[index],
+    retest_verdict: verdict,
+    retest_note: cleanText(note, 2_000),
+    updated_at: nowIso(now)
+  };
+  const findings = [...current.findings];
+  findings[index] = updated;
+  return touch(current, { findings }, now);
+}
+
+export function removeFinding(state, id, now) {
+  const current = normalizeState(state);
+  if (!current.findings.some(({ id: existing }) => existing === id)) throw new TypeError('Unknown evidence pack ID.');
+  return touch(current, { findings: current.findings.filter(({ id: existing }) => existing !== id) }, now);
+}
+
 export function serializeState(state) {
   return JSON.stringify(normalizeState(state), null, 2);
 }
 
 export function importState(json) {
   if (typeof json !== 'string') throw new TypeError('Imported state must be JSON text.');
-  if (new TextEncoder().encode(json).length > MAX_IMPORT_BYTES) throw new RangeError('Imported state exceeds the 1 MB limit.');
+  if (new TextEncoder().encode(json).length > MAX_IMPORT_BYTES) throw new RangeError('Imported state exceeds the 5 MB limit.');
   let candidate;
   try { candidate = JSON.parse(json); }
   catch (error) { throw new SyntaxError(`Imported state is not valid JSON: ${error.message}`); }

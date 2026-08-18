@@ -1685,7 +1685,11 @@
           "notes": "Duplicating the same bearer value defeats HttpOnly's theft mitigation."
         }
       ],
-      "remediation": "Prefer backend-for-frontend and HttpOnly cookies for browser sessions; otherwise keep tokens in memory, short-lived, audience-scoped, and protected by strong XSS controls."
+      "remediation": "Prefer backend-for-frontend and HttpOnly cookies for browser sessions; otherwise keep tokens in memory, short-lived, audience-scoped, and protected by strong XSS controls.",
+      "do_not_report": [
+        "Do not report script-readable session storage automatically; assess whether the stored token is short-lived, the origin XSS risk is contained, and a documented trade-off exists. Demonstrate a realistic exfiltration path first."
+      ],
+      "retest_guidance": "After storage changes, retest session establishment in private windows and cross-tab scenarios, confirm no bearer value remains in developer-tools storage after logout, and re-verify the XSS surface that motivated the change."
     },
     {
       "id": "WAPT-SESS-020",

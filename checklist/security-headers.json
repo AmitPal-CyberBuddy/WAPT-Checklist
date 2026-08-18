@@ -76,7 +76,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report header absences as a vulnerability category; report only a demonstrated, reproducible browser exposure that a missing or malformed policy actually enables. Header inventories belong in the assessment appendix, not the findings section."
+      ]
     },
     {
       "id": "WAPT-HDR-002",
@@ -157,7 +160,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing HSTS on API-only hosts or hosts that never receive browser navigation, and not before confirming a real plaintext entry point exists. A theoretical redirect race with no plaintext exposure is not a finding."
+      ],
+      "retest_guidance": "After HSTS deployment, retest the plaintext entry point from an incognito profile with no prior STS, verify max-age and includeSubDomains propagation on the apex and subdomains, and confirm no mixed-content regressions."
     },
     {
       "id": "WAPT-HDR-003",
@@ -234,7 +241,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report a missing CSP without demonstrating an injectable sink the policy would have contained, and never treat a report-only policy as missing enforcement. Applications without injection surfaces do not need CSP as a control."
+      ],
+      "retest_guidance": "After CSP changes, retest the enforced policy with the application real script, font, and connect sources, confirm report-only mode is removed where enforcement is intended, and re-run a benign canary to confirm the policy still blocks it."
     },
     {
       "id": "WAPT-HDR-004",
@@ -312,7 +323,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report nonce reuse or missing hashes without a context where an injected script would actually execute, and do not demand nonces or hashes on static pages that have no inline scripts to protect."
+      ]
     },
     {
       "id": "WAPT-HDR-005",
@@ -390,7 +404,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report absent base-uri or object-src directives by themselves; demonstrate that an injected base element or plugin content could meaningfully redirect navigation or execute active content first."
+      ]
     },
     {
       "id": "WAPT-HDR-006",
@@ -468,7 +485,10 @@
       "applies": {},
       "variants": [],
       "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
-      "safety": "Use a controlled framing origin and reversible action; never trick real users."
+      "safety": "Use a controlled framing origin and reversible action; never trick real users.",
+      "do_not_report": [
+        "Do not report framing as a finding on pages with no sensitive or state-changing interface; demonstrate a clickjacking overlay with concrete credential, CSRF, or transaction consequences before reporting."
+      ]
     },
     {
       "id": "WAPT-HDR-007",
@@ -545,7 +565,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report a missing X-Frame-Options when CSP frame-ancestors already blocks framing in supported browsers, and do not demand both controls on every page; show a real framing gap first."
+      ]
     },
     {
       "id": "WAPT-HDR-008",
@@ -624,7 +647,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing nosniff without a response a browser would sniff into active content; JSON or API bodies served with accurate declared types rarely create an exploitable sniffing path."
+      ]
     },
     {
       "id": "WAPT-HDR-009",
@@ -701,7 +727,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report an absent charset on responses without user-controlled content; demonstrate an encoding-confusion scenario that produces an XSS or parser consequence before reporting."
+      ]
     },
     {
       "id": "WAPT-HDR-010",
@@ -779,7 +808,10 @@
       "applies": {},
       "variants": [],
       "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
-      "safety": "Use only synthetic URL markers and a controlled destination; never capture real user navigation."
+      "safety": "Use only synthetic URL markers and a controlled destination; never capture real user navigation.",
+      "do_not_report": [
+        "Do not report a missing Referrer-Policy without showing that a referrer actually leaks a secret such as a URL token or sensitive path to a third party; referrer data from public pages is not a finding."
+      ]
     },
     {
       "id": "WAPT-HDR-011",
@@ -856,7 +888,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing Permissions-Policy without identifying a powerful feature the page uses and an abuse path for it; disabling features the application does not use is not a security requirement."
+      ]
     },
     {
       "id": "WAPT-HDR-012",
@@ -933,7 +968,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing COOP unless cross-window interaction exposes a concrete hazard such as opener navigation or cross-window data theft; most applications have no window-opener threat model."
+      ]
     },
     {
       "id": "WAPT-HDR-013",
@@ -1010,7 +1048,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing COEP unless the application genuinely requires cross-origin isolation, such as SharedArrayBuffer, and that requirement is unfulfilled. Absence alone is not a weakness and enforced COEP breaks third-party embeds."
+      ]
     },
     {
       "id": "WAPT-HDR-014",
@@ -1087,7 +1128,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing CORP without a cross-origin embedding scenario that exposes sensitive responses to other origins; public assets and no-cors resources rarely justify CORP."
+      ]
     },
     {
       "id": "WAPT-HDR-015",
@@ -1166,7 +1210,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing Cache-Control on public, static, or non-sensitive responses; require a demonstrated sensitive representation stored in a shared or persistent cache and readable after logout or on a shared device."
+      ],
+      "retest_guidance": "After caching fixes, retest logout and shared-device flows with a fresh profile, verify sensitive representations are revalidated or no-store, and confirm public assets still cache normally."
     },
     {
       "id": "WAPT-HDR-016",
@@ -1243,7 +1291,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report absent Clear-Site-Data as a finding; it is an optional hygiene control. Report only when logout or reset leaves observable sensitive state behind and standard cache and storage controls fail to clear it."
+      ]
     },
     {
       "id": "WAPT-HDR-017",
@@ -1320,7 +1371,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report a missing Content-Disposition on pages or media the application intends to render inline; report only user-influenced downloads that could execute or spoof a filename in a security-relevant context."
+      ]
     },
     {
       "id": "WAPT-HDR-018",
@@ -1397,7 +1451,11 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report version disclosure without evidence the disclosed exact version is exploitable, such as a known CVE or default configuration; a visible Server or framework header alone is informational, not a finding."
+      ],
+      "retest_guidance": "After header removal, retest all routes, status codes, and API errors, and confirm the version string is absent from Server, X-Powered-By, X-AspNet-Version, and custom headers across load balancers and origins."
     },
     {
       "id": "WAPT-HDR-019",
@@ -1474,7 +1532,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report X-XSS-Protection presence or absence as either a strength or a weakness; the header is legacy and ignored by modern browsers. XSS findings need a demonstrated sink, not header flags."
+      ]
     },
     {
       "id": "WAPT-HDR-020",
@@ -1551,7 +1612,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report the absence of HTTP Public Key Pinning; absence is the correct state. Report only a deployed pinning policy that could cause prolonged lockout, as a misconfiguration."
+      ]
     },
     {
       "id": "WAPT-HDR-021",
@@ -1626,7 +1690,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report missing Expect-CT; the header is obsolete telemetry and certificate transparency is enforced at the root store. Report only misuse of CT logging expectations where that still applies."
+      ]
     },
     {
       "id": "WAPT-HDR-022",
@@ -1703,7 +1770,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report a single error page or redirect that lacks a header when the route matrix is otherwise consistent; demonstrate a security-relevant route or status code where the gap changes browser behavior."
+      ]
     },
     {
       "id": "WAPT-HDR-023",
@@ -1780,7 +1850,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report duplicate headers that browsers resolve benignly, such as first-value-wins with equivalent values; demonstrate divergent interpretation across hops that produces a security effect."
+      ]
     },
     {
       "id": "WAPT-HDR-024",
@@ -1857,7 +1930,10 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers."
+      "remediation": "Configure valid policies from the response threat model, apply them consistently at the trusted edge/application, test supported browsers, fix the underlying weakness, and remove obsolete/conflicting headers.",
+      "do_not_report": [
+        "Do not report a Report-Only policy as a missing control or treat its violation reports as confirmed findings; report-only headers are monitoring. Separate enforcement status from observations in the report."
+      ]
     }
   ]
 }

@@ -1,4 +1,4 @@
-import { createState, normalizeState, STATE_SCHEMA_VERSION } from './state.js?v=1.0.0-r3';
+import { createState, normalizeState, STATE_SCHEMA_VERSION, LEGACY_STATE_SCHEMA_VERSIONS } from './state.js?v=1.0.0-r6';
 
 export const PORTFOLIO_KIND = 'wapt-engagement-portfolio';
 export const PORTFOLIO_VERSION = 1;
@@ -38,8 +38,11 @@ export function createPortfolio(initialState = createState(), preferences = {}) 
 
 export function normalizePortfolio(candidate) {
   const preferences = cleanPreferences(candidate?.preferences);
-  // Seamlessly migrate the original single-engagement document kept under wapt.state.v1.
-  if (isObject(candidate) && candidate.schema_version === STATE_SCHEMA_VERSION) return createPortfolio(candidate, preferences);
+  // Seamlessly migrate the original single-engagement document kept under wapt.state.v1,
+  // including records still written by schema version 1.
+  if (isObject(candidate) && (candidate.schema_version === STATE_SCHEMA_VERSION || LEGACY_STATE_SCHEMA_VERSIONS.includes(candidate.schema_version))) {
+    return createPortfolio(candidate, preferences);
+  }
   if (!isObject(candidate) || candidate.kind !== PORTFOLIO_KIND || candidate.portfolio_version !== PORTFOLIO_VERSION) {
     return createPortfolio(createState(), preferences);
   }

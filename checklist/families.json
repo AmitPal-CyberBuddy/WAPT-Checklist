@@ -1,0 +1,3311 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-18",
+  "note": "Tester-first test families. Every family groups checklist items so a tester can work an attack surface without losing context. dont_miss entries are coverage reminders for experienced testers, not tutorial content. Validator gates: items resolve, membership is unique per category, and every production item of a family-covered category belongs to exactly one family.",
+  "families": [
+    {
+      "id": "authorization-role-permission-matrix",
+      "category": "authorization",
+      "title": "Role & permission matrix",
+      "summary": "Establish the expected function, object, field, tenant, and workflow permissions before mutating anything.",
+      "items": [
+        "WAPT-AUTHZ-001"
+      ],
+      "dont_miss": [
+        "Document object, function, field, tenant, and workflow permissions separately, not one blended role list",
+        "Include groups, delegated permissions, service identities, and tenant roles, not only named user roles",
+        "Re-verify the matrix after any role, membership, or tenant changes during the engagement"
+      ]
+    },
+    {
+      "id": "authorization-object-level",
+      "category": "authorization",
+      "title": "Object-level authorization",
+      "summary": "Per-object read, update, delete, collection, bulk, nested, indirect, media, report, and async-result decisions.",
+      "items": [
+        "WAPT-AUTHZ-003",
+        "WAPT-AUTHZ-004",
+        "WAPT-AUTHZ-005",
+        "WAPT-AUTHZ-006",
+        "WAPT-AUTHZ-007",
+        "WAPT-AUTHZ-008",
+        "WAPT-AUTHZ-009",
+        "WAPT-AUTHZ-010",
+        "WAPT-AUTHZ-011",
+        "WAPT-AUTHZ-012",
+        "WAPT-AUTHZ-031",
+        "WAPT-AUTHZ-032",
+        "WAPT-AUTHZ-034",
+        "WAPT-AUTHZ-039"
+      ],
+      "dont_miss": [
+        "GET, POST, PUT, PATCH, and DELETE against the same object identifier, not just the read path",
+        "Nested and child objects reached through parent identifiers",
+        "Bulk, batch, and multiplexed endpoints that authorize only the first member",
+        "Export, report, download, and asynchronous job-result equivalents of the same object",
+        "Indirect and opaque references, signed URLs, and media retrieval paths",
+        "Search and filter endpoints that evaluate queries before object authorization",
+        "Rechecking authorization after the object's state changes"
+      ]
+    },
+    {
+      "id": "authorization-function-level",
+      "category": "authorization",
+      "title": "Function-level authorization",
+      "summary": "Which callers may invoke a function at all: unauthenticated, alternate methods, admin, undocumented, versioned, and error paths.",
+      "items": [
+        "WAPT-AUTHZ-002",
+        "WAPT-AUTHZ-013",
+        "WAPT-AUTHZ-014",
+        "WAPT-AUTHZ-015",
+        "WAPT-AUTHZ-037",
+        "WAPT-AUTHZ-038",
+        "WAPT-AUTHZ-041",
+        "WAPT-AUTHZ-042"
+      ],
+      "dont_miss": [
+        "Alternate HTTP methods, route aliases, and trailing or versioned routes to the same handler",
+        "Administrative and management functions from a standard user context",
+        "Undocumented or newly deployed functions that inherit default access",
+        "Error, preview, and metadata representations that bypass normal authorization",
+        "Client-side hidden buttons and disabled UI treated as access controls"
+      ]
+    },
+    {
+      "id": "authorization-privilege-and-field",
+      "category": "authorization",
+      "title": "Privilege, role & field boundaries",
+      "summary": "Client-controlled roles, ownership reassignment, protected property writes, delegated scope, revocation, and field-level visibility.",
+      "items": [
+        "WAPT-AUTHZ-016",
+        "WAPT-AUTHZ-017",
+        "WAPT-AUTHZ-018",
+        "WAPT-AUTHZ-019",
+        "WAPT-AUTHZ-022",
+        "WAPT-AUTHZ-024",
+        "WAPT-AUTHZ-025",
+        "WAPT-AUTHZ-029",
+        "WAPT-AUTHZ-030",
+        "WAPT-AUTHZ-040"
+      ],
+      "dont_miss": [
+        "Role, permission, owner, tenant, price, and status fields written by lower-privilege callers",
+        "Membership changes to groups, teams, and shared resources by non-owners",
+        "Delegated and shared access that outlives its intended scope or expiry",
+        "Revocation and role removal while stale caches or self-contained claims survive",
+        "Field-level reads that reappear in sparse, expanded, or alternate representations"
+      ]
+    },
+    {
+      "id": "authorization-tenant-isolation",
+      "category": "authorization",
+      "title": "Tenant isolation & integration boundaries",
+      "summary": "Tenant context binding, cross-tenant object access, switching state, invitations, and confused-deputy integrations.",
+      "items": [
+        "WAPT-AUTHZ-020",
+        "WAPT-AUTHZ-021",
+        "WAPT-AUTHZ-023",
+        "WAPT-AUTHZ-036"
+      ],
+      "dont_miss": [
+        "Tenant identifiers supplied in the body, headers, subdomains, and cookies instead of trusted identity",
+        "Cross-tenant object access through shared identifiers, caches, and indexes",
+        "State, drafts, and permissions leaking when a user switches tenants",
+        "Privileged backend integrations performing operations for a caller without downstream authorization"
+      ]
+    },
+    {
+      "id": "authorization-workflow-and-approval",
+      "category": "authorization",
+      "title": "Workflow, approval & audit boundaries",
+      "summary": "State-transition authorization, separation of duties, impersonation, existence oracles, realtime channels, and audit behavior.",
+      "items": [
+        "WAPT-AUTHZ-026",
+        "WAPT-AUTHZ-027",
+        "WAPT-AUTHZ-028",
+        "WAPT-AUTHZ-033",
+        "WAPT-AUTHZ-035",
+        "WAPT-AUTHZ-043"
+      ],
+      "dont_miss": [
+        "Out-of-order, skipped, or replayed workflow state transitions",
+        "Approvals performed by the same identity that requested the action",
+        "Administrator impersonation and support access without layered re-verification",
+        "Authorization answers leaking object existence through error or timing differences",
+        "Realtime channel subscriptions and messages carrying authorization of their own",
+        "Audit events that themselves disclose protected data"
+      ]
+    },
+    {
+      "id": "authentication-credential-transport",
+      "category": "authentication",
+      "title": "Credential transport, logging & defaults",
+      "summary": "Where credentials travel and whether defaults, logs, or referrers expose them.",
+      "items": [
+        "WAPT-AUTH-001",
+        "WAPT-AUTH-002",
+        "WAPT-AUTH-003"
+      ],
+      "dont_miss": [
+        "Login, enrollment, recovery, and factor submissions over plaintext or downgraded channels",
+        "Credentials, OTPs, and recovery tokens in query strings, paths, and referrer-bearing navigation",
+        "Documented vendor defaults on the confirmed product, including API and appliance logins"
+      ]
+    },
+    {
+      "id": "authentication-account-enumeration",
+      "category": "authentication",
+      "title": "Account enumeration",
+      "summary": "Whether login, registration, and recovery disclose which accounts exist, through text, timing, or status codes.",
+      "items": [
+        "WAPT-AUTH-005",
+        "WAPT-AUTH-006",
+        "WAPT-AUTH-007",
+        "WAPT-AUTH-008"
+      ],
+      "dont_miss": [
+        "Response text, status codes, redirects, headers, and body shape differences",
+        "Repeatable timing differences between valid and invalid accounts",
+        "Registration and username-reminder flows disclosing existing identities",
+        "Recovery flows confirming account existence before any email is sent"
+      ]
+    },
+    {
+      "id": "authentication-password-policy",
+      "category": "authentication",
+      "title": "Username & password policy",
+      "summary": "Canonicalization, length, composition, and rotation rules for passwords and usernames.",
+      "items": [
+        "WAPT-AUTH-009",
+        "WAPT-AUTH-010",
+        "WAPT-AUTH-011",
+        "WAPT-AUTH-012",
+        "WAPT-AUTH-013"
+      ],
+      "dont_miss": [
+        "Case, whitespace, and Unicode normalization differences between registration and login",
+        "Hidden truncation of long passphrases at creation or verification",
+        "Paste and password-manager blocking on security-sensitive fields",
+        "Breached, common, and context-specific password rejection",
+        "Forced periodic rotation driving predictable password cycling"
+      ]
+    },
+    {
+      "id": "authentication-brute-force-stuffing",
+      "category": "authentication",
+      "title": "Brute force & credential stuffing",
+      "summary": "Guessing and stuffing controls across account, device, network, and risk signals, including lockout abuse.",
+      "items": [
+        "WAPT-AUTH-014",
+        "WAPT-AUTH-015",
+        "WAPT-AUTH-016"
+      ],
+      "dont_miss": [
+        "Per-account limits that survive source-IP and device rotation",
+        "Credential stuffing across distributed sources with breached-credential screening",
+        "Account lockout used as a denial-of-service primitive against other users"
+      ]
+    },
+    {
+      "id": "authentication-login-enforcement",
+      "category": "authentication",
+      "title": "Login enforcement & fail-closed",
+      "summary": "Authentication on every route and representation, consistent across methods and media types, failing closed on errors.",
+      "items": [
+        "WAPT-AUTH-017",
+        "WAPT-AUTH-018",
+        "WAPT-AUTH-019",
+        "WAPT-AUTH-039"
+      ],
+      "dont_miss": [
+        "Direct navigation, API calls, alternate formats, and nested resources bypassing the login gate",
+        "Method or media-type changes reaching unauthenticated parsers and handlers",
+        "Omitted, duplicated, and ambiguous authentication fields",
+        "Malformed requests and unavailable identity services granting access or skipping factors"
+      ]
+    },
+    {
+      "id": "authentication-password-change-recovery",
+      "category": "authentication",
+      "title": "Password change & account recovery",
+      "summary": "Current-password requirements, token generation, reset-link origins, and account binding across change and recovery flows.",
+      "items": [
+        "WAPT-AUTH-022",
+        "WAPT-AUTH-023",
+        "WAPT-AUTH-024",
+        "WAPT-AUTH-025",
+        "WAPT-AUTH-026",
+        "WAPT-AUTH-027",
+        "WAPT-AUTH-028"
+      ],
+      "dont_miss": [
+        "Password changes without the current password from an unattended session",
+        "Account identifiers in change requests that can target another user",
+        "Reset tokens that are predictable, reusable, or long-lived",
+        "Reset links built from Host or forwarding inputs instead of a canonical origin",
+        "Reset completion bound to the wrong account, factor, tenant, or action",
+        "Knowledge-based security questions used as an authentication factor"
+      ]
+    },
+    {
+      "id": "authentication-mfa-factors",
+      "category": "authentication",
+      "title": "MFA & factor lifecycle",
+      "summary": "Enrollment, completion, OTP verification, recovery codes, factor removal, and push-approval behavior.",
+      "items": [
+        "WAPT-AUTH-029",
+        "WAPT-AUTH-030",
+        "WAPT-AUTH-031",
+        "WAPT-AUTH-032",
+        "WAPT-AUTH-033",
+        "WAPT-AUTH-034",
+        "WAPT-AUTH-036"
+      ],
+      "dont_miss": [
+        "Factor enrollment without recent reauthentication",
+        "MFA completion skipped through direct routes, flow fields, or session reuse",
+        "OTP and recovery-code guessing within their validity windows",
+        "Replayed or reused OTPs and push approvals",
+        "Factor removal or replacement with only weak session proof",
+        "Push fatigue and approval prompts without number matching or context"
+      ]
+    },
+    {
+      "id": "authentication-trusted-devices",
+      "category": "authentication",
+      "title": "Trusted devices & persistent login",
+      "summary": "Remember-device and remember-me tokens: entropy, rotation, revocation, and exemption binding.",
+      "items": [
+        "WAPT-AUTH-020",
+        "WAPT-AUTH-021",
+        "WAPT-AUTH-035"
+      ],
+      "dont_miss": [
+        "Guessable or low-entropy persistent-login tokens",
+        "Remember-me tokens surviving logout, password changes, and explicit revocation",
+        "Trusted-device exemptions that outlive factor or password changes"
+      ]
+    },
+    {
+      "id": "authentication-stepup-lifecycle",
+      "category": "authentication",
+      "title": "Step-up & account lifecycle",
+      "summary": "Bootstrap expiry, reauthentication for sensitive actions, security-event notifications, and secret-free audit logging.",
+      "items": [
+        "WAPT-AUTH-004",
+        "WAPT-AUTH-040",
+        "WAPT-AUTH-041",
+        "WAPT-AUTH-042"
+      ],
+      "dont_miss": [
+        "Bootstrap passwords and activation codes reused after first login",
+        "High-risk account, financial, and administrative actions relying only on an old session",
+        "Missing notifications for password resets, factor changes, and suspicious logins",
+        "Audit logs that record credentials instead of outcomes"
+      ]
+    },
+    {
+      "id": "authentication-federation-passkeys",
+      "category": "authentication",
+      "title": "Passkeys & federation boundaries",
+      "summary": "Passkey binding and challenge verification, alternate-channel strength, and local fallback beside federated login.",
+      "items": [
+        "WAPT-AUTH-037",
+        "WAPT-AUTH-038",
+        "WAPT-AUTH-043",
+        "WAPT-AUTH-044",
+        "WAPT-AUTH-045"
+      ],
+      "dont_miss": [
+        "Mobile, legacy, API, and support channels with weaker assurance than the primary login",
+        "Local passwords or break-glass routes bypassing required SSO or MFA",
+        "Passkey registration and assertions bound to the wrong account, origin, or relying party",
+        "Password recovery silently disabling MFA or downgrading assurance"
+      ]
+    },
+    {
+      "id": "api-object-field-authorization",
+      "category": "api-security",
+      "title": "API object & field authorization",
+      "summary": "BOLA and BOPLA across reads, mutations, nested resources, bulk calls, mobile clients, and property filtering.",
+      "items": [
+        "WAPT-API-001",
+        "WAPT-API-002",
+        "WAPT-API-003",
+        "WAPT-API-004",
+        "WAPT-API-005",
+        "WAPT-API-010",
+        "WAPT-API-011",
+        "WAPT-API-013"
+      ],
+      "dont_miss": [
+        "Read, update, delete, and cancel mutations against swapped object identifiers",
+        "Parent, child, tenant, and relationship identifiers validated together",
+        "Each member of a bulk or batch request receiving its own authorization decision",
+        "Identifiers recovered from mobile clients reaching other accounts and tenants",
+        "Protected fields writable through mass assignment or broad model binding",
+        "Fields reappearing in sparse, expanded, or alternate representations"
+      ]
+    },
+    {
+      "id": "api-authentication-credentials",
+      "category": "api-security",
+      "title": "API authentication & credentials",
+      "summary": "Credential transport consistency, key scoping, audience binding, and equivalent strength across versions and protocols.",
+      "items": [
+        "WAPT-API-006",
+        "WAPT-API-007",
+        "WAPT-API-008",
+        "WAPT-API-009"
+      ],
+      "dont_miss": [
+        "Absent, malformed, duplicated, and alternate credential transports accepted inconsistently",
+        "Long-lived shared API keys embedded in public clients with excessive scope",
+        "Tokens issued for another API, client, tenant, or purpose being accepted",
+        "Legacy versions, RPC routes, and mobile endpoints with weaker authentication"
+      ]
+    },
+    {
+      "id": "api-schema-binding",
+      "category": "api-security",
+      "title": "Schema & binding",
+      "summary": "Per-action writable schemas instead of shared model binding, and response overfetching beyond the contract.",
+      "items": [
+        "WAPT-API-012",
+        "WAPT-API-014"
+      ],
+      "dont_miss": [
+        "Create, patch, replace, and admin actions sharing an overbroad binding model",
+        "Backend returning complete records that client-side filtering hides"
+      ]
+    },
+    {
+      "id": "api-resource-abuse",
+      "category": "api-security",
+      "title": "Resource & abuse controls",
+      "summary": "Page sizes, body and batch limits, expensive queries, paid side effects, and distributed abuse.",
+      "items": [
+        "WAPT-API-015",
+        "WAPT-API-016",
+        "WAPT-API-017",
+        "WAPT-API-018",
+        "WAPT-API-019"
+      ],
+      "dont_miss": [
+        "Pagination and expansion parameters driving disproportionate database, memory, or bandwidth use",
+        "Oversized JSON, XML, multipart, arrays, and operation batches processed before rejection",
+        "User-selected filters, sorts, and joins with unbounded backend cost",
+        "Requests triggering unbounded email, SMS, exports, or third-party spend",
+        "Parallel and distributed requests bypassing per-account budgets"
+      ]
+    },
+    {
+      "id": "api-function-authorization",
+      "category": "api-security",
+      "title": "API function authorization",
+      "summary": "Admin-only functions, route aliases, role and membership management, and default-deny for new functions.",
+      "items": [
+        "WAPT-API-020",
+        "WAPT-API-021",
+        "WAPT-API-022",
+        "WAPT-API-023"
+      ],
+      "dont_miss": [
+        "Standard tokens invoking admin operations discovered through schemas, clients, or traffic",
+        "Alternate verbs, aliases, and versioned routes reaching privileged handlers",
+        "Lower roles assigning roles, groups, service accounts, invitations, or membership",
+        "Undocumented and newly deployed functions inheriting generic access"
+      ]
+    },
+    {
+      "id": "api-business-state",
+      "category": "api-security",
+      "title": "Business flows & transaction state",
+      "summary": "Automation of high-value flows, workflow sequence, and idempotency or one-time semantics.",
+      "items": [
+        "WAPT-API-024",
+        "WAPT-API-025",
+        "WAPT-API-026"
+      ],
+      "dont_miss": [
+        "Purchasing, reservation, posting, invitation, and redemption flows automatable beyond intent",
+        "Clients skipping, replaying, or reordering required workflow transitions",
+        "Replayed or retried requests duplicating transactions, credits, bookings, or side effects"
+      ]
+    },
+    {
+      "id": "api-fetching-integration",
+      "category": "api-security",
+      "title": "URL fetching & third-party integration",
+      "summary": "Server-side fetch parameters, redirect revalidation, and the security of consumed third-party APIs.",
+      "items": [
+        "WAPT-API-027",
+        "WAPT-API-028",
+        "WAPT-API-037",
+        "WAPT-API-038",
+        "WAPT-API-039",
+        "WAPT-API-040"
+      ],
+      "dont_miss": [
+        "Import, webhook, avatar, preview, and callback URLs reaching unintended destinations",
+        "Allowed URLs redirecting or resolving to prohibited targets after validation",
+        "Third-party API fields treated as trusted commands, identity, price, role, or markup",
+        "Slow, oversized, or malformed upstream responses exhausting resources or failing open",
+        "Upstream TLS identity, redirect policy, and credential scoping"
+      ]
+    },
+    {
+      "id": "api-operations-exposure",
+      "category": "api-security",
+      "title": "Operations & exposure",
+      "summary": "Method and media-type handling, debug output, CORS, and management endpoints.",
+      "items": [
+        "WAPT-API-029",
+        "WAPT-API-030",
+        "WAPT-API-031",
+        "WAPT-API-032"
+      ],
+      "dont_miss": [
+        "Unused methods or parser fallbacks exposing operations or weaker validation",
+        "Production errors disclosing code paths, queries, secrets, or debug functions",
+        "API responses readable from untrusted origins with ambient credentials",
+        "Documentation consoles, actuator, metrics, and admin tooling without access controls"
+      ]
+    },
+    {
+      "id": "api-inventory-lifecycle",
+      "category": "api-security",
+      "title": "Inventory & lifecycle",
+      "summary": "Host and version inventories, deprecated versions, shadow deployments, and documentation reconciliation.",
+      "items": [
+        "WAPT-API-033",
+        "WAPT-API-034",
+        "WAPT-API-035",
+        "WAPT-API-036"
+      ],
+      "dont_miss": [
+        "APIs without an owner, environment, data class, or lifecycle state",
+        "Deprecated versions remaining reachable with weaker controls",
+        "Development, staging, preview, and mobile hosts exposing unmanaged copies",
+        "Schemas omitting live routes or describing retired authentication"
+      ]
+    },
+    {
+      "id": "upload-acceptance-validation",
+      "category": "file-handling",
+      "title": "Acceptance & validation",
+      "summary": "The documented contract and how extension, media type, signature, and size limits are enforced together.",
+      "items": [
+        "WAPT-UPLOAD-001",
+        "WAPT-UPLOAD-002",
+        "WAPT-UPLOAD-003",
+        "WAPT-UPLOAD-011"
+      ],
+      "dont_miss": [
+        "Extension, declared Content-Type, and file signature contradicting each other",
+        "Case, trailing dots and spaces, alternate separators, and Unicode filename normalization",
+        "Upload byte, file-count, and per-user storage quotas beyond the documented contract",
+        "Unpacked limits and retention boundaries, not just the raw upload size"
+      ]
+    },
+    {
+      "id": "upload-execution-sandboxing",
+      "category": "file-handling",
+      "title": "Execution & sandboxing",
+      "summary": "Server-side execution, isolated serving origins, and malware scanning placement.",
+      "items": [
+        "WAPT-UPLOAD-004",
+        "WAPT-UPLOAD-005",
+        "WAPT-UPLOAD-016"
+      ],
+      "dont_miss": [
+        "Uploaded content routed through server-side executable handlers",
+        "Active formats inheriting application cookies, origin privileges, or inline rendering",
+        "Malware scanning treated as type validation instead of defense in depth"
+      ]
+    },
+    {
+      "id": "upload-naming-collision",
+      "category": "file-handling",
+      "title": "Naming, collisions & headers",
+      "summary": "Filename traversal, overwrite and collision behavior, and Content-Disposition safety.",
+      "items": [
+        "WAPT-UPLOAD-006",
+        "WAPT-UPLOAD-007",
+        "WAPT-UPLOAD-023"
+      ],
+      "dont_miss": [
+        "Chosen names or predictable storage keys replacing another user's file or an application asset",
+        "Multipart and metadata filenames escaping the staging directory",
+        "Download filenames injecting headers or breaking quoting in Content-Disposition"
+      ]
+    },
+    {
+      "id": "upload-archives",
+      "category": "file-handling",
+      "title": "Archive handling",
+      "summary": "ZIP Slip, symlink escape, and expansion bounds during extraction.",
+      "items": [
+        "WAPT-UPLOAD-008",
+        "WAPT-UPLOAD-009",
+        "WAPT-UPLOAD-010"
+      ],
+      "dont_miss": [
+        "Archive entry paths escaping the extraction root",
+        "Symlink and hardlink entries redirecting later reads and writes",
+        "Unpacked bytes, ratios, depths, and entry counts exceeding safe bounds"
+      ]
+    },
+    {
+      "id": "upload-image-document-processing",
+      "category": "file-handling",
+      "title": "Image & document processing",
+      "summary": "Decoded dimensions, metadata, SVG handling, polyglots, and privileged previews.",
+      "items": [
+        "WAPT-UPLOAD-012",
+        "WAPT-UPLOAD-013",
+        "WAPT-UPLOAD-014",
+        "WAPT-UPLOAD-015",
+        "WAPT-UPLOAD-025"
+      ],
+      "dont_miss": [
+        "Small encoded images expanding to excessive pixels or memory",
+        "Metadata, embedded active content, and secondary streams surviving processing",
+        "SVG scripts, events, links, and external references in the preview pipeline",
+        "Polyglot files valid in multiple formats bypassing one validator",
+        "Privileged moderation and admin previews processing untrusted files with greater access"
+      ]
+    },
+    {
+      "id": "upload-authorization-retrieval",
+      "category": "file-handling",
+      "title": "Authorization & retrieval",
+      "summary": "Who may attach, download, and derive files — including traversal on download and export paths.",
+      "items": [
+        "WAPT-UPLOAD-017",
+        "WAPT-UPLOAD-018",
+        "WAPT-UPLOAD-019",
+        "WAPT-UPLOAD-020",
+        "WAPT-UPLOAD-024"
+      ],
+      "dont_miss": [
+        "Uploading into another user's object, tenant, folder, or privileged slot",
+        "Changed file IDs, storage keys, or transformations retrieving private files",
+        "Traversal through download and export path parameters",
+        "Encoded and double-decoded traversal variants across edge and application decoding",
+        "Partial uploads, scan queues, and failed files remaining publicly reachable"
+      ]
+    },
+    {
+      "id": "upload-inclusion-generated",
+      "category": "file-handling",
+      "title": "Inclusion & generated content",
+      "summary": "Local and remote inclusion, untrusted template loading, and generated files that inherit unsafe input.",
+      "items": [
+        "WAPT-UPLOAD-021",
+        "WAPT-UPLOAD-022",
+        "WAPT-UPLOAD-026"
+      ],
+      "dont_miss": [
+        "Local path selectors loading unintended server-side files into processing",
+        "Include, template, theme, and plugin selectors fetching and evaluating remote resources",
+        "Server-generated PDFs, spreadsheets, and archives inheriting unsafe filenames or active content"
+      ]
+    },
+    {
+      "id": "recon-discovery-indexing",
+      "category": "reconnaissance",
+      "title": "Discovery & search indexing",
+      "summary": "Publicly indexed assets, certificate transparency, robots, sitemaps, and well-known resources.",
+      "items": [
+        "WAPT-RECON-001",
+        "WAPT-RECON-002",
+        "WAPT-RECON-008",
+        "WAPT-RECON-009",
+        "WAPT-RECON-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Check certificate transparency logs for historical and current hostnames, not only live certificates",
+        "Treat robots and sitemap entries as leads; verify every candidate against the live application",
+        "Review well-known resources for security contacts and identity metadata"
+      ]
+    },
+    {
+      "id": "recon-dns-hosting",
+      "category": "reconnaissance",
+      "title": "DNS, hosting & non-production",
+      "summary": "Authoritative records, resolved boundaries, approved ports, non-production hostnames, and dangling references.",
+      "items": [
+        "WAPT-RECON-003",
+        "WAPT-RECON-004",
+        "WAPT-RECON-005",
+        "WAPT-RECON-030",
+        "WAPT-RECON-038"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Record mail, alias, and delegation records alongside A and CNAME entries",
+        "Correlate every resolved address with the approved hosting boundary before probing",
+        "Reconcile admin, dev, staging, and preview hostnames with scope and ownership",
+        "Identify dangling CNAME and NS targets without ever claiming them"
+      ]
+    },
+    {
+      "id": "recon-server-tls",
+      "category": "reconnaissance",
+      "title": "Server & TLS fingerprinting",
+      "summary": "Web-server hypotheses and TLS certificate relationships from response characteristics.",
+      "items": [
+        "WAPT-RECON-006",
+        "WAPT-RECON-007"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Rate server fingerprints by confidence instead of trusting a single header",
+        "Treat certificate names as endpoint relationships, not automatic scope"
+      ]
+    },
+    {
+      "id": "recon-app-routing",
+      "category": "reconnaissance",
+      "title": "Applications & routing",
+      "summary": "Distinct applications behind hostnames, base paths, virtual hosts, and default-site behavior.",
+      "items": [
+        "WAPT-RECON-011",
+        "WAPT-RECON-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Separate tenant portals, management surfaces, and route roots sharing one hostname",
+        "Compare approved Host values for routing and default-site behavior"
+      ]
+    },
+    {
+      "id": "recon-content-javascript",
+      "category": "reconnaissance",
+      "title": "Content & JavaScript extraction",
+      "summary": "HTML comments, metadata, first-party script route extraction, and source-map classification.",
+      "items": [
+        "WAPT-RECON-013",
+        "WAPT-RECON-014",
+        "WAPT-RECON-015"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Record hidden fields and disabled markup as reachable-attack-surface leads",
+        "Extract routes and service origins from script literals and request constructors",
+        "Classify source maps without treating readable client code as a finding"
+      ]
+    },
+    {
+      "id": "recon-surface-mapping",
+      "category": "reconnaissance",
+      "title": "Surface mapping",
+      "summary": "Forms, parameters, routes, methods, and multi-step workflow state transitions.",
+      "items": [
+        "WAPT-RECON-016",
+        "WAPT-RECON-017",
+        "WAPT-RECON-018",
+        "WAPT-RECON-019"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Inventory constraints, submission targets, and encodings per form",
+        "Deduplicate parameters across URL, body, headers, and cookies with example values",
+        "Distinguish read, mutation, upload, authentication, and administrative routes",
+        "Document valid workflow states, prerequisites, and rollback paths"
+      ]
+    },
+    {
+      "id": "recon-identity-accounts",
+      "category": "reconnaissance",
+      "title": "Identity & account flows",
+      "summary": "Authentication, reauthentication, step-up entry points, and account-lifecycle flows.",
+      "items": [
+        "WAPT-RECON-020",
+        "WAPT-RECON-021"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Catalog every route that establishes, refreshes, elevates, or re-verifies identity",
+        "Map registration, invitation, recovery, and account-change flows before targeting them"
+      ]
+    },
+    {
+      "id": "recon-api-realtime",
+      "category": "reconnaissance",
+      "title": "API & realtime discovery",
+      "summary": "API roots, documentation, GraphQL endpoints, and WebSocket or SSE channels.",
+      "items": [
+        "WAPT-RECON-022",
+        "WAPT-RECON-023",
+        "WAPT-RECON-024",
+        "WAPT-RECON-025"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Build the API inventory from observed traffic before consulting documentation",
+        "Compare owner-published schemas against actually deployed operations",
+        "Confirm GraphQL transport modes, content types, and subscription channels",
+        "Catalog WebSocket handshake URLs, subprotocols, and authentication transport"
+      ]
+    },
+    {
+      "id": "recon-frameworks-intermediaries",
+      "category": "reconnaissance",
+      "title": "Frameworks & intermediaries",
+      "summary": "Server-side frameworks, packaged applications, CDNs, proxies, and edge-versus-origin behavior.",
+      "items": [
+        "WAPT-RECON-026",
+        "WAPT-RECON-027",
+        "WAPT-RECON-028",
+        "WAPT-RECON-029"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Fingerprint frameworks with corroborating cookies, headers, paths, and error forms",
+        "Identify packaged applications and CMS versions with multiple non-invasive markers",
+        "Model request hops and trust boundaries across proxies, CDNs, and application tiers",
+        "Compare edge and suspected origin behavior without bypassing scope"
+      ]
+    },
+    {
+      "id": "recon-third-party-browser",
+      "category": "reconnaissance",
+      "title": "Third-party & browser state",
+      "summary": "External script and identity dependencies plus browser storage and configuration namespaces.",
+      "items": [
+        "WAPT-RECON-031",
+        "WAPT-RECON-032"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Document external origins that receive data, execute in the page, or provide identity",
+        "Catalog localStorage, IndexedDB, and cache namespaces used by the application"
+      ]
+    },
+    {
+      "id": "recon-entry-points",
+      "category": "reconnaissance",
+      "title": "Entry points & error families",
+      "summary": "Upload, search, and reporting entry points plus error-response classification.",
+      "items": [
+        "WAPT-RECON-033",
+        "WAPT-RECON-034",
+        "WAPT-RECON-035"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Include import, export, preview, and conversion routes in the entry-point inventory",
+        "Map search, filtering, sorting, and reporting inputs before testing them",
+        "Classify error families to guide later differentiation between vulnerable and benign"
+      ]
+    },
+    {
+      "id": "recon-attack-surface-register",
+      "category": "reconnaissance",
+      "title": "Attack-surface register",
+      "summary": "Test matrices and the confirmed in-scope register that anchors the engagement.",
+      "items": [
+        "WAPT-RECON-036",
+        "WAPT-RECON-037"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Link test identities to roles, tenants, ownership states, and reachable functions",
+        "Keep the attack-surface register updated as scope changes during the engagement"
+      ]
+    },
+    {
+      "id": "http-methods",
+      "category": "http",
+      "title": "HTTP methods",
+      "summary": "Unsupported-method rejection, safe-method side effects, and method override handling.",
+      "items": [
+        "WAPT-HTTP-001",
+        "WAPT-HTTP-002",
+        "WAPT-HTTP-003"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Check unsupported methods on every route, not just the documented endpoints",
+        "Confirm GET, HEAD, and OPTIONS never trigger security-sensitive state changes",
+        "Test override headers and body parameters for unauthorized verb selection"
+      ]
+    },
+    {
+      "id": "http-content-encoding",
+      "category": "http",
+      "title": "Content types & encoding",
+      "summary": "Declared media types, accurate responses, and MIME-sniffing boundaries.",
+      "items": [
+        "WAPT-HTTP-004",
+        "WAPT-HTTP-005",
+        "WAPT-HTTP-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Send bodies under undeclared, ambiguous, or conflicting Content-Type values",
+        "Compare declared media types and charsets against actual response bytes",
+        "Test whether sniffing can reinterpret user-controlled responses as active content"
+      ]
+    },
+    {
+      "id": "http-path-parameter-normalization",
+      "category": "http",
+      "title": "Path & parameter normalization",
+      "summary": "Dot segments, repeated separators, duplicate parameters, and decode boundaries.",
+      "items": [
+        "WAPT-HTTP-007",
+        "WAPT-HTTP-008",
+        "WAPT-HTTP-009"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Probe dot segments, repeated separators, case, and trailing delimiters",
+        "Check whether path or parameter decoding happens more than once",
+        "Resolve duplicate parameters consistently across every hop"
+      ]
+    },
+    {
+      "id": "http-target-authority",
+      "category": "http",
+      "title": "Target & host authority",
+      "summary": "Absolute-form targets, Host versus :authority, and forwarding-header trust.",
+      "items": [
+        "WAPT-HTTP-010",
+        "WAPT-HTTP-011",
+        "WAPT-HTTP-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Send absolute-form and authority-form targets and observe routing changes",
+        "Compare HTTP/1 Host and HTTP/2 authority validation for the same route",
+        "Verify forwarding headers only influence state when an authenticated proxy sent them"
+      ]
+    },
+    {
+      "id": "http-redirects-https",
+      "category": "http",
+      "title": "Redirects & HTTPS",
+      "summary": "User-controlled redirects and plaintext entry paths.",
+      "items": [
+        "WAPT-HTTP-013",
+        "WAPT-HTTP-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test redirect parameters, paths, and headers against attacker-controlled origins",
+        "Map plaintext entry paths and verify canonical HTTPS redirection without mixed content"
+      ]
+    },
+    {
+      "id": "http-cors",
+      "category": "http",
+      "title": "CORS",
+      "summary": "Origin allowlists, credentialed access, opaque origins, preflights, and exposed headers.",
+      "items": [
+        "WAPT-HTTP-015",
+        "WAPT-HTTP-016",
+        "WAPT-HTTP-017",
+        "WAPT-HTTP-018",
+        "WAPT-HTTP-019"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Distinguish reflected origins from exact allowlist decisions",
+        "Test credentialed CORS reads with ambient cookies and HTTP authentication",
+        "Reach sensitive operations through simple requests that skip preflight",
+        "Review Access-Control-Expose-Headers for secret-bearing names"
+      ]
+    },
+    {
+      "id": "http-caching",
+      "category": "http",
+      "title": "Caching",
+      "summary": "Persistent caches, shared-cache partitioning, cache keys, and Vary metadata.",
+      "items": [
+        "WAPT-HTTP-020",
+        "WAPT-HTTP-021",
+        "WAPT-HTTP-022",
+        "WAPT-HTTP-023"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Verify sensitive representations are not stored in persistent or shared caches",
+        "Test whether a CDN or reverse proxy can serve one user representation to another",
+        "Probe unkeyed query fields, headers, and cookies for cache poisoning",
+        "Check Vary distinguishes representations shaped by safe request headers"
+      ]
+    },
+    {
+      "id": "http-conditional-advanced",
+      "category": "http",
+      "title": "Conditional & protocol translation",
+      "summary": "Conditional and range requests, compression oracles, and framing translation.",
+      "items": [
+        "WAPT-HTTP-024",
+        "WAPT-HTTP-025",
+        "WAPT-HTTP-026"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Reauthorize If-None-Match, If-Modified-Since, and Range requests for protected resources",
+        "Assess compression oracles where reflected secrets share compressed responses",
+        "Verify edge-to-origin protocol translation rejects ambiguous message framing"
+      ]
+    },
+    {
+      "id": "sess-token-inventory",
+      "category": "session-management",
+      "title": "Token inventory & transport",
+      "summary": "Session-token discovery and URL or referrer exposure.",
+      "items": [
+        "WAPT-SESS-001",
+        "WAPT-SESS-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Inventory cookies, headers, body fields, and client stores that carry session state",
+        "Check paths, queries, redirects, browser history, and Referer for token leakage"
+      ]
+    },
+    {
+      "id": "sess-cookie-attributes",
+      "category": "session-management",
+      "title": "Cookie attributes",
+      "summary": "Secure, HttpOnly, SameSite, Domain, Path, and persistent lifetime.",
+      "items": [
+        "WAPT-SESS-002",
+        "WAPT-SESS-003",
+        "WAPT-SESS-004",
+        "WAPT-SESS-005",
+        "WAPT-SESS-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Verify Secure on every authentication-bearing cookie",
+        "Confirm HttpOnly unless script access is genuinely required",
+        "Choose SameSite against the real cross-site authentication flow",
+        "Minimize Domain and Path scope to avoid sibling-host exposure",
+        "Bound persistent cookie lifetime to the documented server-side risk policy"
+      ]
+    },
+    {
+      "id": "sess-token-properties",
+      "category": "session-management",
+      "title": "Token properties",
+      "summary": "Entropy and plaintext sensitivity of client-visible session values.",
+      "items": [
+        "WAPT-SESS-007",
+        "WAPT-SESS-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Verify session identifiers are unique and unpredictable across issuance events",
+        "Check session values for usernames, roles, internal IDs, or secrets"
+      ]
+    },
+    {
+      "id": "sess-fixation-rotation",
+      "category": "session-management",
+      "title": "Fixation & rotation",
+      "summary": "Pre-authentication fixation, post-auth rotation, and privilege-change rotation.",
+      "items": [
+        "WAPT-SESS-009",
+        "WAPT-SESS-010",
+        "WAPT-SESS-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Confirm attacker-chosen pre-login identifiers never survive authentication",
+        "Verify login replaces and invalidates every pre-authentication token",
+        "Rotate session authority after role elevation, impersonation, and step-up"
+      ]
+    },
+    {
+      "id": "sess-lifecycle-logout",
+      "category": "session-management",
+      "title": "Lifecycle & logout",
+      "summary": "Concurrency, logout invalidation, revocation, idle and absolute timeouts, and server-side expiry.",
+      "items": [
+        "WAPT-SESS-012",
+        "WAPT-SESS-013",
+        "WAPT-SESS-014",
+        "WAPT-SESS-015",
+        "WAPT-SESS-016",
+        "WAPT-SESS-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce concurrent-session limits consistent with account risk",
+        "Verify captured tokens stop working after logout",
+        "Confirm users can review and revoke other active sessions",
+        "Test idle timeout from server-observed activity, not client timers",
+        "Verify absolute maximum lifetime survives continuous refresh activity"
+      ]
+    },
+    {
+      "id": "sess-identity-changes",
+      "category": "session-management",
+      "title": "Identity & account changes",
+      "summary": "Disablement, deletion, password or factor changes, and account switching.",
+      "items": [
+        "WAPT-SESS-020",
+        "WAPT-SESS-021",
+        "WAPT-SESS-024"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Confirm disabled or deleted identities lose all sessions and persistent tokens",
+        "Offer session termination after password or factor changes",
+        "Verify logout/login and account switching leaves no prior identity state"
+      ]
+    },
+    {
+      "id": "sess-puzzling-isolation",
+      "category": "session-management",
+      "title": "Puzzling & isolation",
+      "summary": "Multiple token names, sibling-application isolation, and explicit session creation.",
+      "items": [
+        "WAPT-SESS-022",
+        "WAPT-SESS-023",
+        "WAPT-SESS-026"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Swap, omit, and mix parallel session values to select another identity",
+        "Verify tokens from one application are rejected by sibling applications",
+        "Confirm cross-site navigation cannot silently create application sessions"
+      ]
+    },
+    {
+      "id": "sess-federation-distribution",
+      "category": "session-management",
+      "title": "Federation & distribution",
+      "summary": "Coordinated logout, revocation propagation, and refresh-token family replay.",
+      "items": [
+        "WAPT-SESS-025",
+        "WAPT-SESS-027",
+        "WAPT-SESS-028"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Coordinate relying-party and identity-provider logout semantics",
+        "Verify revocation reaches APIs, gateways, workers, and regional services",
+        "Detect replay of rotated refresh or persistent token families"
+      ]
+    },
+    {
+      "id": "sess-client-storage",
+      "category": "session-management",
+      "title": "Client storage",
+      "summary": "Reusable session authority in script-readable storage.",
+      "items": [
+        "WAPT-SESS-019"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Evaluate localStorage and IndexedDB bearer tokens against the XSS surface and lifetime"
+      ]
+    },
+    {
+      "id": "inj-sql",
+      "category": "injection",
+      "title": "SQL injection",
+      "summary": "Detection, confirmation, identifiers, second-order, ORM, bulk, and asynchronous SQL paths.",
+      "items": [
+        "WAPT-INJ-001",
+        "WAPT-INJ-002",
+        "WAPT-INJ-003",
+        "WAPT-INJ-004",
+        "WAPT-INJ-005",
+        "WAPT-INJ-006",
+        "WAPT-INJ-007",
+        "WAPT-INJ-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Confirm every differential with paired predicates, never a single error",
+        "Test ORDER BY, identifiers, and stored-value paths beyond string positions",
+        "Verify parameterization across bulk, array, and asynchronous report inputs"
+      ]
+    },
+    {
+      "id": "inj-nosql",
+      "category": "injection",
+      "title": "NoSQL injection",
+      "summary": "Operator injection, auth bypass, blind predicates, server-side JavaScript, pipelines, and second-order fragments.",
+      "items": [
+        "WAPT-INJ-009",
+        "WAPT-INJ-010",
+        "WAPT-INJ-011",
+        "WAPT-INJ-012",
+        "WAPT-INJ-013",
+        "WAPT-INJ-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Probe operator objects in structured JSON bodies",
+        "Pair blind response predicates before concluding NoSQL injection",
+        "Test aggregation and projection pipelines plus stored query fragments"
+      ]
+    },
+    {
+      "id": "inj-ldap",
+      "category": "injection",
+      "title": "LDAP injection",
+      "summary": "Filters in authentication lookups, directory searches, and DN construction.",
+      "items": [
+        "WAPT-INJ-015",
+        "WAPT-INJ-016",
+        "WAPT-INJ-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test authentication lookups and directory search filters separately",
+        "Escape distinguished-name construction independently from filters"
+      ]
+    },
+    {
+      "id": "inj-xml-xpath",
+      "category": "injection",
+      "title": "XML, XPath & entities",
+      "summary": "Predicate injection, structure injection, external entities, DTDs, and XInclude.",
+      "items": [
+        "WAPT-INJ-018",
+        "WAPT-INJ-019",
+        "WAPT-INJ-020",
+        "WAPT-INJ-021",
+        "WAPT-INJ-022",
+        "WAPT-INJ-023"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Pair XPath predicates to confirm node-set differences",
+        "Test element and attribute value positions for structure injection",
+        "Verify external entities, parameter entities, and XInclude are all disabled"
+      ]
+    },
+    {
+      "id": "inj-command",
+      "category": "injection",
+      "title": "Command injection",
+      "summary": "Separators, blind timing, argument injection, filenames, workers, and environment influence.",
+      "items": [
+        "WAPT-INJ-024",
+        "WAPT-INJ-025",
+        "WAPT-INJ-026",
+        "WAPT-INJ-027",
+        "WAPT-INJ-028",
+        "WAPT-INJ-029"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Use inert output markers before timing-based confirmation",
+        "Test argument injection without shell metacharacters",
+        "Probe filenames, upload metadata, and asynchronous worker paths",
+        "Constrain environment and executable-path influence"
+      ]
+    },
+    {
+      "id": "inj-template-expression",
+      "category": "injection",
+      "title": "Template & expression injection",
+      "summary": "SSTI detection, context classification, stored and blind variants, sandboxes, includes, and dynamic evaluation.",
+      "items": [
+        "WAPT-INJ-030",
+        "WAPT-INJ-031",
+        "WAPT-INJ-032",
+        "WAPT-INJ-033",
+        "WAPT-INJ-034",
+        "WAPT-INJ-035",
+        "WAPT-INJ-036",
+        "WAPT-INJ-037",
+        "WAPT-INJ-038"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Classify the template context before choosing syntax",
+        "Test stored and blind template paths with controlled callbacks",
+        "Probe sandbox boundaries without attempting host escape",
+        "Cover expression-language and dynamic-evaluation equivalents"
+      ]
+    },
+    {
+      "id": "inj-header-log",
+      "category": "injection",
+      "title": "Header, log & mail injection",
+      "summary": "CRLF into headers and redirects, log sanitization, and email header injection.",
+      "items": [
+        "WAPT-INJ-039",
+        "WAPT-INJ-040",
+        "WAPT-INJ-041",
+        "WAPT-INJ-042"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test response-header and redirect Location CRLF positions",
+        "Sanitize untrusted values before structured logging",
+        "Verify generated email messages cannot inject additional headers"
+      ]
+    },
+    {
+      "id": "inj-parameter-pollution",
+      "category": "injection",
+      "title": "Parameter pollution",
+      "summary": "Duplicate-parameter rules and cross-source pollution.",
+      "items": [
+        "WAPT-INJ-043",
+        "WAPT-INJ-044"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Apply one duplicate-parameter rule across security controls and parsing",
+        "Test cross-source pollution between query, body, cookies, and headers"
+      ]
+    },
+    {
+      "id": "inj-export-host",
+      "category": "injection",
+      "title": "Export & host injection",
+      "summary": "Spreadsheet formulas, CSV quoting, Host validation, link origins, cache keys, and forwarded values.",
+      "items": [
+        "WAPT-INJ-045",
+        "WAPT-INJ-046",
+        "WAPT-INJ-047",
+        "WAPT-INJ-048",
+        "WAPT-INJ-049",
+        "WAPT-INJ-050"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Neutralize spreadsheet formulas in exported user data",
+        "Preserve CSV boundaries and quoting during export",
+        "Validate Host before routing and security decisions",
+        "Build password and invitation links from a canonical origin",
+        "Ignore untrusted forwarded host and scheme values"
+      ]
+    },
+    {
+      "id": "inj-mail-misc",
+      "category": "injection",
+      "title": "Mail, regex & SSI",
+      "summary": "SMTP and IMAP injection, regex injection and ReDoS, and server-side includes.",
+      "items": [
+        "WAPT-INJ-051",
+        "WAPT-INJ-052",
+        "WAPT-INJ-053",
+        "WAPT-INJ-054",
+        "WAPT-INJ-055"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test recipient fields for SMTP command injection",
+        "Escape untrusted text embedded in regular expressions",
+        "Bound catastrophic backtracking with long adversarial inputs"
+      ]
+    },
+    {
+      "id": "xss-reflected-stored",
+      "category": "xss",
+      "title": "Reflected & stored XSS",
+      "summary": "Input classification, stored user content, and blind stored payloads in privileged views.",
+      "items": [
+        "WAPT-XSS-001",
+        "WAPT-XSS-002",
+        "WAPT-XSS-003"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Classify the reflection context before choosing a payload",
+        "Confirm stored XSS with an isolated observer account",
+        "Detect blind stored variants in privileged review surfaces"
+      ]
+    },
+    {
+      "id": "xss-dom-storage",
+      "category": "xss",
+      "title": "DOM & storage XSS",
+      "summary": "Location sources, postMessage, and browser-storage values reaching executable sinks.",
+      "items": [
+        "WAPT-XSS-004",
+        "WAPT-XSS-005",
+        "WAPT-XSS-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Trace URL-derived flows from location sources to executable sinks",
+        "Validate postMessage origin and payload before DOM insertion",
+        "Keep browser-storage values out of executable DOM sinks"
+      ]
+    },
+    {
+      "id": "xss-sink-source",
+      "category": "xss",
+      "title": "Sinks & sources",
+      "summary": "API and realtime message encoding, dangerous HTML and JavaScript sinks, and URL schemes.",
+      "items": [
+        "WAPT-XSS-007",
+        "WAPT-XSS-008",
+        "WAPT-XSS-009",
+        "WAPT-XSS-010",
+        "WAPT-XSS-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Encode API and WebSocket message data at the final DOM sink",
+        "Remove innerHTML-style sinks for untrusted values",
+        "Reject unsafe URL schemes in navigation and resource sinks"
+      ]
+    },
+    {
+      "id": "xss-sanitization",
+      "category": "xss",
+      "title": "Sanitization",
+      "summary": "Configuration bypasses, mutation XSS, rich text, SVG, and Markdown transformations.",
+      "items": [
+        "WAPT-XSS-012",
+        "WAPT-XSS-013",
+        "WAPT-XSS-014",
+        "WAPT-XSS-015",
+        "WAPT-XSS-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test sanitizer configuration and nesting bypasses",
+        "Detect mutation XSS after browser reparsing",
+        "Constrain active content in user-supplied SVG",
+        "Sanitize Markdown and rich-text output on the trusted boundary"
+      ]
+    },
+    {
+      "id": "xss-framework-template",
+      "category": "xss",
+      "title": "Frameworks & templates",
+      "summary": "Framework escape hatches, client-side templates, and JSONP.",
+      "items": [
+        "WAPT-XSS-017",
+        "WAPT-XSS-018",
+        "WAPT-XSS-020"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Keep framework escape hatches away from untrusted content",
+        "Prevent client-side template injection reaching script execution",
+        "Validate JSONP callback names or remove JSONP entirely"
+      ]
+    },
+    {
+      "id": "xss-upload-encoding",
+      "category": "xss",
+      "title": "Uploads & encoding",
+      "summary": "Active upload files and character-encoding normalization.",
+      "items": [
+        "WAPT-XSS-019",
+        "WAPT-XSS-021"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Serve uploaded active files outside the application origin",
+        "Normalize character encoding before validation and output"
+      ]
+    },
+    {
+      "id": "xss-defenses-evidence",
+      "category": "xss",
+      "title": "Defenses & evidence",
+      "summary": "CSP as impact reduction, Trusted Types, and evidence hygiene.",
+      "items": [
+        "WAPT-XSS-022",
+        "WAPT-XSS-029",
+        "WAPT-XSS-030"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Treat CSP as impact reduction, never as an XSS substitute",
+        "Enforce Trusted Types without permissive bypass policies",
+        "Demonstrate impact without collecting sensitive data"
+      ]
+    },
+    {
+      "id": "xss-boundaries-edges",
+      "category": "xss",
+      "title": "Boundaries & edge cases",
+      "summary": "WAF bypass, self-XSS, extension noise, dangling markup, base injection, and script gadgets.",
+      "items": [
+        "WAPT-XSS-023",
+        "WAPT-XSS-024",
+        "WAPT-XSS-025",
+        "WAPT-XSS-026",
+        "WAPT-XSS-027",
+        "WAPT-XSS-028"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Treat WAF bypass as validation of a real sink",
+        "Require a realistic delivery path for self-XSS",
+        "Exclude browser extensions and tooling from evidence",
+        "Evaluate script gadgets only after confirmed data flow"
+      ]
+    },
+    {
+      "id": "csrf-inventory",
+      "category": "csrf",
+      "title": "CSRF inventory",
+      "summary": "Sensitive actions using ambient browser credentials.",
+      "items": [
+        "WAPT-CSRF-001"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Inventory state-changing actions reachable with ambient cookies across methods"
+      ]
+    },
+    {
+      "id": "csrf-token-validation",
+      "category": "csrf",
+      "title": "Token validation",
+      "summary": "Missing, invalid, session-bound, action-bound, and leaking anti-CSRF tokens.",
+      "items": [
+        "WAPT-CSRF-002",
+        "WAPT-CSRF-003",
+        "WAPT-CSRF-004",
+        "WAPT-CSRF-005",
+        "WAPT-CSRF-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Reject missing, invalid, and attacker-supplied tokens",
+        "Bind tokens to the session and, where risk requires, the action",
+        "Verify tokens are unpredictable and never leak cross-origin"
+      ]
+    },
+    {
+      "id": "csrf-origin-referer",
+      "category": "csrf",
+      "title": "Origin & Referer",
+      "summary": "Origin validation and privacy-aware Referer fallback.",
+      "items": [
+        "WAPT-CSRF-007",
+        "WAPT-CSRF-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate Origin on sensitive browser requests",
+        "Treat Referer as a fallback with its privacy limits in mind"
+      ]
+    },
+    {
+      "id": "csrf-samesite-media",
+      "category": "csrf",
+      "title": "SameSite & media types",
+      "summary": "SameSite behavior and simple-request media types for JSON-only operations.",
+      "items": [
+        "WAPT-CSRF-009",
+        "WAPT-CSRF-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Account for actual SameSite cookie behavior in CSRF decisions",
+        "Reject simple-request media types for JSON-only sensitive operations"
+      ]
+    },
+    {
+      "id": "csrf-method-navigation",
+      "category": "csrf",
+      "title": "Methods & navigation",
+      "summary": "Method overrides and cross-site GET state changes.",
+      "items": [
+        "WAPT-CSRF-011",
+        "WAPT-CSRF-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Keep method overrides from bypassing CSRF controls",
+        "Prevent state changes through cross-site GET navigation"
+      ]
+    },
+    {
+      "id": "csrf-login-uploads",
+      "category": "csrf",
+      "title": "Login, logout, uploads & GraphQL",
+      "summary": "Login CSRF, forced logout, multipart actions, and GraphQL mutations.",
+      "items": [
+        "WAPT-CSRF-013",
+        "WAPT-CSRF-014",
+        "WAPT-CSRF-015",
+        "WAPT-CSRF-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent login CSRF and attacker-account session planting",
+        "Verify logout requires the user intention it claims",
+        "Protect multipart and file-processing actions",
+        "Test GraphQL mutations over simple cross-site transports"
+      ]
+    },
+    {
+      "id": "csrf-boundaries",
+      "category": "csrf",
+      "title": "Boundaries",
+      "summary": "CORS-versus-CSRF distinction and step-up for critical actions.",
+      "items": [
+        "WAPT-CSRF-017",
+        "WAPT-CSRF-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Separate response-read permissions from request-transmission impact",
+        "Require step-up or transaction binding for critical cross-site actions"
+      ]
+    },
+    {
+      "id": "gql-discovery-introspection",
+      "category": "graphql",
+      "title": "Discovery & introspection",
+      "summary": "Endpoint and transport inventory, introspection, and schema reconciliation.",
+      "items": [
+        "WAPT-GQL-001",
+        "WAPT-GQL-002",
+        "WAPT-GQL-003"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Inventory HTTP, multipart, batch, and subscription transports",
+        "Restrict production introspection to the intended consumer model",
+        "Reconcile schemas from clients and traffic without reporting names as findings"
+      ]
+    },
+    {
+      "id": "gql-authorization",
+      "category": "graphql",
+      "title": "Authorization",
+      "summary": "Object, field, mutation, and function authorization in resolvers.",
+      "items": [
+        "WAPT-GQL-004",
+        "WAPT-GQL-005",
+        "WAPT-GQL-006",
+        "WAPT-GQL-007"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Swap node IDs and nested arguments across accounts and tenants",
+        "Select sensitive fields hidden from normal client queries",
+        "Bind protected fields like role, owner, price, and status per caller",
+        "Invoke privileged mutations from lower-privilege contexts"
+      ]
+    },
+    {
+      "id": "gql-depth-cost",
+      "category": "graphql",
+      "title": "Depth & cost",
+      "summary": "Query depth, cost analysis, and alias-based bypasses.",
+      "items": [
+        "WAPT-GQL-008",
+        "WAPT-GQL-009",
+        "WAPT-GQL-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bound recursive traversal and resolver fan-out",
+        "Count aliases and repeated fields toward cost limits"
+      ]
+    },
+    {
+      "id": "gql-batch-pagination",
+      "category": "graphql",
+      "title": "Batching & pagination",
+      "summary": "Batch operations and connection traversal limits.",
+      "items": [
+        "WAPT-GQL-011",
+        "WAPT-GQL-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Apply limits per batched operation, not per request",
+        "Bound first, last, limit, cursor, and nested connection arguments"
+      ]
+    },
+    {
+      "id": "gql-transport-boundaries",
+      "category": "graphql",
+      "title": "Transport boundaries",
+      "summary": "CSRF over alternate encodings, subscription authorization, and error hygiene.",
+      "items": [
+        "WAPT-GQL-013",
+        "WAPT-GQL-014",
+        "WAPT-GQL-015"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test mutations over GET, form, and text/plain transports",
+        "Authorize subscriptions at subscribe and event time",
+        "Return errors without secrets or unauthorized data"
+      ]
+    },
+    {
+      "id": "jwt-signature-algorithm",
+      "category": "jwt",
+      "title": "Signature & algorithm",
+      "summary": "Signature verification, algorithm allowlists, none, confusion, and HMAC secrets.",
+      "items": [
+        "WAPT-JWT-001",
+        "WAPT-JWT-002",
+        "WAPT-JWT-003",
+        "WAPT-JWT-004",
+        "WAPT-JWT-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Verify every signature before trusting claims",
+        "Allowlist algorithms from server configuration only",
+        "Reject none and empty-signature tokens",
+        "Prevent symmetric-asymmetric key confusion",
+        "Use strong random HMAC secrets"
+      ]
+    },
+    {
+      "id": "jwt-claim-validation",
+      "category": "jwt",
+      "title": "Claim validation",
+      "summary": "Issuer, audience, token type, expiry, and not-before enforcement.",
+      "items": [
+        "WAPT-JWT-006",
+        "WAPT-JWT-007",
+        "WAPT-JWT-008",
+        "WAPT-JWT-009"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate issuer against a configured trust set",
+        "Validate audience per receiving service",
+        "Keep ID, access, refresh, and reset tokens from being interchangeable",
+        "Enforce expiry and not-before outside a small clock tolerance"
+      ]
+    },
+    {
+      "id": "jwt-identity-privilege",
+      "category": "jwt",
+      "title": "Identity & privilege claims",
+      "summary": "Subject and tenant binding plus role and privilege claim trust.",
+      "items": [
+        "WAPT-JWT-010",
+        "WAPT-JWT-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bind subject and tenant claims to authoritative identity",
+        "Ignore client-modified roles, scopes, and admin flags"
+      ]
+    },
+    {
+      "id": "jwt-key-management",
+      "category": "jwt",
+      "title": "Key management",
+      "summary": "kid lookup, external keys, and rotation fallback.",
+      "items": [
+        "WAPT-JWT-012",
+        "WAPT-JWT-013",
+        "WAPT-JWT-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain kid lookup to trusted key identifiers",
+        "Reject attacker-controlled jku, x5u, and embedded JWKs",
+        "Handle rotation without accepting unverified tokens"
+      ]
+    },
+    {
+      "id": "jwt-replay-lifecycle",
+      "category": "jwt",
+      "title": "Replay & lifecycle",
+      "summary": "Token replay and refresh-token family rotation.",
+      "items": [
+        "WAPT-JWT-015",
+        "WAPT-JWT-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Limit replay according to token risk and channel",
+        "Rotate and revoke refresh-token families on reuse detection"
+      ]
+    },
+    {
+      "id": "jwt-transport-storage",
+      "category": "jwt",
+      "title": "Transport & storage",
+      "summary": "URL and log leakage plus browser storage decisions.",
+      "items": [
+        "WAPT-JWT-017",
+        "WAPT-JWT-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Keep bearer tokens out of URLs, logs, and referrers",
+        "Match browser storage to token authority and lifetime"
+      ]
+    },
+    {
+      "id": "oauth-redirect-state",
+      "category": "oauth-sso-saml",
+      "title": "OAuth redirect & state",
+      "summary": "Redirect URI matching, state binding, and OIDC nonce validation.",
+      "items": [
+        "WAPT-OAUTH-001",
+        "WAPT-OAUTH-002",
+        "WAPT-OAUTH-003"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Match redirect URIs exactly per client",
+        "Bind authorization responses to the initiating browser transaction",
+        "Validate OIDC nonce against the initiating session"
+      ]
+    },
+    {
+      "id": "oauth-code-flow",
+      "category": "oauth-sso-saml",
+      "title": "Authorization code flow",
+      "summary": "PKCE, code consumption, and authorization-server mix-up.",
+      "items": [
+        "WAPT-OAUTH-004",
+        "WAPT-OAUTH-005",
+        "WAPT-OAUTH-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Require PKCE for authorization-code clients",
+        "Consume codes once within a short lifetime",
+        "Prevent multi-provider clients from confusing issuers"
+      ]
+    },
+    {
+      "id": "oauth-response-handling",
+      "category": "oauth-sso-saml",
+      "title": "Response handling",
+      "summary": "Parameter pollution and code/token leakage channels.",
+      "items": [
+        "WAPT-OAUTH-007",
+        "WAPT-OAUTH-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Reject duplicated code, state, issuer, scope, and redirect parameters",
+        "Keep codes and tokens out of Referer, history, logs, and analytics"
+      ]
+    },
+    {
+      "id": "oauth-scopes-grants",
+      "category": "oauth-sso-saml",
+      "title": "Scopes & grants",
+      "summary": "Scope and consent limits plus deprecated grant rejection.",
+      "items": [
+        "WAPT-OAUTH-009",
+        "WAPT-OAUTH-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain scopes and consent to intended access",
+        "Reject implicit and password grants bypassing code-flow protections"
+      ]
+    },
+    {
+      "id": "oauth-tokens-clients",
+      "category": "oauth-sso-saml",
+      "title": "Tokens & clients",
+      "summary": "Refresh-token protections, audience validation, and client-credential security.",
+      "items": [
+        "WAPT-OAUTH-011",
+        "WAPT-OAUTH-012",
+        "WAPT-OAUTH-013"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Rotate and sender-constrain refresh tokens",
+        "Validate audience and scope on every resource server",
+        "Keep confidential-client secrets out of browsers and mobile packages"
+      ]
+    },
+    {
+      "id": "oauth-navigation",
+      "category": "oauth-sso-saml",
+      "title": "Client navigation",
+      "summary": "Open-redirect chains through OAuth clients.",
+      "items": [
+        "WAPT-OAUTH-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test registered callbacks and post-login routes for authorization-material forwarding"
+      ]
+    },
+    {
+      "id": "saml-signatures",
+      "category": "oauth-sso-saml",
+      "title": "SAML signatures",
+      "summary": "Assertion signatures and XML signature wrapping.",
+      "items": [
+        "WAPT-OAUTH-015",
+        "WAPT-OAUTH-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate response and assertion signatures before use",
+        "Detect signature wrapping where one element is validated and another consumed"
+      ]
+    },
+    {
+      "id": "saml-binding-time",
+      "category": "oauth-sso-saml",
+      "title": "SAML binding & time",
+      "summary": "Audience, recipient, destination, issuer, replay, and time conditions.",
+      "items": [
+        "WAPT-OAUTH-017",
+        "WAPT-OAUTH-018",
+        "WAPT-OAUTH-019"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate audience, recipient, destination, and issuer",
+        "Bind responses to requests and reject replays",
+        "Enforce NotBefore, NotOnOrAfter, and subject-confirmation expiry"
+      ]
+    },
+    {
+      "id": "saml-state-attributes",
+      "category": "oauth-sso-saml",
+      "title": "SAML state & attributes",
+      "summary": "RelayState navigation and attribute-driven role mapping.",
+      "items": [
+        "WAPT-OAUTH-020",
+        "WAPT-OAUTH-021"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain RelayState and post-SSO navigation",
+        "Constrain attributes that map roles, groups, tenants, and accounts"
+      ]
+    },
+    {
+      "id": "sso-logout-fallback",
+      "category": "oauth-sso-saml",
+      "title": "Logout & fallback",
+      "summary": "Coordinated logout and local fallback beside federated assurance.",
+      "items": [
+        "WAPT-OAUTH-022"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Coordinate IdP logout, SP logout, and stale federation sessions",
+        "Prevent local fallback from bypassing SSO assurance"
+      ]
+    },
+    {
+      "id": "ssrf-detection",
+      "category": "ssrf",
+      "title": "SSRF detection",
+      "summary": "Confirmation with controlled callbacks and blind detection.",
+      "items": [
+        "WAPT-SSRF-001",
+        "WAPT-SSRF-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Confirm fetches with unique controlled callbacks",
+        "Detect blind fetches through asynchronous and out-of-band evidence"
+      ]
+    },
+    {
+      "id": "ssrf-allowlists-schemes",
+      "category": "ssrf",
+      "title": "Allowlists & schemes",
+      "summary": "Scheme allowlists and parsed host allowlists.",
+      "items": [
+        "WAPT-SSRF-003",
+        "WAPT-SSRF-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Allowlist URL schemes before any fetch",
+        "Validate hosts with parsed exact allowlists, not substrings"
+      ]
+    },
+    {
+      "id": "ssrf-address-normalization",
+      "category": "ssrf",
+      "title": "Address normalization",
+      "summary": "IP representation normalization and parser differentials.",
+      "items": [
+        "WAPT-SSRF-005",
+        "WAPT-SSRF-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Normalize decimal, hex, octal, shortened, and IPv4-mapped addresses",
+        "Test backslash and encoding differentials between validators and clients"
+      ]
+    },
+    {
+      "id": "ssrf-redirects-resolution",
+      "category": "ssrf",
+      "title": "Redirects & resolution",
+      "summary": "Redirect revalidation and connection-time address validation.",
+      "items": [
+        "WAPT-SSRF-006",
+        "WAPT-SSRF-007"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Revalidate every redirect target",
+        "Validate resolved addresses at connection time against rebinding"
+      ]
+    },
+    {
+      "id": "ssrf-metadata-egress",
+      "category": "ssrf",
+      "title": "Metadata & egress",
+      "summary": "Cloud metadata destinations, port constraints, and egress backstops.",
+      "items": [
+        "WAPT-SSRF-008",
+        "WAPT-SSRF-009",
+        "WAPT-SSRF-015"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Block provider metadata and workload-identity destinations at egress",
+        "Constrain fetch ports and internal service reach",
+        "Enforce least-privilege network egress as a backstop"
+      ]
+    },
+    {
+      "id": "ssrf-response-consumers",
+      "category": "ssrf",
+      "title": "Response & consumers",
+      "summary": "Response exposure limits and document renderer fetches.",
+      "items": [
+        "WAPT-SSRF-011",
+        "WAPT-SSRF-013"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Limit response bodies, headers, redirects, and timing exposure",
+        "Constrain PDF, image, screenshot, and markup renderers that fetch URLs"
+      ]
+    },
+    {
+      "id": "ssrf-webhooks-second-order",
+      "category": "ssrf",
+      "title": "Webhooks & second-order",
+      "summary": "Webhook binding and stored-URL re-fetching.",
+      "items": [
+        "WAPT-SSRF-012",
+        "WAPT-SSRF-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bind webhook delivery to registered destinations per tenant",
+        "Trace stored URLs fetched later by other workers"
+      ]
+    },
+    {
+      "id": "smug-planning-controls",
+      "category": "request-smuggling",
+      "title": "Planning & controls",
+      "summary": "Topology mapping and framing baseline.",
+      "items": [
+        "WAPT-SMUG-001",
+        "WAPT-SMUG-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Map every hop, protocol version, and downgrade path before probing",
+        "Establish well-formed framing and connection-reuse controls first"
+      ]
+    },
+    {
+      "id": "smug-http1-desync",
+      "category": "request-smuggling",
+      "title": "HTTP/1 desync",
+      "summary": "CL.TE, TE.CL, and TE.TE disagreements.",
+      "items": [
+        "WAPT-SMUG-003",
+        "WAPT-SMUG-004",
+        "WAPT-SMUG-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Detect CL.TE and TE.CL disagreements on isolated routes",
+        "Test obfuscated and duplicated Transfer-Encoding normalization"
+      ]
+    },
+    {
+      "id": "smug-h2-downgrade",
+      "category": "request-smuggling",
+      "title": "HTTP/2 downgrade",
+      "summary": "H2.CL, H2.TE, and header-value injection on downgrade.",
+      "items": [
+        "WAPT-SMUG-006",
+        "WAPT-SMUG-007",
+        "WAPT-SMUG-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test Content-Length and Transfer-Encoding downgrade desync",
+        "Reject HTTP/2 header values that inject HTTP/1 fields"
+      ]
+    },
+    {
+      "id": "smug-confirmation-safety",
+      "category": "request-smuggling",
+      "title": "Confirmation & safety",
+      "summary": "Queue-poisoning confirmation without user impact.",
+      "items": [
+        "WAPT-SMUG-009"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Confirm desync with isolated endpoints and harmless canaries only"
+      ]
+    },
+    {
+      "id": "smug-advanced-variants",
+      "category": "request-smuggling",
+      "title": "Advanced variants",
+      "summary": "0.CL, client-side, and pause-based desync in isolation.",
+      "items": [
+        "WAPT-SMUG-010",
+        "WAPT-SMUG-011",
+        "WAPT-SMUG-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Assess 0.CL and early responses only in isolation",
+        "Assess client-side desync on dedicated browser-facing connections",
+        "Assess pause-based desync only with owner instrumentation"
+      ]
+    },
+    {
+      "id": "smug-verification",
+      "category": "request-smuggling",
+      "title": "Verification",
+      "summary": "False-positive exclusions and remediation verification.",
+      "items": [
+        "WAPT-SMUG-013",
+        "WAPT-SMUG-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Exclude load balancing, retries, caching, and affinity noise",
+        "Verify remediation across every protocol hop"
+      ]
+    },
+    {
+      "id": "bl-workflow-state",
+      "category": "business-logic",
+      "title": "Workflow & state",
+      "summary": "State mapping, skipped steps, out-of-order transitions, replays, and token binding.",
+      "items": [
+        "WAPT-BL-001",
+        "WAPT-BL-002",
+        "WAPT-BL-003",
+        "WAPT-BL-004",
+        "WAPT-BL-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Map invariants before mutating workflow transitions",
+        "Reject skipped, replayed, and out-of-order steps",
+        "Bind workflow tokens to the intended account and object"
+      ]
+    },
+    {
+      "id": "bl-pricing-totals",
+      "category": "business-logic",
+      "title": "Pricing & totals",
+      "summary": "Ranges, signs, prices, quantities, currency, and recalculated totals.",
+      "items": [
+        "WAPT-BL-006",
+        "WAPT-BL-007",
+        "WAPT-BL-008",
+        "WAPT-BL-009",
+        "WAPT-BL-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate numeric ranges and signs as business values",
+        "Recalculate prices, tax, shipping, fees, and discounts server-side",
+        "Bind currency to the trusted price and settlement context"
+      ]
+    },
+    {
+      "id": "bl-promotions-stored-value",
+      "category": "business-logic",
+      "title": "Promotions & stored value",
+      "summary": "Coupon eligibility and stacking plus gift cards, credits, and points.",
+      "items": [
+        "WAPT-BL-011",
+        "WAPT-BL-012",
+        "WAPT-BL-013"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce coupon eligibility, ownership, and stacking limits",
+        "Protect stored value against reuse, refund, and transfer abuse"
+      ]
+    },
+    {
+      "id": "bl-checkout-payments",
+      "category": "business-logic",
+      "title": "Checkout & payments",
+      "summary": "Checkout state, payment binding, refunds, and cancellation windows.",
+      "items": [
+        "WAPT-BL-014",
+        "WAPT-BL-015",
+        "WAPT-BL-016",
+        "WAPT-BL-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bind checkout completion to verified payment state",
+        "Verify amount, currency, merchant, and order binding",
+        "Constrain cancellation after irreversible fulfillment"
+      ]
+    },
+    {
+      "id": "bl-subscriptions-limits",
+      "category": "business-logic",
+      "title": "Subscriptions & limits",
+      "summary": "Trial lifecycle, usage limits, and reset channels.",
+      "items": [
+        "WAPT-BL-018",
+        "WAPT-BL-019",
+        "WAPT-BL-020"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce subscription and trial lifecycle rules",
+        "Test per-user and global usage limits",
+        "Block limit resets through alternate identities or channels"
+      ]
+    },
+    {
+      "id": "bl-referrals-approvals",
+      "category": "business-logic",
+      "title": "Referrals & approvals",
+      "summary": "Invitation rules, reviewer eligibility, and maker-checker separation.",
+      "items": [
+        "WAPT-BL-021",
+        "WAPT-BL-022",
+        "WAPT-BL-023",
+        "WAPT-BL-024"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce invitation and referral business rules",
+        "Bind approvals to eligible independent reviewers",
+        "Reject forged client-side integrity fields"
+      ]
+    },
+    {
+      "id": "bl-async-state",
+      "category": "business-logic",
+      "title": "Asynchronous & state",
+      "summary": "Callback binding, job scope, retry duplicates, and account prerequisites.",
+      "items": [
+        "WAPT-BL-025",
+        "WAPT-BL-026",
+        "WAPT-BL-027",
+        "WAPT-BL-028"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bind asynchronous callbacks to their original transactions",
+        "Keep jobs within current account and object state",
+        "Prevent duplicate business effects across retries",
+        "Validate account-state prerequisites for sensitive flows"
+      ]
+    },
+    {
+      "id": "bl-tenant-entitlement",
+      "category": "business-logic",
+      "title": "Tenant & entitlement",
+      "summary": "Tenant invariants and plan downgrade confusion.",
+      "items": [
+        "WAPT-BL-029",
+        "WAPT-BL-030"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce tenant-specific business invariants",
+        "Prevent plan and entitlement downgrade confusion"
+      ]
+    },
+    {
+      "id": "bl-time-inventory",
+      "category": "business-logic",
+      "title": "Time, inventory & abuse",
+      "summary": "Server-time windows, hoarding, and abuse through search or notifications.",
+      "items": [
+        "WAPT-BL-031",
+        "WAPT-BL-032",
+        "WAPT-BL-033"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate time windows with trusted server time",
+        "Prevent reservation and inventory hoarding",
+        "Detect business abuse across search and notification features"
+      ]
+    },
+    {
+      "id": "bl-consent-retest",
+      "category": "business-logic",
+      "title": "Consent & retest",
+      "summary": "Consent persistence and adjacent-channel remediation verification.",
+      "items": [
+        "WAPT-BL-034",
+        "WAPT-BL-035"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Preserve consent and disclosure decisions through workflows",
+        "Verify business-rule fixes across adjacent channels"
+      ]
+    },
+    {
+      "id": "race-value-payment",
+      "category": "race-conditions",
+      "title": "Value & payment races",
+      "summary": "Duplicate redemption and duplicate payment transactions.",
+      "items": [
+        "WAPT-RACE-001",
+        "WAPT-RACE-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test single-use value redemption under bounded concurrency",
+        "Prevent duplicate payment or checkout transactions"
+      ]
+    },
+    {
+      "id": "race-inventory-balance",
+      "category": "race-conditions",
+      "title": "Inventory & balance",
+      "summary": "Double allocation and atomic balance or quota checks.",
+      "items": [
+        "WAPT-RACE-003",
+        "WAPT-RACE-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Protect limited inventory from double allocation",
+        "Enforce balance and quota checks atomically"
+      ]
+    },
+    {
+      "id": "race-tokens-authorization",
+      "category": "race-conditions",
+      "title": "Tokens & authorization",
+      "summary": "Atomic token consumption and state-plus-action authorization.",
+      "items": [
+        "WAPT-RACE-005",
+        "WAPT-RACE-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Consume authentication and recovery tokens atomically",
+        "Authorize object state and action in one atomic operation"
+      ]
+    },
+    {
+      "id": "race-workflow-idempotency",
+      "category": "race-conditions",
+      "title": "Workflow & idempotency",
+      "summary": "Optimistic or pessimistic transitions and atomic idempotency keys.",
+      "items": [
+        "WAPT-RACE-007",
+        "WAPT-RACE-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Enforce workflow transitions under concurrency control",
+        "Bind idempotency keys atomically to caller, action, and body"
+      ]
+    },
+    {
+      "id": "race-processing-construction",
+      "category": "race-conditions",
+      "title": "Processing & construction",
+      "summary": "File-processing publish races and partial object construction.",
+      "items": [
+        "WAPT-RACE-009",
+        "WAPT-RACE-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent file-processing and publish races",
+        "Prevent partial account or object construction"
+      ]
+    },
+    {
+      "id": "race-technique",
+      "category": "race-conditions",
+      "title": "Technique",
+      "summary": "Synchronized delivery and adjacent-path retesting.",
+      "items": [
+        "WAPT-RACE-011",
+        "WAPT-RACE-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Use synchronized race delivery without flooding",
+        "Verify race fixes under adjacent concurrency paths"
+      ]
+    },
+    {
+      "id": "client-dom-eval",
+      "category": "client-side",
+      "title": "DOM sources & evaluation",
+      "summary": "Source-to-sink tracing and dynamic evaluation of untrusted strings.",
+      "items": [
+        "WAPT-CLIENT-001",
+        "WAPT-CLIENT-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Trace DOM sources to dangerous rendering sinks",
+        "Remove dynamic JavaScript evaluation of untrusted strings"
+      ]
+    },
+    {
+      "id": "client-html-css",
+      "category": "client-side",
+      "title": "HTML & CSS injection",
+      "summary": "Non-script HTML injection and CSS injection or UI redressing.",
+      "items": [
+        "WAPT-CLIENT-003",
+        "WAPT-CLIENT-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Assess non-script HTML injection with security impact",
+        "Constrain CSS injection and UI redressing"
+      ]
+    },
+    {
+      "id": "client-redirect-resources",
+      "category": "client-side",
+      "title": "Redirects & resources",
+      "summary": "Client-side redirect destinations and resource URL manipulation.",
+      "items": [
+        "WAPT-CLIENT-004",
+        "WAPT-CLIENT-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Allowlist client-side redirect destinations",
+        "Prevent client-side resource URL manipulation"
+      ]
+    },
+    {
+      "id": "client-cors-framing",
+      "category": "client-side",
+      "title": "CORS & framing",
+      "summary": "Browser CORS behavior and clickjacking on sensitive pages.",
+      "items": [
+        "WAPT-CLIENT-007",
+        "WAPT-CLIENT-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Verify CORS enforcement against actual client credential behavior",
+        "Prevent clickjacking on sensitive interactive pages"
+      ]
+    },
+    {
+      "id": "client-postmessage",
+      "category": "client-side",
+      "title": "postMessage",
+      "summary": "Origin, source, and schema validation in both directions.",
+      "items": [
+        "WAPT-CLIENT-009",
+        "WAPT-CLIENT-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate postMessage origins, sources, and schemas",
+        "Send replies only to validated exact origins"
+      ]
+    },
+    {
+      "id": "client-storage",
+      "category": "client-side",
+      "title": "Browser storage",
+      "summary": "Sensitive data, untrusted input, and identity partitioning.",
+      "items": [
+        "WAPT-CLIENT-011",
+        "WAPT-CLIENT-012",
+        "WAPT-CLIENT-013"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Keep sensitive data out of persistent browser storage",
+        "Treat storage as untrusted input",
+        "Partition IndexedDB by identity and tenant"
+      ]
+    },
+    {
+      "id": "client-workers",
+      "category": "client-side",
+      "title": "Workers & channels",
+      "summary": "Service workers, Web Workers, and BroadcastChannel boundaries.",
+      "items": [
+        "WAPT-CLIENT-014",
+        "WAPT-CLIENT-015",
+        "WAPT-CLIENT-016",
+        "WAPT-CLIENT-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain service-worker scope and registration",
+        "Prevent stale private data in service-worker caches",
+        "Validate worker message boundaries",
+        "Isolate BroadcastChannel by application and account"
+      ]
+    },
+    {
+      "id": "client-prototype-clobbering",
+      "category": "client-side",
+      "title": "Prototype pollution & DOM clobbering",
+      "summary": "Client merge setters, gadget tracing, and clobbered globals.",
+      "items": [
+        "WAPT-CLIENT-018",
+        "WAPT-CLIENT-019",
+        "WAPT-CLIENT-020"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent prototype pollution through client merge and path setters",
+        "Trace polluted properties into security gadgets",
+        "Prevent DOM clobbering of trusted variables and APIs"
+      ]
+    },
+    {
+      "id": "client-navigation-boundaries",
+      "category": "client-side",
+      "title": "Navigation boundaries",
+      "summary": "window.name and reverse tabnabbing.",
+      "items": [
+        "WAPT-CLIENT-021",
+        "WAPT-CLIENT-022"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Clear and validate window.name across navigation boundaries",
+        "Prevent reverse tabnabbing from external links"
+      ]
+    },
+    {
+      "id": "client-supply-chain",
+      "category": "client-side",
+      "title": "Supply chain & inclusion",
+      "summary": "Third-party scripts, SRI, cross-site script inclusion, and source maps.",
+      "items": [
+        "WAPT-CLIENT-023",
+        "WAPT-CLIENT-024",
+        "WAPT-CLIENT-025",
+        "WAPT-CLIENT-026"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain third-party script execution and supply-chain scope",
+        "Apply SRI to stable cross-origin assets",
+        "Prevent cross-site script inclusion data disclosure",
+        "Review source maps without reporting readable client code"
+      ]
+    },
+    {
+      "id": "client-secrets-authority",
+      "category": "client-side",
+      "title": "Secrets & authority",
+      "summary": "Client-bundle secrets, presentational authorization, and Web Crypto keys.",
+      "items": [
+        "WAPT-CLIENT-027",
+        "WAPT-CLIENT-028",
+        "WAPT-CLIENT-029"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Remove secrets and privileged assumptions from client bundles",
+        "Keep client-side authorization strictly presentational",
+        "Use Web Crypto without exporting or hard-coding keys"
+      ]
+    },
+    {
+      "id": "client-xsleaks-bfcache",
+      "category": "client-side",
+      "title": "XS-Leaks & bfcache",
+      "summary": "Cross-site leak channels and sensitive state resurfacing.",
+      "items": [
+        "WAPT-CLIENT-030",
+        "WAPT-CLIENT-031"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Measure leak channels against two known states",
+        "Prevent sensitive pages resurfacing through bfcache or history"
+      ]
+    },
+    {
+      "id": "ws-transport",
+      "category": "websocket",
+      "title": "Transport",
+      "summary": "WSS enforcement and Origin allowlisting.",
+      "items": [
+        "WAPT-WS-001",
+        "WAPT-WS-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Use WSS for every authenticated connection",
+        "Validate Origin against an exact allowlist"
+      ]
+    },
+    {
+      "id": "ws-authentication",
+      "category": "websocket",
+      "title": "Authentication",
+      "summary": "Session establishment and token placement.",
+      "items": [
+        "WAPT-WS-003",
+        "WAPT-WS-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Authenticate sessions explicitly and safely",
+        "Keep tokens out of URLs and logs"
+      ]
+    },
+    {
+      "id": "ws-authorization",
+      "category": "websocket",
+      "title": "Authorization",
+      "summary": "Message-action and subscription authorization.",
+      "items": [
+        "WAPT-WS-005",
+        "WAPT-WS-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Authorize every message action",
+        "Authorize subscriptions and object channels"
+      ]
+    },
+    {
+      "id": "ws-messages-resources",
+      "category": "websocket",
+      "title": "Messages & resources",
+      "summary": "Schema validation and size, rate, and fan-out bounds.",
+      "items": [
+        "WAPT-WS-007",
+        "WAPT-WS-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate message schemas and parser boundaries",
+        "Bound message size, rate, fan-out, and subscriptions"
+      ]
+    },
+    {
+      "id": "ws-replay-lifecycle",
+      "category": "websocket",
+      "title": "Replay & lifecycle",
+      "summary": "Replay prevention and session-change reauthorization.",
+      "items": [
+        "WAPT-WS-009",
+        "WAPT-WS-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent message replay and duplicate side effects",
+        "Terminate and reauthorize sockets across session changes"
+      ]
+    },
+    {
+      "id": "hdr-baseline",
+      "category": "security-headers",
+      "title": "Exposure baseline",
+      "summary": "Assessing headers against actual browser exposure.",
+      "items": [
+        "WAPT-HDR-001"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Map every header to a demonstrated exposure before reporting"
+      ]
+    },
+    {
+      "id": "hdr-hsts-csp",
+      "category": "security-headers",
+      "title": "HSTS & CSP",
+      "summary": "HSTS deployment and CSP enforcement with nonces, hashes, and navigation constraints.",
+      "items": [
+        "WAPT-HDR-002",
+        "WAPT-HDR-003",
+        "WAPT-HDR-004",
+        "WAPT-HDR-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Deploy HSTS with a safe rollout and no mixed content",
+        "Match CSP to real script, font, and connect sources",
+        "Use unpredictable nonces or hashes without unsafe fallbacks",
+        "Constrain base-uri, object-src, and navigation destinations"
+      ]
+    },
+    {
+      "id": "hdr-framing-mime",
+      "category": "security-headers",
+      "title": "Framing & MIME",
+      "summary": "Frame-ancestors, X-Frame-Options, nosniff, and content types.",
+      "items": [
+        "WAPT-HDR-006",
+        "WAPT-HDR-007",
+        "WAPT-HDR-008",
+        "WAPT-HDR-009"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent unauthorized framing with frame-ancestors",
+        "Keep X-Frame-Options consistent where retained",
+        "Send accurate Content-Type and charset on every body"
+      ]
+    },
+    {
+      "id": "hdr-referrer-features",
+      "category": "security-headers",
+      "title": "Referrer & features",
+      "summary": "Referrer-Policy and Permissions-Policy.",
+      "items": [
+        "WAPT-HDR-010",
+        "WAPT-HDR-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Limit referrer data to purpose-appropriate values",
+        "Restrict only the powerful features the page actually uses"
+      ]
+    },
+    {
+      "id": "hdr-isolation",
+      "category": "security-headers",
+      "title": "Cross-origin isolation",
+      "summary": "COOP, COEP, and CORP decisions.",
+      "items": [
+        "WAPT-HDR-012",
+        "WAPT-HDR-013",
+        "WAPT-HDR-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Use COOP only where window-opener hazards exist",
+        "Use COEP only when cross-origin isolation is required",
+        "Protect sensitive resources with CORP"
+      ]
+    },
+    {
+      "id": "hdr-caching-downloads",
+      "category": "security-headers",
+      "title": "Caching & downloads",
+      "summary": "Cache-Control, Clear-Site-Data, and Content-Disposition.",
+      "items": [
+        "WAPT-HDR-015",
+        "WAPT-HDR-016",
+        "WAPT-HDR-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent sensitive browser caching with explicit Cache-Control",
+        "Use Clear-Site-Data deliberately during logout or reset",
+        "Set safe Content-Disposition for user-influenced downloads"
+      ]
+    },
+    {
+      "id": "hdr-disclosure-obsolete",
+      "category": "security-headers",
+      "title": "Disclosure & obsolete headers",
+      "summary": "Version disclosure, X-XSS-Protection, HPKP, and Expect-CT.",
+      "items": [
+        "WAPT-HDR-018",
+        "WAPT-HDR-019",
+        "WAPT-HDR-020",
+        "WAPT-HDR-021"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Minimize product and version disclosure headers",
+        "Disable obsolete X-XSS-Protection behavior",
+        "Do not deploy HPKP; treat Expect-CT as obsolete"
+      ]
+    },
+    {
+      "id": "hdr-consistency",
+      "category": "security-headers",
+      "title": "Consistency",
+      "summary": "Route-level consistency, duplicates, and report-only handling.",
+      "items": [
+        "WAPT-HDR-022",
+        "WAPT-HDR-023",
+        "WAPT-HDR-024"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Apply policies consistently across routes, errors, and redirects",
+        "Reject duplicate or malformed headers consistently",
+        "Distinguish report-only policies from enforced protection"
+      ]
+    },
+    {
+      "id": "cloud-inventory-public",
+      "category": "cloud-storage",
+      "title": "Inventory & public access",
+      "summary": "Storage inventory and unintended public reads or listings.",
+      "items": [
+        "WAPT-CLOUD-001",
+        "WAPT-CLOUD-002",
+        "WAPT-CLOUD-003"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Inventory buckets, identities, endpoints, and data classes",
+        "Prevent unintended public object reads",
+        "Prevent public bucket or container listing"
+      ]
+    },
+    {
+      "id": "cloud-authorization",
+      "category": "cloud-storage",
+      "title": "Authorization",
+      "summary": "Tenant, owner, and purpose-scoped reads plus write constraints.",
+      "items": [
+        "WAPT-CLOUD-004",
+        "WAPT-CLOUD-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Authorize reads by tenant, owner, and purpose",
+        "Constrain write, overwrite, and delete permissions"
+      ]
+    },
+    {
+      "id": "cloud-signed-urls",
+      "category": "cloud-storage",
+      "title": "Signed URLs",
+      "summary": "Scoped downloads and constrained presigned uploads.",
+      "items": [
+        "WAPT-CLOUD-006",
+        "WAPT-CLOUD-007"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Scope signed URLs to object, action, and lifetime",
+        "Constrain presigned uploads and shared access signatures"
+      ]
+    },
+    {
+      "id": "cloud-cors",
+      "category": "cloud-storage",
+      "title": "Storage CORS",
+      "summary": "Browser origin and method configuration.",
+      "items": [
+        "WAPT-CLOUD-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Configure storage CORS for intended origins and methods only"
+      ]
+    },
+    {
+      "id": "cloud-metadata-credentials",
+      "category": "cloud-storage",
+      "title": "Metadata & credentials",
+      "summary": "Workload metadata blocking, credential leakage, least privilege, and cross-account trust.",
+      "items": [
+        "WAPT-CLOUD-009",
+        "WAPT-CLOUD-010",
+        "WAPT-CLOUD-011",
+        "WAPT-CLOUD-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Block workload access to metadata credentials",
+        "Keep workload credentials out of responses and client artifacts",
+        "Apply least privilege to workload storage identities",
+        "Constrain cross-account and federated storage trust"
+      ]
+    },
+    {
+      "id": "cloud-origin-tenant",
+      "category": "cloud-storage",
+      "title": "Origin & tenant isolation",
+      "summary": "CDN-protected endpoints and canonical tenant prefixes.",
+      "items": [
+        "WAPT-CLOUD-013",
+        "WAPT-CLOUD-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Protect storage origins behind CDN or application controls",
+        "Isolate tenants with canonical prefixes and policy conditions"
+      ]
+    },
+    {
+      "id": "cloud-lifecycle-events",
+      "category": "cloud-storage",
+      "title": "Lifecycle & events",
+      "summary": "Versioning, soft deletes, retention, and event consumers.",
+      "items": [
+        "WAPT-CLOUD-015",
+        "WAPT-CLOUD-016",
+        "WAPT-CLOUD-017"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Control versions, soft deletes, and recovery access",
+        "Enforce lifecycle, retention, and legal-hold policy safely",
+        "Protect storage event notifications and consumers"
+      ]
+    },
+    {
+      "id": "cloud-logging",
+      "category": "cloud-storage",
+      "title": "Logging",
+      "summary": "Access and policy-change logging without secret exposure.",
+      "items": [
+        "WAPT-CLOUD-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Log storage access and policy changes without secrets"
+      ]
+    },
+    {
+      "id": "info-errors-debug",
+      "category": "information-disclosure",
+      "title": "Errors & debug",
+      "summary": "Generic errors and disabled debug modes.",
+      "items": [
+        "WAPT-INFO-001",
+        "WAPT-INFO-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Return generic errors without stack traces",
+        "Disable debug pages, REPLs, profilers, and toolbars"
+      ]
+    },
+    {
+      "id": "info-secrets-maps",
+      "category": "information-disclosure",
+      "title": "Client secrets & maps",
+      "summary": "Client-delivered secrets and source-map content.",
+      "items": [
+        "WAPT-INFO-003",
+        "WAPT-INFO-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Remove valid secrets from client-delivered assets",
+        "Review source maps for confidential source and data"
+      ]
+    },
+    {
+      "id": "info-comments-files",
+      "category": "information-disclosure",
+      "title": "Comments & files",
+      "summary": "Sensitive comments and backup or temporary files.",
+      "items": [
+        "WAPT-INFO-005",
+        "WAPT-INFO-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Remove sensitive comments, hidden fields, and disabled markup",
+        "Prevent publication of backups, swaps, and old deployments"
+      ]
+    },
+    {
+      "id": "info-vcs-env",
+      "category": "information-disclosure",
+      "title": "VCS & environment files",
+      "summary": "Version-control metadata and environment configuration files.",
+      "items": [
+        "WAPT-INFO-007",
+        "WAPT-INFO-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Block exposed repository metadata",
+        "Protect environment and deployment configuration files"
+      ]
+    },
+    {
+      "id": "info-listing-versions",
+      "category": "information-disclosure",
+      "title": "Listing & versions",
+      "summary": "Directory listing and precise version disclosure.",
+      "items": [
+        "WAPT-INFO-009",
+        "WAPT-INFO-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Disable directory and object-index listing",
+        "Minimize precise backend version disclosure"
+      ]
+    },
+    {
+      "id": "info-operational-endpoints",
+      "category": "information-disclosure",
+      "title": "Operational endpoints",
+      "summary": "Health, metrics, tracing, and actuator exposure.",
+      "items": [
+        "WAPT-INFO-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Protect operational endpoints from environment and data exposure"
+      ]
+    },
+    {
+      "id": "info-api-log",
+      "category": "information-disclosure",
+      "title": "API & log disclosure",
+      "summary": "Sensitive data in errors and accessible logs.",
+      "items": [
+        "WAPT-INFO-012",
+        "WAPT-INFO-013"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent protected data in API error and validation responses",
+        "Keep secrets and personal data out of accessible logs"
+      ]
+    },
+    {
+      "id": "info-cache-history",
+      "category": "information-disclosure",
+      "title": "Cache & history",
+      "summary": "Post-authentication cache and history exposure.",
+      "items": [
+        "WAPT-INFO-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent cache and history disclosure after authentication ends"
+      ]
+    },
+    {
+      "id": "info-leads-personal",
+      "category": "information-disclosure",
+      "title": "Leads & personal data",
+      "summary": "Route-name leads and personal information exposure.",
+      "items": [
+        "WAPT-INFO-015",
+        "WAPT-INFO-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Treat robots, sitemaps, and route names as leads",
+        "Limit email, username, and personnel exposure"
+      ]
+    },
+    {
+      "id": "info-metadata-retest",
+      "category": "information-disclosure",
+      "title": "Metadata & retest",
+      "summary": "Document metadata and alternate-format remediation checks.",
+      "items": [
+        "WAPT-INFO-017",
+        "WAPT-INFO-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Remove sensitive metadata from downloadable documents",
+        "Verify fixes across formats, caches, backups, and indexes"
+      ]
+    },
+    {
+      "id": "rate-auth-abuse",
+      "category": "rate-limiting",
+      "title": "Authentication abuse",
+      "summary": "Guessing, stuffing, OTP, push, recovery, and registration limits.",
+      "items": [
+        "WAPT-RATE-001",
+        "WAPT-RATE-002",
+        "WAPT-RATE-003",
+        "WAPT-RATE-004",
+        "WAPT-RATE-005",
+        "WAPT-RATE-006"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bound guessing per account and contextual risk",
+        "Bound stuffing across distributed sources",
+        "Limit OTP and recovery-code attempts within lifetime",
+        "Prevent push-notification bombing",
+        "Limit reset and registration message flooding"
+      ]
+    },
+    {
+      "id": "rate-resource-content",
+      "category": "rate-limiting",
+      "title": "Resource & content abuse",
+      "summary": "API budgets, search and export, uploads, and notification fan-out.",
+      "items": [
+        "WAPT-RATE-007",
+        "WAPT-RATE-008",
+        "WAPT-RATE-009",
+        "WAPT-RATE-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bound API requests by principal and operation cost",
+        "Limit search, scraping, pagination, and export extraction",
+        "Limit upload count, bytes, processing, and storage",
+        "Limit email, chat, and notification fan-out"
+      ]
+    },
+    {
+      "id": "rate-commerce-bypass",
+      "category": "rate-limiting",
+      "title": "Commerce & bypass",
+      "summary": "Checkout abuse and client-controlled source identifiers.",
+      "items": [
+        "WAPT-RATE-011",
+        "WAPT-RATE-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Limit payment, coupon, reservation, and checkout automation",
+        "Prevent client-controlled identifiers from bypassing limits"
+      ]
+    },
+    {
+      "id": "adv-cache-poisoning",
+      "category": "advanced",
+      "title": "Cache poisoning & deception",
+      "summary": "Unkeyed inputs, deception, key canonicalization, and CDN-origin parity.",
+      "items": [
+        "WAPT-ADV-001",
+        "WAPT-ADV-002",
+        "WAPT-ADV-003",
+        "WAPT-ADV-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Poison through unkeyed inputs only where the cache actually stores them",
+        "Test deception with path and extension tricks on authenticated responses",
+        "Canonicalize cache keys across proxy and origin",
+        "Keep CDN and origin authorization behavior equivalent"
+      ]
+    },
+    {
+      "id": "adv-deserialization",
+      "category": "advanced",
+      "title": "Deserialization",
+      "summary": "Java, Python, PHP, and .NET deserialization boundaries.",
+      "items": [
+        "WAPT-ADV-005",
+        "WAPT-ADV-006",
+        "WAPT-ADV-007",
+        "WAPT-ADV-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Reject unsafe Java object deserialization",
+        "Reject untrusted pickle and equivalent formats",
+        "Prevent PHP unserialize object injection",
+        "Validate .NET formatters and ViewState integrity"
+      ]
+    },
+    {
+      "id": "adv-parsing-coercion",
+      "category": "advanced",
+      "title": "Parsing & coercion",
+      "summary": "Duplicate JSON keys, URL parsing, type coercion, and signed-request canonicalization.",
+      "items": [
+        "WAPT-ADV-009",
+        "WAPT-ADV-010",
+        "WAPT-ADV-011",
+        "WAPT-ADV-012"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Handle duplicate JSON keys consistently across boundaries",
+        "Align URL parsing across validators, clients, and browsers",
+        "Align numeric and type coercion across API layers",
+        "Canonicalize signed requests identically before verification"
+      ]
+    },
+    {
+      "id": "adv-tenant-boundaries",
+      "category": "advanced",
+      "title": "Tenant & domain boundaries",
+      "summary": "Shared caches and custom-domain binding.",
+      "items": [
+        "WAPT-ADV-013",
+        "WAPT-ADV-014"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent cross-tenant leakage through shared caches and indexes",
+        "Bind custom domains and vanity hosts to verified tenants"
+      ]
+    },
+    {
+      "id": "adv-integration-boundaries",
+      "category": "advanced",
+      "title": "Integration boundaries",
+      "summary": "Confused-deputy chains and webhook signature validation.",
+      "items": [
+        "WAPT-ADV-015",
+        "WAPT-ADV-016"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Prevent confused-deputy access in service-to-service chains",
+        "Validate webhook signatures, timestamps, and replay state"
+      ]
+    },
+    {
+      "id": "adv-chain-retest",
+      "category": "advanced",
+      "title": "Chain validation & retest",
+      "summary": "Least-impact chain validation and adjacent-path retesting.",
+      "items": [
+        "WAPT-ADV-017",
+        "WAPT-ADV-018"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Validate chains with least-impact evidence at each edge",
+        "Retest fixes across protocol, parser, cache, and tenant paths"
+      ]
+    },
+    {
+      "id": "adv-llm-boundary",
+      "category": "advanced",
+      "title": "LLM boundary",
+      "summary": "LLM prompt and tool-call authority.",
+      "items": [
+        "WAPT-ADV-019"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Constrain LLM prompt and tool-call authority to the caller"
+      ]
+    },
+    {
+      "id": "ai-prompt-injection",
+      "category": "ai-llm-security",
+      "title": "Prompt injection",
+      "summary": "Direct and indirect instruction-boundary control.",
+      "items": [
+        "WAPT-AI-001",
+        "WAPT-AI-002"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Test direct prompts against every connected tool and data scope",
+        "Deliver indirect instructions only through content you own end to end"
+      ]
+    },
+    {
+      "id": "ai-prompt-retrieval-disclosure",
+      "category": "ai-llm-security",
+      "title": "Prompt & retrieval disclosure",
+      "summary": "System-prompt leakage and unauthorized retrieval.",
+      "items": [
+        "WAPT-AI-003",
+        "WAPT-AI-004"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Compare disclosures against published documentation",
+        "Authorization-check every retrieved chunk before grounding"
+      ]
+    },
+    {
+      "id": "ai-retrieval-poisoning",
+      "category": "ai-llm-security",
+      "title": "Retrieval poisoning",
+      "summary": "Corpus content steering other users.",
+      "items": [
+        "WAPT-AI-005"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Use removable synthetic documents and verify effect removal"
+      ]
+    },
+    {
+      "id": "ai-tool-call-security",
+      "category": "ai-llm-security",
+      "title": "Tool-call security",
+      "summary": "Generated arguments, excessive agency, and URL-fetching tools.",
+      "items": [
+        "WAPT-AI-006",
+        "WAPT-AI-007",
+        "WAPT-AI-010"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Parameterize every interpreter call fed by model output",
+        "Authorize every consequential tool call at invocation time",
+        "Apply SSRF allowlists to model-invoked URL tools"
+      ]
+    },
+    {
+      "id": "ai-output-handling",
+      "category": "ai-llm-security",
+      "title": "Output handling",
+      "summary": "Model output at rendering and parser sinks.",
+      "items": [
+        "WAPT-AI-008"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Route model output through the same encoding and sanitization as user input"
+      ]
+    },
+    {
+      "id": "ai-context-isolation",
+      "category": "ai-llm-security",
+      "title": "Context isolation",
+      "summary": "Cross-user and cross-tenant model context.",
+      "items": [
+        "WAPT-AI-009"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Partition memory, sessions, and retrieval per account and tenant"
+      ]
+    },
+    {
+      "id": "ai-resource-bounds",
+      "category": "ai-llm-security",
+      "title": "Resource bounds",
+      "summary": "Generation and tool-loop cost limits.",
+      "items": [
+        "WAPT-AI-011"
+      ],
+      "dont_miss": [
+        "Checklist items in this family must be re-verified across authenticated and unauthenticated contexts.",
+        "Bound tokens, tool calls, and retrieval per principal and per call"
+      ]
+    }
+  ]
+}

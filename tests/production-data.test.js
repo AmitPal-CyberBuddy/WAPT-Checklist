@@ -10,15 +10,15 @@ const { CATEGORIES, validateFiles, validatePhase7 } = require('../tools/validate
 const ROOT = path.resolve(__dirname, '..');
 const CHECKLIST = path.join(ROOT, 'checklist');
 const productionFiles = () => fs.readdirSync(CHECKLIST)
-  .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
+  .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json', 'families.json'].includes(name))
   .map((name) => path.join(CHECKLIST, name));
 
 test('all Phase 4 core categories are present and pass their release floors', () => {
   const files = productionFiles();
   const result = validateFiles(files, { enforceCoreFloors: true });
   assert.deepEqual(result.errors, []);
-  assert.ok(files.length >= 10);
-  assert.equal(Object.values(result.counts).slice(0, 10).reduce((sum, count) => sum + count, 0), 348);
+  const core = ['reconnaissance', 'http', 'authentication', 'session-management', 'authorization', 'injection', 'xss', 'csrf', 'file-handling', 'api-security'];
+  assert.equal(core.reduce((sum, slug) => sum + result.counts[slug], 0), 349);
 });
 
 test('reconnaissance IDs are contiguous and exceed the quality floor without duplicate objectives', () => {
@@ -193,12 +193,15 @@ test('injection coverage spans required interpreters and follows database contex
   const ssti = items.find(({ id }) => id === 'WAPT-INJ-030');
   assert.ok(ssti.variants.length >= 3);
 
-  const sqlContext = deriveContext({ app_type: 'hybrid', database: ['sql'] });
-  const noSqlContext = deriveContext({ app_type: 'hybrid', database: ['nosql'] });
+  const sqlContext = deriveContext({ app_type: 'hybrid', database: ['sql'], async_jobs: 'yes' });
+  const noSqlContext = deriveContext({ app_type: 'hybrid', database: ['nosql'], async_jobs: 'yes' });
   for (const item of items.filter(({ tags }) => tags.includes('sqli') || tags.includes('orm-injection'))) {
     assert.equal(evaluateApplicability(item, sqlContext).state, APPLICABILITY.ACTIVE, item.id);
     assert.equal(evaluateApplicability(item, noSqlContext).state, APPLICABILITY.NA_CONTEXT, item.id);
   }
+  // Asynchronous-report SQL injection stays Confirm until background jobs are confirmed.
+  const sqlUnknownJobs = deriveContext({ app_type: 'hybrid', database: ['sql'] });
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-INJ-008'), sqlUnknownJobs).state, APPLICABILITY.CONFIRM);
   for (const item of items.filter(({ tags }) => tags.includes('nosqli'))) {
     assert.equal(evaluateApplicability(item, noSqlContext).state, APPLICABILITY.ACTIVE, item.id);
   }
@@ -424,7 +427,13 @@ test('SSRF methodology covers parser, redirect, metadata, renderer, and egress b
   assert.ok(items.every((item) => item.safety?.length > 80));
   const staticContext = deriveContext({ app_type: 'static' });
   assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
-  const aws = deriveContext({ app_type: 'hybrid', cloud: 'aws' });
+  // The SSRF category gates on confirmed outbound URL fetching: a confirmed
+  // "none" removes the suite, while an unanswered scope keeps it visible as Confirm.
+  const noFetch = deriveContext({ app_type: 'hybrid', outbound_fetch: ['none'] });
+  assert.ok(items.every((item) => evaluateApplicability(item, noFetch).state === APPLICABILITY.NA_CONTEXT));
+  const unknownFetch = deriveContext({ app_type: 'hybrid' });
+  assert.ok(items.every((item) => evaluateApplicability(item, unknownFetch).state === APPLICABILITY.CONFIRM));
+  const aws = deriveContext({ app_type: 'hybrid', cloud: 'aws', outbound_fetch: ['import'] });
   const metadata = items.find(({ id }) => id === 'WAPT-SSRF-008');
   assert.ok(selectVariants(metadata, aws).some(({ notes }) => notes.includes('169.254.169.254')));
   assert.equal(evaluateApplicability(metadata, aws).state, APPLICABILITY.ACTIVE);
@@ -526,7 +535,12 @@ test('client-side methodology preserves static-site coverage and spans browser t
     assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
   }
   const staticContext = deriveContext({ app_type: 'static' });
-  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+  const xsLeak = items.find(({ id }) => id === 'WAPT-CLIENT-030');
+  const bfcache = items.find(({ id }) => id === 'WAPT-CLIENT-031');
+  assert.equal(evaluateApplicability(xsLeak, staticContext).state, APPLICABILITY.NA_CONTEXT);
+  assert.equal(evaluateApplicability(bfcache, staticContext).state, APPLICABILITY.CONFIRM);
+  const legacy = items.filter(({ id }) => !['WAPT-CLIENT-030', 'WAPT-CLIENT-031'].includes(id));
+  assert.ok(legacy.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
 });
 
 test('client-side active proofs use controlled profiles and non-sensitive markers', () => {
@@ -538,7 +552,7 @@ test('client-side active proofs use controlled profiles and non-sensitive marker
   ]) {
     assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
-  assert.ok(items.every((item) => item.examples[0].note.includes('inert local marker')));
+  assert.ok(items.filter(({ id }) => !['WAPT-CLIENT-030', 'WAPT-CLIENT-031'].includes(id)).every((item) => item.examples[0].note.includes('inert local marker')));
 });
 
 test('WebSocket methodology follows protocol context and separates handshake from application authority', async () => {
@@ -667,12 +681,12 @@ test('rate tests require measured limits rather than accepted-request extrapolat
   }
 });
 
-test('all 24 production categories pass their final release floors', () => {
+test('all 25 production categories pass their final release floors', () => {
   const files = productionFiles();
   const result = validateFiles(files, { enforceFloors: true });
   assert.deepEqual(result.errors, []);
-  assert.equal(files.length, 24);
-  assert.equal(Object.values(result.counts).reduce((sum, count) => sum + count, 0), 608);
+  assert.equal(files.length, 25);
+  assert.equal(Object.values(result.counts).reduce((sum, count) => sum + count, 0), 623);
 });
 
 test('advanced methodology covers cache, deserialization, parser, tenant, service, webhook, and chain boundaries', async () => {
@@ -744,4 +758,130 @@ test('disruptive reconnaissance techniques include safety boundaries', () => {
     const item = items.find((candidate) => candidate.id === id);
     assert.ok(item?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
+});
+
+test('release-r4 scope wiring: intermediary, outbound fetch, asynchronous jobs, and LLM features', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability } = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]).then(([contextModule, applicabilityModule]) => ({
+    deriveContext: contextModule.deriveContext,
+    APPLICABILITY: applicabilityModule.APPLICABILITY,
+    evaluateApplicability: applicabilityModule.evaluateApplicability
+  }));
+  const read = (file) => JSON.parse(fs.readFileSync(path.join(CHECKLIST, file), 'utf8'));
+  const advanced = read('advanced.json');
+  const http = read('http.json');
+  const smuggling = read('request-smuggling.json');
+  const authorization = read('authorization.json');
+  const injection = read('injection.json');
+  const businessLogic = read('business-logic.json');
+  const api = read('api-security.json');
+
+  const find = (document, id) => document.items.find((item) => item.id === id);
+
+  // Intermediary gating: cache poisoning/deception items require a CDN, proxy, or edge cache.
+  for (const id of ['WAPT-ADV-001', 'WAPT-ADV-002', 'WAPT-ADV-003', 'WAPT-ADV-004']) {
+    const item = find(advanced, id);
+    assert.deepEqual(item.applies, { any_of: { intermediary: ['cdn', 'proxy'] } }, id);
+    assert.equal(evaluateApplicability(item, deriveContext({ intermediary: ['cdn'] })).state, APPLICABILITY.ACTIVE, id);
+    assert.equal(evaluateApplicability(item, deriveContext({})).state, APPLICABILITY.CONFIRM, id);
+    assert.equal(evaluateApplicability(item, deriveContext({ intermediary: ['none'] })).state, APPLICABILITY.NA_CONTEXT, id);
+    assert.equal(evaluateApplicability(item, deriveContext({ intermediary: ['waf'] })).state, APPLICABILITY.NA_CONTEXT, id);
+  }
+  // Shared-cache HTTP items stay reachable for application caches but get an intermediary priority boost.
+  for (const id of ['WAPT-HTTP-021', 'WAPT-HTTP-022', 'WAPT-HTTP-023']) {
+    assert.deepEqual(find(http, id).priority_when, { intermediary: ['cdn', 'proxy'] }, id);
+  }
+  // Desynchronization work gets an intermediary-driven priority boost.
+  for (const item of smuggling.items) assert.deepEqual(item.priority_when, { intermediary: ['cdn', 'proxy', 'waf'] }, item.id);
+
+  // Webhook-signature verification requires confirmed outbound webhooks.
+  assert.deepEqual(find(advanced, 'WAPT-ADV-016').applies, { any_of: { outbound_fetch: ['webhooks'] } });
+  assert.equal(evaluateApplicability(find(advanced, 'WAPT-ADV-016'), deriveContext({ outbound_fetch: ['webhooks'] })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(find(advanced, 'WAPT-ADV-016'), deriveContext({ outbound_fetch: ['none'] })).state, APPLICABILITY.NA_CONTEXT);
+  // URL-fetching API items require a confirmed fetching surface on top of API relevance.
+  for (const id of ['WAPT-API-027', 'WAPT-API-028']) {
+    assert.ok(find(api, id).applies.requires.includes('outbound_fetch:webhooks|import'), id);
+  }
+
+  // Asynchronous-job-specific items gate on confirmed background processing.
+  for (const [document, id] of [
+    [authorization, 'WAPT-AUTHZ-012'], [businessLogic, 'WAPT-BL-025'], [businessLogic, 'WAPT-BL-026'],
+    [businessLogic, 'WAPT-BL-027'], [injection, 'WAPT-INJ-008'], [injection, 'WAPT-INJ-028']
+  ]) {
+    assert.ok(find(document, id).applies.requires.includes('async_jobs:yes'), id);
+  }
+
+  // The LLM item exists, is gated on the ai_llm feature, and never hides on unknown scope.
+  const llm = find(advanced, 'WAPT-ADV-019');
+  assert.ok(llm, 'WAPT-ADV-019');
+  assert.deepEqual(llm.applies, { any_of: { features: ['ai_llm'] } });
+  assert.equal(evaluateApplicability(llm, deriveContext({ features: ['ai_llm'] })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(llm, deriveContext({})).state, APPLICABILITY.CONFIRM);
+  assert.equal(evaluateApplicability(llm, deriveContext({ features: ['none'] })).state, APPLICABILITY.NA_CONTEXT);
+  assert.ok(llm.safety.includes('Never'));
+  assert.ok(llm.mappings.cwe.includes('CWE-20'));
+});
+
+test('Phase 2 reportability: boundary-prone items carry specific do-not-report guidance', () => {
+  const read = (file) => JSON.parse(fs.readFileSync(path.join(CHECKLIST, file), 'utf8'));
+  const expectedIds = [
+    'WAPT-HTTP-001', 'WAPT-HTTP-015', 'WAPT-HTTP-016', 'WAPT-HTTP-017', 'WAPT-HTTP-018', 'WAPT-HTTP-019',
+    'WAPT-API-031', 'WAPT-INFO-004', 'WAPT-INFO-009', 'WAPT-INFO-010', 'WAPT-INFO-015',
+    'WAPT-RECON-003', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-CLIENT-026'
+  ];
+  const items = {};
+  for (const file of ['http.json', 'api-security.json', 'information-disclosure.json', 'reconnaissance.json',
+    'jwt.json', 'session-management.json', 'client-side.json', 'security-headers.json', 'rate-limiting.json']) {
+    for (const item of read(file).items) items[item.id] = item;
+  }
+  const needsBoundary = (item) => expectedIds.includes(item.id) || item.category === 'security-headers' || item.category === 'rate-limiting';
+  for (const item of Object.values(items)) {
+    if (!needsBoundary(item)) continue;
+    assert.ok(Array.isArray(item.do_not_report) && item.do_not_report.length > 0, `${item.id} needs do_not_report`);
+    for (const entry of item.do_not_report) assert.ok(entry.length >= 25, `${item.id} boundary must be specific`);
+  }
+  const allEntries = new Map();
+  for (const item of Object.values(items)) for (const entry of item.do_not_report || []) {
+    const key = entry.toLocaleLowerCase('en-US').replace(/\s+/g, ' ').trim();
+    assert.ok(!allEntries.has(key), `${item.id} boundary duplicated with ${allEntries.get(key)}`);
+    allEntries.set(key, item.id);
+  }
+  for (const id of ['WAPT-HDR-002', 'WAPT-HDR-003', 'WAPT-HDR-015', 'WAPT-HDR-018', 'WAPT-HTTP-015',
+    'WAPT-HTTP-016', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-RATE-001', 'WAPT-RATE-002', 'WAPT-RATE-012', 'WAPT-INFO-010']) {
+    assert.ok(items[id].retest_guidance?.length >= 40, `${id} needs concrete retest guidance`);
+  }
+});
+
+test('Phase 3 AI/LLM category is gated, safe, and reference-verified', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'ai-llm-security.json'), 'utf8'));
+  assert.ok(items.length >= 8);
+  for (const entry of items) {
+    assert.match(entry.id, /^WAPT-AI-\d{3}$/);
+    assert.deepEqual(entry.applies, { any_of: { features: ['ai_llm'] } }, entry.id);
+    assert.ok(entry.safety?.length > 40, `${entry.id} needs a concrete safety note`);
+    assert.ok(entry.remediation?.length > 40, `${entry.id} needs root-cause remediation`);
+    assert.ok(entry.steps.length >= 4 && entry.evidence.length >= 3 && entry.false_positives.length >= 2, entry.id);
+    assert.ok(entry.references.length >= 1, entry.id);
+    assert.ok(entry.mappings.cwe.length >= 1, entry.id + ' needs a CWE mapping');
+    assert.doesNotMatch(JSON.stringify(entry.examples), /https?:\/\/[^\s"']*(?<!example\.com)/);
+  }
+  const ids = items.map(({ id }) => id).sort();
+  assert.deepEqual(ids, ids.map((id, index) => `WAPT-AI-${String(index + 1).padStart(3, '0')}`));
+});
+
+test('Phase 3 modern surfaces: XS-Leaks, bfcache, and subdomain-takeover identification', () => {
+  const client = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'client-side.json'), 'utf8')).items;
+  const recon = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8')).items;
+  const xsLeak = client.find(({ id }) => id === 'WAPT-CLIENT-030');
+  assert.ok(xsLeak.tags.includes('xs-leaks'));
+  assert.deepEqual(xsLeak.applies, { any_of: { has_login: ['yes'] }, excludes: ['app_type:static'] });
+  const bfcache = client.find(({ id }) => id === 'WAPT-CLIENT-031');
+  assert.ok(bfcache.tags.includes('bfcache'));
+  assert.ok(bfcache.mappings.cwe.includes('CWE-525'));
+  const takeover = recon.find(({ id }) => id === 'WAPT-RECON-038');
+  assert.ok(takeover.tags.includes('subdomain-takeover'));
+  assert.match(takeover.safety, /Never register, claim, point, or upload/);
+  assert.deepEqual(takeover.mappings.wstg, ['WSTG-v42-CONF-10']);
+  assert.match(takeover.do_not_report[0], /weight the record class/);
 });

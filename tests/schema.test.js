@@ -32,8 +32,8 @@ test('the Phase 1 sample contains exactly 20 schema-valid items', () => {
 
 test('taxonomy floors total 512 items', () => {
   const total = Object.values(CATEGORIES).reduce((sum, category) => sum + category.floor, 0);
-  assert.equal(Object.keys(CATEGORIES).length, 24);
-  assert.equal(total, 512);
+  assert.equal(Object.keys(CATEGORIES).length, 25);
+  assert.equal(total, 520);
 });
 
 test('validator rejects a category-prefix mismatch', () => {
@@ -76,4 +76,22 @@ test('validator rejects unapproved reference domains', () => {
       assert.ok(result.errors.some((error) => error.includes('not an allowed authoritative HTTPS reference')));
     }
   );
+});
+
+test('reportability fields are optional, validated, and rejected when malformed', () => {
+  withMutatedSample((document) => {
+    document.items[0].do_not_report = ['Do not report this observation without demonstrated exposure and impact.'];
+    document.items[0].retest_guidance = 'After remediation, repeat the original probe and an adjacent variant under the same account context.';
+  }, (file) => {
+    assert.deepEqual(validateFiles([file]).errors, []);
+  });
+  withMutatedSample((document) => { document.items[0].do_not_report = []; }, (file) => {
+    assert.ok(validateFiles([file]).errors.some((error) => error.includes('do_not_report')));
+  });
+  withMutatedSample((document) => { document.items[0].do_not_report = ['x']; }, (file) => {
+    assert.ok(validateFiles([file]).errors.some((error) => error.includes('do_not_report')));
+  });
+  withMutatedSample((document) => { document.items[0].retest_guidance = ' '; }, (file) => {
+    assert.ok(validateFiles([file]).errors.some((error) => error.includes('retest_guidance')));
+  });
 });

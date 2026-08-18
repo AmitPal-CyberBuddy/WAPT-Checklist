@@ -4,6 +4,117 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Functionality testing — test the application, not just the code)
+
+- `tools/functional-workflows.mjs`: executes the REAL application (app.html + all UI modules) inside a jsdom window with real HTTP against the local server, real localStorage, real event dispatch, and simulated browser reloads. 41/41 checks: Workflow 1 (full WAPT journey: wizard → preset → dashboard → search → filters → methodology → status → note → evidence pack → report → export → reload → import), Workflow 2 (attack chain: prerequisite completion → node unlock → status chips), 12 edge cases, keyboard/theme/print, and a runtime audit (123 requests, all same-origin, zero external, zero console errors).
+- `docs/FUNCTIONAL-TEST-REPORT.md` with the feature matrix, workflows, and bug ledger.
+
+### Fixed (found by actually running the application)
+
+- Dashboard crash: `ReferenceError: chainStore is not defined` in the Phase 5 chain-overview panel blocked Suggested next (REGRESSION) — the store is now passed as a parameter with a regression test.
+- Card and evidence handlers captured render-time state; a write through a replaced DOM node could clobber a newer status change (latent stale-closure bug) — all handlers now read live state through an accessor, with an explicit stale-node regression check.
+- Evidence-pack decision stage only refreshed on text `input` events; select and checkbox changes never updated it (PRE-EXISTING) — stage refresh now binds `input` and `change`.
+
+### Added (FFV round 3 — baseline comparison & per-phase regression proof)
+
+- `tools/regression-history.sh`: mechanically runs the Node suite at the baseline commit and every phase commit (worktree-based, reproducible).
+- `tools/baseline-probe.mjs`: behavior probe that runs unchanged at baseline and current — URL hints, applicability, Suggested-next determinism, state round trip, import rejection.
+- Recorded evidence: baseline `f043197` 158/158 green; two early commits transiently red by commit atomicity (4 + 10 stale assertions, resolved at `6a0bc05`); 9 later commits all green (172→220). Original baseline tests run against current code: 136/158 pass unchanged, 22 intentional contract changes, 0 regressions. Probe parity confirmed for all unchanged engine behavior; intentional deltas documented (3 new attributes, SSRF gate Active→Confirm, state v2 + migration, 1 MB→5 MB import cap).
+
+### Added (FFV round 2 — strict parameter re-audit)
+
+- Payload reference values now expose a copy control (clipboard with fallback and accessible label) — the only "Copy works" parameter that had no implementation.
+- Verification additions: every filter key exercised individually over all 623 items, per-category count equality, preset-edit preservation, simulated browser reload of the portfolio, note deletion, import fuzz for missing fields/unknown IDs/invalid statuses/wrong types, full five-severity report matrix with long text/code blocks/CRLF, all three retest verdicts, engagement-size performance (20/150/500 items), and per-host external reachability classification.
+- Neutral chip text contrast asserted in both themes.
+
+### Fixed (FFV round 2)
+
+- Light-theme `--muted` chip text at 4.34:1 on chip surfaces (PRE-EXISTING accessibility bug) — token deepened to `#5c6672` (5.09 on chips, 5.43 on paper).
+
+### Added (FFV — full functionality verification)
+
+- `tools/verify-links.js` link audit (97 local references resolve; 15 external hosts allowlist-classified) and `tools/measure-performance.js` benchmark recorder.
+- `tests/verification.test.js` (11 scenarios: search/filter correctness over all 623 items, status state machine, retest-evidence immutability, malicious-import fuzzing, export/import equivalence, report injection matrix, chain resolution/boost, payload/Burp completeness, data consistency, no-eval sweep, performance ceilings).
+- `tests/accessibility-contrast.test.js`: computed WCAG contrast for body, muted, brand, and all severity chips in both themes.
+- `docs/FEATURE-VERIFICATION.md`: full verification matrix with the 17-section report, defect classification register, performance measurements, and honest NOT TESTED rows.
+
+### Fixed (FFV)
+
+- Light-theme severity-chip contrast below WCAG AA (high 4.28, medium 4.31, low 4.30) — tokens deepened to #c41212 / #a03e00 / #016a3e; all chip text now ≥ 4.5:1 (PRE-EXISTING BUG).
+- Stale counts in methodology.html and README after the Phase 3 bump (609/24 → 623/25) (NEW REGRESSION, documentation).
+- Import cap raised 1 MB → 5 MB so legitimate evidence-pack exports round-trip (PRE-EXISTING design bug amplified by Phase 4).
+- workflow.html added to sitemap.xml (PRE-EXISTING documentation gap).
+
+### Added (Phase 6+7 — QA, automation, and release hardening)
+
+- Vocabulary parity test: the validator's context vocabulary and the engine's `ATTRIBUTE_OPTIONS` must stay byte-identical.
+- Severity-diversity audit rule: a category with fewer than two severity levels fails content audit; HTTP re-rated honestly (CORS credentialed-read, compression-oracle, and framing-translation items raised to high; open-redirect item lowered to low).
+- End-to-end workflow test: scope → prioritized queue → confirmed finding → evidence pack → reportable gate → retest verdict → coverage → report generation.
+- Dashboard hydration split: metrics render from the manifest before the full catalog loads.
+- New `docs/EVIDENCE-WORKFLOW.md` (designed documentation page) covering the finding-decision gate, evidence-pack fields, retest verdicts, and coverage math.
+- Release-state matrix in `docs/RELEASE.md` with honest per-dimension status: content/reference/automated/security QA green, browser and visual QA pending maintainer sign-off, deployment pending merge.
+
+### Added (Phase 5 — visual and interaction modernization)
+
+- Dashboard command center: six metrics (catalog, tested, potential, confirmed, credential-blocked, scoped-out), coverage-confidence panel, retest queue panel, and attack-chain progress panel — answering "what should I test next" at a glance.
+- Homepage: project metrics driven by `release.json` (validated tests, security domains, attack chains, payload references, Burp workflows), a six-step assessment-loop pipeline (scope → discover → prioritize → test & validate → report → retest), and an attack-chain preview linking into the workspace; CTAs restructured around "Start a WAPT".
+- Removable active-filter chips with clear buttons above checklist/search results; fixed category views shown as context chips.
+- Skeleton loading states replacing bare "Loading…" lines; the only animation is a reduced-motion-safe shimmer.
+- Severity and status glyphs (with text labels, color-independent) across cards, findings, evidence chips, and chain nodes.
+- Keyboard shortcuts dialog (`?`), `g d` / `g c` / `g f` navigation with findings focus, `/` search, `Esc` close — all inert inside inputs, notes, and filters.
+- Accessibility and readability: 44 px minimum touch targets on coarse pointers, chip and authorization-bar typography floors raised at compact widths, hover elevation restrained to pointer devices.
+- Homepage performance: applicability statistics fetch the catalog only when a scoped engagement exists; project metrics come from the small `release.json`.
+- Payload library empty state now tells the user how to recover from an empty result set.
+
+### Added (Phase 4 — attack paths, evidence, findings, and retesting)
+
+- Engagement state schema v2 with structured evidence packs: finding ID, checklist item, title, severity, endpoint, method, parameter, authentication context, precondition, baseline/test requests, observed behavior, exploitability, reportable flag, cleanup, root cause, retest verdict (`pending`/`pass`/`partial`/`fail`) and retest note. Schema v1 records and exports migrate transparently in `normalizeState`, `importState`, and the portfolio loader.
+- Evidence packs can only be recorded for Confirmed Findings; 200-pack cap, per-field length caps, strict import of unknown schema versions.
+- Pure finding-decision engine (`reportability.js`): observation → weakness → exploitability demonstrated → reportable, driven by recorded evidence and surfacing the item's do-not-report boundary; residual-risk guidance per retest verdict plus retest variant suggestions.
+- Pure coverage-confidence engine (`coverage.js`): recorded work over executable work, with context-N/A scoped out of the denominator and credential-blocked work counted separately; dashboard coverage panel and executable-based category progress.
+- Evidence-pack workflow in the dashboard: inline record form on confirmed cards with live decision-stage feedback, evidence pack cards with verdict controls, and a retest queue count.
+- Attack-chain nodes now render per-node status chips and unlock-ready state from engagement progress.
+- Report generator gains an Evidence packs table and a retest matrix with verdicts and residual-risk guidance, all HTML-safe.
+
+### Added (Phase 3 — modern coverage and attack-surface intelligence)
+
+- New gated AI / LLM security category (25th category, `WAPT-AI`, floor 8): eleven original items covering direct and indirect prompt injection, system-prompt disclosure, retrieval authorization and corpus poisoning, tool-call argument injection, excessive agency, insecure output handling, cross-tenant context leakage, model-assisted SSRF, and generation/tool-loop cost abuse — all mapped to PortSwigger Web LLM attacks, the OWASP LLM Top 10, and the OWASP GenAI LLM Top 10 2026 (live-verified), with CWE mappings and per-item safety boundaries.
+- XS-Leaks cross-site-channel assessment and back-forward-cache state-resurfacing tests in the client-side category (WAPT-CLIENT-030/031).
+- Subdomain-takeover identification in reconnaissance (WAPT-RECON-038) with a hard safety boundary: identification and reporting only, never claiming third-party resources; pinned to the newly verified WSTG v4.2 CONF-10 page.
+- Explainable category rationale in the checklist view (`js/engine/rationale.js`): each gated or boosted suite now shows why it is active, boosted, or awaiting confirmation.
+- AI/LLM context boost in the priority engine; the new category sits in the advanced workflow stage.
+- Reference snapshot extended: WSTG v4.2 CONF-10 pinned (84 paths), OWASP GenAI LLM Top 10 2026 and WHATWG HTML session-history pages verified (46 live-verified non-WSTG URLs).
+- Catalog now 623 production items across 25 categories; cache version promoted to `1.0.0-r5`.
+
+### Added (Phase 2 — reportability)
+
+- Phase 2 reportability layer: optional `do_not_report` (minimum 25 characters, verbatim reuse rejected) and `retest_guidance` (minimum 40 characters) fields in the item contract, validator, and content audit.
+- Explicit reporting boundaries authored for all 24 security-header tests, all 12 rate-limiting tests, CORS (HTTP-015–019, API-031), version/source-map/directory/robots disclosure, DNS records, JWT and session token storage, client-code readability, and HTTP method findings — 51 items total, each entry item-specific.
+- Concrete retest guidance for policy deployment, CORS allowlists, throttling, token-storage migration, and version-disclosure remediations (12 items).
+- Methodology cards surface "Reporting boundary" and "Retest guidance" sections.
+- Content-audit rules: boundary-prone items must carry `do_not_report`; duplicated boundary wording fails; audit report metrics track `doNotReport` and `retestGuidance`.
+
+### Added (post-release review)
+
+- Three new adaptive scoping questions: intermediary layers (CDN, reverse proxy/gateway, WAF), server-side outbound URL fetching (webhooks/callbacks, import/preview/rendering), and asynchronous jobs. The wizard now exposes 18 questions; static delivery with no API reconciles outbound-fetch and asynchronous-job answers automatically.
+- Category gate for SSRF on confirmed outbound URL fetching, with unknown scope keeping the whole suite visible as Confirm.
+- `ai_llm` feature option plus a gated LLM prompt/tool-call authority test (WAPT-ADV-019) mapped to PortSwigger Web LLM attacks and the OWASP Top 10 for LLM Applications, with CWE-20; production catalog is now 609 items.
+- Cache-poisoning and cache-deception tests (WAPT-ADV-001–004) now gate on a confirmed CDN/proxy layer; shared-cache HTTP tests and the request-smuggling suite receive intermediary-driven priority boosts.
+- Asynchronous-job-specific authorization, injection, and business-logic tests now require confirmed background processing; URL-fetching API tests require a confirmed fetching surface; webhook-signature verification requires confirmed webhooks.
+- Suggested next rows now explain the recommendation: applicability state, category, severity, context reasons, and chain unlocks.
+- Privacy regression suite pinning same-origin-only fetches, the single `wapt.state.v1` storage key, the identical restrictive CSP, and collapsed REVIEW-ONLY payload content.
+
+### Fixed
+
+- Compact-phone engagement manager no longer hides the delete control; the switcher recomposes to keep new and delete visible at 320–430 px.
+- Removed `aria-live` announcements from large re-rendered test lists (summaries remain live), and corrected `aria-label` usage on decorative homepage/methodology groups.
+- Cache version promoted to `1.0.0-r4` consistently across every HTML entry point and browser module import.
+
+### Changed
+
+- E-commerce preset now asserts realistic payment-callback (`webhooks`) and asynchronous-order context; other presets answer the new questions conservatively as unknown.
+- Reference snapshot extended with live-verified OWASP LLM Top 10 and PortSwigger Web LLM attack URLs (44 verified non-WSTG URLs).
+
 ## [1.0.0] - 2026-08-18
 
 ### Added
@@ -55,3 +166,12 @@ All notable changes to this project are documented here. The format follows [Kee
 - Phase 1 architecture, taxonomy, content guidance, item schema, semantic validator, and 20-item review sample.
 - Stable 24-category ID system with a quality-gated floor of 512 production items.
 - ASVS 5.0.0 and WSTG 4.2 versioning policy.
+
+### Added (Tester-first UX — steps 1–7 of docs/TESTER-UX-REVIEW.md)
+
+- Four-level tester-first cards: always-visible Quick Test + Validate, Don't miss & related (family don't-miss, variants, related chips, next-in-family), unchanged Detailed methodology, References & mappings, and a Tester notes & evidence drawer with a second quick status control.
+- `checklist/families.json`: 196 test families covering all 623 items across all 25 categories exactly once, each with a specific don't-miss coverage list; validator gates resolution, uniqueness, specificity, and per-category completeness (`tools/build-families.py` documents authoring).
+- Category views group cards under family headers with summaries and tested/total counts; Coverage ⇄ Testing view toggle with family tick lists, progress bars, and scoped-out summaries.
+- Tester-aware Suggested next: related-proximity (+18) and family-continuation (+16) signals with reasons, fed by recent-touched status tracking.
+- Status vocabulary relabeled (Not Started / Active / Not Vulnerable / Potential Finding / Confirmed Finding / N/A; engine values unchanged), `n`/`p` card walk, and `Esc`/shortcut coexistence.
+- Runtime harness now 51 checks including the four-level card, family groups, coverage journey, labels, and keyboard walk.

@@ -1008,7 +1008,12 @@
       },
       "variants": [],
       "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
-      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries.",
+      "priority_when": {
+        "async_jobs": [
+          "yes"
+        ]
+      }
     },
     {
       "id": "WAPT-RACE-011",

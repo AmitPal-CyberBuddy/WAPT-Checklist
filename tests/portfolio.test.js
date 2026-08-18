@@ -43,3 +43,31 @@ test('removing the only engagement creates a safe blank replacement', async () =
   assert.equal(portfolio.engagements.length, 1);
   assert.equal(activeEngagement(portfolio).engagement.name, '');
 });
+
+test('schema v1 portfolio records upgrade in place without data loss', async () => {
+  const { normalizePortfolio, activeEngagement } = await portfolioModule;
+  const legacyPortfolio = {
+    kind: 'wapt-engagement-portfolio',
+    portfolio_version: 1,
+    preferences: { theme: null },
+    active_id: 'eng-a',
+    engagements: [{
+      id: 'eng-a',
+      state: {
+        schema_version: 1,
+        engagement: { name: 'V1 engagement', targetUrl: 'https://app.example.com', started_at: null },
+        answers: { mode: 'grey_box' },
+        statuses: { 'WAPT-AUTHZ-001': 'passed' },
+        notes: { 'WAPT-AUTHZ-001': 'Kept through migration.' },
+        overrides: {}, retests: {}, updated_at: null
+      }
+    }]
+  };
+  const portfolio = normalizePortfolio(legacyPortfolio);
+  const state = activeEngagement(portfolio);
+  assert.equal(state.schema_version, 2);
+  assert.deepEqual(state.findings, []);
+  assert.equal(state.engagement.name, 'V1 engagement');
+  assert.equal(state.statuses['WAPT-AUTHZ-001'], 'passed');
+  assert.equal(state.notes['WAPT-AUTHZ-001'], 'Kept through migration.');
+});

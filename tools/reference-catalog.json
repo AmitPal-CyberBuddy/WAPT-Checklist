@@ -21,6 +21,7 @@
     "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information.md",
     "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/06-Test_HTTP_Methods.md",
     "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/07-Test_HTTP_Strict_Transport_Security.md",
+    "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/10-Test_for_Subdomain_Takeover.md",
     "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/11-Test_Cloud_Storage.md",
     "v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/02-Test_User_Registration_Process.md",
     "v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/04-Testing_for_Account_Enumeration_and_Guessable_User_Account.md",
@@ -512,6 +513,7 @@
     "WSTG-v42-CONF-04",
     "WSTG-v42-CONF-06",
     "WSTG-v42-CONF-07",
+    "WSTG-v42-CONF-10",
     "WSTG-v42-CONF-11",
     "WSTG-v42-CRYP-01",
     "WSTG-v42-CRYP-03",
@@ -797,6 +799,9 @@
     ],
     "v42/4-Web_Application_Security_Testing/11-Client-side_Testing/13-Testing_for_Cross_Site_Script_Inclusion.md": [
       "WSTG-CLNT-13"
+    ],
+    "v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/10-Test_for_Subdomain_Takeover.md": [
+      "WSTG-CONF-10"
     ]
   },
   "cwe_ids": [

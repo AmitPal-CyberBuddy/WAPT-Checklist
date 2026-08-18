@@ -10,7 +10,7 @@
       "file": "reconnaissance.json",
       "prefix": "WAPT-RECON",
       "floor": 30,
-      "count": 37,
+      "count": 38,
       "summary": "Discover assets, technologies, routes, and exposed intelligence."
     },
     {
@@ -180,7 +180,7 @@
       "file": "client-side.json",
       "prefix": "WAPT-CLIENT",
       "floor": 25,
-      "count": 29,
+      "count": 31,
       "summary": "Review DOM, messaging, storage, workers, and browser trust boundaries."
     },
     {
@@ -240,8 +240,18 @@
       "file": "advanced.json",
       "prefix": "WAPT-ADV",
       "floor": 15,
-      "count": 18,
+      "count": 19,
       "summary": "Connect cache, parser, serialization, tenant, and composite risks."
+    },
+    {
+      "order": 25,
+      "slug": "ai-llm-security",
+      "name": "AI / LLM security",
+      "file": "ai-llm-security.json",
+      "prefix": "WAPT-AI",
+      "floor": 8,
+      "count": 11,
+      "summary": "Test LLM-backed web features for prompt injection, retrieval and tool authorization, output handling, context isolation, and cost boundaries."
     }
   ]
 }
