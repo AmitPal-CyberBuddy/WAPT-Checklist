@@ -19,5 +19,5 @@ jobs:
         run: node --test
       - name: Validate schema review sample
         run: node tools/validate.js checklist/sample.json
-      - name: Validate Phase 4 core content floors
-        run: node tools/validate.js --core-floors
+      - name: Validate all 24 production category floors
+        run: node tools/validate.js --floors

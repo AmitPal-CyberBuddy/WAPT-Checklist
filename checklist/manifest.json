@@ -240,7 +240,7 @@
       "file": "advanced.json",
       "prefix": "WAPT-ADV",
       "floor": 15,
-      "count": 0,
+      "count": 18,
       "summary": "Connect cache, parser, serialization, tenant, and composite risks."
     }
   ]

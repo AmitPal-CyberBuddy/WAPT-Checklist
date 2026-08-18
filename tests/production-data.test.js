@@ -667,6 +667,41 @@ test('rate tests require measured limits rather than accepted-request extrapolat
   }
 });
 
+test('all 24 production categories pass their final release floors', () => {
+  const files = productionFiles();
+  const result = validateFiles(files, { enforceFloors: true });
+  assert.deepEqual(result.errors, []);
+  assert.equal(files.length, 24);
+  assert.equal(Object.values(result.counts).reduce((sum, count) => sum + count, 0), 608);
+});
+
+test('advanced methodology covers cache, deserialization, parser, tenant, service, webhook, and chain boundaries', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'advanced.json'), 'utf8'));
+  for (const tag of ['web-cache-poisoning', 'web-cache-deception', 'deserialization', 'json', 'url-parser', 'type-confusion', 'request-signing', 'shared-cache', 'custom-domain', 'confused-deputy', 'webhook', 'attack-chain', 'retest']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  const java = deriveContext({ backend: ['java'], features: ['search'] });
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-ADV-005'), java).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-ADV-006'), java).state, APPLICABILITY.NA_CONTEXT);
+  const noTenant = deriveContext({ backend: ['go'], features: ['search'] });
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-ADV-013'), noTenant).state, APPLICABILITY.NA_CONTEXT);
+});
+
+test('advanced high-risk probes use isolated synthetic boundaries', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'advanced.json'), 'utf8'));
+  for (const id of [
+    'WAPT-ADV-001', 'WAPT-ADV-002', 'WAPT-ADV-003', 'WAPT-ADV-004',
+    'WAPT-ADV-005', 'WAPT-ADV-006', 'WAPT-ADV-007', 'WAPT-ADV-008',
+    'WAPT-ADV-010', 'WAPT-ADV-012', 'WAPT-ADV-013', 'WAPT-ADV-014',
+    'WAPT-ADV-015', 'WAPT-ADV-016', 'WAPT-ADV-017'
+  ]) {
+    assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

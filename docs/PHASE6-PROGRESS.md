@@ -1,6 +1,6 @@
 # Phase 6 — advanced content progress
 
-> In progress — 2026-08-18
+> Complete — 2026-08-18
 
 Phase 6 authors production methodology for categories 11–24. Category floors remain independent release gates.
 
@@ -19,9 +19,13 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 21 | Cloud / storage | 15 | 18 | Complete |
 | 22 | Information disclosure | 15 | 18 | Complete |
 | 23 | Rate limiting / abuse | 10 | 12 | Complete |
-| 24 | Advanced topics | 15 | 0 | Not started |
+| 24 | Advanced topics | 15 | 18 | Complete |
 
-Advanced floor total: **217**. Current Phase 6 production total: **242**. Overall production catalog: **590**.
+Advanced floor total: **217**. Current Phase 6 production total: **260**. Overall production catalog: **608**.
+
+## Advanced-topic coverage
+
+The advanced catalog adds 18 cross-component tests for cache poisoning/deception/key canonicalization/origin parity, Java/Python/PHP/.NET deserialization, JSON/URL/type parser differentials, request-signature canonicalization, shared cache/index tenant isolation, custom domains, service confused deputies, webhook signature/replay, attack-chain prerequisite validation, and root-cause retesting. Gadget payloads, production key use, real domains, and high-traffic cache poisoning are prohibited.
 
 ## Rate-limiting / abuse coverage
 
@@ -82,4 +86,4 @@ node tools/validate.js --floors-present
 node --test
 ```
 
-The final Phase 6 gate will use `node tools/validate.js --floors` once all 24 category files are present.
+The Phase 6 gate now uses `node tools/validate.js --floors`; all 24 category files and every independent floor pass.

@@ -6,7 +6,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
-- Phase 6 categories 11–23 now contain 242 production items, adding REVIEW-ONLY anti-automation, provider-cost, scraping, messaging, upload, and payment-abuse methodology.
+- Completed Phase 6 with 260 advanced production items and 608 total items across all 24 categories; every independent floor passes.
 - Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
 - Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
 - Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.

@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–5 are implemented and Phase 6 advanced content is underway. The local-first workspace currently applies the adaptive engine to 590 validated production items; advanced categories 11–23 are complete. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–6 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, and every independent category floor passes. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -36,7 +36,7 @@ No package install or build step is required. Use Node.js 18 or newer for verifi
 ```bash
 node --test
 node tools/validate.js checklist/sample.json
-node tools/validate.js --core-floors
+node tools/validate.js --floors
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
@@ -75,6 +75,7 @@ checklist/security-headers.json Phase 6 browser policy methodology
 checklist/cloud-storage.json  Phase 6 cloud identity and object-storage methodology
 checklist/information-disclosure.json Phase 6 disclosure methodology
 checklist/rate-limiting.json Phase 6 anti-automation and abuse methodology
+checklist/advanced.json      Phase 6 cross-component advanced methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
@@ -120,7 +121,7 @@ This repository's original software and content are licensed under the [Apache L
 3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
-6. Advanced production content, categories 11–24 — **in progress (categories 11–23 complete)**
+6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
 7. Attack chains, contextual payload library, and Burp workflows
 8. Reference and mapping verification
 9. Content and safety QA
