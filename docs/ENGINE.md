@@ -53,13 +53,40 @@ workflow category weight
 - small Confirm uncertainty penalty
 ```
 
+On top of that base, a bounded **tester-proximity** layer decides what to do *next* once work has started: focus family (the family in view, or the family of the last recorded check) `+1500`, adjacent family from `relatedFamilies` `+420`, part-finished family `+700`, explicitly related test `+500`, same attack surface `+150`. These deliberately outrank the workflow spread, because after recording BOLA-read the useful answer is BOLA-write, not the workflow-earliest reconnaissance item. With no recent work and no focus family the ordering is exactly the previous workflow ordering. Every suggestion carries plain-language `reasons`.
+
 Workflow weights preserve consulting order and context boosts are deliberately bounded. Item ID is the final tie-breaker. Relevant built-in boosts cover many-role authorization, multi-tenant isolation, payment/race workflows, cookie sessions, API URL suggestions, and intermediary-hop desynchronization planning. `priority_when` remains the content-level extension mechanism.
 
 A chain boost is granted only when every supplied prerequisite item has status `passed` or `confirmed_finding`. Chain data is an input; the priority module does not load files.
 
 ## `rationale.js` and `coverage.js`
 
-`rationale.js` explains why a gated or boosted category is relevant: active signals confirm applicability, unknown signals produce a confirmation prompt, and boost signals explain priority. `coverage.js` computes assessment confidence as recorded work over executable work — context-N/A items are scoped out of the denominator and credential-blocked items are counted separately, so coverage never inflates from inapplicable or untestable work.
+`rationale.js` explains why a gated or boosted category is relevant: active signals confirm applicability, unknown signals produce a confirmation prompt, and boost signals explain priority.
+
+`coverage.js` classifies every check into exactly one bucket and never blurs them:
+
+| Bucket | Meaning | In the denominator? | Counted as tested? |
+|---|---|---|---|
+| `tested` | executed — not vulnerable, potential, or confirmed | yes | yes |
+| `active` | `in_progress`, started but not finished | yes | no |
+| `blocked` | tester marked blocked, or credential-blocked by context | yes | no |
+| `na` | context-N/A (`na_context`) or tester-marked N/A (`na_user`) | no | no |
+| `not_tested` | nothing recorded | yes | no |
+
+`coverage = tested / executable`, where `executable = total − na`. Blocked work stays in the denominator because it is still owed to the engagement. `coverageOfRecords()` applies the same math to any bucket of records, which is how family coverage is computed.
+
+## `families.js`
+
+`families.js` indexes `checklist/families.json` (by id, item, category, and authored order) and provides the tester-first derivations:
+
+- `familyCoverage()` — checks by bucket, don't-miss variant ticks, and confirmed findings as **three separate numbers**;
+- `variantKey()` / `familyVariants()` — stable `<family-id>#<fnv1a>` keys so a tick stays attached to its reminder;
+- `nextInFamily()` — the next unexecuted check, walking forward from the current one;
+- `relatedFamilies()` — "what else should I check?" derived only from existing relationships: `item.related` links (6), attack-chain successors after this family (4), same-surface siblings (2), and workflow adjacency (3/2/1 by closeness), capped at three families per own surface and two per other surface so the answer stays varied;
+- `familyGaps()` — families with executable work left, part-finished first, which is the dashboard's "what have I missed?" list;
+- `familyContract()` — the operator contract, **entirely derived** from existing content: **needs** (from each item's `applies` tokens, mapped to plain phrases such as "a second tenant"; marked *(some)* when only part of the family requires it), **mode** (manual / mixed / automated), **tool-assisted** (an automated check or Autorize/Intruder/Turbo/Param Miner/Scanner/Sequencer/Collaborator in the tool list), **tools** (mapped to `workflow.html?tool=…` pages), **standards** (one identifier per WSTG/ASVS/OWASP/API/CWE family), and the family's **top severity**. No authored duplication, so it cannot drift from the checks;
+- `familyBoundary()` — the sibling families that own the rest of the attack surface, which is how the UI answers "what this family does *not* cover" without a second prose field;
+- `surfaceSuites()` — attack-surface planning unit: summed coverage, blocked, N/A, confirmed, variant totals, and the first family with unexecuted checks (falling back to one with open don't-miss variants) for the surface's Continue action.
 
 ## `reportability.js`
 
@@ -67,7 +94,7 @@ A chain boost is granted only when every supplied prerequisite item has status `
 
 ## `state.js`
 
-`state.js` owns each engagement's versioned shape and immutable update rules. State is schema version 2: structured evidence packs (`findings`) join statuses, notes, overrides, and retest flags. Schema version 1 records migrate transparently on load and on strict import, preserving engagement data and adding an empty finding list. `portfolio.js` wraps multiple engagement records, preserves one active ID, and migrates the original single-engagement document. Browser storage remains in `js/ui/app.js`, using only `wapt.state.v1`.
+`state.js` owns each engagement's versioned shape and immutable update rules. State is schema version 3: don't-miss variant coverage (`variants`) and the tester's last position (`position`) join structured evidence packs (`findings`), statuses, notes, overrides, and retest flags. Schema version 1 and 2 records migrate transparently on load and on strict import, preserving engagement data. `portfolio.js` wraps multiple engagement records, preserves one active ID, and migrates the original single-engagement document. Browser storage remains in `js/ui/app.js`, using only `wapt.state.v1`.
 
 Key guarantees:
 
@@ -78,7 +105,7 @@ Key guarantees:
 - import rejects malformed JSON, unknown schema versions, and input over 5 MB (raised from 1 MB when evidence packs joined the state);
 - JSON serialize/import round trips valid state without adding data.
 
-The current functions are `createState`, `normalizeState`, `setEngagement`, `setAnswers`, `setItemStatus`, `setItemNote`, `setOverride`, `clearOverride`, `setRetestFlag`, `serializeState`, and `importState`.
+The current functions are `createState`, `normalizeState`, `setEngagement`, `setAnswers`, `setItemStatus`, `setItemNote`, `setOverride`, `clearOverride`, `setRetestFlag`, `setVariantCovered`, `setPosition`, `addFinding`, `updateFinding`, `setRetestVerdict`, `removeFinding`, `serializeState`, and `importState`. Variant keys and position values are validated and sanitized like every other input; hostile keys are dropped rather than trusted.
 
 ## Test coverage
 

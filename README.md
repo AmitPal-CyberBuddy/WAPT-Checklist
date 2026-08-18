@@ -2,7 +2,7 @@
 
 A professional, context-aware Web Application Penetration Testing methodology, checklist, knowledge base, and local-first tester workspace for **authorized security assessments only**.
 
-[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
+[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
 
 > **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
@@ -11,19 +11,27 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Responsive dark/light homepage and app-style workspace with professional operator tooling: project metrics, an assessment-loop pipeline, an attack-chain preview, skeleton loading, filter chips, and a shortcuts dialog.
 - Optional engagement name and target URL fields plus all 18 adaptive scoping questions, including intermediary, outbound-fetch, and asynchronous-job scope.
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
-- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, visible keyboard focus, and safe shortcuts (`/`, `g d`, `g c`, `g f`, `?`, `Esc`).
+- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, visible keyboard focus, and safe shortcuts (`/`, `g d`, `g t`, `g c`, `g f`, `n`, `p`, `e`, `?`, `Esc`).
 - Conservative low-confidence URL suggestions without any target request or transmission.
 - Intermediary (CDN/proxy/WAF), outbound URL-fetching (webhooks/imports), and asynchronous-job scoping with category gates for SSRF and cache-poisoning/deception suites.
 - Multiple resumable engagements in one validated local portfolio under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
 - Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components, and per-recommendation explanations (state, category, severity, reasons, chain unlocks).
-- Strict JSON import/export with automatic schema v1 → v2 state migration, reasoned applicability overrides, per-item notes, evidence-pack records, and Confirmed Finding retest invariants.
+- Strict JSON import/export with automatic schema v1/v2 → v3 state migration, reasoned applicability overrides, per-item notes, evidence-pack records, and Confirmed Finding retest invariants.
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
-- Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
-- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips, a Testing/Coverage view toggle, and 196 validated test families that group every checklist item so testers can work an attack surface without losing context.
-- Tester-first cards with four disclosure levels — always-visible Quick Test and Validate, Don't miss & related (family don't-miss lists, related chips, next-in-family), the full detailed methodology, and references — plus a Tester notes & evidence drawer with a second quick status control.
-- Dashboard command center: catalog/tested/potential/confirmed/blocked/scoped-out metrics, live category progress, coverage confidence (executable work excluding context-N/A), Suggested next with explanations, a retest queue, attack-chain progress, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, retest matrix, and print view.
+- Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings — results arrive as family-grouped one-line rows you can status directly, expanding into the full card in place.
+- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips and a Testing/Coverage view toggle.
+- **Test families as the working unit:** 196 validated families covering every one of the 623 checks. The families board shows tested/executable, blocked, N/A, confirmed, and don't-miss coverage per surface; a family workspace gives the authored Quick Test, a tickable Don't Miss list, dense check rows, "after this family", and "what else should I check?" without losing context.
+- **Honest coverage states:** tested (executed) · testing now · blocked · N/A (by scope or by tester) · not tested. N/A never counts as tested; blocked work stays in the denominator because it is still owed.
+- **Check ≠ coverage ≠ finding:** every check carries a coverage control and a separate finding verdict, so a completed checklist item never implies a vulnerability.
+- **Family operator contract:** every family states what you need before you can run it (accounts, tenants, features), whether it is manual or tool-assisted, which Burp workflows drive it, and which WSTG/ASVS/OWASP/API/CWE identifiers it maps to — all derived from the checks, plus a boundary line naming the families that cover the rest of that surface.
+- **Attack-surface suites:** per-surface coverage with a single *Continue this suite* action, because engagements are planned by surface, not by 196 families.
+- **Deliverable output:** copy a Markdown coverage block for notes and status updates, or export a coverage CSV (coverage state and finding in separate columns, formula-injection safe) alongside the Markdown checklist, Markdown report, and JSON state.
+- **Adaptive next test:** suggestions prioritise uncovered variants in the family you are working, adjacent families derived from links and attack chains, part-finished families, and related tests — each with a stated reason.
+- Tester-first cards with five disclosure levels — ID/severity/title/objective/VALIDATE always visible, then Procedure & variants, Detailed methodology, References & mappings, and Notes & evidence.
+- Dashboard built around three questions: what have I tested (coverage plus state counts), what have I missed (family gaps and blocked work), and what should I test next (contextual suggestions and Continue) — followed by the retest queue, attack-chain progress, surface progress, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, and print view.
+- Engagement memory: the workspace reopens on the family you were last working, with coverage, ticks, notes, and findings intact.
 - Directed attack-chain graphs with checklist links, per-node test status, unlock hints, and priority boosts; the homepage previews the same chains.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.

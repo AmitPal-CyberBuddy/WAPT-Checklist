@@ -144,12 +144,12 @@ test('malicious or malformed imports are rejected safely without corrupting exis
     assert.equal(({}).polluted, undefined, `prototype pollution via ${payload.slice(0, 40)}`);
   }
   assert.throws(() => importState('not json at all'), /not valid JSON/);
-  assert.throws(() => importState('{"schema_version":99}'), /schema_version 2/);
+  assert.throws(() => importState('{"schema_version":99}'), /schema_version 3/);
   // The healthy state object is untouched by failed imports (imports are pure)
   assert.equal(healthy.engagement.name, 'Healthy');
   assert.deepEqual(healthy.findings, []);
   // Portfolio normalization is equally safe
-  const portfolio = normalizePortfolio({ schema_version: 2, engagement: { name: 'P' }, statuses: { '__proto__': 'passed' } });
+  const portfolio = normalizePortfolio({ schema_version: 3, engagement: { name: 'P' }, statuses: { '__proto__': 'passed' } });
   assert.equal(portfolio.engagements[0].state.engagement.name, 'P');
   assert.equal(({}).polluted, undefined);
 });
@@ -456,14 +456,14 @@ test('note deletion via empty text and notes isolation per engagement', async ()
 test('import normalization handles missing fields, unknown IDs, invalid statuses, and wrong types', async () => {
   const { normalizeState, importState } = await import('../js/engine/state.js');
   const cases = [
-    [{ schema_version: 2 }, 'missing fields'],
-    [{ schema_version: 2, statuses: { 'NOPE-123': 'passed', 'WAPT-AUTHZ-001': 'banana', 'WAPT-AUTHZ-002': 'passed' } }, 'unknown IDs + invalid statuses'],
-    [{ schema_version: 2, answers: [], notes: 'oops', overrides: null, retests: 7, findings: {}, engagement: 'x' }, 'wrong types everywhere'],
-    [{ schema_version: 2, statuses: null, engagement: { name: { nested: true }, targetUrl: 42 } }, 'null maps and non-string fields']
+    [{ schema_version: 3 }, 'missing fields'],
+    [{ schema_version: 3, statuses: { 'NOPE-123': 'passed', 'WAPT-AUTHZ-001': 'banana', 'WAPT-AUTHZ-002': 'passed' } }, 'unknown IDs + invalid statuses'],
+    [{ schema_version: 3, answers: [], notes: 'oops', overrides: null, retests: 7, findings: {}, engagement: 'x' }, 'wrong types everywhere'],
+    [{ schema_version: 3, statuses: null, engagement: { name: { nested: true }, targetUrl: 42 } }, 'null maps and non-string fields']
   ];
   for (const [candidate, label] of cases) {
     const normalized = normalizeState(candidate);
-    assert.equal(normalized.schema_version, 2, label);
+    assert.equal(normalized.schema_version, 3, label);
     assert.equal(typeof normalized.engagement.name, 'string', label);
     assert.ok(Array.isArray(normalized.findings), label);
     assert.equal(({}).polluted, undefined, label);
@@ -526,7 +526,7 @@ test('payload reference values expose a safe copy control', () => {
   assert.match(source, /navigator\.clipboard\.writeText\(String\(payload\.payload/);
   assert.match(source, /setAttribute\('aria-label', `Copy \$\{payload\.id\} reference value`\)/);
   assert.match(source, /catch \{[\s\S]*Unavailable/);
-  const workspace = read('js/ui/workspace.js');
-  assert.match(workspace, /copyButton\(/);
-  assert.match(workspace, /navigator\.clipboard\.writeText\(String\(text \|\| ''\)\)/);
+  const dom = read('js/ui/dom.js');
+  assert.match(dom, /copyButton\(/);
+  assert.match(dom, /navigator\.clipboard\.writeText\(String\(text \|\| ''\)\)/);
 });

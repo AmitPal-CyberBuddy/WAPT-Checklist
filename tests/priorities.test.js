@@ -67,7 +67,7 @@ test('suggested next excludes tested, context-N/A, and credential-blocked work',
   assert.deepEqual(result, []);
 });
 
-test('tester-aware signals boost related and same-family suggestions deterministically', async () => {
+test('tester proximity ranks uncovered family variants above unrelated high-severity work', async () => {
   const [{ suggestedNext }] = [await import('../js/engine/priorities.js')];
   const { deriveContext } = await import('../js/engine/context.js');
   const context = deriveContext({});
@@ -75,24 +75,47 @@ test('tester-aware signals boost related and same-family suggestions determinist
     { id: 'WAPT-AUTHZ-001', category: 'authorization', severity: 'medium', applies: {}, variants: [] },
     { id: 'WAPT-AUTHZ-002', category: 'authorization', severity: 'medium', applies: {}, variants: [] },
     { id: 'WAPT-AUTHZ-003', category: 'authorization', severity: 'medium', applies: {}, variants: [], related: [] },
+    { id: 'WAPT-RECON-001', category: 'reconnaissance', severity: 'critical', applies: {}, variants: [] },
     { id: 'WAPT-API-001', category: 'api-security', severity: 'medium', applies: {}, variants: [] }
   ];
   const families = new Map([
-    ['authorization-object-level', ['WAPT-AUTHZ-001', 'WAPT-AUTHZ-002', 'WAPT-AUTHZ-003']]
+    ['authorization-object-level', { id: 'authorization-object-level', title: 'Object-level authorization', items: ['WAPT-AUTHZ-001', 'WAPT-AUTHZ-002', 'WAPT-AUTHZ-003'] }]
   ]);
   const relatedByItem = new Map([['WAPT-AUTHZ-001', ['WAPT-API-001']]]);
-  const options = { recent: ['WAPT-AUTHZ-001'], families, relatedByItem };
+  const options = { recent: ['WAPT-AUTHZ-001'], families, relatedByItem, statuses: { 'WAPT-AUTHZ-001': 'passed' } };
   const suggestions = suggestedNext(items, context, options);
-  const api = suggestions.find(({ item }) => item.id === 'WAPT-API-001');
+  const order = suggestions.map(({ item }) => item.id);
+
+  // Same family first, then the explicitly related test, and only then the workflow-early
+  // critical reconnaissance item that would otherwise dominate.
+  assert.deepEqual(order.slice(0, 2), ['WAPT-AUTHZ-002', 'WAPT-AUTHZ-003']);
+  assert.ok(order.indexOf('WAPT-API-001') < order.indexOf('WAPT-RECON-001'));
+
   const sibling = suggestions.find(({ item }) => item.id === 'WAPT-AUTHZ-002');
-  assert.ok(api, 'related target appears');
-  assert.ok(api.contextReasons.includes('related to a test you just worked on'));
-  assert.ok(api.breakdown.tester === 18);
-  assert.ok(sibling, 'family sibling appears');
-  assert.ok(sibling.contextReasons.includes('continues a family you are part-way through'));
-  assert.ok(sibling.breakdown.tester === 16);
+  assert.ok(sibling.reasons.some((reason) => reason.includes('Object-level authorization')));
+  // A family workspace can set the focus explicitly, with no recorded history at all.
+  const focused = suggestedNext(items, context, { families, focusFamily: 'authorization-object-level' });
+  assert.equal(focused[0].item.id, 'WAPT-AUTHZ-001');
+  assert.ok(focused[0].reasons.some((reason) => reason.includes('the family you are working')));
+  assert.equal(sibling.breakdown.tester, 1500);
+  const api = suggestions.find(({ item }) => item.id === 'WAPT-API-001');
+  assert.ok(api.reasons.some((reason) => reason.includes('linked from WAPT-AUTHZ-001')));
+
   const again = suggestedNext(items, context, options);
-  assert.deepEqual(again.map(({ item }) => item.id), suggestions.map(({ item }) => item.id));
+  assert.deepEqual(again.map(({ item }) => item.id), order);
   const cold = suggestedNext(items, context, {});
-  assert.ok(cold.every(({ contextReasons }) => !contextReasons.some((reason) => reason.includes('part-way through'))));
+  assert.ok(cold.every(({ breakdown }) => breakdown.tester === 0 || breakdown.tester === undefined));
+  assert.equal(cold[0].item.id, 'WAPT-RECON-001');
+});
+
+test('suggested next keeps in-progress work visible', async () => {
+  const { suggestedNext } = await import('../js/engine/priorities.js');
+  const { deriveContext } = await import('../js/engine/context.js');
+  const items = [
+    { id: 'WAPT-AUTHZ-001', category: 'authorization', severity: 'medium', applies: {}, variants: [] },
+    { id: 'WAPT-AUTHZ-002', category: 'authorization', severity: 'medium', applies: {}, variants: [] }
+  ];
+  const suggestions = suggestedNext(items, deriveContext({}), { statuses: { 'WAPT-AUTHZ-001': 'in_progress', 'WAPT-AUTHZ-002': 'passed' } });
+  assert.deepEqual(suggestions.map(({ item }) => item.id), ['WAPT-AUTHZ-001']);
+  assert.ok(suggestions[0].reasons.includes('already started'));
 });

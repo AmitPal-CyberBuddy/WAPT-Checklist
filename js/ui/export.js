@@ -2,9 +2,12 @@ import { serializeState } from '../engine/state.js?v=1.0.0-r6';
 import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r6';
 
 export const STATUS_LABELS = Object.freeze({
-  not_tested: 'Not Started', in_progress: 'Active', passed: 'Not Vulnerable',
-  potential_finding: 'Potential Finding', confirmed_finding: 'Confirmed Finding', na: 'N/A'
+  not_tested: 'Not tested', in_progress: 'Testing now', passed: 'Tested — not vulnerable',
+  potential_finding: 'Potential finding', confirmed_finding: 'Confirmed finding',
+  na: 'N/A', blocked: 'Blocked'
 });
+// Coverage counts only executed checks: N/A, blocked, and in-progress are not "tested".
+export const TESTED_STATUSES = Object.freeze(['passed', 'potential_finding', 'confirmed_finding']);
 
 function safe(value) {
   return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -39,7 +42,7 @@ export function composeChecklistMarkdown(items, state, categoryNames = {}) {
     lines.push(`## ${safe(categoryNames[category] || category)}`, '');
     for (const item of categoryItems) {
       const status = statusOf(item, state);
-      const checked = status === 'not_tested' ? ' ' : 'x';
+      const checked = TESTED_STATUSES.includes(status) ? 'x' : ' ';
       lines.push(`- [${checked}] **${item.id}** ${safe(item.title)} — ${STATUS_LABELS[status]}`);
       if (state.notes?.[item.id]) lines.push(`  - Notes: ${safe(state.notes[item.id]).replace(/\r?\n/g, ' / ')}`);
     }
@@ -54,7 +57,7 @@ export function findingItems(items, state) {
 
 export function composeReportMarkdown(items, state, categoryNames = {}) {
   const findings = findingItems(items, state);
-  const tested = items.filter((item) => statusOf(item, state) !== 'not_tested').length;
+  const tested = items.filter((item) => TESTED_STATUSES.includes(statusOf(item, state))).length;
   const confirmed = findings.filter((item) => statusOf(item, state) === 'confirmed_finding').length;
   const lines = [
     `# ${safe(state.engagement?.name || 'WAPT engagement')} — Assessment Report`, '',
@@ -106,8 +109,11 @@ export function composeReportMarkdown(items, state, categoryNames = {}) {
     '- Do not report scanner output without manual confirmation and false-positive analysis.', '',
     '## Methodology coverage', '');
   for (const [category, categoryItems] of grouped(items)) {
-    const complete = categoryItems.filter((item) => statusOf(item, state) !== 'not_tested').length;
-    lines.push(`- ${safe(categoryNames[category] || category)}: ${complete}/${categoryItems.length}`);
+    const complete = categoryItems.filter((item) => TESTED_STATUSES.includes(statusOf(item, state))).length;
+    const na = categoryItems.filter((item) => statusOf(item, state) === 'na').length;
+    const blocked = categoryItems.filter((item) => statusOf(item, state) === 'blocked').length;
+    const suffix = [na ? `${na} N/A` : '', blocked ? `${blocked} blocked` : ''].filter(Boolean).join(', ');
+    lines.push(`- ${safe(categoryNames[category] || category)}: ${complete}/${categoryItems.length} tested${suffix ? ` (${suffix})` : ''}`);
   }
   return lines.join('\n');
 }
@@ -124,4 +130,79 @@ export function downloadText(filename, text, type = 'text/plain;charset=utf-8') 
   link.download = filename;
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 0);
+}
+
+// CSV escaping that also neutralises spreadsheet formula injection. This project documents
+// that attack (WAPT-INJ export family); its own exports must not commit it.
+function csvCell(value) {
+  const text = String(value ?? '').replace(/\r?\n/g, ' ').trim();
+  const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${guarded.replaceAll('"', '""')}"`;
+}
+
+const COVERAGE_STATE = Object.freeze({
+  not_tested: 'not tested', in_progress: 'testing now', passed: 'tested',
+  potential_finding: 'tested', confirmed_finding: 'tested', na: 'N/A', blocked: 'blocked'
+});
+const FINDING_STATE = Object.freeze({
+  potential_finding: 'potential', confirmed_finding: 'confirmed'
+});
+
+// Coverage sheet for client trackers and retest matrices: one row per check, with the
+// coverage state and the finding verdict kept in separate columns.
+export function composeCoverageCsv(items, state, familyIndex, categoryNames = {}) {
+  const rows = [[
+    'Attack surface', 'Test family', 'Check ID', 'Check', 'Severity',
+    'Coverage state', 'Finding', 'Retest required', 'Notes recorded'
+  ].map(csvCell).join(',')];
+  const ordered = familyIndex?.families?.length
+    ? familyIndex.families.flatMap((family) => (family.items || [])
+      .map((id) => ({ family, item: items.find((candidate) => candidate.id === id) }))
+      .filter(({ item }) => item))
+    : items.map((item) => ({ family: null, item }));
+  const covered = new Set(ordered.map(({ item }) => item.id));
+  for (const item of items) if (!covered.has(item.id)) ordered.push({ family: null, item });
+  for (const { family, item } of ordered) {
+    const status = statusOf(item, state);
+    rows.push([
+      categoryNames[item.category] || item.category,
+      family ? family.title : '—',
+      item.id,
+      item.title,
+      item.severity,
+      COVERAGE_STATE[status] || status,
+      FINDING_STATE[status] || 'none',
+      state.retests?.[item.id] ? 'yes' : 'no',
+      state.notes?.[item.id] ? 'yes' : 'no'
+    ].map(csvCell).join(','));
+  }
+  return `${rows.join('\n')}\n`;
+}
+
+// A paste-ready status block for engagement notes and daily updates: the coverage answer the
+// tester would otherwise retype into a chat or a report.
+export function composeFamilyCoverageBlock(family, coverage, state, categoryNames = {}) {
+  const checks = coverage.checks;
+  const lines = [
+    `### ${family.title} — ${categoryNames[family.category] || family.category}`,
+    '',
+    `- Coverage: ${checks.coverage === null ? '—' : `${checks.coverage}%`} (${checks.tested}/${checks.executable} executable checks tested)`,
+    `- Not tested: ${checks.not_tested + checks.active} · Blocked: ${checks.blocked} · N/A: ${checks.na}`,
+    `- Confirmed findings: ${checks.confirmed} · Potential: ${checks.potential}`,
+    `- Don't-miss variants covered: ${coverage.variants.covered}/${coverage.variants.total}`,
+    ''
+  ];
+  const uncoveredVariants = coverage.variants.entries.filter(({ covered }) => !covered);
+  if (uncoveredVariants.length) {
+    lines.push('Variants still open:');
+    for (const variant of uncoveredVariants) lines.push(`- [ ] ${safe(variant.text)}`);
+    lines.push('');
+  }
+  const remaining = (family.items || []).filter((id) => !TESTED_STATUSES.includes(state.statuses?.[id] || 'not_tested'));
+  if (remaining.length) {
+    lines.push('Checks still open:');
+    for (const id of remaining) lines.push(`- [ ] ${id} — ${STATUS_LABELS[state.statuses?.[id] || 'not_tested']}`);
+    lines.push('');
+  }
+  return lines.join('\n');
 }

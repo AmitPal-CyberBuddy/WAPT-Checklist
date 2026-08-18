@@ -2,7 +2,12 @@
 *{box-shadow:none!important;text-shadow:none!important}
 :root{color-scheme:light;--paper:#fff;--paper-2:#fff;--surface:#fff;--surface-2:#fff;--surface-3:#f3f4f6;--ink:#101828;--ink-2:#344054;--muted:#667085;--line:#d0d5dd;--line-strong:#98a2b3;--brand:#087f6c}
 body{background:#fff!important;color:#101828;font-size:9pt}
-.sidebar,.authorization-bar,.workspace-actions,.mobile-menu,.wizard-footer,.button,.workspace-footer,.filter-panel,.result-summary,.panel-actions{display:none!important}
+.sidebar,.authorization-bar,.workspace-actions,.mobile-menu,.wizard-footer,.button,.workspace-footer,.filter-panel,.result-summary,.panel-actions,.family-toolbar,.family-actions,.check-open{display:none!important}
 .app-layout{display:block}.workspace-header{position:static;height:auto;padding:0 0 7mm;border-bottom:1px solid #98a2b3}.workspace{display:block}.view{display:none!important;max-width:none;padding:8mm 0}.view:not([hidden]){display:block!important}
 .dashboard-grid{grid-template-columns:repeat(4,1fr)}.dashboard-columns{grid-template-columns:1fr 1fr}.panel,.metric-card,.test-card{break-inside:avoid;border-color:#d0d5dd;background:#fff}.test-list{gap:4mm}.test-card-header{padding:4mm}.method-details>summary{display:none}.method-details:not([open]) .method-body{display:none}.method-body{padding:3mm}.notes-section textarea{border:0;min-height:20mm}.findings-table{font-size:7pt}
+/* Printed engagement sheet: the family, its quick test, its don't-miss variants, and every check state. */
+.family-columns{grid-template-columns:1fr 1fr}.family-shell,.family-hero,.checks-panel,.quick-panel,.dont-miss-panel,.family-category{break-inside:avoid}
+.check-detail{display:none!important}.check-row{padding:1mm 0;border-bottom:1px solid #e4e7ec}.check-row .check-open{display:flex!important}
+.status-controls .finding-select,.status-controls .status-select{border:1px solid #98a2b3;background:#fff;color:#101828}
+.variant-row label{padding:0}.stat{border-color:#d0d5dd;background:#f3f4f6}
 a{color:#101828;text-decoration:none}.eyebrow,.context-kicker,.id-chip{color:#087f6c}

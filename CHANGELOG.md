@@ -4,6 +4,58 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed (Layout density — reported: every scope question needed scrolling on a laptop)
+
+- **Scope wizard fits one screen.** The wizard spent 697 px of vertical chrome before the first option, so a 4-option question rendered a 974 px page against a ~650 px laptop viewport. Now 330 px of chrome and a 534 px page: compact heading, one-line intro (hidden below 720 px tall), the local-storage explanation collapsed into a `<details>` summary instead of a permanent block, the step counter merged into the question heading, denser option cards, and the removal of the fixed `min-height` on `.wizard-body` (including a 500 px phone rule).
+- **Continue is always reachable** — the wizard footer is sticky, so the longest question (11 options, now laid out in three columns) keeps Back / Use Unknown / Continue on screen.
+- **Step changes land on the question** — focus moves without scrolling and the shell scrolls itself back to the top, instead of inheriting the previous step's scroll position.
+- **Workspace views tightened** — `.view` padding 4rem → 1.75rem, heading `h1` 3.1rem → 2rem, heading margin 2.5rem → 1.1rem: 300 px → 218 px of chrome before content on the dashboard, families board, and family workspace.
+- The review step no longer prints the local-storage warning twice.
+- `tests/wizard-layout.test.js` re-derives the vertical budget from the stylesheet and fails if the chrome grows past 400 px or a question stops fitting a 650 px viewport.
+
+### Added (Product round — CyberBuddy patterns translated to an engagement workflow)
+
+- **Family operator contract** (derived, no new prose): every family states **Needs** (scope prerequisites read from the items' `applies` expressions — "a second tenant", "an upload feature", "two accounts"), **Mode** (manual / mixed / tool-assisted), **Tools** (linked to the Burp workflow pages), **Maps to** (WSTG · ASVS · OWASP · API · CWE), and its top severity. Rendered from one component on the board, in the family header, and on gap rows.
+- **Attack-surface suites** on the families board: per-surface coverage, families, blocked, N/A, confirmed and don't-miss totals, plus **Continue this suite** — which lands on the first family with unexecuted checks (falling back to one with open variants).
+- **Family boundary line** (`NOT HERE`): the sibling families that own the rest of the surface, derived from the category, so object/function/field/tenant authorization never blur.
+- **Tool band per family**: Burp workflow deep links plus the payload references that match the family, rendered inline instead of linking into a library search.
+- **Deliverable output**: `Copy coverage` (Markdown block with coverage, state breakdown, findings, variants and checks still open) and **Export coverage CSV** (one row per check, coverage state and finding in separate columns, with a spreadsheet-formula-injection guard).
+- **Operator documentation** `docs/OPERATING.md`, rendered at `docs.html?doc=operating` and linked from the workspace sidebar and the home page: quick start, what this is and is not, the coverage vocabulary table, the family contract, keyboard model, outputs, and explicit limits.
+- **Recent families** chip row on the board, and the home page's primary action becomes *Continue \<engagement\>* when this browser already holds progress.
+- `docs/CYBERBUDDY-REFERENCE-REVIEW.md`: audit of both repositories, the proposal, the challenge of each item, and what was rejected (A–F grades, per-family authored `proves` lines, tool-per-page architecture, "run suite" automation).
+
+### Fixed (Product round)
+
+- Homepage statistics counted N/A and blocked checks as tested, contradicting the corrected coverage engine.
+
+### Added (Tester-first round 2 — families as the working unit)
+
+- **Test families view** (`#families`) and **family workspace** (`#family/<id>`): every attack surface with `tested/executable`, coverage bar, blocked, N/A, confirmed and don't-miss counts; surface/text/"unfinished only" filters; a Continue control that resumes the last family; and per-family quick test, tickable don't-miss list, dense check rows, "after this family", and "what else should I check?".
+- **Authored Quick Test data** — `checklist/families.json` is now schema 2.0.0: all 196 families carry an explicit `quick_test` (3–5 imperative lines) and a one-line `validate`, validated for count, length, and imperative phrasing. Quick Test is no longer derived from methodology steps.
+- **Don't Miss as coverage** — each reminder is a checkbox keyed `<family-id>#<content-hash>`, stored in `state.variants`, counted on the board, family header, category coverage view, and dashboard gaps, and persisted across reloads.
+- **Coverage state separation** — `blocked` is a first-class status; `coverage.js` classifies each check as tested / active / blocked / N/A (context or tester) / not tested, and `coverage = tested / executable` excludes N/A while keeping blocked work owed.
+- **Check ≠ coverage ≠ finding** — two controls per check (coverage and finding verdict) composing into the existing single status; recording a finding implies execution, recording coverage never invents a finding.
+- **Contextual Suggested next** — bounded proximity layer (focus family +1500, adjacent family +420, part-finished family +700, related test +500, same surface +150) with plain-language reasons; a family workspace sets the focus explicitly, so the answer is right on a cold start.
+- **"What else should I check?"** — `js/engine/families.js` derives cross-family navigation from existing data only: `item.related`, attack-chain successors, same-surface siblings, and workflow adjacency, with per-surface caps for variety.
+- **Dashboard rebuilt around three questions** — what have I tested / what have I missed (family gaps + blocked list) / what should I test next (suggestions + Continue), with retest queue, chains, surface progress, findings, and evidence packs below.
+- **Engagement memory** — `state.position` records the last view/family/category; the workspace reopens there while a fresh browser still starts at the wizard.
+- **Keyboard** — `g t` (families), `e` (expand the focused check), `n`/`p` now walk family check rows as well as cards.
+- **Compact scan lists** — "All tests" and Search render family-grouped one-line check rows that expand into the full card in place; searching the whole catalog dropped from 4 163 ms to 825 ms in the jsdom harness.
+- `tools/tester-audit.mjs` (15 tester-workflow checks) and `tools/jsdom-harness.mjs` (shared runtime harness), plus `docs/TESTER-UX-REVIEW-2.md` with the before/after evidence tables.
+
+### Changed (Tester-first round 2)
+
+- Card hierarchy: level 1 is ID · severity · title · objective · VALIDATE with the status controls; procedure, methodology, references, and notes/evidence sit behind progressive disclosure; the family's quick test appears once per family instead of once per card.
+- Status labels: `Not tested`, `Testing now`, `Tested — not vulnerable`, `Potential finding`, `Confirmed finding`, `N/A`, `Blocked`; reports and exports use the same vocabulary and report per-category N/A and blocked counts.
+- Engagement state schema 2 → 3 (transparent migration; `variants` and `position` added).
+- UI split into `js/ui/dom.js`, `js/ui/card.js`, and `js/ui/family-view.js`, with `js/ui/workspace.js` as the orchestrator.
+
+### Fixed (Tester-first round 2 — found by running the application)
+
+- **PRE-EXISTING BUG:** dashboard attack-chain and retest lists rendered the anchor's href as text (`element('li', '', anchorNode)` stringifies a node), so five identical URLs appeared instead of chain titles.
+- **PRE-EXISTING BUG:** N/A counted as tested — the dashboard "Tested" metric, coverage percentage, category progress, and the exported checklist all treated a scoped-out or blocked item as completed work.
+- **Redundancy removed:** the card's "Quick Test" was `steps.slice(0, 4)` while 607 of 623 items have exactly four steps, so every card printed the same procedure twice.
+
 ### Added (Functionality testing — test the application, not just the code)
 
 - `tools/functional-workflows.mjs`: executes the REAL application (app.html + all UI modules) inside a jsdom window with real HTTP against the local server, real localStorage, real event dispatch, and simulated browser reloads. 41/41 checks: Workflow 1 (full WAPT journey: wizard → preset → dashboard → search → filters → methodology → status → note → evidence pack → report → export → reload → import), Workflow 2 (attack chain: prerequisite completion → node unlock → status chips), 12 edge cases, keyboard/theme/print, and a runtime audit (123 requests, all same-origin, zero external, zero console errors).

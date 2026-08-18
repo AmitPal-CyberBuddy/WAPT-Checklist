@@ -2,25 +2,20 @@ import { deriveContext } from '../engine/context.js?v=1.0.0-r6';
 import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r6';
 import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r6';
 import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r6';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag, addFinding, removeFinding, setRetestVerdict, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
+import { clearOverride, importState, setPosition, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
 import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r6';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
 import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r6';
 import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r6';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r6';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r6';
 import { createChainStore } from './chains.js?v=1.0.0-r6';
 import { createPayloadStore } from './payloads.js?v=1.0.0-r6';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r6';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r6';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r6';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
-const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };
-const SEVERITY_GLYPHS = Object.freeze({ critical: '▲', high: '◆', medium: '●', low: '■', informational: '○' });
-const STATUS_GLYPHS = Object.freeze({ not_tested: '○', in_progress: '◐', passed: '✓', potential_finding: '△', confirmed_finding: '▲', na: '—' });
-
-function element(tag, className, text) {
-  const node = document.createElement(tag);
-  if (className) node.className = className;
-  if (text !== undefined) node.textContent = text;
-  return node;
-}
+const EMPTY_INDEX = indexFamilies({ families: [] });
 
 function categoryMap(manifest) {
   return Object.fromEntries((manifest.categories || []).map((category) => [category.slug, category.name]));
@@ -38,48 +33,6 @@ function effectiveRecord(item, state, context) {
     return { item, rawApplicability: raw, applicability: { state: APPLICABILITY.ACTIVE, blocked: false, reasons: raw.reasons, overridden: true, overrideReason: override.reason } };
   }
   return { item, rawApplicability: raw, applicability: raw };
-}
-
-function copyButton(text, label) {
-  const button = element('button', 'copy-button', 'Copy');
-  button.type = 'button';
-  button.setAttribute('aria-label', `Copy ${label}`);
-  button.addEventListener('click', async () => {
-    try {
-      await navigator.clipboard.writeText(String(text || ''));
-      button.textContent = 'Copied';
-      setTimeout(() => { button.textContent = 'Copy'; }, 1200);
-    } catch {
-      button.textContent = 'Unavailable';
-    }
-  });
-  return button;
-}
-
-function section(title, values, ordered = false) {
-  const wrapper = element('section', 'method-section');
-  const heading = element('div', 'method-section-heading');
-  heading.append(element('h4', '', title), copyButton(Array.isArray(values) ? values.join('\n') : values, title));
-  wrapper.append(heading);
-  if (!Array.isArray(values)) {
-    wrapper.append(element('p', '', values || 'Not specified'));
-    return wrapper;
-  }
-  const list = element(ordered ? 'ol' : 'ul');
-  for (const value of values) list.append(element('li', '', value));
-  wrapper.append(list);
-  return wrapper;
-}
-
-function renderExample(example) {
-  const wrapper = element('div', 'example-block');
-  for (const key of ['request', 'response', 'note']) {
-    if (!example[key]) continue;
-    wrapper.append(element('strong', 'example-label', key.toUpperCase()));
-    const output = element(key === 'note' ? 'p' : 'pre', '', example[key]);
-    wrapper.append(output);
-  }
-  return wrapper;
 }
 
 function renderFilters(root, manifest, filters, onChange, options = {}) {
@@ -139,271 +92,9 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     chip.append(clear);
     chips.append(chip);
   }
-  if (options.fixedCategory && filters.category) {
-    const chip = element('span', 'filter-chip fixed', `category: ${filters.category} (view)`);
-    chips.append(chip);
-  }
+  if (options.fixedCategory && filters.category) chips.append(element('span', 'filter-chip fixed', `category: ${filters.category} (view)`));
   root.append(chips);
   root.append(grid);
-}
-
-let familyByItem = new Map();
-let familyByCategory = new Map();
-let familiesLoaded = false;
-let manifestForFamilyLookup = { categories: [] };
-
-async function loadFamilies() {
-  if (familiesLoaded) return;
-  try {
-    const response = await fetch('checklist/families.json', { headers: { Accept: 'application/json' } });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (Array.isArray(data.families)) {
-      const byItem = new Map();
-      const byCategory = new Map();
-      for (const family of data.families) {
-        for (const id of family.items) byItem.set(id, family);
-        const list = byCategory.get(family.category) || [];
-        list.push(family);
-        byCategory.set(family.category, list);
-      }
-      familyByItem = byItem;
-      familyByCategory = byCategory;
-    }
-    familiesLoaded = true;
-  } catch (error) {
-    console.error('Test families could not be loaded; family navigation is unavailable.', error);
-    familiesLoaded = true;
-  }
-}
-
-function categoryOfItem(id) {
-  const prefix = id.split('-').slice(0, 2).join('-');
-  return manifestForFamilyLookup.categories.find(({ prefix: candidate }) => candidate === prefix)?.slug || '';
-}
-
-function renderCard(record, getState, categoryNames, onState) {
-  const state = getState();
-  const { item, applicability } = record;
-  const card = element('article', `test-card severity-${item.severity}`);
-  card.dataset.itemId = item.id;
-  const header = element('header', 'test-card-header');
-  const identity = element('div', 'test-identity');
-  const chips = element('div', 'chip-row');
-  chips.append(element('span', 'chip id-chip', item.id));
-  const severityChip = element('span', `chip severity-chip ${item.severity}`, item.severity);
-  const severityGlyph = element('span', 'chip-glyph', SEVERITY_GLYPHS[item.severity] || '');
-  severityGlyph.setAttribute('aria-hidden', 'true');
-  severityChip.prepend(severityGlyph);
-  chips.append(severityChip);
-  chips.append(element('span', 'chip', item.difficulty));
-  chips.append(element('span', 'chip', item.mode));
-  const appChip = element('span', `chip applicability-chip ${applicability.state}`, applicability.overridden ? 'Active (override)' : APP_LABELS[applicability.state]);
-  chips.append(appChip);
-  if (applicability.blocked) chips.append(element('span', 'chip blocked-chip', 'Needs credentials'));
-  identity.append(chips, element('h3', '', item.title), element('p', 'test-objective', item.objective));
-  const controls = element('div', 'test-controls');
-  const status = document.createElement('select');
-  status.className = 'status-select';
-  status.setAttribute('aria-label', `Status for ${item.id}`);
-  for (const [value, label] of STATUS_OPTIONS) status.append(new Option(label, value));
-  status.value = itemStatus(item, state);
-  status.addEventListener('change', () => onState(setItemStatus(getState(), item.id, status.value)));
-  controls.append(status);
-  header.append(identity, controls);
-  card.append(header);
-
-  if (applicability.reasons?.length || applicability.overridden) {
-    const reason = element('div', 'applicability-reason');
-    const descriptions = applicability.reasons.map(({ code, key }) => `${code.replaceAll('_', ' ')}${key ? `: ${key}` : ''}`);
-    if (applicability.overrideReason) descriptions.unshift(`override: ${applicability.overrideReason}`);
-    reason.textContent = descriptions.join(' · ');
-    card.append(reason);
-  }
-
-  // Level 1 — quick check: always visible, no expansion needed.
-  const quick = element('div', 'quick-check');
-  const quickTest = element('div', 'quick-part');
-  quickTest.append(element('strong', 'quick-label', 'QUICK TEST'));
-  const quickSteps = element('ol', 'quick-steps');
-  for (const step of item.steps.slice(0, 4)) quickSteps.append(element('li', '', step));
-  quickTest.append(quickSteps);
-  quickTest.append(element('p', 'quick-change', `One condition at a time — ${item.manipulate}`));
-  const quickValidate = element('div', 'quick-part');
-  quickValidate.append(element('strong', 'quick-label', 'VALIDATE'));
-  quickValidate.append(element('p', 'quick-validate', item.validation));
-  quick.append(quickTest, quickValidate);
-  card.append(quick);
-
-  // Level 2 — don't miss & related.
-  const level2 = element('details', 'method-details level-details');
-  level2.append(element('summary', '', "Don't miss & related"));
-  const l2 = element('div', 'method-body');
-  const family = familyByItem.get(item.id);
-  if (family?.dont_miss?.length) {
-    const miss = element('section', 'method-section');
-    miss.append(element('h4', '', `Don't miss — ${family.title}`));
-    const missList = element('ul', 'dont-miss-list');
-    for (const entry of family.dont_miss) missList.append(element('li', '', entry));
-    miss.append(missList);
-    l2.append(miss);
-  }
-  if (item.variants?.length) {
-    const variants = element('section', 'method-section');
-    variants.append(element('h4', '', 'Context variants'));
-    for (const variant of item.variants) {
-      const variantBox = element('div', 'variant-box');
-      variantBox.append(element('strong', '', Object.entries(variant.when).map(([key, values]) => `${key}: ${values.join(', ')}`).join(' · ')));
-      variantBox.append(section('Variant steps', variant.steps, true));
-      if (variant.notes) variantBox.append(element('p', 'method-note', variant.notes));
-      variants.append(variantBox);
-    }
-    l2.append(variants);
-  }
-  if (item.related?.length) {
-    const related = element('section', 'method-section');
-    related.append(element('h4', '', 'Related tests'));
-    const relatedRow = element('div', 'related-row');
-    for (const id of item.related) {
-      const link = element('a', 'chip id-chip related-chip', id);
-      link.href = `#checklist/${categoryOfItem(id)}`;
-      relatedRow.append(link);
-    }
-    related.append(relatedRow);
-    l2.append(related);
-  }
-  if (family) {
-    const siblings = family.items || [];
-    const index = siblings.indexOf(item.id);
-    const nextId = siblings.slice(index + 1).concat(siblings.slice(0, index))
-      .find((id) => (getState().statuses?.[id] || 'not_tested') === 'not_tested');
-    if (nextId && nextId !== item.id) {
-      const next = element('p', 'next-in-family');
-      const nextLink = element('a', '', `Next in family → ${nextId}`);
-      nextLink.href = `#checklist/${categoryOfItem(nextId)}`;
-      next.append(element('strong', '', 'Next test: '), nextLink);
-      l2.append(next);
-    }
-  }
-  level2.append(l2);
-  card.append(level2);
-
-  // Level 3 — detailed methodology (existing knowledge base, unchanged).
-  const details = element('details', 'method-details');
-  details.append(element('summary', '', 'Detailed methodology'));
-  const body = element('div', 'method-body');
-  body.append(section('Prerequisites', item.prerequisites));
-  body.append(section('Steps', item.steps, true));
-  if (item.examples?.length) {
-    const examples = element('section', 'method-section');
-    examples.append(element('h4', '', 'Examples'));
-    item.examples.forEach((example) => examples.append(renderExample(example)));
-    body.append(examples);
-  }
-  body.append(section('Manipulate', item.manipulate));
-  const behavior = element('div', 'behavior-grid');
-  behavior.append(section('Secure behavior', item.secure_behavior), section('Vulnerable behavior', item.vulnerable_behavior));
-  body.append(behavior);
-  body.append(section('Validation', item.validation));
-  body.append(section('False positives', item.false_positives));
-  if (item.do_not_report?.length) body.append(section('Reporting boundary', item.do_not_report));
-  body.append(section('Impact', item.impact));
-  if (item.remediation) body.append(section('Root-cause remediation', item.remediation));
-  if (item.retest_guidance) body.append(section('Retest guidance', item.retest_guidance));
-  if (item.safety) body.append(section('Safety boundary', item.safety));
-  body.append(section('Evidence', item.evidence));
-  body.append(section('Tools', item.tools));
-  details.append(body);
-  card.append(details);
-
-  // Level 4 — references, mappings, and attack chains.
-  const level4 = element('details', 'method-details level-details');
-  level4.append(element('summary', '', 'References & mappings'));
-  const l4 = element('div', 'method-body');
-  const refs = element('section', 'method-section');
-  refs.append(element('h4', '', 'References and mappings'));
-  const refList = element('ul');
-  for (const reference of item.references) {
-    const li = document.createElement('li');
-    const link = element('a', '', `${reference.source}: ${reference.title}`);
-    link.href = reference.url;
-    link.target = '_blank';
-    link.rel = 'noreferrer noopener';
-    li.append(link);
-    refList.append(li);
-  }
-  refs.append(refList);
-  const mappingText = Object.entries(item.mappings).filter(([, values]) => values.length).map(([key, values]) => `${key}: ${values.join(', ')}`).join(' · ');
-  refs.append(element('p', 'mapping-line', mappingText));
-  l4.append(refs);
-  if (item.attack_chains?.length) {
-    const chains = element('section', 'method-section');
-    chains.append(element('h4', '', 'Attack chains'));
-    const links = element('div', 'chain-link-row');
-    for (const id of item.attack_chains) {
-      const link = element('a', 'chip id-chip', id);
-      link.href = '#chains';
-      links.append(link);
-    }
-    chains.append(links);
-    l4.append(chains);
-  }
-  level4.append(l4);
-  card.append(level4);
-
-  // Tester records — notes, retest flag, evidence pack, override.
-  const recordsDetails = element('details', 'method-details level-details');
-  recordsDetails.append(element('summary', '', 'Tester notes & evidence'));
-  const body2 = element('div', 'method-body');
-  const quickStatus = element('div', 'records-status');
-  quickStatus.append(element('span', '', 'Status'));
-  const bottomStatus = document.createElement('select');
-  bottomStatus.className = 'status-select';
-  bottomStatus.setAttribute('aria-label', `Quick status for ${item.id}`);
-  for (const [value, label] of STATUS_OPTIONS) bottomStatus.append(new Option(label, value));
-  bottomStatus.value = itemStatus(item, state);
-  bottomStatus.addEventListener('change', () => onState(setItemStatus(getState(), item.id, bottomStatus.value)));
-  quickStatus.append(bottomStatus);
-  body2.append(quickStatus);
-
-  const notes = element('section', 'method-section notes-section');
-  const noteLabel = element('label');
-  noteLabel.append(element('span', '', 'Tester notes (stored locally)'));
-  const textarea = document.createElement('textarea');
-  textarea.rows = 4;
-  textarea.maxLength = 20000;
-  textarea.value = state.notes?.[item.id] || '';
-  textarea.placeholder = 'Observations, controls, evidence references, and validation still required…';
-  textarea.addEventListener('change', () => onState(setItemNote(getState(), item.id, textarea.value)));
-  noteLabel.append(textarea);
-  notes.append(noteLabel);
-  if (itemStatus(item, state) === 'confirmed_finding') {
-    const retest = element('label', 'retest-control');
-    const box = document.createElement('input');
-    box.type = 'checkbox';
-    box.checked = Boolean(state.retests?.[item.id]);
-    box.addEventListener('change', () => onState(setRetestFlag(getState(), item.id, box.checked)));
-    retest.append(box, document.createTextNode(' Include in retest matrix'));
-    notes.append(retest);
-    notes.append(renderEvidenceForm(item, getState, onState));
-  }
-  if (record.rawApplicability.state === APPLICABILITY.NA_CONTEXT) {
-    const override = element('button', 'button button-quiet', applicability.overridden ? 'Clear applicability override' : 'Override context N/A');
-    override.type = 'button';
-    override.addEventListener('click', () => {
-      if (applicability.overridden) onState(clearOverride(getState(), item.id));
-      else {
-        const reason = window.prompt('Why is this test applicable despite the current context?');
-        if (reason?.trim()) onState(setOverride(getState(), item.id, reason));
-      }
-    });
-    notes.append(override);
-  }
-  body2.append(notes);
-  recordsDetails.append(body2);
-  card.append(recordsDetails);
-  return card;
-  return card;
 }
 
 function renderEvidenceForm(item, getState, onState) {
@@ -522,9 +213,9 @@ function renderCoverageSummary(root, coverage, queue) {
   const overall = coverage.overall;
   const value = overall.coverage === null ? '—' : `${overall.coverage}%`;
   const big = element('div', 'coverage-big');
-  big.append(element('strong', '', value), element('span', '', 'coverage confidence'));
-  const detail = element('p', 'coverage-detail', `${overall.tested} of ${overall.executable} executable tests recorded · ${overall.blocked} credential-blocked · ${overall.na} scoped out (N/A) · ${queue.pending.length} evidence packs awaiting retest`);
-  root.append(big, detail);
+  big.append(element('strong', '', value), element('span', '', 'of executable checks tested'));
+  root.append(big, statRow(overall));
+  root.append(element('p', 'coverage-detail', `${overall.tested} tested · ${overall.active} in progress · ${overall.not_tested} not started · ${overall.blocked} blocked · ${overall.na} N/A (${overall.na_context} by scope, ${overall.na_user} by tester) · ${queue.pending.length} evidence packs awaiting retest`));
 }
 
 function renderEvidencePacks(root, itemList, getState, onState) {
@@ -532,7 +223,7 @@ function renderEvidencePacks(root, itemList, getState, onState) {
   const packs = state.findings || [];
   root.replaceChildren();
   if (!packs.length) {
-    root.append(element('p', 'empty-copy', 'No structured evidence packs recorded. Confirm a finding and use “Record evidence pack” on its methodology card.'));
+    root.append(element('p', 'empty-copy', 'No structured evidence packs recorded. Confirm a finding and use “Record evidence pack” on its check.'));
     return;
   }
   const byId = new Map(itemList.map((item) => [item.id, item]));
@@ -616,7 +307,7 @@ function renderEvidencePacks(root, itemList, getState, onState) {
 function renderRetestQueue(root, queue, itemList) {
   root.replaceChildren();
   if (!queue.pending.length) {
-    root.append(element('p', 'empty-copy', 'No evidence packs are waiting on a retest. Confirm findings and record evidence to build the queue.'));
+    root.append(element('p', 'empty-copy', 'No evidence packs are waiting on a retest.'));
     return;
   }
   const byId = new Map(itemList.map((item) => [item.id, item]));
@@ -626,9 +317,10 @@ function renderRetestQueue(root, queue, itemList) {
     link.href = `#checklist/${byId.get(pack.item_id)?.category || ''}`;
     link.append(element('span', `chip verdict-chip verdict-${pack.retest_verdict}`, 'retest pending'));
     link.append(element('span', 'id-chip chip', pack.item_id));
-    const copy = element('span', 'queue-meta', pack.title || 'Untitled evidence pack');
-    link.append(copy);
-    list.append(element('li', '', link));
+    link.append(element('span', 'queue-meta', pack.title || 'Untitled evidence pack'));
+    const row = document.createElement('li');
+    row.append(link);
+    list.append(row);
   }
   if (queue.pending.length > 5) list.append(element('li', 'queue-meta', `+ ${queue.pending.length - 5} more awaiting retest`));
   root.append(list);
@@ -650,8 +342,34 @@ function renderChainOverview(root, itemList, statuses, chainsStore) {
     link.append(element('span', 'chip id-chip', chain.id));
     link.append(element('strong', '', chain.title));
     link.append(element('span', 'chain-progress', `${done}/${ids.length} complete`));
-    list.append(element('li', '', link));
+    const row = document.createElement('li');
+    row.append(link);
+    list.append(row);
   }
+  root.append(list);
+}
+
+function renderBlockedList(root, records, state) {
+  root.replaceChildren();
+  const blocked = records.filter(({ item, applicability }) => {
+    const status = itemStatus(item, state);
+    if (status === 'blocked') return true;
+    return applicability.blocked && status === 'not_tested';
+  });
+  if (!blocked.length) {
+    root.append(element('p', 'empty-copy', 'Nothing is blocked. Every executable check is available to test.'));
+    return;
+  }
+  const list = element('ul', 'blocked-list');
+  for (const { item } of blocked.slice(0, 6)) {
+    const li = document.createElement('li');
+    const link = element('a', '');
+    link.href = `#checklist/${item.category}`;
+    link.append(element('span', 'chip id-chip', item.id), element('span', '', item.title));
+    li.append(link);
+    list.append(li);
+  }
+  if (blocked.length > 6) list.append(element('li', 'queue-meta', `+ ${blocked.length - 6} more blocked or credential-gated`));
   root.append(list);
 }
 
@@ -660,17 +378,66 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let records = [];
   let activeView = '';
   let activeCategory = '';
+  let activeFamily = '';
   let checklistFilters = { ...EMPTY_FILTERS };
   let checklistMode = 'testing';
+  let boardFilters = { query: '', category: '', unfinished: true };
   let recentTouched = [];
   let searchFilters = { ...EMPTY_FILTERS };
+  let familyIndex = EMPTY_INDEX;
+  let familiesLoaded = false;
+  let visitedFamilies = [];
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
-
 
   const names = () => categoryMap(manifest);
   const context = () => deriveContext(getState().answers, getState().engagement.targetUrl);
   const makeRecords = (items) => items.map((item) => effectiveRecord(item, getState(), context()));
+  const itemsById = () => new Map(records.map(({ item }) => [item.id, item]));
+
+  function categoryOf(id) {
+    const prefix = id.split('-').slice(0, 2).join('-');
+    return (manifest.categories || []).find(({ prefix: candidate }) => candidate === prefix)?.slug || '';
+  }
+
+  async function loadFamilies() {
+    if (familiesLoaded) return familyIndex;
+    try {
+      const response = await fetch('checklist/families.json', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      familyIndex = indexFamilies(await response.json());
+    } catch (error) {
+      console.error('Test families could not be loaded; family navigation is unavailable.', error);
+    }
+    familiesLoaded = true;
+    return familyIndex;
+  }
+
+  function suggestions(limit = 8, options = {}) {
+    const state = getState();
+    const familyMap = new Map(familyIndex.families.map((family) => [family.id, family]));
+    const relatedByItem = new Map();
+    for (const { item } of records) if (item.related?.length) relatedByItem.set(item.id, item.related);
+    return suggestedNext(records.map(({ item }) => item), context(), {
+      statuses: state.statuses,
+      chains: chainStore.priorityEdges(),
+      limit,
+      recent: options.recent || recentTouched,
+      // Inside a family workspace the family in view is the focus, even on a cold start,
+      // and its related families outrank unrelated workflow-early work.
+      focusFamily: options.familyId || '',
+      nearFamilies: options.nearFamilies || [],
+      families: familyMap,
+      relatedByItem
+    });
+  }
+
+  function rememberPosition(patch) {
+    const state = getState();
+    const current = state.position || {};
+    if (current.view === patch.view && current.family === (patch.family || '') && current.category === (patch.category || '')) return;
+    onStateChange(setPosition(state, { view: patch.view, family: patch.family || '', category: patch.category || '', item: patch.item || '' }));
+  }
 
   function commit(nextState) {
     const before = getState().statuses;
@@ -682,28 +449,113 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     records = makeRecords(records.map(({ item }) => item));
     if (activeView === 'checklist') renderChecklist();
     if (activeView === 'search') renderSearch();
+    if (activeView === 'families') renderBoard();
+    if (activeView === 'family') renderFamily();
     if (activeView === 'dashboard') renderDashboard();
     else renderDashboardMetrics();
   }
 
-  function familyHeader(family, familyRecords, visibleTotal) {
+  const cardContext = () => ({ getState, commit, familyIndex, categoryOf, renderEvidenceForm });
+
+  function familyGroupHeader(family, familyRecords) {
     const state = getState();
-    const tested = familyRecords.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
-    const headerBlock = element('section', 'family-group');
+    const tested = familyRecords.filter(({ item }) => ['passed', 'potential_finding', 'confirmed_finding'].includes(itemStatus(item, state))).length;
+    const block = element('section', 'family-group');
+    block.dataset.familyBlock = family.id;
     const head = element('header', 'family-header');
     const copy = element('div');
-    copy.append(element('h3', '', family.title), element('p', '', family.summary));
-    copy.append(element('span', 'family-count', `${tested}/${familyRecords.length} tested`));
+    const title = element('a', 'family-group-title', family.title);
+    title.href = `#family/${family.id}`;
+    copy.append(title, element('p', '', family.summary));
     head.append(copy);
+    head.append(element('span', 'family-count', `${tested}/${familyRecords.length} tested`));
+    block.append(head);
+    const quick = element('div', 'family-quick-inline');
+    quick.append(element('span', 'micro-label', 'QUICK TEST'));
+    const list = element('ol', 'quick-steps');
+    for (const line of family.quick_test || []) list.append(element('li', '', line));
+    quick.append(list);
+    block.append(quick);
+
+    // Don't Miss stays one click away wherever the family appears, and ticks here are the
+    // same coverage record as in the family workspace.
+    const variants = familyVariants(family, state.variants);
     const miss = element('details', 'family-miss');
-    miss.append(element('summary', '', `Don't miss (${family.dont_miss.length} overlooked variants)`));
-    const list = element('ul', 'dont-miss-list');
-    for (const entry of family.dont_miss) list.append(element('li', '', entry));
-    miss.append(list);
-    head.append(miss);
-    headerBlock.append(head);
-    headerBlock.append(...familyRecords.map((record) => renderCard(record, getState, names(), commit)));
-    return headerBlock;
+    miss.dataset.dontMiss = family.id;
+    miss.append(element('summary', '', `Don't miss — ${variants.covered}/${variants.total} variants covered`));
+    const missList = element('ul', 'dont-miss-list');
+    for (const variant of variants.entries) {
+      const row = element('li', variant.covered ? 'variant-row covered' : 'variant-row');
+      const label = element('label');
+      const box = document.createElement('input');
+      box.type = 'checkbox';
+      box.checked = variant.covered;
+      box.dataset.variantKey = variant.key;
+      box.addEventListener('change', () => commit(setVariantCovered(getState(), variant.key, box.checked)));
+      label.append(box, element('span', '', variant.text));
+      row.append(label);
+      missList.append(row);
+    }
+    miss.append(missList);
+    block.append(miss);
+    block.append(...familyRecords.map((record) => renderCard(record, cardContext())));
+    return block;
+  }
+
+  // Compact family-grouped rows for the wide views (All tests, Search). One line per check,
+  // expanding into the full card in place — 623 cards is a wall, 623 rows is a list you scan.
+  function renderCompactGroups(visible) {
+    const byFamily = new Map();
+    const ungrouped = [];
+    for (const record of visible) {
+      const family = familyIndex.byItem.get(record.item.id);
+      if (!family) { ungrouped.push(record); continue; }
+      const bucket = byFamily.get(family.id) || [];
+      bucket.push(record);
+      byFamily.set(family.id, bucket);
+    }
+    const state = getState();
+    const groups = [];
+    const buildRow = (record) => {
+      const { row, open } = renderCheckRow(record, { getState, commit });
+      const holder = element('div', 'check-holder');
+      const detail = element('div', 'check-detail');
+      detail.hidden = true;
+      holder.append(row, detail);
+      open.addEventListener('click', () => {
+        const expanded = open.getAttribute('aria-expanded') === 'true';
+        open.setAttribute('aria-expanded', String(!expanded));
+        detail.hidden = expanded;
+        if (!expanded && !detail.childElementCount) detail.append(renderCard(record, { ...cardContext(), embedded: true }));
+      });
+      return holder;
+    };
+    for (const family of familyIndex.families) {
+      const members = byFamily.get(family.id);
+      if (!members?.length) continue;
+      const block = element('section', 'family-group compact-group');
+      block.dataset.familyBlock = family.id;
+      const head = element('header', 'family-header');
+      const title = element('a', 'family-group-title', family.title);
+      title.href = `#family/${family.id}`;
+      const tested = members.filter(({ item }) => ['passed', 'potential_finding', 'confirmed_finding'].includes(itemStatus(item, state))).length;
+      head.append(title, element('span', 'family-count', `${tested}/${members.length} tested`));
+      const surface = element('span', 'family-surface', names()[family.category] || family.category);
+      head.append(surface);
+      block.append(head);
+      const list = element('div', 'check-list');
+      for (const record of members) list.append(buildRow(record));
+      block.append(list);
+      groups.push(block);
+    }
+    if (ungrouped.length) {
+      const block = element('section', 'family-group compact-group');
+      const list = element('div', 'check-list');
+      for (const record of ungrouped) list.append(buildRow(record));
+      block.append(list);
+      groups.push(block);
+    }
+    return groups;
   }
 
   function renderResults(root, summary, sourceRecords, filters, options = {}) {
@@ -714,30 +566,30 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       root.replaceChildren(element('div', 'panel empty-panel', 'No tests match the current context and filters.'));
       return;
     }
-    const families = options.groupByFamily || [];
-    if (families.length) {
+    if (options.compact) {
+      root.replaceChildren(...renderCompactGroups(visible));
+      return;
+    }
+    if (options.groupByFamily) {
       const byFamily = new Map();
       const ungrouped = [];
       for (const record of visible) {
-        const family = familyByItem.get(record.item.id);
-        if (family) {
-          const bucket = byFamily.get(family.id) || [];
-          bucket.push(record);
-          byFamily.set(family.id, bucket);
-        } else {
-          ungrouped.push(record);
-        }
+        const family = familyIndex.byItem.get(record.item.id);
+        if (!family) { ungrouped.push(record); continue; }
+        const bucket = byFamily.get(family.id) || [];
+        bucket.push(record);
+        byFamily.set(family.id, bucket);
       }
       const groups = [];
-      for (const family of families) {
-        const members = byFamily.get(family.id) || [];
-        if (members.length) groups.push(familyHeader(family, members));
+      for (const family of familyIndex.families) {
+        const members = byFamily.get(family.id);
+        if (members?.length) groups.push(familyGroupHeader(family, members));
       }
-      if (ungrouped.length) groups.push(...ungrouped.map((record) => renderCard(record, getState, names(), commit)));
+      if (ungrouped.length) groups.push(...ungrouped.map((record) => renderCard(record, cardContext())));
       root.replaceChildren(...groups);
       return;
     }
-    root.replaceChildren(...visible.map((record) => renderCard(record, getState, names(), commit)));
+    root.replaceChildren(...visible.map((record) => renderCard(record, cardContext())));
   }
 
   function restoreFilterFocus(root, key) {
@@ -749,101 +601,43 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }, 0);
   }
 
-  function coverageRow(item, state) {
-    const status = itemStatus(item, state);
-    const row = element('div', `coverage-row status-${status}`);
-    const link = element('a', '', `${STATUS_GLYPHS[status] || '○'} ${item.id}`);
-    link.href = '#checklist';
-    link.dataset.coverageItem = item.id;
-    link.addEventListener('click', (event) => {
-      event.preventDefault();
-      checklistMode = 'testing';
-      renderChecklist();
-      setTimeout(() => {
-        document.querySelector(`[data-item-id="${item.id}"]`)?.scrollIntoView({ block: 'start' });
-        document.querySelector(`[data-item-id="${item.id}"] .status-select`)?.focus();
-      }, 0);
-    });
-    const copy = element('span', 'coverage-title', item.title);
-    const label = element('span', 'coverage-status', STATUS_LABELS[status]);
-    row.append(link, copy, label);
-    return row;
-  }
-
-  function renderCoverageCategory(root, recordsList, category) {
-    const state = getState();
-    const families = familyByCategory.get(category) || [];
-    const byFamily = new Map();
-    const ungrouped = [];
-    for (const record of recordsList) {
-      const family = familyByItem.get(record.item.id);
-      if (family) {
-        const bucket = byFamily.get(family.id) || [];
-        bucket.push(record);
-        byFamily.set(family.id, bucket);
-      } else {
-        ungrouped.push(record);
-      }
-    }
-    const allRecords = recordsList;
-    const executable = allRecords.filter(({ applicability }) => applicability.state !== APPLICABILITY.NA_CONTEXT);
-    const tested = executable.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
-    const scopedOut = allRecords.length - executable.length;
-    const percent = executable.length ? Math.round((tested / executable.length) * 100) : 100;
-    const overview = element('div', 'coverage-overview');
-    overview.append(element('strong', '', `${tested}/${executable.length}`), document.createTextNode(` executable tests recorded · ${percent}% coverage · ${scopedOut} scoped out (context-N/A)`));
-    root.replaceChildren(overview);
-
-    const blocks = [];
-    for (const family of families) {
-      const members = byFamily.get(family.id) || [];
-      const block = element('section', 'coverage-family');
-      const familyTested = members.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
-      const head = element('header', 'coverage-family-head');
-      head.append(element('h3', '', family.title));
-      head.append(element('span', 'family-count', `${familyTested}/${members.length}`));
-      const bar = document.createElement('progress');
-      bar.max = Math.max(1, members.length);
-      bar.value = familyTested;
-      head.append(bar);
-      block.append(head);
-      const list = element('div', 'coverage-list');
-      for (const record of members) list.append(coverageRow(record.item, state));
-      block.append(list);
-      blocks.push(block);
-    }
-    if (ungrouped.length) {
-      const block = element('section', 'coverage-family');
-      block.append(element('h3', '', 'Ungrouped tests'));
-      const list = element('div', 'coverage-list');
-      for (const record of ungrouped) list.append(coverageRow(record.item, state));
-      block.append(list);
-      blocks.push(block);
-    }
-    root.append(...blocks);
+  function openItemInTesting(itemId, familyId) {
+    if (familyId) { location.hash = `family/${familyId}`; setTimeout(() => {
+      document.querySelector(`[data-family-check-row="${itemId}"] .check-open`)?.click();
+      document.querySelector(`[data-family-check-row="${itemId}"]`)?.scrollIntoView({ block: 'center' });
+    }, 250); return; }
+    checklistMode = 'testing';
+    renderChecklist();
+    setTimeout(() => {
+      document.querySelector(`[data-item-id="${itemId}"]`)?.scrollIntoView({ block: 'start' });
+      document.querySelector(`[data-item-id="${itemId}"] .status-select`)?.focus();
+    }, 0);
   }
 
   function renderChecklist() {
     const filterRoot = document.querySelector('[data-checklist-filters]');
     const resultRoot = document.querySelector('[data-checklist-results]');
     const summary = document.querySelector('[data-checklist-summary]');
-    const category = activeCategory;
-    const fixed = category && manifest.categories.some(({ slug }) => slug === category) ? category : '';
+    const fixed = activeCategory && manifest.categories.some(({ slug }) => slug === activeCategory) ? activeCategory : '';
     checklistFilters = { ...checklistFilters, category: fixed };
     document.querySelectorAll('[data-checklist-mode]').forEach((button) => {
       button.setAttribute('aria-pressed', String(button.dataset.checklistMode === checklistMode));
     });
     if (checklistMode === 'coverage' && fixed) {
-      document.querySelector('[data-checklist-filters]').hidden = true;
+      filterRoot.hidden = true;
       summary.textContent = '';
-      renderCoverageCategory(resultRoot, records, fixed);
+      renderCategoryCoverage(resultRoot, {
+        category: fixed, familyIndex, records, getState, onOpenItem: openItemInTesting
+      });
     } else {
-      document.querySelector('[data-checklist-filters]').hidden = false;
+      filterRoot.hidden = false;
       renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed });
-      renderResults(resultRoot, summary, records, checklistFilters, { groupByFamily: fixed ? (familyByCategory.get(fixed) || []) : [] });
+      // A single surface stays card-first for deep work; the whole catalog is a scan list.
+      renderResults(resultRoot, summary, records, checklistFilters, fixed
+        ? { groupByFamily: familyIndex.families.length > 0 }
+        : { compact: true });
     }
-    const title = document.querySelector('#checklist-title');
-    title.textContent = fixed ? names()[fixed] : 'All tests';
+    document.querySelector('#checklist-title').textContent = fixed ? names()[fixed] : 'All tests';
     const rationale = document.querySelector('[data-category-rationale]');
     if (rationale) {
       const reasons = fixed ? categoryRationale(fixed, context()) : [];
@@ -854,28 +648,107 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
 
   function renderSearch() {
     const filterRoot = document.querySelector('[data-search-filters]');
-    const resultRoot = document.querySelector('[data-search-results]');
-    const summary = document.querySelector('[data-search-summary]');
     renderFilters(filterRoot, manifest, searchFilters, (next, key) => { searchFilters = next; renderSearch(); restoreFilterFocus(filterRoot, key); });
-    renderResults(resultRoot, summary, records, searchFilters);
+    renderResults(document.querySelector('[data-search-results]'), document.querySelector('[data-search-summary]'), records, searchFilters, { compact: true });
+  }
+
+  // Families touched most recently, newest first — the jump list for iterative testing.
+  function recentFamilyIds() {
+    const ids = [];
+    for (const itemId of recentTouched) {
+      const family = familyIndex.byItem.get(itemId);
+      if (family && !ids.includes(family.id)) ids.push(family.id);
+    }
+    for (const id of visitedFamilies) if (!ids.includes(id)) ids.push(id);
+    return ids;
+  }
+
+  function resumeTarget() {
+    const state = getState();
+    const stored = familyIndex.byId.get(state.position?.family || '');
+    if (stored) return stored;
+    const recent = recentTouched.map((id) => familyIndex.byItem.get(id)).find(Boolean);
+    return recent || null;
+  }
+
+  function renderBoard() {
+    const root = document.querySelector('[data-family-board]');
+    if (!root) return;
+    renderFamilyBoard(root, {
+      familyIndex,
+      records,
+      getState,
+      categoryNames: names(),
+      boardFilters,
+      itemList: records.map(({ item }) => item),
+      recentFamilies: recentFamilyIds(),
+      resumeTarget: resumeTarget(),
+      onFilterChange: (next, key) => {
+        boardFilters = next;
+        renderBoard();
+        restoreFilterFocus(root, key);
+      }
+    });
+  }
+
+  function renderFamily() {
+    const root = document.querySelector('[data-family-root]');
+    if (!root) return;
+    const neighbourIds = relatedFamilies(activeFamily, {
+      index: familyIndex, itemsById: itemsById(), chains: chainStore.getChains(), limit: 6
+    }).map(({ id }) => id);
+    renderFamilyWorkspace(root, {
+      familyId: activeFamily,
+      familyIndex,
+      records,
+      getState,
+      commit,
+      categoryNames: names(),
+      itemsById: itemsById(),
+      chains: chainStore.getChains(),
+      renderEvidenceForm,
+      categoryOf,
+      itemList: records.map(({ item }) => item),
+      payloads: payloadStore.cached(),
+      async onCopyCoverage(family, coverage) {
+        try {
+          await navigator.clipboard.writeText(composeFamilyCoverageBlock(family, coverage, getState(), names()));
+          return true;
+        } catch {
+          return false;
+        }
+      },
+      // The next check inside the family is the Continue button; this panel answers
+      // "and after this family?" so the two are not the same list twice.
+      suggestions: suggestions(24, { familyId: activeFamily, nearFamilies: neighbourIds })
+        .filter(({ item }) => !(familyIndex.byId.get(activeFamily)?.items || []).includes(item.id))
+        .slice(0, 5)
+    });
+    const family = familyIndex.byId.get(activeFamily);
+    const heading = document.querySelector('#family-title');
+    if (heading) heading.textContent = family ? family.title : 'Test family';
+    const eyebrow = document.querySelector('[data-family-eyebrow]');
+    if (eyebrow) eyebrow.textContent = family ? `${(names()[family.category] || family.category).toLocaleUpperCase('en-US')} · TEST FAMILY` : 'TEST FAMILY';
   }
 
   function renderDashboardMetrics() {
     const state = getState();
     const statuses = Object.values(state.statuses || {});
+    const tested = statuses.filter((status) => ['passed', 'potential_finding', 'confirmed_finding'].includes(status)).length;
     document.querySelector('[data-dashboard-items]').textContent = manifest.categories.reduce((sum, category) => sum + category.count, 0).toLocaleString();
-    document.querySelector('[data-dashboard-tested]').textContent = statuses.filter((status) => status !== 'not_tested').length.toLocaleString();
+    document.querySelector('[data-dashboard-tested]').textContent = tested.toLocaleString();
     document.querySelector('[data-dashboard-potential]').textContent = statuses.filter((status) => status === 'potential_finding').length.toLocaleString();
     document.querySelector('[data-dashboard-confirmed]').textContent = statuses.filter((status) => status === 'confirmed_finding').length.toLocaleString();
     if (records.length) {
       const coverage = computeCoverage(records.map(({ item }) => item), context(), state.statuses);
-      document.querySelector('[data-dashboard-blocked]').textContent = coverage.overall.blocked.toLocaleString();
+      document.querySelector('[data-dashboard-blocked]').textContent = (coverage.overall.blocked).toLocaleString();
       document.querySelector('[data-dashboard-na]').textContent = coverage.overall.na.toLocaleString();
     }
     for (const category of manifest.categories) {
-      const tested = Object.entries(state.statuses || {}).filter(([id, status]) => id.startsWith(`${category.prefix}-`) && status !== 'not_tested').length;
       const count = document.querySelector(`[data-category-slug="${category.slug}"] em`);
-      if (count) count.textContent = tested ? `${tested}/${category.count}` : String(category.count);
+      if (!count) continue;
+      const done = Object.entries(state.statuses || {}).filter(([id, status]) => id.startsWith(`${category.prefix}-`) && ['passed', 'potential_finding', 'confirmed_finding'].includes(status)).length;
+      count.textContent = done ? `${done}/${category.count}` : String(category.count);
     }
   }
 
@@ -887,6 +760,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const coverage = computeCoverage(itemList, context(), state.statuses);
     const queue = retestQueue(state);
     const coverageByCategory = new Map(coverage.perCategory.map((entry) => [entry.slug, entry]));
+
     const progress = document.querySelector('[data-category-progress]');
     progress.replaceChildren(...manifest.categories.filter(({ count }) => count > 0).map((category) => {
       const entry = coverageByCategory.get(category.slug) || { executable: category.count, tested: 0, na: 0 };
@@ -898,33 +772,38 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       bar.max = Math.max(1, entry.executable);
       bar.value = entry.tested;
       row.append(label, bar);
-      if (entry.na) row.title = `${entry.na} tests scoped out as context-N/A`;
+      if (entry.na) row.title = `${entry.na} tests scoped out as N/A`;
       return row;
     }));
+
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
+    renderFamilyGaps(document.querySelector('[data-family-gaps]'), { familyIndex, records, getState, categoryNames: names(), limit: 6 });
+    renderBlockedList(document.querySelector('[data-blocked-list]'), records, state);
     renderRetestQueue(document.querySelector('[data-retest-queue]'), queue, itemList);
     renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses, chainStore);
 
+    const resume = document.querySelector('[data-resume]');
+    if (resume) {
+      const target = resumeTarget();
+      const nextCheck = target ? nextInFamily(target, state.statuses, '') : '';
+      resume.hidden = !target;
+      if (target) {
+        resume.href = `#family/${target.id}`;
+        resume.textContent = nextCheck ? `Continue ${target.title} → ${nextCheck}` : `Review ${target.title}`;
+      }
+    }
+
     const suggestedRoot = document.querySelector('[data-suggested-next]');
-    const familiesMap = new Map();
-    for (const list of familyByCategory.values()) for (const family of list) familiesMap.set(family.id, family.items);
-    const relatedByItem = new Map();
-    for (const item of itemList) if (item.related?.length) relatedByItem.set(item.id, item.related);
-    const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8, recent: recentTouched, families: familiesMap, relatedByItem });
-    if (!suggestions.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
-    else suggestedRoot.replaceChildren(...suggestions.map(({ item, applicability, contextReasons, unlockedBy }) => {
+    const rows = suggestions(8);
+    if (!rows.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
+    else suggestedRoot.replaceChildren(...rows.map(({ item, reasons }) => {
+      const family = familyIndex.byItem.get(item.id);
       const link = element('a', 'suggested-row');
-      link.href = `#checklist/${item.category}`;
+      link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
       link.append(element('span', 'chip id-chip', item.id));
-      const explanation = [
-        APP_LABELS[applicability.state],
-        names()[item.category] || item.category,
-        `severity ${item.severity}`,
-        ...contextReasons,
-        ...(unlockedBy || []).map((chainId) => `unlocked by ${chainId}`)
-      ].filter(Boolean).join(' · ');
       const copy = element('div');
-      copy.append(element('strong', '', item.title), element('small', '', explanation));
+      copy.append(element('strong', '', item.title));
+      copy.append(element('small', '', reasons.join(' · ')));
       link.append(copy);
       return link;
     }));
@@ -942,12 +821,18 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       for (const item of findings) {
         const row = document.createElement('tr');
         const idCell = document.createElement('td');
+        const family = familyIndex.byItem.get(item.id);
         const link = element('a', '', item.id);
-        link.href = `#checklist/${item.category}`;
+        link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
         idCell.append(link);
-        const severityCell = element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`);
-        const statusCell = element('td', '', `${STATUS_GLYPHS[itemStatus(item, state)] || ''} ${STATUS_LABELS[itemStatus(item, state)]}`);
-        row.append(idCell, element('td', '', item.title), severityCell, statusCell, element('td', '', state.retests?.[item.id] ? 'Required' : '—'));
+        const status = itemStatus(item, state);
+        row.append(
+          idCell,
+          element('td', '', item.title),
+          element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`),
+          element('td', '', `${STATUS_GLYPHS[status] || ''} ${STATUS_LABELS[status]}`),
+          element('td', '', state.retests?.[item.id] ? 'Required' : '—')
+        );
         body.append(row);
       }
       table.append(head, body);
@@ -958,27 +843,39 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   }
 
   async function ensureAll() {
-    const items = await catalog.loadAll();
-    records = makeRecords(items);
+    records = makeRecords(await catalog.loadAll());
     return records;
   }
 
   async function show(view, slug = '') {
     activeView = view;
-    activeCategory = slug;
     if (view === 'dashboard') {
       renderDashboardMetrics();
-      await Promise.all([ensureAll(), loadFamilies()]);
+      await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
       await renderDashboard();
+      rememberPosition({ view: 'dashboard' });
+    } else if (view === 'families') {
+      await Promise.all([ensureAll(), loadFamilies()]);
+      renderBoard();
+      rememberPosition({ view: 'families' });
+    } else if (view === 'family') {
+      activeFamily = slug;
+      visitedFamilies = [slug, ...visitedFamilies.filter((id) => id !== slug)].slice(0, 6);
+      await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll(), payloadStore.loadAll().catch(() => [])]);
+      renderFamily();
+      const family = familyIndex.byId.get(slug);
+      rememberPosition({ view: 'family', family: slug, category: family?.category || '' });
     } else if (view === 'search') {
-      await ensureAll();
+      await Promise.all([ensureAll(), loadFamilies()]);
       renderSearch();
       restoreFilterFocus(document.querySelector('[data-search-filters]'), 'query');
     } else if (view === 'checklist') {
+      activeCategory = slug;
       const valid = manifest.categories.some((category) => category.slug === slug && category.count > 0);
       const [items] = await Promise.all([valid ? catalog.loadCategory(slug) : catalog.loadAll(), loadFamilies()]);
       records = makeRecords(items);
       renderChecklist();
+      rememberPosition({ view: 'checklist', category: valid ? slug : '' });
     } else if (view === 'chains') {
       const items = await catalog.loadAll();
       await chainStore.render(document.querySelector('[data-chain-browser]'), new Map(items.map((item) => [item.id, item])), { statuses: getState().statuses });
@@ -993,12 +890,17 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const categoryNames = names();
     if (kind === 'json') downloadText(safeFilename(state.engagement.name, 'state.json'), composeStateJson(state), 'application/json;charset=utf-8');
     if (kind === 'checklist') downloadText(safeFilename(state.engagement.name, 'checklist.md'), composeChecklistMarkdown(all, state, categoryNames), 'text/markdown;charset=utf-8');
+    if (kind === 'coverage-csv') {
+      await loadFamilies();
+      downloadText(safeFilename(state.engagement.name, 'coverage.csv'), composeCoverageCsv(all, state, familyIndex, categoryNames), 'text/csv;charset=utf-8');
+    }
     if (kind === 'report') downloadText(safeFilename(state.engagement.name, 'report.md'), composeReportMarkdown(all, state, categoryNames), 'text/markdown;charset=utf-8');
   }
 
   function bindActions() {
     document.querySelector('[data-export-json]').addEventListener('click', () => exportAll('json'));
     document.querySelector('[data-export-checklist]').addEventListener('click', () => exportAll('checklist'));
+    document.querySelector('[data-export-csv]')?.addEventListener('click', () => exportAll('coverage-csv'));
     document.querySelector('[data-export-report]').addEventListener('click', () => exportAll('report'));
     document.querySelector('[data-import-trigger]').addEventListener('click', () => document.querySelector('[data-import-file]').click());
     document.querySelector('[data-import-file]').addEventListener('change', async (event) => {
@@ -1006,8 +908,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       try {
         const file = event.target.files?.[0];
         if (!file) return;
-        const imported = importState(await file.text());
-        replaceState(imported);
+        replaceState(importState(await file.text()));
         records = makeRecords(records.map(({ item }) => item));
         message.textContent = 'State imported successfully. Existing local state was replaced after validation.';
         renderDashboard();
@@ -1021,14 +922,14 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       checklistMode = button.dataset.checklistMode;
       if (activeView === 'checklist') renderChecklist();
     }));
-    document.querySelector('[data-print]').addEventListener('click', () => window.print());
+    document.querySelectorAll('[data-print]').forEach((button) => button.addEventListener('click', () => window.print()));
   }
 
   return Object.freeze({
-    setManifest(next) { manifest = next; manifestForFamilyLookup = next; catalog.setManifest(next); renderDashboardMetrics(); },
+    setManifest(next) { manifest = next; catalog.setManifest(next); renderDashboardMetrics(); },
     show,
     bindActions,
-    refresh() { if (activeView) return show(activeView, activeCategory); },
+    refresh() { if (activeView) return show(activeView, activeView === 'family' ? activeFamily : activeCategory); },
     renderDashboardMetrics
   });
 }

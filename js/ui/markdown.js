@@ -6,6 +6,7 @@ function make(tag, className, text) {
 }
 
 const DESIGNED_DOCS = Object.freeze({
+  'docs/OPERATING.md': 'operating',
   'SECURITY.md': 'security', 'CONTRIBUTING.md': 'contributing', LICENSE: 'license',
   'docs/ARCHITECTURE.md': 'architecture', 'docs/TAXONOMY.md': 'taxonomy',
   'docs/CONTENT-GUIDE.md': 'content-guide', 'docs/ENGINE.md': 'engine',

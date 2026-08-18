@@ -28,8 +28,27 @@ function hasScopedContext(state) {
   });
 }
 
+// One primary action: resume the engagement this browser already holds, otherwise start one.
+// A returning tester should never have to re-navigate to their own work.
+function renderPrimaryAction(state) {
+  const action = document.querySelector('[data-primary-action]');
+  if (!action) return;
+  const tested = Object.values(state.statuses || {}).filter((status) => ['passed', 'potential_finding', 'confirmed_finding'].includes(status)).length;
+  const position = state.position || {};
+  const resumable = position.view === 'family' && position.family;
+  if (!tested && !resumable) return;
+  const name = (state.engagement?.name || '').trim();
+  action.href = resumable ? `app.html#family/${position.family}` : 'app.html#dashboard';
+  action.replaceChildren(document.createTextNode(name ? `Continue ${name}` : 'Continue engagement'));
+  const arrow = document.createElement('span');
+  arrow.setAttribute('aria-hidden', 'true');
+  arrow.textContent = ' →';
+  action.append(arrow);
+}
+
 async function renderStats() {
   const state = localState();
+  renderPrimaryAction(state);
   const statuses = state.statuses && typeof state.statuses === 'object' ? Object.values(state.statuses) : [];
   let categories = 0;
   let active = 0;
@@ -57,7 +76,8 @@ async function renderStats() {
   const values = {
     categories,
     active: hasScopedContext(state) ? active : 0,
-    tested: statuses.filter((status) => status && status !== 'not_tested').length,
+    // Executed checks only: N/A, blocked, and in-progress are not tested work.
+    tested: statuses.filter((status) => ['passed', 'potential_finding', 'confirmed_finding'].includes(status)).length,
     findings: statuses.filter((status) => status === 'potential_finding' || status === 'confirmed_finding').length
   };
   const showActive = hasScopedContext(state);

@@ -98,8 +98,7 @@ export function createWizard(root, initialState, callbacks = {}) {
     return `
       <fieldset class="wizard-question" data-question="${question.key}" data-focus-region>
         <legend class="sr-only">${question.title}</legend>
-        <span class="wizard-step-id">SCOPE QUESTION ${String(activeQuestions().indexOf(question) + 1).padStart(2, '0')} / ${String(activeQuestions().length).padStart(2, '0')}</span>
-        <h2 tabindex="-1">${question.title}</h2>
+        <h2 tabindex="-1"><span class="wizard-step-id">SCOPE ${String(activeQuestions().indexOf(question) + 1).padStart(2, '0')}/${String(activeQuestions().length).padStart(2, '0')}</span>${question.title}</h2>
         <p>${question.description}</p>
         <div class="option-grid" role="${question.multi ? 'group' : 'radiogroup'}">${question.options.map(([optionValue, label, detail]) => `
           <label class="option-card" ${question.multi ? 'data-multi' : ''}>
@@ -122,7 +121,7 @@ export function createWizard(root, initialState, callbacks = {}) {
             <div class="summary-row"><span>Engagement</span><strong>${escapeHtml(state.engagement.name || 'Unnamed')}</strong></div>
             <div class="summary-row"><span>Target</span><strong>${escapeHtml(state.engagement.targetUrl || 'Not provided')}</strong></div>${rows}
           </div>
-          <div><div class="summary-message"><strong>Saved locally for you to resume.</strong><p>This engagement, its test progress, findings, and notes are saved automatically under <code>wapt.state.v1</code>. They remain available on this browser and site origin until you delete the engagement or clear site data. There is no account, cloud sync, target request, or telemetry endpoint.</p></div><p class="completion-note"><strong>No backup or cross-device sync:</strong> private browsing, browser cleanup, storage policies, or a different Pages origin can remove or isolate this data. Export JSON regularly and protect exports as sensitive engagement material. Unknown values deliberately widen the checklist.</p></div>
+          <div><div class="summary-message"><strong>Saved locally for you to resume.</strong><p>This engagement, its progress, findings, and notes are stored under <code>wapt.state.v1</code> on this browser and origin only — no account, cloud sync, target request, or telemetry. Private browsing, cleanup tools, or a different origin can remove or isolate it, so export JSON regularly and treat exports as sensitive. Unknown answers deliberately widen the checklist.</p></div></div>
         </div>
       </div>`;
   }
@@ -208,7 +207,13 @@ export function createWizard(root, initialState, callbacks = {}) {
       <div class="wizard-body">${content}</div>
       <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Save scope & open dashboard →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
     attachEvents();
-    if (manageFocus) root.querySelector('[data-focus-region] h2')?.focus();
+    if (manageFocus) {
+      // Land on the question, not wherever the previous (possibly longer) step was scrolled to.
+      const heading = root.querySelector('[data-focus-region] h2');
+      heading?.focus({ preventScroll: true });
+      const anchor = root.getBoundingClientRect?.().top ?? 0;
+      if (typeof window !== 'undefined' && anchor < 0) window.scrollTo({ top: Math.max(0, window.scrollY + anchor - 12), behavior: 'auto' });
+    }
   }
 
   function reset(nextState) {

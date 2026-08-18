@@ -74,50 +74,91 @@ export function scoreItem(item, context, options = {}) {
   });
 }
 
+// Tester proximity: after a check is recorded, the most useful next action is nearly always
+// the uncovered variant beside it — same family first, then explicitly related tests, then the
+// same attack surface. These boosts deliberately outrank the global workflow ordering, which
+// only decides where to start when the tester has not touched anything yet.
+const FOCUS_FAMILY_BOOST = 1500;
+const RECENT_FAMILY_BOOST = 700;
+const RELATED_BOOST = 500;
+const NEAR_FAMILY_BOOST = 420;
+const SAME_CATEGORY_BOOST = 150;
+
+function normalizeFamilies(families) {
+  const map = new Map();
+  if (!(families instanceof Map)) return map;
+  for (const [id, value] of families) {
+    if (Array.isArray(value)) map.set(id, { id, title: id, items: value });
+    else map.set(id, { id, title: value.title || id, items: value.items || [] });
+  }
+  return map;
+}
+
 export function suggestedNext(items, context, options = {}) {
   const statuses = options.statuses || {};
   const limit = Number.isInteger(options.limit) ? Math.max(0, options.limit) : 8;
   const recent = Array.isArray(options.recent) ? options.recent : [];
-  const families = options.families instanceof Map ? options.families : new Map();
+  const families = normalizeFamilies(options.families);
   const relatedByItem = options.relatedByItem instanceof Map ? options.relatedByItem : new Map();
+  const itemsById = new Map(items.map((item) => [item.id, item]));
 
-  // Tester-aware signals: related to recently touched work, and continuing a
-  // family the tester is part-way through. Bounded, deterministic, additive.
-  const recentSet = new Set(recent);
-  const relatedTargets = new Set();
-  for (const id of recent) for (const target of relatedByItem.get(id) || []) relatedTargets.add(target);
-  const activeFamilies = new Set();
-  for (const [familyId, memberIds] of families) {
-    if (recent.some((id) => memberIds.includes(id))) activeFamilies.add(familyId);
+  const familyOf = new Map();
+  for (const family of families.values()) for (const id of family.items) familyOf.set(id, family);
+
+  // The focus family is whatever the tester is looking at (family workspace) or, failing that,
+  // the family of the check they last recorded.
+  const focusFamily = (options.focusFamily && families.get(options.focusFamily))
+    || (recent.length ? familyOf.get(recent[0]) : null);
+  const focusCategory = recent.length ? itemsById.get(recent[0])?.category : '';
+  const recentFamilies = new Map();
+  for (const id of recent) {
+    const family = familyOf.get(id);
+    if (family && !recentFamilies.has(family.id)) recentFamilies.set(family.id, id);
   }
-  const relatedBoost = 18;
-  const familyBoost = 16;
+  // Families the caller already knows are adjacent (shared links, chains, or workflow order).
+  const nearFamilies = new Set(Array.isArray(options.nearFamilies) ? options.nearFamilies : []);
+  const relatedTargets = new Map();
+  for (const id of recent) for (const target of relatedByItem.get(id) || []) if (!relatedTargets.has(target)) relatedTargets.set(target, id);
 
   return Object.freeze(items
-    .filter((item) => (statuses[item.id] || 'not_tested') === 'not_tested')
+    .filter((item) => {
+      const status = statuses[item.id] || 'not_tested';
+      return status === 'not_tested' || status === 'in_progress';
+    })
     .map((item) => {
       const base = scoreItem(item, context, options);
-      const testerReasons = [];
+      const reasons = [];
       let bonus = 0;
+      const family = familyOf.get(item.id);
+      if (focusFamily && family?.id === focusFamily.id) {
+        bonus += FOCUS_FAMILY_BOOST;
+        reasons.push(`uncovered check in ${focusFamily.title}, the family you are working`);
+      } else if (family && recentFamilies.has(family.id)) {
+        bonus += RECENT_FAMILY_BOOST;
+        reasons.push(`${family.title} is part-way through`);
+      }
+      if (family && nearFamilies.has(family.id) && (!focusFamily || family.id !== focusFamily.id)) {
+        bonus += NEAR_FAMILY_BOOST;
+        reasons.push(`${family.title} is adjacent to the surface you are working`);
+      }
       if (relatedTargets.has(item.id)) {
-        bonus += relatedBoost;
-        testerReasons.push('related to a test you just worked on');
+        bonus += RELATED_BOOST;
+        reasons.push(`linked from ${relatedTargets.get(item.id)}`);
       }
-      if (families.size) {
-        for (const [familyId, memberIds] of families) {
-          if (activeFamilies.has(familyId) && memberIds.includes(item.id)) {
-            bonus += familyBoost;
-            testerReasons.push('continues a family you are part-way through');
-            break;
-          }
-        }
+      if (!bonus && focusCategory && item.category === focusCategory) {
+        bonus += SAME_CATEGORY_BOOST;
+        reasons.push('same attack surface as your last test');
       }
-      if (!bonus) return base;
+      if ((statuses[item.id] || 'not_tested') === 'in_progress') reasons.push('already started');
+      for (const chainId of base.unlockedBy) reasons.push(`unlocked by ${chainId}`);
+      if (!reasons.length) reasons.push(`${item.category.replaceAll('-', ' ')} · severity ${item.severity}`);
       return Object.freeze({
         ...base,
         score: base.score + bonus,
         breakdown: Object.freeze({ ...base.breakdown, tester: bonus }),
-        contextReasons: Object.freeze([...base.contextReasons, ...testerReasons])
+        family: family || null,
+        reasons: Object.freeze(reasons.slice(0, 3)),
+        contextReasons: base.contextReasons
       });
     })
     .filter(({ applicability }) => isExecutable(applicability))

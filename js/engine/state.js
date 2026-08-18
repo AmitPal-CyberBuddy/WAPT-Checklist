@@ -1,11 +1,17 @@
 import { normalizeScopeAnswers } from './context.js';
 
 export const STATE_KEY = 'wapt.state.v1';
-export const STATE_SCHEMA_VERSION = 2;
-export const LEGACY_STATE_SCHEMA_VERSIONS = Object.freeze([1]);
+export const STATE_SCHEMA_VERSION = 3;
+export const LEGACY_STATE_SCHEMA_VERSIONS = Object.freeze([1, 2]);
+// Coverage state of one check. 'blocked' means the tester cannot execute it right now
+// (environment, credentials, or client instruction) — it is NOT tested and NOT N/A.
 export const ITEM_STATUSES = Object.freeze([
-  'not_tested', 'in_progress', 'passed', 'potential_finding', 'confirmed_finding', 'na'
+  'not_tested', 'in_progress', 'passed', 'potential_finding', 'confirmed_finding', 'na', 'blocked'
 ]);
+// Statuses that mean "this check has actually been executed".
+export const TESTED_STATUSES = Object.freeze(['passed', 'potential_finding', 'confirmed_finding']);
+// Statuses that mean "this check is not part of executable work".
+export const SCOPED_OUT_STATUSES = Object.freeze(['na']);
 
 export const FINDING_SEVERITIES = Object.freeze(['critical', 'high', 'medium', 'low', 'informational']);
 export const EXPLOITABILITY_LEVELS = Object.freeze(['not_demonstrated', 'likely', 'proven']);
@@ -18,6 +24,10 @@ const EXPLOITABILITY_SET = new Set(EXPLOITABILITY_LEVELS);
 const VERDICT_SET = new Set(RETEST_VERDICTS);
 const ITEM_ID = /^WAPT-[A-Z]+-\d{3}$/;
 const FINDING_ID = /^find-[a-z0-9-]{4,100}$/;
+// Don't-miss variant keys are "<family-id>#<content-hash>" so a tick stays attached to the
+// reminder it was recorded against even if the family list is reordered.
+const VARIANT_KEY = /^[a-z0-9-]{2,64}#[a-z0-9]{1,12}$/;
+const POSITION_VIEWS = new Set(['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads']);
 const MAX_IMPORT_BYTES = 5_000_000;
 
 function isObject(value) {
@@ -79,6 +89,27 @@ function cleanOverrides(value) {
   return output;
 }
 
+function cleanVariants(value) {
+  const output = {};
+  if (!isObject(value)) return output;
+  for (const [key, flag] of Object.entries(value)) {
+    if (VARIANT_KEY.test(key) && flag === true) output[key] = true;
+  }
+  return output;
+}
+
+function cleanPosition(value) {
+  if (!isObject(value)) return { view: '', family: '', category: '', item: '', updated_at: null };
+  const view = POSITION_VIEWS.has(value.view) ? value.view : '';
+  return {
+    view,
+    family: typeof value.family === 'string' ? value.family.slice(0, 64).replace(/[^a-z0-9-]/g, '') : '',
+    category: typeof value.category === 'string' ? value.category.slice(0, 64).replace(/[^a-z0-9-]/g, '') : '',
+    item: ITEM_ID.test(value.item || '') ? value.item : '',
+    updated_at: isoOrNull(value.updated_at)
+  };
+}
+
 function cleanRetests(value, statuses) {
   const output = {};
   if (!isObject(value)) return output;
@@ -137,6 +168,8 @@ export function createState() {
     notes: {},
     overrides: {},
     retests: {},
+    variants: {},
+    position: { view: '', family: '', category: '', item: '', updated_at: null },
     findings: [],
     updated_at: null
   };
@@ -156,6 +189,8 @@ function normalizeFields(candidate) {
     notes: cleanNotes(candidate.notes),
     overrides: cleanOverrides(candidate.overrides),
     retests: cleanRetests(candidate.retests, statuses),
+    variants: cleanVariants(candidate.variants),
+    position: cleanPosition(candidate.position),
     updated_at: isoOrNull(candidate.updated_at)
   };
 }
@@ -216,6 +251,26 @@ export function setItemStatus(state, id, status, now) {
   else statuses[id] = status;
   if (status !== 'confirmed_finding') delete retests[id];
   return touch(current, { statuses, retests }, now);
+}
+
+// Don't-miss variant coverage: an explicit tick that the tester covered this variant.
+// It is coverage bookkeeping only and never implies a finding.
+export function setVariantCovered(state, key, covered, now) {
+  if (typeof key !== 'string' || !VARIANT_KEY.test(key)) throw new TypeError(`Invalid don't-miss variant key: ${key}`);
+  const current = normalizeState(state);
+  const variants = { ...current.variants };
+  if (covered) variants[key] = true;
+  else delete variants[key];
+  return touch(current, { variants }, now);
+}
+
+// Where the tester currently is, so the engagement can be resumed without hunting.
+export function setPosition(state, patch, now) {
+  const current = normalizeState(state);
+  const timestamp = nowIso(now);
+  return touch(current, {
+    position: cleanPosition({ ...current.position, ...(isObject(patch) ? patch : {}), updated_at: timestamp })
+  }, timestamp);
 }
 
 export function setItemNote(state, id, note, now) {

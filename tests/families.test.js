@@ -24,6 +24,43 @@ test('family validation passes for ALL 25 categories with exact membership', () 
   assert.equal(result.familyMap.size, allItems.length, 'every production item belongs to exactly one family');
 });
 
+test('every family carries an explicit, authored Quick Test and validation line', () => {
+  for (const family of families) {
+    assert.ok(Array.isArray(family.quick_test), `${family.id} quick_test missing`);
+    assert.ok(family.quick_test.length >= 3 && family.quick_test.length <= 5, `${family.id} quick_test length`);
+    for (const line of family.quick_test) {
+      assert.ok(line.length >= 12 && line.length <= 90, `${family.id} quick_test line length: ${line}`);
+      assert.doesNotMatch(line, /^(the|a|an|this)\s/i, `${family.id} quick_test must be imperative`);
+    }
+    assert.ok(family.validate.length >= 30 && family.validate.length <= 160, `${family.id} validate length`);
+  }
+});
+
+test('Quick Test is authored content, never a copy of the item methodology steps', () => {
+  const stepsById = new Map(allItems.map(({ item }) => [item.id, item.steps]));
+  let duplicates = 0;
+  for (const family of families) {
+    for (const id of family.items) {
+      const steps = stepsById.get(id) || [];
+      if (steps.join('|') === family.quick_test.join('|')) duplicates += 1;
+    }
+  }
+  assert.equal(duplicates, 0, 'no family quick test duplicates an item step list verbatim');
+});
+
+test('family validator rejects generated or oversized quick tests', () => {
+  const entry = 'Check every HTTP method against the same object identifier';
+  const base = { id: 'x-family', category: 'authorization', title: 'T', summary: 'S', items: ['WAPT-AUTHZ-003'], dont_miss: [entry], validate: 'Confirmed with two controlled accounts and an authoritative read.' };
+  const short = validateFamilies(allItems, { families: [{ ...base, quick_test: ['Capture as A', 'Swap the id'] }] });
+  assert.ok(short.errors.some((error) => error.includes('quick_test must contain 3 to 5')));
+  const verbose = validateFamilies(allItems, { families: [{ ...base, quick_test: ['Capture the request as user A', 'Swap the identifier', 'x'.repeat(120)] }] });
+  assert.ok(verbose.errors.some((error) => error.includes('12 to 90 characters')));
+  const descriptive = validateFamilies(allItems, { families: [{ ...base, quick_test: ['The tester should capture a request', 'Swap the identifier for B', 'Compare the responses'] }] });
+  assert.ok(descriptive.errors.some((error) => error.includes('imperative')));
+  const noValidate = validateFamilies(allItems, { families: [{ ...base, validate: 'too short', quick_test: ['Capture the request as A', 'Swap the identifier for B', 'Compare the responses'] }] });
+  assert.ok(noValidate.errors.some((error) => error.includes('validate must be a single')));
+});
+
 test('every authored family has a specific dont-miss list and valid metadata', () => {
   for (const family of families) {
     assert.match(family.id, /^[a-z0-9-]{4,80}$/, family.id);

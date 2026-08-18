@@ -5,7 +5,19 @@ import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, 
 import { createCatalog } from './catalog.js?v=1.0.0-r6';
 import { createWorkspace } from './workspace.js?v=1.0.0-r6';
 
-const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
+const VIEWS = new Set(['dashboard', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
+
+// Where should the tester land? A real engagement is resumed, not restarted: if this browser
+// already holds progress, return to the last position instead of the scope wizard.
+function initialHash(current) {
+  const position = current.position || {};
+  if (position.view === 'family' && position.family) return `family/${position.family}`;
+  if (position.view === 'checklist' && position.category) return `checklist/${position.category}`;
+  if (position.view) return position.view;
+  const hasProgress = Object.keys(current.statuses || {}).length > 0;
+  const scoped = Boolean(current.engagement?.name?.trim() || current.engagement?.targetUrl?.trim());
+  return hasProgress || scoped ? 'dashboard' : 'wizard';
+}
 
 function loadPortfolio() {
   try { return normalizePortfolio(JSON.parse(localStorage.getItem(STATE_KEY))); }
@@ -143,7 +155,7 @@ function route() {
   setSidebar(false);
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
-  if (manifest.categories.length && ['dashboard', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
+  if (manifest.categories.length && ['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
     workspace.show(view, slug).catch((error) => {
       const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
       if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;
@@ -240,10 +252,19 @@ function initializeShell() {
     if (event.key === 'Escape' && document.querySelector('#sidebar').dataset.open === 'true') {
       setSidebar(false, true);
     }
+    if (event.key === 'e') {
+      const holder = document.activeElement?.closest('.check-holder');
+      const toggle = holder?.querySelector('.check-open') || document.activeElement?.closest('.test-card')?.querySelector('details.level-details > summary');
+      if (toggle) {
+        event.preventDefault();
+        toggle.click();
+        return;
+      }
+    }
     if (event.key === 'n' || event.key === 'p') {
       const view = currentView();
-      if (!['checklist', 'search'].includes(view)) return;
-      const cards = [...document.querySelectorAll('[data-checklist-results] .test-card, [data-search-results] .test-card')]
+      if (!['checklist', 'search', 'family'].includes(view)) return;
+      const cards = [...document.querySelectorAll('[data-family-root] .check-holder, [data-checklist-results] .check-holder, [data-search-results] .check-holder, [data-checklist-results] > .test-card, [data-checklist-results] .family-group > .test-card, [data-search-results] .test-card')]
         .filter((card) => !card.closest('[data-view][hidden]'));
       if (!cards.length) return;
       const active = document.activeElement;
@@ -263,6 +284,7 @@ function initializeShell() {
     if (pendingShortcut && Date.now() - pendingShortcut.at < 900) {
       pendingShortcut = null;
       if (event.key === 'd') location.hash = 'dashboard';
+      else if (event.key === 't') location.hash = 'families';
       else if (event.key === 'c') location.hash = 'checklist';
       else if (event.key === 'f') {
         location.hash = 'dashboard';
@@ -273,6 +295,7 @@ function initializeShell() {
     }
   });
   window.addEventListener('hashchange', route);
+  if (!location.hash) location.hash = initialHash(state);
   route();
   loadManifest();
 }

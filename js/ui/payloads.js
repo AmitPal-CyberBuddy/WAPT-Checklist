@@ -129,5 +129,6 @@ export function createPayloadStore() {
     apply();
   }
 
-  return Object.freeze({ loadAll, render, getPayloads: () => [...payloads] });
+  return Object.freeze({
+    cached: () => payloads, loadAll, render, getPayloads: () => [...payloads] });
 }
