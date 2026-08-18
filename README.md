@@ -117,6 +117,7 @@ See:
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
 - [Evidence, reportability, and retest workflow](docs/EVIDENCE-WORKFLOW.md)
 - [Feature verification matrix](docs/FEATURE-VERIFICATION.md)
+- [Functional test report](docs/FUNCTIONAL-TEST-REPORT.md) — application-level runs: 41/41 checks, two scripted user journeys, runtime privacy audit
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
 - [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
 - [Version 1.0.0 release and deployment runbook](docs/RELEASE.md)

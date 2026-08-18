@@ -117,12 +117,19 @@ test('workspace surfaces coverage, evidence packs, retest verdicts, and chain no
   assert.match(workspace, /renderCoverageSummary\(/);
   assert.match(workspace, /renderEvidencePacks\(/);
   assert.match(workspace, /classifyReportability\(collect\(\)/);
-  assert.match(workspace, /setRetestVerdict\(state, pack\.id/);
-  assert.match(workspace, /removeFinding\(state, pack\.id\)/);
-  assert.match(workspace, /addFinding\(state, collect\(\)\)/);
+  assert.match(workspace, /setRetestVerdict\(getState\(\), pack\.id/);
+  assert.match(workspace, /removeFinding\(getState\(\), pack\.id\)/);
+  assert.match(workspace, /addFinding\(getState\(\), collect\(\)\)/);
   assert.match(appHtml, /data-coverage-summary/);
   assert.match(appHtml, /data-evidence-packs/);
   assert.match(chains, /status-chip/);
   assert.match(chains, /unlocked\.add\(edge\.to\)/);
   assert.match(workspace, /statuses: getState\(\)\.statuses/);
+});
+
+test('renderChainOverview receives the chain store as a parameter (runtime crash regression)', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /function renderChainOverview\(root, itemList, statuses, chainsStore\)/);
+  assert.match(workspace, /renderChainOverview\(document\.querySelector\('\x5bdata-chain-overview\x5d'\), itemList, state\.statuses, chainStore\)/);
+  assert.doesNotMatch(workspace, /function renderChainOverview[\s\S]{0,120}const chains = chainStore\.getChains/);
 });

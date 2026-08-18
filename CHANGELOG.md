@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Functionality testing — test the application, not just the code)
+
+- `tools/functional-workflows.mjs`: executes the REAL application (app.html + all UI modules) inside a jsdom window with real HTTP against the local server, real localStorage, real event dispatch, and simulated browser reloads. 41/41 checks: Workflow 1 (full WAPT journey: wizard → preset → dashboard → search → filters → methodology → status → note → evidence pack → report → export → reload → import), Workflow 2 (attack chain: prerequisite completion → node unlock → status chips), 12 edge cases, keyboard/theme/print, and a runtime audit (123 requests, all same-origin, zero external, zero console errors).
+- `docs/FUNCTIONAL-TEST-REPORT.md` with the feature matrix, workflows, and bug ledger.
+
+### Fixed (found by actually running the application)
+
+- Dashboard crash: `ReferenceError: chainStore is not defined` in the Phase 5 chain-overview panel blocked Suggested next (REGRESSION) — the store is now passed as a parameter with a regression test.
+- Card and evidence handlers captured render-time state; a write through a replaced DOM node could clobber a newer status change (latent stale-closure bug) — all handlers now read live state through an accessor, with an explicit stale-node regression check.
+- Evidence-pack decision stage only refreshed on text `input` events; select and checkbox changes never updated it (PRE-EXISTING) — stage refresh now binds `input` and `change`.
+
 ### Added (FFV round 3 — baseline comparison & per-phase regression proof)
 
 - `tools/regression-history.sh`: mechanically runs the Node suite at the baseline commit and every phase commit (worktree-based, reproducible).

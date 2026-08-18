@@ -147,7 +147,8 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
   root.append(grid);
 }
 
-function renderCard(record, state, categoryNames, onState) {
+function renderCard(record, getState, categoryNames, onState) {
+  const state = getState();
   const { item, applicability } = record;
   const card = element('article', `test-card severity-${item.severity}`);
   card.dataset.itemId = item.id;
@@ -172,7 +173,7 @@ function renderCard(record, state, categoryNames, onState) {
   status.setAttribute('aria-label', `Status for ${item.id}`);
   for (const [value, label] of STATUS_OPTIONS) status.append(new Option(label, value));
   status.value = itemStatus(item, state);
-  status.addEventListener('change', () => onState(setItemStatus(state, item.id, status.value)));
+  status.addEventListener('change', () => onState(setItemStatus(getState(), item.id, status.value)));
   controls.append(status);
   header.append(identity, controls);
   card.append(header);
@@ -261,7 +262,7 @@ function renderCard(record, state, categoryNames, onState) {
   textarea.maxLength = 20000;
   textarea.value = state.notes?.[item.id] || '';
   textarea.placeholder = 'Observations, controls, evidence references, and validation still required…';
-  textarea.addEventListener('change', () => onState(setItemNote(state, item.id, textarea.value)));
+  textarea.addEventListener('change', () => onState(setItemNote(getState(), item.id, textarea.value)));
   noteLabel.append(textarea);
   notes.append(noteLabel);
   if (itemStatus(item, state) === 'confirmed_finding') {
@@ -269,19 +270,19 @@ function renderCard(record, state, categoryNames, onState) {
     const box = document.createElement('input');
     box.type = 'checkbox';
     box.checked = Boolean(state.retests?.[item.id]);
-    box.addEventListener('change', () => onState(setRetestFlag(state, item.id, box.checked)));
+    box.addEventListener('change', () => onState(setRetestFlag(getState(), item.id, box.checked)));
     retest.append(box, document.createTextNode(' Include in retest matrix'));
     notes.append(retest);
-    notes.append(renderEvidenceForm(item, state, onState));
+    notes.append(renderEvidenceForm(item, getState, onState));
   }
   if (record.rawApplicability.state === APPLICABILITY.NA_CONTEXT) {
     const override = element('button', 'button button-quiet', applicability.overridden ? 'Clear applicability override' : 'Override context N/A');
     override.type = 'button';
     override.addEventListener('click', () => {
-      if (applicability.overridden) onState(clearOverride(state, item.id));
+      if (applicability.overridden) onState(clearOverride(getState(), item.id));
       else {
         const reason = window.prompt('Why is this test applicable despite the current context?');
-        if (reason?.trim()) onState(setOverride(state, item.id, reason));
+        if (reason?.trim()) onState(setOverride(getState(), item.id, reason));
       }
     });
     notes.append(override);
@@ -292,7 +293,8 @@ function renderCard(record, state, categoryNames, onState) {
   return card;
 }
 
-function renderEvidenceForm(item, state, onState) {
+function renderEvidenceForm(item, getState, onState) {
+  const state = getState();
   const recorded = (state.findings || []).filter(({ item_id: id }) => id === item.id);
   const details = element('details', 'evidence-form');
   details.append(element('summary', '', recorded.length ? `Evidence packs (${recorded.length})` : 'Record evidence pack'));
@@ -386,13 +388,14 @@ function renderEvidenceForm(item, state, onState) {
     stageDetail.textContent = `${STAGE_LABELS[classification.stage]} · ${classification.reasons.join(' · ')}`;
   }
   grid.addEventListener('input', refreshStage);
+  grid.addEventListener('change', refreshStage);
   refreshStage();
 
   const actions = element('div', 'evidence-actions');
   const save = element('button', 'button button-primary', 'Save evidence pack');
   save.type = 'button';
   save.addEventListener('click', () => {
-    onState(addFinding(state, collect()));
+    onState(addFinding(getState(), collect()));
     details.open = false;
   });
   actions.append(save);
@@ -411,7 +414,8 @@ function renderCoverageSummary(root, coverage, queue) {
   root.append(big, detail);
 }
 
-function renderEvidencePacks(root, itemList, state, onState) {
+function renderEvidencePacks(root, itemList, getState, onState) {
+  const state = getState();
   const packs = state.findings || [];
   root.replaceChildren();
   if (!packs.length) {
@@ -472,7 +476,7 @@ function renderEvidencePacks(root, itemList, state, onState) {
     for (const option of RETEST_VERDICTS) verdict.append(new Option(option, option));
     verdict.value = pack.retest_verdict;
     verdict.setAttribute('aria-label', `Retest verdict for ${pack.id}`);
-    verdict.addEventListener('change', () => onState(setRetestVerdict(state, pack.id, verdict.value, pack.retest_note)));
+    verdict.addEventListener('change', () => onState(setRetestVerdict(getState(), pack.id, verdict.value, pack.retest_note)));
     verdictLabel.append(verdict);
     controls.append(verdictLabel);
     if (pack.retest_verdict !== 'pending') controls.append(element('p', 'evidence-verdict-guide', RETEST_GUIDANCE[pack.retest_verdict]));
@@ -482,13 +486,13 @@ function renderEvidencePacks(root, itemList, state, onState) {
     note.rows = 2;
     note.maxLength = 2000;
     note.value = pack.retest_note;
-    note.addEventListener('change', () => onState(setRetestVerdict(state, pack.id, pack.retest_verdict, note.value)));
+    note.addEventListener('change', () => onState(setRetestVerdict(getState(), pack.id, pack.retest_verdict, note.value)));
     noteLabel.append(note);
     controls.append(noteLabel);
     const remove = element('button', 'button button-quiet evidence-remove', 'Delete evidence pack');
     remove.type = 'button';
     remove.addEventListener('click', () => {
-      if (window.confirm(`Delete evidence pack ${pack.id}? This cannot be undone.`)) onState(removeFinding(state, pack.id));
+      if (window.confirm(`Delete evidence pack ${pack.id}? This cannot be undone.`)) onState(removeFinding(getState(), pack.id));
     });
     controls.append(remove);
     card.append(controls);
@@ -517,9 +521,9 @@ function renderRetestQueue(root, queue, itemList) {
   root.append(list);
 }
 
-function renderChainOverview(root, itemList, statuses) {
+function renderChainOverview(root, itemList, statuses, chainsStore) {
   root.replaceChildren();
-  const chains = chainStore.getChains();
+  const chains = chainsStore.getChains();
   if (!chains.length) {
     root.append(element('p', 'empty-copy', 'Attack chains are still loading. Open the Attack chains view for the full graph.'));
     return;
@@ -569,7 +573,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       root.replaceChildren(element('div', 'panel empty-panel', 'No tests match the current context and filters.'));
       return;
     }
-    root.replaceChildren(...visible.map((record) => renderCard(record, getState(), names(), commit)));
+    root.replaceChildren(...visible.map((record) => renderCard(record, getState, names(), commit)));
   }
 
   function restoreFilterFocus(root, key) {
@@ -651,7 +655,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }));
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
     renderRetestQueue(document.querySelector('[data-retest-queue]'), queue, itemList);
-    renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses);
+    renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses, chainStore);
 
     const suggestedRoot = document.querySelector('[data-suggested-next]');
     const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
@@ -698,7 +702,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       findingsRoot.replaceChildren(table);
     }
 
-    renderEvidencePacks(document.querySelector('[data-evidence-packs]'), itemList, state, commit);
+    renderEvidencePacks(document.querySelector('[data-evidence-packs]'), itemList, getState, commit);
   }
 
   async function ensureAll() {
