@@ -1,0 +1,430 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-18",
+  "note": "Tester-first test families. Every family groups checklist items so a tester can work an attack surface without losing context. dont_miss entries are coverage reminders for experienced testers, not tutorial content. Validator gates: items resolve, membership is unique per category, and every production item of a family-covered category belongs to exactly one family.",
+  "families": [
+    {
+      "id": "authorization-role-permission-matrix",
+      "category": "authorization",
+      "title": "Role & permission matrix",
+      "summary": "Establish the expected function, object, field, tenant, and workflow permissions before mutating anything.",
+      "items": ["WAPT-AUTHZ-001"],
+      "dont_miss": [
+        "Document object, function, field, tenant, and workflow permissions separately, not one blended role list",
+        "Include groups, delegated permissions, service identities, and tenant roles, not only named user roles",
+        "Re-verify the matrix after any role, membership, or tenant changes during the engagement"
+      ]
+    },
+    {
+      "id": "authorization-object-level",
+      "category": "authorization",
+      "title": "Object-level authorization",
+      "summary": "Per-object read, update, delete, collection, bulk, nested, indirect, media, report, and async-result decisions.",
+      "items": ["WAPT-AUTHZ-003", "WAPT-AUTHZ-004", "WAPT-AUTHZ-005", "WAPT-AUTHZ-006", "WAPT-AUTHZ-007", "WAPT-AUTHZ-008", "WAPT-AUTHZ-009", "WAPT-AUTHZ-010", "WAPT-AUTHZ-011", "WAPT-AUTHZ-012", "WAPT-AUTHZ-031", "WAPT-AUTHZ-032", "WAPT-AUTHZ-034", "WAPT-AUTHZ-039"],
+      "dont_miss": [
+        "GET, POST, PUT, PATCH, and DELETE against the same object identifier, not just the read path",
+        "Nested and child objects reached through parent identifiers",
+        "Bulk, batch, and multiplexed endpoints that authorize only the first member",
+        "Export, report, download, and asynchronous job-result equivalents of the same object",
+        "Indirect and opaque references, signed URLs, and media retrieval paths",
+        "Search and filter endpoints that evaluate queries before object authorization",
+        "Rechecking authorization after the object's state changes"
+      ]
+    },
+    {
+      "id": "authorization-function-level",
+      "category": "authorization",
+      "title": "Function-level authorization",
+      "summary": "Which callers may invoke a function at all: unauthenticated, alternate methods, admin, undocumented, versioned, and error paths.",
+      "items": ["WAPT-AUTHZ-002", "WAPT-AUTHZ-013", "WAPT-AUTHZ-014", "WAPT-AUTHZ-015", "WAPT-AUTHZ-037", "WAPT-AUTHZ-038", "WAPT-AUTHZ-041", "WAPT-AUTHZ-042"],
+      "dont_miss": [
+        "Alternate HTTP methods, route aliases, and trailing or versioned routes to the same handler",
+        "Administrative and management functions from a standard user context",
+        "Undocumented or newly deployed functions that inherit default access",
+        "Error, preview, and metadata representations that bypass normal authorization",
+        "Client-side hidden buttons and disabled UI treated as access controls"
+      ]
+    },
+    {
+      "id": "authorization-privilege-and-field",
+      "category": "authorization",
+      "title": "Privilege, role & field boundaries",
+      "summary": "Client-controlled roles, ownership reassignment, protected property writes, delegated scope, revocation, and field-level visibility.",
+      "items": ["WAPT-AUTHZ-016", "WAPT-AUTHZ-017", "WAPT-AUTHZ-018", "WAPT-AUTHZ-019", "WAPT-AUTHZ-022", "WAPT-AUTHZ-024", "WAPT-AUTHZ-025", "WAPT-AUTHZ-029", "WAPT-AUTHZ-030", "WAPT-AUTHZ-040"],
+      "dont_miss": [
+        "Role, permission, owner, tenant, price, and status fields written by lower-privilege callers",
+        "Membership changes to groups, teams, and shared resources by non-owners",
+        "Delegated and shared access that outlives its intended scope or expiry",
+        "Revocation and role removal while stale caches or self-contained claims survive",
+        "Field-level reads that reappear in sparse, expanded, or alternate representations"
+      ]
+    },
+    {
+      "id": "authorization-tenant-isolation",
+      "category": "authorization",
+      "title": "Tenant isolation & integration boundaries",
+      "summary": "Tenant context binding, cross-tenant object access, switching state, invitations, and confused-deputy integrations.",
+      "items": ["WAPT-AUTHZ-020", "WAPT-AUTHZ-021", "WAPT-AUTHZ-023", "WAPT-AUTHZ-036"],
+      "dont_miss": [
+        "Tenant identifiers supplied in the body, headers, subdomains, and cookies instead of trusted identity",
+        "Cross-tenant object access through shared identifiers, caches, and indexes",
+        "State, drafts, and permissions leaking when a user switches tenants",
+        "Privileged backend integrations performing operations for a caller without downstream authorization"
+      ]
+    },
+    {
+      "id": "authorization-workflow-and-approval",
+      "category": "authorization",
+      "title": "Workflow, approval & audit boundaries",
+      "summary": "State-transition authorization, separation of duties, impersonation, existence oracles, realtime channels, and audit behavior.",
+      "items": ["WAPT-AUTHZ-026", "WAPT-AUTHZ-027", "WAPT-AUTHZ-028", "WAPT-AUTHZ-033", "WAPT-AUTHZ-035", "WAPT-AUTHZ-043"],
+      "dont_miss": [
+        "Out-of-order, skipped, or replayed workflow state transitions",
+        "Approvals performed by the same identity that requested the action",
+        "Administrator impersonation and support access without layered re-verification",
+        "Authorization answers leaking object existence through error or timing differences",
+        "Realtime channel subscriptions and messages carrying authorization of their own",
+        "Audit events that themselves disclose protected data"
+      ]
+    },
+    {
+      "id": "authentication-credential-transport",
+      "category": "authentication",
+      "title": "Credential transport, logging & defaults",
+      "summary": "Where credentials travel and whether defaults, logs, or referrers expose them.",
+      "items": ["WAPT-AUTH-001", "WAPT-AUTH-002", "WAPT-AUTH-003"],
+      "dont_miss": [
+        "Login, enrollment, recovery, and factor submissions over plaintext or downgraded channels",
+        "Credentials, OTPs, and recovery tokens in query strings, paths, and referrer-bearing navigation",
+        "Documented vendor defaults on the confirmed product, including API and appliance logins"
+      ]
+    },
+    {
+      "id": "authentication-account-enumeration",
+      "category": "authentication",
+      "title": "Account enumeration",
+      "summary": "Whether login, registration, and recovery disclose which accounts exist, through text, timing, or status codes.",
+      "items": ["WAPT-AUTH-005", "WAPT-AUTH-006", "WAPT-AUTH-007", "WAPT-AUTH-008"],
+      "dont_miss": [
+        "Response text, status codes, redirects, headers, and body shape differences",
+        "Repeatable timing differences between valid and invalid accounts",
+        "Registration and username-reminder flows disclosing existing identities",
+        "Recovery flows confirming account existence before any email is sent"
+      ]
+    },
+    {
+      "id": "authentication-password-policy",
+      "category": "authentication",
+      "title": "Username & password policy",
+      "summary": "Canonicalization, length, composition, and rotation rules for passwords and usernames.",
+      "items": ["WAPT-AUTH-009", "WAPT-AUTH-010", "WAPT-AUTH-011", "WAPT-AUTH-012", "WAPT-AUTH-013"],
+      "dont_miss": [
+        "Case, whitespace, and Unicode normalization differences between registration and login",
+        "Hidden truncation of long passphrases at creation or verification",
+        "Paste and password-manager blocking on security-sensitive fields",
+        "Breached, common, and context-specific password rejection",
+        "Forced periodic rotation driving predictable password cycling"
+      ]
+    },
+    {
+      "id": "authentication-brute-force-stuffing",
+      "category": "authentication",
+      "title": "Brute force & credential stuffing",
+      "summary": "Guessing and stuffing controls across account, device, network, and risk signals, including lockout abuse.",
+      "items": ["WAPT-AUTH-014", "WAPT-AUTH-015", "WAPT-AUTH-016"],
+      "dont_miss": [
+        "Per-account limits that survive source-IP and device rotation",
+        "Credential stuffing across distributed sources with breached-credential screening",
+        "Account lockout used as a denial-of-service primitive against other users"
+      ]
+    },
+    {
+      "id": "authentication-login-enforcement",
+      "category": "authentication",
+      "title": "Login enforcement & fail-closed",
+      "summary": "Authentication on every route and representation, consistent across methods and media types, failing closed on errors.",
+      "items": ["WAPT-AUTH-017", "WAPT-AUTH-018", "WAPT-AUTH-019", "WAPT-AUTH-039"],
+      "dont_miss": [
+        "Direct navigation, API calls, alternate formats, and nested resources bypassing the login gate",
+        "Method or media-type changes reaching unauthenticated parsers and handlers",
+        "Omitted, duplicated, and ambiguous authentication fields",
+        "Malformed requests and unavailable identity services granting access or skipping factors"
+      ]
+    },
+    {
+      "id": "authentication-password-change-recovery",
+      "category": "authentication",
+      "title": "Password change & account recovery",
+      "summary": "Current-password requirements, token generation, reset-link origins, and account binding across change and recovery flows.",
+      "items": ["WAPT-AUTH-022", "WAPT-AUTH-023", "WAPT-AUTH-024", "WAPT-AUTH-025", "WAPT-AUTH-026", "WAPT-AUTH-027", "WAPT-AUTH-028"],
+      "dont_miss": [
+        "Password changes without the current password from an unattended session",
+        "Account identifiers in change requests that can target another user",
+        "Reset tokens that are predictable, reusable, or long-lived",
+        "Reset links built from Host or forwarding inputs instead of a canonical origin",
+        "Reset completion bound to the wrong account, factor, tenant, or action",
+        "Knowledge-based security questions used as an authentication factor"
+      ]
+    },
+    {
+      "id": "authentication-mfa-factors",
+      "category": "authentication",
+      "title": "MFA & factor lifecycle",
+      "summary": "Enrollment, completion, OTP verification, recovery codes, factor removal, and push-approval behavior.",
+      "items": ["WAPT-AUTH-029", "WAPT-AUTH-030", "WAPT-AUTH-031", "WAPT-AUTH-032", "WAPT-AUTH-033", "WAPT-AUTH-034", "WAPT-AUTH-036"],
+      "dont_miss": [
+        "Factor enrollment without recent reauthentication",
+        "MFA completion skipped through direct routes, flow fields, or session reuse",
+        "OTP and recovery-code guessing within their validity windows",
+        "Replayed or reused OTPs and push approvals",
+        "Factor removal or replacement with only weak session proof",
+        "Push fatigue and approval prompts without number matching or context"
+      ]
+    },
+    {
+      "id": "authentication-trusted-devices",
+      "category": "authentication",
+      "title": "Trusted devices & persistent login",
+      "summary": "Remember-device and remember-me tokens: entropy, rotation, revocation, and exemption binding.",
+      "items": ["WAPT-AUTH-020", "WAPT-AUTH-021", "WAPT-AUTH-035"],
+      "dont_miss": [
+        "Guessable or low-entropy persistent-login tokens",
+        "Remember-me tokens surviving logout, password changes, and explicit revocation",
+        "Trusted-device exemptions that outlive factor or password changes"
+      ]
+    },
+    {
+      "id": "authentication-stepup-lifecycle",
+      "category": "authentication",
+      "title": "Step-up & account lifecycle",
+      "summary": "Bootstrap expiry, reauthentication for sensitive actions, security-event notifications, and secret-free audit logging.",
+      "items": ["WAPT-AUTH-004", "WAPT-AUTH-040", "WAPT-AUTH-041", "WAPT-AUTH-042"],
+      "dont_miss": [
+        "Bootstrap passwords and activation codes reused after first login",
+        "High-risk account, financial, and administrative actions relying only on an old session",
+        "Missing notifications for password resets, factor changes, and suspicious logins",
+        "Audit logs that record credentials instead of outcomes"
+      ]
+    },
+    {
+      "id": "authentication-federation-passkeys",
+      "category": "authentication",
+      "title": "Passkeys & federation boundaries",
+      "summary": "Passkey binding and challenge verification, alternate-channel strength, and local fallback beside federated login.",
+      "items": ["WAPT-AUTH-037", "WAPT-AUTH-038", "WAPT-AUTH-043", "WAPT-AUTH-044", "WAPT-AUTH-045"],
+      "dont_miss": [
+        "Mobile, legacy, API, and support channels with weaker assurance than the primary login",
+        "Local passwords or break-glass routes bypassing required SSO or MFA",
+        "Passkey registration and assertions bound to the wrong account, origin, or relying party",
+        "Password recovery silently disabling MFA or downgrading assurance"
+      ]
+    },
+    {
+      "id": "api-object-field-authorization",
+      "category": "api-security",
+      "title": "API object & field authorization",
+      "summary": "BOLA and BOPLA across reads, mutations, nested resources, bulk calls, mobile clients, and property filtering.",
+      "items": ["WAPT-API-001", "WAPT-API-002", "WAPT-API-003", "WAPT-API-004", "WAPT-API-005", "WAPT-API-010", "WAPT-API-011", "WAPT-API-013"],
+      "dont_miss": [
+        "Read, update, delete, and cancel mutations against swapped object identifiers",
+        "Parent, child, tenant, and relationship identifiers validated together",
+        "Each member of a bulk or batch request receiving its own authorization decision",
+        "Identifiers recovered from mobile clients reaching other accounts and tenants",
+        "Protected fields writable through mass assignment or broad model binding",
+        "Fields reappearing in sparse, expanded, or alternate representations"
+      ]
+    },
+    {
+      "id": "api-authentication-credentials",
+      "category": "api-security",
+      "title": "API authentication & credentials",
+      "summary": "Credential transport consistency, key scoping, audience binding, and equivalent strength across versions and protocols.",
+      "items": ["WAPT-API-006", "WAPT-API-007", "WAPT-API-008", "WAPT-API-009"],
+      "dont_miss": [
+        "Absent, malformed, duplicated, and alternate credential transports accepted inconsistently",
+        "Long-lived shared API keys embedded in public clients with excessive scope",
+        "Tokens issued for another API, client, tenant, or purpose being accepted",
+        "Legacy versions, RPC routes, and mobile endpoints with weaker authentication"
+      ]
+    },
+    {
+      "id": "api-schema-binding",
+      "category": "api-security",
+      "title": "Schema & binding",
+      "summary": "Per-action writable schemas instead of shared model binding, and response overfetching beyond the contract.",
+      "items": ["WAPT-API-012", "WAPT-API-014"],
+      "dont_miss": [
+        "Create, patch, replace, and admin actions sharing an overbroad binding model",
+        "Backend returning complete records that client-side filtering hides"
+      ]
+    },
+    {
+      "id": "api-resource-abuse",
+      "category": "api-security",
+      "title": "Resource & abuse controls",
+      "summary": "Page sizes, body and batch limits, expensive queries, paid side effects, and distributed abuse.",
+      "items": ["WAPT-API-015", "WAPT-API-016", "WAPT-API-017", "WAPT-API-018", "WAPT-API-019"],
+      "dont_miss": [
+        "Pagination and expansion parameters driving disproportionate database, memory, or bandwidth use",
+        "Oversized JSON, XML, multipart, arrays, and operation batches processed before rejection",
+        "User-selected filters, sorts, and joins with unbounded backend cost",
+        "Requests triggering unbounded email, SMS, exports, or third-party spend",
+        "Parallel and distributed requests bypassing per-account budgets"
+      ]
+    },
+    {
+      "id": "api-function-authorization",
+      "category": "api-security",
+      "title": "API function authorization",
+      "summary": "Admin-only functions, route aliases, role and membership management, and default-deny for new functions.",
+      "items": ["WAPT-API-020", "WAPT-API-021", "WAPT-API-022", "WAPT-API-023"],
+      "dont_miss": [
+        "Standard tokens invoking admin operations discovered through schemas, clients, or traffic",
+        "Alternate verbs, aliases, and versioned routes reaching privileged handlers",
+        "Lower roles assigning roles, groups, service accounts, invitations, or membership",
+        "Undocumented and newly deployed functions inheriting generic access"
+      ]
+    },
+    {
+      "id": "api-business-state",
+      "category": "api-security",
+      "title": "Business flows & transaction state",
+      "summary": "Automation of high-value flows, workflow sequence, and idempotency or one-time semantics.",
+      "items": ["WAPT-API-024", "WAPT-API-025", "WAPT-API-026"],
+      "dont_miss": [
+        "Purchasing, reservation, posting, invitation, and redemption flows automatable beyond intent",
+        "Clients skipping, replaying, or reordering required workflow transitions",
+        "Replayed or retried requests duplicating transactions, credits, bookings, or side effects"
+      ]
+    },
+    {
+      "id": "api-fetching-integration",
+      "category": "api-security",
+      "title": "URL fetching & third-party integration",
+      "summary": "Server-side fetch parameters, redirect revalidation, and the security of consumed third-party APIs.",
+      "items": ["WAPT-API-027", "WAPT-API-028", "WAPT-API-037", "WAPT-API-038", "WAPT-API-039", "WAPT-API-040"],
+      "dont_miss": [
+        "Import, webhook, avatar, preview, and callback URLs reaching unintended destinations",
+        "Allowed URLs redirecting or resolving to prohibited targets after validation",
+        "Third-party API fields treated as trusted commands, identity, price, role, or markup",
+        "Slow, oversized, or malformed upstream responses exhausting resources or failing open",
+        "Upstream TLS identity, redirect policy, and credential scoping"
+      ]
+    },
+    {
+      "id": "api-operations-exposure",
+      "category": "api-security",
+      "title": "Operations & exposure",
+      "summary": "Method and media-type handling, debug output, CORS, and management endpoints.",
+      "items": ["WAPT-API-029", "WAPT-API-030", "WAPT-API-031", "WAPT-API-032"],
+      "dont_miss": [
+        "Unused methods or parser fallbacks exposing operations or weaker validation",
+        "Production errors disclosing code paths, queries, secrets, or debug functions",
+        "API responses readable from untrusted origins with ambient credentials",
+        "Documentation consoles, actuator, metrics, and admin tooling without access controls"
+      ]
+    },
+    {
+      "id": "api-inventory-lifecycle",
+      "category": "api-security",
+      "title": "Inventory & lifecycle",
+      "summary": "Host and version inventories, deprecated versions, shadow deployments, and documentation reconciliation.",
+      "items": ["WAPT-API-033", "WAPT-API-034", "WAPT-API-035", "WAPT-API-036"],
+      "dont_miss": [
+        "APIs without an owner, environment, data class, or lifecycle state",
+        "Deprecated versions remaining reachable with weaker controls",
+        "Development, staging, preview, and mobile hosts exposing unmanaged copies",
+        "Schemas omitting live routes or describing retired authentication"
+      ]
+    },
+    {
+      "id": "upload-acceptance-validation",
+      "category": "file-handling",
+      "title": "Acceptance & validation",
+      "summary": "The documented contract and how extension, media type, signature, and size limits are enforced together.",
+      "items": ["WAPT-UPLOAD-001", "WAPT-UPLOAD-002", "WAPT-UPLOAD-003", "WAPT-UPLOAD-011"],
+      "dont_miss": [
+        "Extension, declared Content-Type, and file signature contradicting each other",
+        "Case, trailing dots and spaces, alternate separators, and Unicode filename normalization",
+        "Upload byte, file-count, and per-user storage quotas beyond the documented contract",
+        "Unpacked limits and retention boundaries, not just the raw upload size"
+      ]
+    },
+    {
+      "id": "upload-execution-sandboxing",
+      "category": "file-handling",
+      "title": "Execution & sandboxing",
+      "summary": "Server-side execution, isolated serving origins, and malware scanning placement.",
+      "items": ["WAPT-UPLOAD-004", "WAPT-UPLOAD-005", "WAPT-UPLOAD-016"],
+      "dont_miss": [
+        "Uploaded content routed through server-side executable handlers",
+        "Active formats inheriting application cookies, origin privileges, or inline rendering",
+        "Malware scanning treated as type validation instead of defense in depth"
+      ]
+    },
+    {
+      "id": "upload-naming-collision",
+      "category": "file-handling",
+      "title": "Naming, collisions & headers",
+      "summary": "Filename traversal, overwrite and collision behavior, and Content-Disposition safety.",
+      "items": ["WAPT-UPLOAD-006", "WAPT-UPLOAD-007", "WAPT-UPLOAD-023"],
+      "dont_miss": [
+        "Chosen names or predictable storage keys replacing another user's file or an application asset",
+        "Multipart and metadata filenames escaping the staging directory",
+        "Download filenames injecting headers or breaking quoting in Content-Disposition"
+      ]
+    },
+    {
+      "id": "upload-archives",
+      "category": "file-handling",
+      "title": "Archive handling",
+      "summary": "ZIP Slip, symlink escape, and expansion bounds during extraction.",
+      "items": ["WAPT-UPLOAD-008", "WAPT-UPLOAD-009", "WAPT-UPLOAD-010"],
+      "dont_miss": [
+        "Archive entry paths escaping the extraction root",
+        "Symlink and hardlink entries redirecting later reads and writes",
+        "Unpacked bytes, ratios, depths, and entry counts exceeding safe bounds"
+      ]
+    },
+    {
+      "id": "upload-image-document-processing",
+      "category": "file-handling",
+      "title": "Image & document processing",
+      "summary": "Decoded dimensions, metadata, SVG handling, polyglots, and privileged previews.",
+      "items": ["WAPT-UPLOAD-012", "WAPT-UPLOAD-013", "WAPT-UPLOAD-014", "WAPT-UPLOAD-015", "WAPT-UPLOAD-025"],
+      "dont_miss": [
+        "Small encoded images expanding to excessive pixels or memory",
+        "Metadata, embedded active content, and secondary streams surviving processing",
+        "SVG scripts, events, links, and external references in the preview pipeline",
+        "Polyglot files valid in multiple formats bypassing one validator",
+        "Privileged moderation and admin previews processing untrusted files with greater access"
+      ]
+    },
+    {
+      "id": "upload-authorization-retrieval",
+      "category": "file-handling",
+      "title": "Authorization & retrieval",
+      "summary": "Who may attach, download, and derive files — including traversal on download and export paths.",
+      "items": ["WAPT-UPLOAD-017", "WAPT-UPLOAD-018", "WAPT-UPLOAD-019", "WAPT-UPLOAD-020", "WAPT-UPLOAD-024"],
+      "dont_miss": [
+        "Uploading into another user's object, tenant, folder, or privileged slot",
+        "Changed file IDs, storage keys, or transformations retrieving private files",
+        "Traversal through download and export path parameters",
+        "Encoded and double-decoded traversal variants across edge and application decoding",
+        "Partial uploads, scan queues, and failed files remaining publicly reachable"
+      ]
+    },
+    {
+      "id": "upload-inclusion-generated",
+      "category": "file-handling",
+      "title": "Inclusion & generated content",
+      "summary": "Local and remote inclusion, untrusted template loading, and generated files that inherit unsafe input.",
+      "items": ["WAPT-UPLOAD-021", "WAPT-UPLOAD-022", "WAPT-UPLOAD-026"],
+      "dont_miss": [
+        "Local path selectors loading unintended server-side files into processing",
+        "Include, template, theme, and plugin selectors fetching and evaluating remote resources",
+        "Server-generated PDFs, spreadsheets, and archives inheriting unsafe filenames or active content"
+      ]
+    }
+  ]
+}

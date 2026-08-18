@@ -10,7 +10,7 @@ const { CATEGORIES, validateFiles, validatePhase7 } = require('../tools/validate
 const ROOT = path.resolve(__dirname, '..');
 const CHECKLIST = path.join(ROOT, 'checklist');
 const productionFiles = () => fs.readdirSync(CHECKLIST)
-  .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
+  .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json', 'families.json'].includes(name))
   .map((name) => path.join(CHECKLIST, name));
 
 test('all Phase 4 core categories are present and pass their release floors', () => {

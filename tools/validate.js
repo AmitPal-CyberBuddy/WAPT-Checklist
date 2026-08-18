@@ -368,7 +368,7 @@ function discoverFiles(args) {
   if (args.length) return args.map((file) => path.resolve(ROOT, file));
   const checklist = path.join(ROOT, 'checklist');
   return fs.readdirSync(checklist)
-    .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json'].includes(name))
+    .filter((name) => name.endsWith('.json') && !['manifest.json', 'sample.json', 'families.json'].includes(name))
     .map((name) => path.join(checklist, name));
 }
 
@@ -536,6 +536,9 @@ function validateFiles(files, options = {}) {
     }
   }
 
+  const familiesResult = validateFamilies(allItems);
+  errors.push(...familiesResult.errors);
+
   let phase7 = null;
   if (options.validateAuxiliary) {
     phase7 = validatePhase7(new Set(idOwners.keys()));
@@ -567,7 +570,55 @@ function validateFiles(files, options = {}) {
     }
   }
 
-  return { errors, itemCount: allItems.length, documentCount: documents.length, counts, phase7 };
+  return { errors, itemCount: allItems.length, documentCount: documents.length, counts, phase7, families: familiesResult };
+}
+
+function validateFamilies(allItems, overrideDocument = null) {
+  const errors = [];
+  const file = path.join(ROOT, 'checklist', 'families.json');
+  const document = overrideDocument !== null ? overrideDocument : (fs.existsSync(file) ? parseJson(file, errors) : null);
+  const families = Array.isArray(document?.families) ? document.families : [];
+  if (!families.length) errors.push('checklist/families.json: no families defined');
+  const production = allItems.filter(({ sample }) => !sample);
+  if (!production.length) return { errors, familyCount: families.length, familyMap: new Map() };
+  const itemCategory = new Map(production.map(({ item }) => [item.id, item.category]));
+  const categoryItems = new Map();
+  for (const { item } of production) {
+    const set = categoryItems.get(item.category) || new Set();
+    set.add(item.id);
+    categoryItems.set(item.category, set);
+  }
+  const membership = new Map();
+  const covered = new Map();
+  const familyIds = new Set();
+  for (const family of families) {
+    const at = `checklist/families.json.${family?.id || 'unknown'}`;
+    if (!/^[a-z0-9-]{4,80}$/.test(family?.id || '')) errors.push(`${at}: invalid family id`);
+    if (familyIds.has(family?.id)) errors.push(`${at}: duplicate family id`);
+    familyIds.add(family?.id);
+    if (!Object.hasOwn(CATEGORIES, family?.category)) errors.push(`${at}: unknown category ${family?.category}`);
+    if (!hasText(family?.title) || !hasText(family?.summary)) errors.push(`${at}: title and summary are required`);
+    if (!Array.isArray(family?.items) || family.items.length === 0) errors.push(`${at}: items must be a non-empty array`);
+    for (const id of family?.items || []) {
+      if (!itemCategory.has(id)) errors.push(`${at}.items: unresolved item ${id}`);
+      else if (itemCategory.get(id) !== family.category) errors.push(`${at}.items: ${id} belongs to ${itemCategory.get(id)}`);
+      if (membership.has(id)) errors.push(`${at}.items: ${id} already assigned to family ${membership.get(id)}`);
+      else membership.set(id, family.id);
+      const set = covered.get(family.category) || new Set();
+      set.add(id);
+      covered.set(family.category, set);
+    }
+    if (!Array.isArray(family?.dont_miss) || family.dont_miss.length === 0) errors.push(`${at}: dont_miss must be a non-empty array`);
+    for (const entry of family?.dont_miss || []) {
+      if (!hasText(entry) || String(entry).length < 25) errors.push(`${at}.dont_miss: entries must be specific (minimum 25 characters)`);
+    }
+  }
+  for (const [category, assigned] of covered) {
+    const all = categoryItems.get(category) || new Set();
+    for (const id of all) if (!assigned.has(id)) errors.push(`families.${category}: item ${id} is not assigned to any family`);
+    for (const id of assigned) if (!all.has(id)) errors.push(`families.${category}: assigned item ${id} is not a production item`);
+  }
+  return { errors, familyCount: families.length, familyMap: membership };
 }
 
 function main() {
@@ -595,9 +646,9 @@ function main() {
   else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');
-  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), and 12 Burp workflow(s).`);
+  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), 12 Burp workflow(s), and ${result.families.familyCount} test families.`);
 }
 
 if (require.main === module) main();
 
-module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, referenceUrlAllowed };
+module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, validateFamilies, referenceUrlAllowed };

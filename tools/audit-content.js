@@ -3,7 +3,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { CATEGORIES, validatePhase7 } = require('./validate.js');
+const { CATEGORIES, validatePhase7, validateFamilies } = require('./validate.js');
 const { offlineCheck } = require('./check-references.js');
 
 const ROOT = path.resolve(__dirname, '..');
@@ -121,6 +121,11 @@ function audit(items) {
   for (const [category, severities] of severitySpread) {
     if (severities.size < 2) errors.push(`${category}: category contains fewer than two severity levels (possible padding or misrated content)`);
   }
+
+  const families = validateFamilies(items.map((item) => ({ item, sample: false })));
+  errors.push(...families.errors.map((error) => `families: ${error}`));
+  metrics.families = families.familyCount;
+  metrics.familyCategories = new Set(items.map(({ category }) => category).filter((category) => families.familyMap.size && [...families.familyMap.values()].length)).size;
 
   const phase7 = validatePhase7(new Set(items.map(({ id }) => id)));
   errors.push(...phase7.errors.map((error) => `phase7: ${error}`));

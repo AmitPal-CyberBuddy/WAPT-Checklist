@@ -14,6 +14,8 @@
     "chainMemberships": 20,
     "doNotReport": 59,
     "retestGuidance": 17,
+    "families": 32,
+    "familyCategories": 25,
     "attackChains": 5,
     "payloadReferences": 40,
     "burpWorkflows": 12,
