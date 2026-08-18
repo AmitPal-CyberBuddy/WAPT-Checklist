@@ -10,7 +10,8 @@ WAPT Checklist is a static, context-aware assessment workspace for authorized we
 2. **Context is a first-class input:** questionnaire answers and conservative URL hints produce a normalized context. Pure engine functions evaluate content; UI code only renders their results.
 3. **Content is data:** stable IDs, a documented schema, and CI validation let methodology evolve independently of presentation.
 4. **Safe by default:** content assumes explicit authorization. Disruptive techniques require a `safety` note. Destructive or denial-of-service payloads are marked `review_only` and never expanded automatically.
-5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements, the active engagement, and the UI theme preference. Engagement state is schema version 2 with structured evidence packs; schema version 1 states migrate transparently on load. Per-engagement JSON export/import provides user-controlled portability.
+5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements, the active engagement, and the UI theme preference. Engagement state is schema version 3 — structured evidence packs, don't-miss variant coverage, and the tester's last position — and schema version 1 and 2 states migrate transparently on load. Per-engagement JSON export/import provides user-controlled portability.
+6. **Families are the working unit:** `checklist/families.json` groups every production item into exactly one test family per category and carries the family's authored quick test, validation line, and don't-miss reminders. The workspace routes engagement → family → coverage → checks → don't miss → validate → next, while free navigation between any view stays available.
 6. **Progressive loading:** the manifest supplies metadata and counts. Category JSON is fetched on demand with same-origin relative URLs.
 7. **Accessible and dependency-free:** semantic HTML, keyboard operation, visible focus, WCAG AA themes, reduced-motion support, and self-hosted fonts.
 
@@ -27,7 +28,8 @@ Browser
  │   ├─ applicability: Active | Confirm | N/A (context)
  │   ├─ priorities: deterministic suggested-next scoring
  │   ├─ rationale: explainable category relevance
- │   ├─ coverage: executable-work confidence excluding context-N/A
+ │   ├─ coverage: bucket classification (tested/active/blocked/N/A) and coverage math
+ │   ├─ families: family index, family coverage, next-in-family, related families
  │   ├─ reportability: observation → weakness → demonstrated → reportable gate
  │   ├─ state: validate, serialize, findings, retest verdicts, and immutable updates
  │   └─ portfolio: migrate, select, add, and remove engagements under wapt.state.v1
@@ -107,20 +109,23 @@ Exactly one browser key, `wapt.state.v1`, is used. It contains the portfolio env
   "engagements": [{
     "id": "engagement-id",
     "state": {
-      "schema_version": 1,
+      "schema_version": 3,
       "engagement": { "name": "", "targetUrl": "", "started_at": null },
       "answers": {},
       "statuses": {},
       "notes": {},
       "overrides": {},
       "retests": {},
+      "variants": { "authorization-object-level#1a2b3c": true },
+      "position": { "view": "family", "family": "authorization-object-level", "category": "authorization", "item": "", "updated_at": null },
+      "findings": [],
       "updated_at": null
     }
   }]
 }
 ```
 
-The theme is applied by a small same-origin external script before CSS loads, preventing a dark-to-light flash while retaining the restrictive no-inline-script CSP. Theme updates preserve the portfolio and portfolio updates preserve the theme. Allowed item statuses are `not_tested`, `in_progress`, `passed`, `potential_finding`, `confirmed_finding`, and `na`. A retest flag may be true only while the corresponding item is `confirmed_finding`. Re-running scope does not erase status or notes. Import validates one engagement's shape and schema version before replacing that engagement; per-engagement export excludes the portfolio preference.
+The theme is applied by a small same-origin external script before CSS loads, preventing a dark-to-light flash while retaining the restrictive no-inline-script CSP. Theme updates preserve the portfolio and portfolio updates preserve the theme. Allowed item statuses are `not_tested`, `in_progress`, `passed`, `potential_finding`, `confirmed_finding`, `na`, and `blocked`. The UI presents them as two questions — coverage (Not tested · Testing now · Tested · Blocked · N/A) and finding (No finding · Potential · Confirmed) — that compose into this single value, so "check executed" is never confused with "vulnerability found". `variants` records don't-miss coverage ticks keyed `<family-id>#<content-hash>`; `position` records the last view/family/category so an engagement resumes where the tester stopped. Both are coverage bookkeeping and never imply findings. A retest flag may be true only while the corresponding item is `confirmed_finding`. Re-running scope does not erase status or notes. Import validates one engagement's shape and schema version before replacing that engagement; per-engagement export excludes the portfolio preference.
 
 ## Security controls
 

@@ -68,8 +68,9 @@ test('workspace shell exposes Phase 5 search, reporting, import, export, and not
   for (const attribute of ['data-search-filters', 'data-checklist-results', 'data-export-report', 'data-export-json', 'data-import-file', 'data-suggested-next', 'data-findings-table']) {
     assert.ok(html.includes(attribute), `missing ${attribute}`);
   }
-  assert.match(workspace, /Tester notes \(stored locally\)/);
-  assert.match(workspace, /Override context N\/A/);
+  const card = read('js/ui/card.js');
+  assert.match(card, /Tester notes \(stored locally\)/);
+  assert.match(card, /Override context N\/A/);
   assert.doesNotMatch(html, /id="shell-search"[^>]*disabled/);
 });
 
@@ -100,9 +101,9 @@ test('wizard source defines all 18 question keys and the one localStorage key', 
 });
 
 test('methodology cards surface reportability and retest boundaries', () => {
-  const workspace = read('js/ui/workspace.js');
-  assert.match(workspace, /section\('Reporting boundary', item\.do_not_report\)/);
-  assert.match(workspace, /section\('Retest guidance', item\.retest_guidance\)/);
+  const card = read('js/ui/card.js');
+  assert.match(card, /section\('Reporting boundary', item\.do_not_report\)/);
+  assert.match(card, /section\('Retest guidance', item\.retest_guidance\)/);
 });
 
 test('report generator includes evidence packs and retest verdicts with residual guidance', async () => {
@@ -148,8 +149,10 @@ test('Phase 5 dashboard composition, retest queue, chain overview, and shortcuts
   assert.match(app, /if \(editable \|\| event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey\)/);
   assert.match(workspace, /function renderRetestQueue\(/);
   assert.match(workspace, /function renderChainOverview\(/);
-  assert.match(workspace, /SEVERITY_GLYPHS = Object\.freeze/);
-  assert.match(workspace, /STATUS_GLYPHS = Object\.freeze/);
+  const dom = read('js/ui/dom.js');
+  assert.match(dom, /SEVERITY_GLYPHS = Object\.freeze/);
+  assert.match(dom, /STATUS_GLYPHS = Object\.freeze/);
+  assert.match(workspace, /SEVERITY_GLYPHS, STATUS_GLYPHS/);
   assert.match(workspace, /filter-chips/);
   assert.match(chains, /STATUS_GLYPHS\[status\]/);
 });
@@ -157,5 +160,23 @@ test('Phase 5 dashboard composition, retest queue, chain overview, and shortcuts
 test('checklist page renders family groups for authored categories', () => {
   const workspace = read('js/ui/workspace.js');
   assert.match(workspace, /groupByFamily/);
-  assert.match(workspace, /familyByCategory\.get\(fixed\)/);
+  assert.match(workspace, /familyIndex\.byItem\.get\(record\.item\.id\)/);
+  assert.match(workspace, /familyGroupHeader\(family, members\)/);
+});
+
+test('test families are a first-class view with board, workspace, and resume', () => {
+  const appHtml = read('app.html');
+  const app = read('js/ui/app.js');
+  const workspace = read('js/ui/workspace.js');
+  const familyView = read('js/ui/family-view.js');
+  for (const marker of ['data-view="families"', 'data-view="family"', 'data-family-board', 'data-family-root',
+    'data-family-gaps', 'data-blocked-list', 'data-resume', 'data-view-link="families"']) {
+    assert.ok(appHtml.includes(marker), `app.html missing ${marker}`);
+  }
+  assert.match(app, /VIEWS = new Set\(\['dashboard', 'families', 'family'/);
+  assert.match(app, /function initialHash/);
+  assert.match(workspace, /rememberPosition\(\{ view: 'family'/);
+  assert.match(familyView, /data-dont-miss|dontMiss/);
+  assert.match(familyView, /setVariantCovered/);
+  assert.match(familyView, /relatedFamilies\(/);
 });

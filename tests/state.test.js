@@ -6,19 +6,21 @@ const assert = require('node:assert/strict');
 const stateModule = import('../js/engine/state.js');
 const NOW = '2026-08-17T10:00:00.000Z';
 
-test('new state has the complete v2 local-only shape', async () => {
+test('new state has the complete v3 local-only shape', async () => {
   const { STATE_KEY, STATE_SCHEMA_VERSION, createState } = await stateModule;
   const state = createState();
   assert.equal(STATE_KEY, 'wapt.state.v1');
-  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'findings', 'updated_at']);
-  assert.equal(state.schema_version, 2);
-  assert.equal(STATE_SCHEMA_VERSION, 2);
+  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'variants', 'position', 'findings', 'updated_at']);
+  assert.equal(state.schema_version, 3);
+  assert.equal(STATE_SCHEMA_VERSION, 3);
+  assert.deepEqual(state.variants, {});
+  assert.deepEqual(state.position, { view: '', family: '', category: '', item: '', updated_at: null });
   assert.deepEqual(state.findings, []);
   assert.equal(state.answers.mode, 'unknown');
   assert.deepEqual(state.answers.features, ['unknown']);
 });
 
-test('legacy schema v1 state migrates transparently to v2 with empty findings', async () => {
+test('legacy schema v1 and v2 states migrate transparently to v3', async () => {
   const { normalizeState, importState, serializeState } = await stateModule;
   const legacy = {
     schema_version: 1,
@@ -29,12 +31,16 @@ test('legacy schema v1 state migrates transparently to v2 with empty findings', 
     overrides: {}, retests: {}, updated_at: '2026-08-17T00:00:00.000Z'
   };
   const migrated = normalizeState(legacy);
-  assert.equal(migrated.schema_version, 2);
+  assert.equal(migrated.schema_version, 3);
+  assert.deepEqual(migrated.variants, {});
   assert.deepEqual(migrated.findings, []);
   assert.equal(migrated.engagement.name, 'Legacy portal');
   assert.equal(migrated.statuses['WAPT-AUTHZ-001'], 'passed');
   assert.equal(importState(JSON.stringify(legacy)).engagement.name, 'Legacy portal');
-  assert.equal(JSON.parse(serializeState(migrated)).schema_version, 2);
+  assert.equal(JSON.parse(serializeState(migrated)).schema_version, 3);
+  const v2 = normalizeState({ ...legacy, schema_version: 2, findings: [] });
+  assert.equal(v2.schema_version, 3);
+  assert.equal(v2.statuses['WAPT-AUTHZ-001'], 'passed');
 });
 
 test('status and note updates are immutable and timestamped', async () => {
@@ -76,7 +82,7 @@ test('JSON export and import round-trip preserves valid engagement data', async 
 test('strict import rejects invalid versions, invalid JSON, and oversized input', async () => {
   const { importState } = await stateModule;
   assert.throws(() => importState('{bad'), /not valid JSON/);
-  assert.throws(() => importState('{"schema_version":3}'), /schema_version 2/);
+  assert.throws(() => importState('{"schema_version":9}'), /schema_version 3/);
   assert.throws(() => importState(' '.repeat(5_000_001)), /5 MB/);
 });
 
@@ -126,8 +132,36 @@ test('evidence packs require a confirmed finding, normalize fields, and enforce 
   assert.equal(state.findings.length, 0);
   assert.throws(() => removeFinding(state, pack.id), /Unknown evidence pack/);
 
-  const oversize = normalizeState({ schema_version: 2, findings: Array.from({ length: MAX_FINDINGS + 5 }, (_, index) => ({ id: `find-000${index}`, item_id: 'WAPT-AUTHZ-001', severity: 'high' })) });
+  const oversize = normalizeState({ schema_version: 3, findings: Array.from({ length: MAX_FINDINGS + 5 }, (_, index) => ({ id: `find-000${index}`, item_id: 'WAPT-AUTHZ-001', severity: 'high' })) });
   assert.equal(oversize.findings.length, MAX_FINDINGS);
-  const bad = normalizeState({ schema_version: 2, findings: [{ id: 'bad', item_id: 'WAPT-AUTHZ-001' }, { id: 'find-dupp', item_id: 'WAPT-AUTHZ-001' }, { id: 'find-dupp', item_id: 'WAPT-AUTHZ-001' }] });
+  const bad = normalizeState({ schema_version: 3, findings: [{ id: 'bad', item_id: 'WAPT-AUTHZ-001' }, { id: 'find-dupp', item_id: 'WAPT-AUTHZ-001' }, { id: 'find-dupp', item_id: 'WAPT-AUTHZ-001' }] });
   assert.equal(bad.findings.length, 1);
+});
+
+test("don't-miss variant coverage and engagement position persist as separate state", async () => {
+  const { createState, setVariantCovered, setPosition, normalizeState, serializeState } = await stateModule;
+  const key = 'authorization-object-level#1a2b3c';
+  const covered = setVariantCovered(createState(), key, true, NOW);
+  assert.deepEqual(covered.variants, { [key]: true });
+  assert.deepEqual(setVariantCovered(covered, key, false, NOW).variants, {});
+  assert.throws(() => setVariantCovered(createState(), 'not a key', true, NOW), /variant key/);
+  const positioned = setPosition(covered, { view: 'family', family: 'authorization-object-level' }, NOW);
+  assert.equal(positioned.position.view, 'family');
+  assert.equal(positioned.position.family, 'authorization-object-level');
+  const round = normalizeState(JSON.parse(serializeState(positioned)));
+  assert.deepEqual(round.variants, { [key]: true });
+  assert.equal(round.position.family, 'authorization-object-level');
+  // Hostile values are dropped rather than trusted.
+  const dirty = normalizeState({ schema_version: 3, variants: { 'bad key': true, [key]: 'yes' }, position: { view: 'evil', family: '../etc' } });
+  assert.deepEqual(dirty.variants, {});
+  assert.equal(dirty.position.view, '');
+  assert.equal(dirty.position.family, 'etc');
+});
+
+test('blocked is a first-class coverage state distinct from tested and N/A', async () => {
+  const { createState, setItemStatus, ITEM_STATUSES } = await stateModule;
+  assert.ok(ITEM_STATUSES.includes('blocked'));
+  const blocked = setItemStatus(createState(), 'WAPT-AUTHZ-003', 'blocked', NOW);
+  assert.equal(blocked.statuses['WAPT-AUTHZ-003'], 'blocked');
+  assert.throws(() => setItemStatus(createState(), 'WAPT-AUTHZ-003', 'skipped', NOW), /Invalid item status/);
 });

@@ -106,3 +106,15 @@ Use the intended compositions and evidence checklist in [RESPONSIVE-QA.md](RESPO
 - [ ] Put an unsupported schema version under the key; reload and confirm safe defaults are used.
 
 Record browser/version, operating system, viewport, theme, server mode, failures, and screenshots in the release PR.
+
+## Tester-workflow harness (round 2)
+
+```bash
+python3 -m http.server 8000 --bind 0.0.0.0
+npm i --prefix /tmp/wapt-jsdom jsdom
+NODE_PATH=/tmp/wapt-jsdom/node_modules node tools/tester-audit.mjs
+```
+
+`tools/tester-audit.mjs` walks a real engagement in the running application and asserts the tester-first contract: dashboard three questions, families as the working unit, authored Quick Test, tickable Don't Miss, contextual Suggested next, N/A and blocked never counted as tested, coverage/finding separation, cross-family navigation, resume after reload, density, and keyboard walking. It shares its runtime with `tools/functional-workflows.mjs` through `tools/jsdom-harness.mjs`.
+
+Still manual (jsdom cannot judge these): real-browser rendering in Chromium/Firefox/Safari, pointer and touch ergonomics of the two-control status pair, and screen-reader announcement of coverage versus finding.

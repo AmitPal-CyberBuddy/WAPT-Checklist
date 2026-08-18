@@ -92,3 +92,18 @@ An item is ready to count toward a floor only when it:
 - avoids unsafe proof where a lower-impact proof exists;
 - has no unresolved duplicate or contradictory item;
 - uses original wording and includes no secrets or live-target data.
+
+## Test families (`checklist/families.json`, schema 2.0.0)
+
+A family is the unit a tester actually works: one attack surface, its checks, its quick procedure, and the variants that are easy to forget. Every production item belongs to exactly one family in its category, and the validator fails the build otherwise.
+
+| Field | Rule |
+|---|---|
+| `id` | stable `[a-z0-9-]{4,80}` slug, never reused |
+| `title` / `summary` | what the surface is, in the tester's vocabulary |
+| `quick_test` | **authored**, 3–5 imperative lines, 12–90 characters each. Never generated from `steps`; a test asserts it never duplicates an item's step list verbatim. Write what the tester does at the keyboard: capture, swap, replay, compare, repeat. |
+| `validate` | one 30–160 character line stating what proves the issue is real, not what the payload is |
+| `items` | member item IDs, in the order a tester should work them |
+| `dont_miss` | reminders (≥ 25 characters) that an experienced tester ticks off as coverage — methods, nested/bulk/export paths, alternate clients, legacy versions, tenant and field boundaries. Not tutorial content, not a restatement of the check titles. |
+
+Changing a `dont_miss` string changes its coverage key, so previously recorded ticks for that reminder are released. Prefer adding a new reminder over rewording one mid-release.

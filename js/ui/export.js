@@ -2,9 +2,12 @@ import { serializeState } from '../engine/state.js?v=1.0.0-r6';
 import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r6';
 
 export const STATUS_LABELS = Object.freeze({
-  not_tested: 'Not Started', in_progress: 'Active', passed: 'Not Vulnerable',
-  potential_finding: 'Potential Finding', confirmed_finding: 'Confirmed Finding', na: 'N/A'
+  not_tested: 'Not tested', in_progress: 'Testing now', passed: 'Tested — not vulnerable',
+  potential_finding: 'Potential finding', confirmed_finding: 'Confirmed finding',
+  na: 'N/A', blocked: 'Blocked'
 });
+// Coverage counts only executed checks: N/A, blocked, and in-progress are not "tested".
+export const TESTED_STATUSES = Object.freeze(['passed', 'potential_finding', 'confirmed_finding']);
 
 function safe(value) {
   return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;');
@@ -39,7 +42,7 @@ export function composeChecklistMarkdown(items, state, categoryNames = {}) {
     lines.push(`## ${safe(categoryNames[category] || category)}`, '');
     for (const item of categoryItems) {
       const status = statusOf(item, state);
-      const checked = status === 'not_tested' ? ' ' : 'x';
+      const checked = TESTED_STATUSES.includes(status) ? 'x' : ' ';
       lines.push(`- [${checked}] **${item.id}** ${safe(item.title)} — ${STATUS_LABELS[status]}`);
       if (state.notes?.[item.id]) lines.push(`  - Notes: ${safe(state.notes[item.id]).replace(/\r?\n/g, ' / ')}`);
     }
@@ -54,7 +57,7 @@ export function findingItems(items, state) {
 
 export function composeReportMarkdown(items, state, categoryNames = {}) {
   const findings = findingItems(items, state);
-  const tested = items.filter((item) => statusOf(item, state) !== 'not_tested').length;
+  const tested = items.filter((item) => TESTED_STATUSES.includes(statusOf(item, state))).length;
   const confirmed = findings.filter((item) => statusOf(item, state) === 'confirmed_finding').length;
   const lines = [
     `# ${safe(state.engagement?.name || 'WAPT engagement')} — Assessment Report`, '',
@@ -106,8 +109,11 @@ export function composeReportMarkdown(items, state, categoryNames = {}) {
     '- Do not report scanner output without manual confirmation and false-positive analysis.', '',
     '## Methodology coverage', '');
   for (const [category, categoryItems] of grouped(items)) {
-    const complete = categoryItems.filter((item) => statusOf(item, state) !== 'not_tested').length;
-    lines.push(`- ${safe(categoryNames[category] || category)}: ${complete}/${categoryItems.length}`);
+    const complete = categoryItems.filter((item) => TESTED_STATUSES.includes(statusOf(item, state))).length;
+    const na = categoryItems.filter((item) => statusOf(item, state) === 'na').length;
+    const blocked = categoryItems.filter((item) => statusOf(item, state) === 'blocked').length;
+    const suffix = [na ? `${na} N/A` : '', blocked ? `${blocked} blocked` : ''].filter(Boolean).join(', ');
+    lines.push(`- ${safe(categoryNames[category] || category)}: ${complete}/${categoryItems.length} tested${suffix ? ` (${suffix})` : ''}`);
   }
   return lines.join('\n');
 }

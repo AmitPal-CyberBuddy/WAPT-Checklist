@@ -612,6 +612,26 @@ function validateFamilies(allItems, overrideDocument = null) {
     for (const entry of family?.dont_miss || []) {
       if (!hasText(entry) || String(entry).length < 25) errors.push(`${at}.dont_miss: entries must be specific (minimum 25 characters)`);
     }
+    // Quick Test is authored per family and must stay a short procedure a tester can execute
+    // without reading the methodology. It is never generated from the item steps.
+    if (!Array.isArray(family?.quick_test) || family.quick_test.length < 3 || family.quick_test.length > 5) {
+      errors.push(`${at}: quick_test must contain 3 to 5 imperative lines`);
+    }
+    for (const line of family?.quick_test || []) {
+      if (!hasText(line) || String(line).length < 12 || String(line).length > 90) {
+        errors.push(`${at}.quick_test: each line must be 12 to 90 characters`);
+      }
+      if (/^(the |a |an |this )/i.test(String(line).trim())) errors.push(`${at}.quick_test: lines must be imperative, not descriptive`);
+    }
+    if (!hasText(family?.validate) || String(family.validate).length < 30 || String(family.validate).length > 160) {
+      errors.push(`${at}: validate must be a single 30 to 160 character confirmation line`);
+    }
+    const duplicateVariants = new Set();
+    for (const entry of family?.dont_miss || []) {
+      const key = String(entry).toLowerCase();
+      if (duplicateVariants.has(key)) errors.push(`${at}.dont_miss: duplicate reminder`);
+      duplicateVariants.add(key);
+    }
   }
   for (const [category, assigned] of covered) {
     const all = categoryItems.get(category) || new Set();

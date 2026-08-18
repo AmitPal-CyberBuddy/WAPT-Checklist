@@ -134,20 +134,49 @@ test('renderChainOverview receives the chain store as a parameter (runtime crash
   assert.doesNotMatch(workspace, /function renderChainOverview[\s\S]{0,120}const chains = chainStore\.getChains/);
 });
 
-test('tester-first card: four disclosure levels with preserved knowledge base', () => {
+test('tester-first card: progressive disclosure with the knowledge base preserved', () => {
+  const card = read('js/ui/card.js');
+  const familyView = read('js/ui/family-view.js');
   const workspace = read('js/ui/workspace.js');
-  assert.match(workspace, /quick-check/);
-  assert.match(workspace, /Don't miss & related/);
-  assert.match(workspace, /Detailed methodology/);
-  assert.match(workspace, /References & mappings/);
-  assert.match(workspace, /Tester notes & evidence/);
-  assert.match(workspace, /item\.steps\.slice\(0, 4\)/);
-  assert.match(workspace, /quick-validate/);
-  assert.match(workspace, /related-chip/);
-  assert.match(workspace, /Next in family/);
-  assert.match(workspace, /familyByItem\.get\(item\.id\)/);
-  assert.match(workspace, /section\('Steps', item\.steps, true\)/);
-  assert.match(workspace, /section\('Safety boundary', item\.safety\)/);
+  // Level 1 is always visible: objective plus the validation bar, no expansion needed.
+  assert.match(card, /test-objective/);
+  assert.match(card, /test-validate/);
+  assert.match(card, /'Procedure & variants'/);
+  assert.match(card, /'Detailed methodology'/);
+  assert.match(card, /'References & mappings'/);
+  assert.match(card, /'Notes & evidence'/);
+  assert.match(card, /section\('Steps', item\.steps, true\)/);
+  assert.match(card, /section\('Safety boundary', item\.safety\)/);
+  assert.match(card, /related-chip/);
+  // Quick Test is authored family data, not a copy of the first methodology steps.
+  assert.doesNotMatch(card, /item\.steps\.slice/);
+  assert.match(familyView, /family\.quick_test/);
+  assert.match(familyView, /family\.validate/);
   assert.match(workspace, /fetch\('checklist\/families\.json'/);
-  assert.match(workspace, /familyHeader\(family, members\)/);
+});
+
+test('coverage, finding, and don\'t-miss variants are separate concepts in the UI', () => {
+  const dom = read('js/ui/dom.js');
+  const familyView = read('js/ui/family-view.js');
+  assert.match(dom, /COVERAGE_OPTIONS/);
+  assert.match(dom, /FINDING_OPTIONS/);
+  assert.match(dom, /composeStatus/);
+  assert.match(dom, /\['blocked', 'Blocked'\]/);
+  assert.match(familyView, /Ticks record variant coverage only/);
+});
+
+test('wide views render as compact family-grouped scan lists, not card walls', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /function renderCompactGroups/);
+  assert.match(workspace, /renderResults\(document\.querySelector\('\x5bdata-search-results\x5d'\)[\s\S]{0,160}compact: true/);
+  assert.match(workspace, /\{ compact: true \}\);/);
+  // A single attack surface stays card-first for deep work.
+  assert.match(workspace, /fixed\s*\n\s*\? \{ groupByFamily/);
+});
+
+test('keyboard walk covers compact rows in every list view', () => {
+  const app = read('js/ui/app.js');
+  assert.match(app, /\[data-family-root\] \.check-holder, \[data-checklist-results\] \.check-holder, \[data-search-results\] \.check-holder/);
+  assert.match(app, /event\.key === 'e'/);
+  assert.match(app, /else if \(event\.key === 't'\) location\.hash = 'families'/);
 });

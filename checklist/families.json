@@ -1,13 +1,20 @@
 {
-  "schema_version": "1.0.0",
+  "schema_version": "2.0.0",
   "lastmod": "2026-08-18",
-  "note": "Tester-first test families. Every family groups checklist items so a tester can work an attack surface without losing context. dont_miss entries are coverage reminders for experienced testers, not tutorial content. Validator gates: items resolve, membership is unique per category, and every production item of a family-covered category belongs to exactly one family.",
+  "note": "Tester-first test families. Every family groups checklist items so a tester can work an attack surface without losing context. quick_test is an explicit, authored quick procedure for the family (never generated from methodology steps); validate is the one-line confirmation bar. dont_miss entries are coverage reminders an experienced tester ticks off, not tutorial content. Validator gates: items resolve, membership is unique per category, every production item of a family-covered category belongs to exactly one family, quick_test has 3-5 imperative lines of at most 90 characters, and validate is a single sentence.",
   "families": [
     {
       "id": "authorization-role-permission-matrix",
       "category": "authorization",
       "title": "Role & permission matrix",
       "summary": "Establish the expected function, object, field, tenant, and workflow permissions before mutating anything.",
+      "quick_test": [
+        "List every role, group, tenant, and service identity you were given",
+        "Record expected function, object, field, tenant, and workflow rights per identity",
+        "Mark each cell allow/deny with the owner before touching data",
+        "Re-check the matrix after any role or membership change during the test"
+      ],
+      "validate": "Matrix is owner-confirmed and separates function, object, field, tenant, and workflow rights.",
       "items": [
         "WAPT-AUTHZ-001"
       ],
@@ -22,6 +29,13 @@
       "category": "authorization",
       "title": "Object-level authorization",
       "summary": "Per-object read, update, delete, collection, bulk, nested, indirect, media, report, and async-result decisions.",
+      "quick_test": [
+        "Capture an authorized request as user A against A's object",
+        "Replay it with B's session, changing only the object reference",
+        "Repeat per method: GET, POST, PUT, PATCH, DELETE",
+        "Repeat on bulk, nested, export, and async-result paths for the same object"
+      ],
+      "validate": "Unauthorized read or state change reproduced with two controlled accounts, not a cache replay.",
       "items": [
         "WAPT-AUTHZ-003",
         "WAPT-AUTHZ-004",
@@ -53,6 +67,13 @@
       "category": "authorization",
       "title": "Function-level authorization",
       "summary": "Which callers may invoke a function at all: unauthenticated, alternate methods, admin, undocumented, versioned, and error paths.",
+      "quick_test": [
+        "Collect privileged routes from JS bundles, docs, and admin UI",
+        "Call each one as a low-privilege user and unauthenticated",
+        "Retry with alternate methods, aliases, versions, and trailing variants",
+        "Check error and preview representations of the same function"
+      ],
+      "validate": "Function executes or leaks data for a caller the matrix denies; confirm the effect server-side.",
       "items": [
         "WAPT-AUTHZ-002",
         "WAPT-AUTHZ-013",
@@ -76,6 +97,13 @@
       "category": "authorization",
       "title": "Privilege, role & field boundaries",
       "summary": "Client-controlled roles, ownership reassignment, protected property writes, delegated scope, revocation, and field-level visibility.",
+      "quick_test": [
+        "Submit role, owner, tenant, price, or status fields the UI never sends",
+        "Compare the stored object afterwards with an authoritative read",
+        "Diff API responses across roles for fields that should be hidden",
+        "Repeat after revocation and on delegated or API-key contexts"
+      ],
+      "validate": "A protected property or hidden field is written or disclosed to an identity that must not have it.",
       "items": [
         "WAPT-AUTHZ-016",
         "WAPT-AUTHZ-017",
@@ -101,6 +129,13 @@
       "category": "authorization",
       "title": "Tenant isolation & integration boundaries",
       "summary": "Tenant context binding, cross-tenant object access, switching state, invitations, and confused-deputy integrations.",
+      "quick_test": [
+        "Note the tenant selector: subdomain, header, path, claim, or body field",
+        "Keep tenant A's session and point every selector at tenant B",
+        "Test tenant switching, invitations, and integration callbacks",
+        "Check object IDs from tenant B on tenant A's endpoints"
+      ],
+      "validate": "Cross-tenant data or action confirmed with two tenants you control; record the exact selector used.",
       "items": [
         "WAPT-AUTHZ-020",
         "WAPT-AUTHZ-021",
@@ -119,6 +154,13 @@
       "category": "authorization",
       "title": "Workflow, approval & audit boundaries",
       "summary": "State-transition authorization, separation of duties, impersonation, existence oracles, realtime channels, and audit behavior.",
+      "quick_test": [
+        "Map the approved state machine and who may drive each transition",
+        "Call each transition from a role that should not own it",
+        "Attempt self-approval and maker-checker collapse on one account",
+        "Compare 403 versus 404 responses for existence oracles"
+      ],
+      "validate": "A transition, approval, or impersonation completes for an unauthorized role and is visible in audit state.",
       "items": [
         "WAPT-AUTHZ-026",
         "WAPT-AUTHZ-027",
@@ -141,6 +183,13 @@
       "category": "authentication",
       "title": "Credential transport, logging & defaults",
       "summary": "Where credentials travel and whether defaults, logs, or referrers expose them.",
+      "quick_test": [
+        "Watch login, change, and recovery requests in the proxy history",
+        "Confirm credentials never appear in URLs, referrers, or logs",
+        "Try documented default and seeded accounts",
+        "Check autocomplete, cached responses, and error echoes for secrets"
+      ],
+      "validate": "A credential is observable outside the request body or a default account still authenticates.",
       "items": [
         "WAPT-AUTH-001",
         "WAPT-AUTH-002",
@@ -157,6 +206,13 @@
       "category": "authentication",
       "title": "Account enumeration",
       "summary": "Whether login, registration, and recovery disclose which accounts exist, through text, timing, or status codes.",
+      "quick_test": [
+        "Submit a known and an unknown account to login, registration, and reset",
+        "Compare body text, status code, headers, and response length",
+        "Compare timing over repeated samples, not a single request",
+        "Repeat on MFA, SSO, and API variants of the same flow"
+      ],
+      "validate": "Responses distinguish existing from non-existing accounts consistently across repeated samples.",
       "items": [
         "WAPT-AUTH-005",
         "WAPT-AUTH-006",
@@ -175,6 +231,13 @@
       "category": "authentication",
       "title": "Username & password policy",
       "summary": "Canonicalization, length, composition, and rotation rules for passwords and usernames.",
+      "quick_test": [
+        "Register or change to a short, common, and username-derived password",
+        "Test very long, unicode, and whitespace-edge passwords",
+        "Check truncation by logging in with a longer prefix variant",
+        "Confirm breached-password and rotation rules on change"
+      ],
+      "validate": "A password the policy claims to reject is accepted and usable at login.",
       "items": [
         "WAPT-AUTH-009",
         "WAPT-AUTH-010",
@@ -195,6 +258,13 @@
       "category": "authentication",
       "title": "Brute force & credential stuffing",
       "summary": "Guessing and stuffing controls across account, device, network, and risk signals, including lockout abuse.",
+      "quick_test": [
+        "Send a controlled burst of failed logins for one account",
+        "Repeat spread across accounts, IPs, devices, and API paths",
+        "Note whether lockout is per account, per IP, or absent",
+        "Check whether lockout itself can deny a legitimate account"
+      ],
+      "validate": "Guessing continues past the documented threshold, or lockout is triggerable against another user.",
       "items": [
         "WAPT-AUTH-014",
         "WAPT-AUTH-015",
@@ -211,6 +281,13 @@
       "category": "authentication",
       "title": "Login enforcement & fail-closed",
       "summary": "Authentication on every route and representation, consistent across methods and media types, failing closed on errors.",
+      "quick_test": [
+        "Take an authenticated request and strip the session material",
+        "Repeat with alternate methods, media types, and API versions",
+        "Force backend errors and observe whether access fails open",
+        "Check mobile, legacy, and export routes for the same resource"
+      ],
+      "validate": "A protected resource responds with data to an unauthenticated or error-path request.",
       "items": [
         "WAPT-AUTH-017",
         "WAPT-AUTH-018",
@@ -229,6 +306,13 @@
       "category": "authentication",
       "title": "Password change & account recovery",
       "summary": "Current-password requirements, token generation, reset-link origins, and account binding across change and recovery flows.",
+      "quick_test": [
+        "Change the password without supplying the current one",
+        "Request a reset and inspect token entropy, lifetime, and reuse",
+        "Poison Host or forwarded headers and read the emitted reset link",
+        "Use account A's token against account B and after a first use"
+      ],
+      "validate": "A reset or change completes without the rightful secret, or a token works twice or cross-account.",
       "items": [
         "WAPT-AUTH-022",
         "WAPT-AUTH-023",
@@ -252,6 +336,13 @@
       "category": "authentication",
       "title": "MFA & factor lifecycle",
       "summary": "Enrollment, completion, OTP verification, recovery codes, factor removal, and push-approval behavior.",
+      "quick_test": [
+        "Complete step one, then call the post-MFA endpoint directly",
+        "Replay, brute-force, and reuse the OTP across sessions",
+        "Enroll, remove, and re-enroll factors from a partly authenticated state",
+        "Test recovery codes and push approval for the same bypass"
+      ],
+      "validate": "A session reaches authenticated state without a valid second factor, or an OTP is reusable.",
       "items": [
         "WAPT-AUTH-029",
         "WAPT-AUTH-030",
@@ -275,6 +366,13 @@
       "category": "authentication",
       "title": "Trusted devices & persistent login",
       "summary": "Remember-device and remember-me tokens: entropy, rotation, revocation, and exemption binding.",
+      "quick_test": [
+        "Enable remember-device and capture the persistent token",
+        "Test entropy, expiry, and reuse from another browser and IP",
+        "Change the password and check whether the token still exempts MFA",
+        "Revoke the device and replay the old token"
+      ],
+      "validate": "A persistent token still bypasses authentication or MFA after revocation or credential change.",
       "items": [
         "WAPT-AUTH-020",
         "WAPT-AUTH-021",
@@ -291,6 +389,13 @@
       "category": "authentication",
       "title": "Step-up & account lifecycle",
       "summary": "Bootstrap expiry, reauthentication for sensitive actions, security-event notifications, and secret-free audit logging.",
+      "quick_test": [
+        "Perform email change, payment, or admin actions without reauthentication",
+        "Check invite and bootstrap credentials for expiry and reuse",
+        "Trigger security events and confirm the notification path",
+        "Grep logs and responses for secrets recorded during these flows"
+      ],
+      "validate": "A sensitive action completes without fresh proof of identity, or a bootstrap secret survives its window.",
       "items": [
         "WAPT-AUTH-004",
         "WAPT-AUTH-040",
@@ -309,6 +414,13 @@
       "category": "authentication",
       "title": "Passkeys & federation boundaries",
       "summary": "Passkey binding and challenge verification, alternate-channel strength, and local fallback beside federated login.",
+      "quick_test": [
+        "Compare the strength of local login against the federated path",
+        "Replay a passkey challenge or swap the credential's user handle",
+        "Test alternate channels: legacy login, API tokens, and recovery",
+        "Confirm the local fallback cannot skip organisation policy"
+      ],
+      "validate": "A weaker alternate path authenticates the account the federated policy is supposed to protect.",
       "items": [
         "WAPT-AUTH-037",
         "WAPT-AUTH-038",
@@ -328,6 +440,13 @@
       "category": "api-security",
       "title": "API object & field authorization",
       "summary": "BOLA and BOPLA across reads, mutations, nested resources, bulk calls, mobile clients, and property filtering.",
+      "quick_test": [
+        "Enumerate object IDs from list, search, and export endpoints",
+        "Replay each read and mutation with a second account's token",
+        "Include nested routes, bulk arrays, and filter or field parameters",
+        "Repeat with the mobile or legacy client's version of the call"
+      ],
+      "validate": "Another principal's object or property is returned or changed under a controlled second account.",
       "items": [
         "WAPT-API-001",
         "WAPT-API-002",
@@ -352,6 +471,13 @@
       "category": "api-security",
       "title": "API authentication & credentials",
       "summary": "Credential transport consistency, key scoping, audience binding, and equivalent strength across versions and protocols.",
+      "quick_test": [
+        "Compare authentication across v1, v2, mobile, and internal hosts",
+        "Use an API key or token outside its intended scope and audience",
+        "Send the token to a different service that accepts the same issuer",
+        "Try the endpoint with no credential and with an expired one"
+      ],
+      "validate": "One credential is accepted beyond its scope, audience, or version boundary.",
       "items": [
         "WAPT-API-006",
         "WAPT-API-007",
@@ -370,6 +496,13 @@
       "category": "api-security",
       "title": "Schema & binding",
       "summary": "Per-action writable schemas instead of shared model binding, and response overfetching beyond the contract.",
+      "quick_test": [
+        "Send unexpected properties in create and update bodies",
+        "Read the object back and diff against the documented contract",
+        "Look for extra fields the API returns but the UI hides",
+        "Repeat on PATCH, bulk, and import endpoints"
+      ],
+      "validate": "An unlisted property is bound and persisted, or the response exposes data beyond the contract.",
       "items": [
         "WAPT-API-012",
         "WAPT-API-014"
@@ -384,6 +517,13 @@
       "category": "api-security",
       "title": "Resource & abuse controls",
       "summary": "Page sizes, body and batch limits, expensive queries, paid side effects, and distributed abuse.",
+      "quick_test": [
+        "Raise page size, limit, and depth parameters far beyond the UI values",
+        "Send oversized bodies and long batch arrays",
+        "Time expensive queries and repeat the paid side-effect call",
+        "Vary API keys, IPs, and tenants to test distributed budgets"
+      ],
+      "validate": "The API serves unbounded work or repeats a costly side effect past its documented limit.",
       "items": [
         "WAPT-API-015",
         "WAPT-API-016",
@@ -404,6 +544,13 @@
       "category": "api-security",
       "title": "API function authorization",
       "summary": "Admin-only functions, route aliases, role and membership management, and default-deny for new functions.",
+      "quick_test": [
+        "Call admin and membership endpoints with a member token",
+        "Try route aliases, versions, and case or trailing-slash variants",
+        "Test newly deployed or undocumented functions for default access",
+        "Change role, invite, and ownership operations from a low role"
+      ],
+      "validate": "An administrative or membership function executes for a caller the matrix denies.",
       "items": [
         "WAPT-API-020",
         "WAPT-API-021",
@@ -422,6 +569,13 @@
       "category": "api-security",
       "title": "Business flows & transaction state",
       "summary": "Automation of high-value flows, workflow sequence, and idempotency or one-time semantics.",
+      "quick_test": [
+        "Script the high-value flow end to end and run it without the UI",
+        "Skip, reorder, and repeat steps of the sequence",
+        "Replay the same idempotency key and the same one-time token",
+        "Check server state after each variation"
+      ],
+      "validate": "A high-value flow completes out of order, twice, or faster than the business rule allows.",
       "items": [
         "WAPT-API-024",
         "WAPT-API-025",
@@ -438,6 +592,13 @@
       "category": "api-security",
       "title": "URL fetching & third-party integration",
       "summary": "Server-side fetch parameters, redirect revalidation, and the security of consumed third-party APIs.",
+      "quick_test": [
+        "Point every server-side URL parameter at your collaborator host",
+        "Return a redirect to an internal address and see if it is followed",
+        "Test scheme, credential, and DNS variants of the same target",
+        "Review what the consumed third-party response is allowed to control"
+      ],
+      "validate": "The server fetches an attacker-chosen destination or trusts an unvalidated third-party response.",
       "items": [
         "WAPT-API-027",
         "WAPT-API-028",
@@ -459,6 +620,13 @@
       "category": "api-security",
       "title": "Operations & exposure",
       "summary": "Method and media-type handling, debug output, CORS, and management endpoints.",
+      "quick_test": [
+        "Send unexpected methods and media types to production routes",
+        "Force errors and read stack traces, versions, and internal hosts",
+        "Test CORS with an arbitrary Origin plus credentials",
+        "Probe management, debug, and actuator paths"
+      ],
+      "validate": "An operational endpoint, debug body, or permissive CORS response is reachable in the tested environment.",
       "items": [
         "WAPT-API-029",
         "WAPT-API-030",
@@ -477,6 +645,13 @@
       "category": "api-security",
       "title": "Inventory & lifecycle",
       "summary": "Host and version inventories, deprecated versions, shadow deployments, and documentation reconciliation.",
+      "quick_test": [
+        "Build the host and version inventory from DNS, JS, and docs",
+        "Call older versions of a fixed endpoint and compare behaviour",
+        "Look for staging, beta, and shadow deployments of the same API",
+        "Reconcile documentation against endpoints that actually answer"
+      ],
+      "validate": "A deprecated, shadow, or undocumented version answers with data the current version protects.",
       "items": [
         "WAPT-API-033",
         "WAPT-API-034",
@@ -495,6 +670,13 @@
       "category": "file-handling",
       "title": "Acceptance & validation",
       "summary": "The documented contract and how extension, media type, signature, and size limits are enforced together.",
+      "quick_test": [
+        "Read the documented allow-list, then upload a file outside it",
+        "Mismatch extension, Content-Type, and magic bytes in turn",
+        "Test double extensions, null bytes, and case variants",
+        "Push past the size limit and check the rejection path"
+      ],
+      "validate": "A file outside the documented contract is stored or served after the checks claim to reject it.",
       "items": [
         "WAPT-UPLOAD-001",
         "WAPT-UPLOAD-002",
@@ -513,6 +695,13 @@
       "category": "file-handling",
       "title": "Execution & sandboxing",
       "summary": "Server-side execution, isolated serving origins, and malware scanning placement.",
+      "quick_test": [
+        "Upload a benign server-side script for the detected stack",
+        "Request it back from every serving path and CDN variant",
+        "Check the serving origin, sandbox domain, and headers",
+        "Confirm where malware scanning happens relative to storage"
+      ],
+      "validate": "Uploaded content executes on the server or is served from a privileged origin.",
       "items": [
         "WAPT-UPLOAD-004",
         "WAPT-UPLOAD-005",
@@ -529,6 +718,13 @@
       "category": "file-handling",
       "title": "Naming, collisions & headers",
       "summary": "Filename traversal, overwrite and collision behavior, and Content-Disposition safety.",
+      "quick_test": [
+        "Upload names with traversal, separators, and unicode look-alikes",
+        "Re-upload the same name from a second account and compare",
+        "Inspect stored path and Content-Disposition on download",
+        "Test overly long names and reserved device names"
+      ],
+      "validate": "A filename escapes its directory, overwrites another object, or drives unsafe download handling.",
       "items": [
         "WAPT-UPLOAD-006",
         "WAPT-UPLOAD-007",
@@ -545,6 +741,13 @@
       "category": "file-handling",
       "title": "Archive handling",
       "summary": "ZIP Slip, symlink escape, and expansion bounds during extraction.",
+      "quick_test": [
+        "Upload an archive with ../ paths and check where entries land",
+        "Include a symlink entry pointing outside the extraction root",
+        "Test a highly compressed archive against expansion limits",
+        "Check nested archives and entry-count bounds"
+      ],
+      "validate": "Extraction writes outside its root or consumes resources past the documented bound.",
       "items": [
         "WAPT-UPLOAD-008",
         "WAPT-UPLOAD-009",
@@ -561,6 +764,13 @@
       "category": "file-handling",
       "title": "Image & document processing",
       "summary": "Decoded dimensions, metadata, SVG handling, polyglots, and privileged previews.",
+      "quick_test": [
+        "Upload oversized dimensions and malformed image headers",
+        "Submit SVG with script and external references",
+        "Test polyglot files that parse as image and markup",
+        "Check EXIF retention and privileged preview rendering"
+      ],
+      "validate": "The processor executes, fetches, or discloses beyond decoding the file it was given.",
       "items": [
         "WAPT-UPLOAD-012",
         "WAPT-UPLOAD-013",
@@ -581,6 +791,13 @@
       "category": "file-handling",
       "title": "Authorization & retrieval",
       "summary": "Who may attach, download, and derive files — including traversal on download and export paths.",
+      "quick_test": [
+        "Attach a file as user A and fetch its URL as user B",
+        "Guess or enumerate stored object identifiers and derivatives",
+        "Add traversal to download, export, and thumbnail parameters",
+        "Check signed URLs for scope, expiry, and reuse"
+      ],
+      "validate": "Another user's file, thumbnail, or export is retrievable under a controlled second account.",
       "items": [
         "WAPT-UPLOAD-017",
         "WAPT-UPLOAD-018",
@@ -601,6 +818,13 @@
       "category": "file-handling",
       "title": "Inclusion & generated content",
       "summary": "Local and remote inclusion, untrusted template loading, and generated files that inherit unsafe input.",
+      "quick_test": [
+        "Point file, template, and path parameters at local resources",
+        "Test remote inclusion with a collaborator-hosted file",
+        "Upload content that is later rendered into a document or template",
+        "Follow generated PDFs, CSVs, and reports back to their sinks"
+      ],
+      "validate": "Untrusted input is included, rendered, or executed by the generation pipeline.",
       "items": [
         "WAPT-UPLOAD-021",
         "WAPT-UPLOAD-022",
@@ -617,6 +841,13 @@
       "category": "reconnaissance",
       "title": "Discovery & search indexing",
       "summary": "Publicly indexed assets, certificate transparency, robots, sitemaps, and well-known resources.",
+      "quick_test": [
+        "Search engines and certificate transparency for the target's names",
+        "Fetch robots.txt, sitemaps, and /.well-known resources",
+        "Note any host or path the scope document does not mention",
+        "Record every asset as in-scope or out-of-scope before testing"
+      ],
+      "validate": "Every discovered asset is written down with its scope decision and the evidence that found it.",
       "items": [
         "WAPT-RECON-001",
         "WAPT-RECON-002",
@@ -636,6 +867,13 @@
       "category": "reconnaissance",
       "title": "DNS, hosting & non-production",
       "summary": "Authoritative records, resolved boundaries, approved ports, non-production hostnames, and dangling references.",
+      "quick_test": [
+        "Enumerate DNS records and resolve each name to its hosting boundary",
+        "Separate first-party hosts from CDN, SaaS, and partner infrastructure",
+        "Flag dev, staging, uat, and legacy hostnames",
+        "Check CNAMEs pointing at unclaimed providers"
+      ],
+      "validate": "Hosting boundaries and non-production hosts are identified with resolution evidence, not assumption.",
       "items": [
         "WAPT-RECON-003",
         "WAPT-RECON-004",
@@ -656,6 +894,13 @@
       "category": "reconnaissance",
       "title": "Server & TLS fingerprinting",
       "summary": "Web-server hypotheses and TLS certificate relationships from response characteristics.",
+      "quick_test": [
+        "Compare response headers, error pages, and ordering across paths",
+        "Read the TLS certificate's names, issuer, and validity",
+        "Look for shared certificates linking related hosts",
+        "Record the server hypothesis and the evidence behind it"
+      ],
+      "validate": "Server and TLS conclusions are supported by observed responses, not a single banner.",
       "items": [
         "WAPT-RECON-006",
         "WAPT-RECON-007"
@@ -671,6 +916,13 @@
       "category": "reconnaissance",
       "title": "Applications & routing",
       "summary": "Distinct applications behind hostnames, base paths, virtual hosts, and default-site behavior.",
+      "quick_test": [
+        "Request the same path across hostnames and base paths",
+        "Send an unknown Host header and note the default site",
+        "Identify distinct applications sharing one origin",
+        "Map which application owns which route prefix"
+      ],
+      "validate": "Each application behind the origin is separated with routing evidence.",
       "items": [
         "WAPT-RECON-011",
         "WAPT-RECON-012"
@@ -686,6 +938,13 @@
       "category": "reconnaissance",
       "title": "Content & JavaScript extraction",
       "summary": "HTML comments, metadata, first-party script route extraction, and source-map classification.",
+      "quick_test": [
+        "Pull first-party scripts and extract routes, parameters, and flags",
+        "Grep HTML comments and metadata for internal detail",
+        "Check for reachable source maps and reconstruct modules",
+        "Queue every discovered endpoint into the surface register"
+      ],
+      "validate": "Extracted routes and parameters are confirmed reachable, and any source map is classed as a finding or not.",
       "items": [
         "WAPT-RECON-013",
         "WAPT-RECON-014",
@@ -703,6 +962,13 @@
       "category": "reconnaissance",
       "title": "Surface mapping",
       "summary": "Forms, parameters, routes, methods, and multi-step workflow state transitions.",
+      "quick_test": [
+        "Walk each workflow with the proxy recording every request",
+        "List routes, methods, parameters, and their state transitions",
+        "Mark which steps change server state and which are read-only",
+        "Note multi-step flows that carry tokens between steps"
+      ],
+      "validate": "The register lists every reachable route, method, and parameter observed during the walkthrough.",
       "items": [
         "WAPT-RECON-016",
         "WAPT-RECON-017",
@@ -722,6 +988,13 @@
       "category": "reconnaissance",
       "title": "Identity & account flows",
       "summary": "Authentication, reauthentication, step-up entry points, and account-lifecycle flows.",
+      "quick_test": [
+        "Enumerate login, registration, reset, and step-up entry points",
+        "Record every account-lifecycle transition available to you",
+        "Note which identity flows exist per role and per tenant",
+        "List the credentials and factors you were issued"
+      ],
+      "validate": "All authentication and lifecycle entry points are captured before authentication testing begins.",
       "items": [
         "WAPT-RECON-020",
         "WAPT-RECON-021"
@@ -737,6 +1010,13 @@
       "category": "reconnaissance",
       "title": "API & realtime discovery",
       "summary": "API roots, documentation, GraphQL endpoints, and WebSocket or SSE channels.",
+      "quick_test": [
+        "Locate API roots, docs, schema files, and version prefixes",
+        "Probe for GraphQL endpoints and introspection",
+        "Watch for WebSocket and SSE upgrades during the walkthrough",
+        "Compare the API surface against the browser UI"
+      ],
+      "validate": "API, GraphQL, and realtime channels are inventoried with the requests that revealed them.",
       "items": [
         "WAPT-RECON-022",
         "WAPT-RECON-023",
@@ -756,6 +1036,13 @@
       "category": "reconnaissance",
       "title": "Frameworks & intermediaries",
       "summary": "Server-side frameworks, packaged applications, CDNs, proxies, and edge-versus-origin behavior.",
+      "quick_test": [
+        "Fingerprint the server-side framework from cookies, paths, and errors",
+        "Detect CDN, proxy, and WAF hops from headers and timing",
+        "Compare edge behaviour against a direct origin request where allowed",
+        "Note packaged applications with known default paths"
+      ],
+      "validate": "The technology and intermediary hypothesis is backed by at least two independent observations.",
       "items": [
         "WAPT-RECON-026",
         "WAPT-RECON-027",
@@ -775,6 +1062,13 @@
       "category": "reconnaissance",
       "title": "Third-party & browser state",
       "summary": "External script and identity dependencies plus browser storage and configuration namespaces.",
+      "quick_test": [
+        "List external scripts, iframes, and identity providers",
+        "Inspect cookies, localStorage, and IndexedDB namespaces after login",
+        "Note which third parties receive tokens or user data",
+        "Record browser configuration the app depends on"
+      ],
+      "validate": "Third-party dependencies and client-side state namespaces are documented with observed evidence.",
       "items": [
         "WAPT-RECON-031",
         "WAPT-RECON-032"
@@ -790,6 +1084,13 @@
       "category": "reconnaissance",
       "title": "Entry points & error families",
       "summary": "Upload, search, and reporting entry points plus error-response classification.",
+      "quick_test": [
+        "Catalogue upload, search, reporting, and export entry points",
+        "Trigger each error class and record its response shape",
+        "Note which entries reach parsers, renderers, or downstream systems",
+        "Prioritise entries that cross a trust boundary"
+      ],
+      "validate": "Entry points and error families are classified so later categories can target them directly.",
       "items": [
         "WAPT-RECON-033",
         "WAPT-RECON-034",
@@ -807,6 +1108,13 @@
       "category": "reconnaissance",
       "title": "Attack-surface register",
       "summary": "Test matrices and the confirmed in-scope register that anchors the engagement.",
+      "quick_test": [
+        "Consolidate hosts, routes, parameters, roles, and flows into one register",
+        "Mark scope, credentials available, and owner confirmation per entry",
+        "Cross-check the register against the engagement scope document",
+        "Keep it open and update it as new surface appears"
+      ],
+      "validate": "The register is the single agreed in-scope surface, reconciled with the client's scope statement.",
       "items": [
         "WAPT-RECON-036",
         "WAPT-RECON-037"
@@ -822,6 +1130,13 @@
       "category": "http",
       "title": "HTTP methods",
       "summary": "Unsupported-method rejection, safe-method side effects, and method override handling.",
+      "quick_test": [
+        "Send OPTIONS, TRACE, PUT, DELETE, and a nonsense method",
+        "Check whether GET or HEAD produce side effects",
+        "Try X-HTTP-Method-Override and _method on a denied action",
+        "Compare responses at edge and origin"
+      ],
+      "validate": "An unsupported or overridden method reaches a handler that should refuse it.",
       "items": [
         "WAPT-HTTP-001",
         "WAPT-HTTP-002",
@@ -839,6 +1154,13 @@
       "category": "http",
       "title": "Content types & encoding",
       "summary": "Declared media types, accurate responses, and MIME-sniffing boundaries.",
+      "quick_test": [
+        "Post a body whose Content-Type contradicts its content",
+        "Swap JSON, form, XML, and multipart encodings of the same call",
+        "Check declared versus actual response types",
+        "Test sniffing behaviour on user-controlled content"
+      ],
+      "validate": "Parsing depends on a type the client controls, or content is rendered as a type it should not be.",
       "items": [
         "WAPT-HTTP-004",
         "WAPT-HTTP-005",
@@ -856,6 +1178,13 @@
       "category": "http",
       "title": "Path & parameter normalization",
       "summary": "Dot segments, repeated separators, duplicate parameters, and decode boundaries.",
+      "quick_test": [
+        "Insert dot segments, double slashes, and encoded separators in paths",
+        "Send duplicate parameters in query, body, and headers",
+        "Compare encoded and double-encoded values through each hop",
+        "Test the same path with and without a trailing slash"
+      ],
+      "validate": "Two components disagree about the same path or parameter, changing the authorization or routing decision.",
       "items": [
         "WAPT-HTTP-007",
         "WAPT-HTTP-008",
@@ -873,6 +1202,13 @@
       "category": "http",
       "title": "Target & host authority",
       "summary": "Absolute-form targets, Host versus :authority, and forwarding-header trust.",
+      "quick_test": [
+        "Send an absolute-form request target to the origin",
+        "Vary Host, :authority, and forwarded headers independently",
+        "Check whether generated links follow the injected value",
+        "Confirm whether the edge or the app decides the authority"
+      ],
+      "validate": "The application trusts a client-supplied authority for routing, links, or access decisions.",
       "items": [
         "WAPT-HTTP-010",
         "WAPT-HTTP-011",
@@ -890,6 +1226,13 @@
       "category": "http",
       "title": "Redirects & HTTPS",
       "summary": "User-controlled redirects and plaintext entry paths.",
+      "quick_test": [
+        "Feed absolute, protocol-relative, and encoded URLs to redirect parameters",
+        "Follow the chain and note the final destination",
+        "Request the plaintext entry point and inspect the upgrade",
+        "Check redirects that carry tokens in query strings"
+      ],
+      "validate": "A user-controlled destination is reached, or a plaintext path exposes session material.",
       "items": [
         "WAPT-HTTP-013",
         "WAPT-HTTP-014"
@@ -905,6 +1248,13 @@
       "category": "http",
       "title": "CORS",
       "summary": "Origin allowlists, credentialed access, opaque origins, preflights, and exposed headers.",
+      "quick_test": [
+        "Send Origin values: allowed, arbitrary, null, and subdomain look-alikes",
+        "Watch for reflected origins with credentials allowed",
+        "Trigger a preflight with a custom header and unusual method",
+        "Note which response headers are exposed to script"
+      ],
+      "validate": "A cross-origin reader could read authenticated data, proven by the returned CORS headers.",
       "items": [
         "WAPT-HTTP-015",
         "WAPT-HTTP-016",
@@ -925,6 +1275,13 @@
       "category": "http",
       "title": "Caching",
       "summary": "Persistent caches, shared-cache partitioning, cache keys, and Vary metadata.",
+      "quick_test": [
+        "Request authenticated pages and inspect cache directives",
+        "Compare responses through the shared cache from another session",
+        "Vary unkeyed headers and see whether the cached body changes",
+        "Check Vary correctness on content that differs per user"
+      ],
+      "validate": "A shared cache can serve one user's authenticated content to another, or key on the wrong input.",
       "items": [
         "WAPT-HTTP-020",
         "WAPT-HTTP-021",
@@ -944,6 +1301,13 @@
       "category": "http",
       "title": "Conditional & protocol translation",
       "summary": "Conditional and range requests, compression oracles, and framing translation.",
+      "quick_test": [
+        "Send conditional and Range requests to sensitive resources",
+        "Compare compressed and uncompressed response sizes for reflected secrets",
+        "Translate the request between HTTP/1.1 and HTTP/2 where possible",
+        "Watch framing behaviour through each intermediary"
+      ],
+      "validate": "Conditional, range, or compression behaviour leaks content or changes framing across hops.",
       "items": [
         "WAPT-HTTP-024",
         "WAPT-HTTP-025",
@@ -961,6 +1325,13 @@
       "category": "session-management",
       "title": "Token inventory & transport",
       "summary": "Session-token discovery and URL or referrer exposure.",
+      "quick_test": [
+        "Log in and list every cookie, header, and body token issued",
+        "Determine which value alone grants access by stripping the others",
+        "Check URLs, referrers, and logs for the session value",
+        "Repeat per role and per client (web, mobile, API)"
+      ],
+      "validate": "The authoritative session token is identified and never appears outside a safe channel.",
       "items": [
         "WAPT-SESS-001",
         "WAPT-SESS-018"
@@ -976,6 +1347,13 @@
       "category": "session-management",
       "title": "Cookie attributes",
       "summary": "Secure, HttpOnly, SameSite, Domain, Path, and persistent lifetime.",
+      "quick_test": [
+        "Inspect Secure, HttpOnly, SameSite, Domain, Path, and Expires",
+        "Read the cookie from script to test HttpOnly",
+        "Send the cookie over plain HTTP where reachable",
+        "Check scope against sibling subdomains"
+      ],
+      "validate": "A session cookie is script-readable, sent insecurely, or scoped wider than the application.",
       "items": [
         "WAPT-SESS-002",
         "WAPT-SESS-003",
@@ -997,6 +1375,13 @@
       "category": "session-management",
       "title": "Token properties",
       "summary": "Entropy and plaintext sensitivity of client-visible session values.",
+      "quick_test": [
+        "Collect a sample of fresh tokens from repeated logins",
+        "Decode for structure, padding, or embedded identity data",
+        "Assess entropy and any predictable component",
+        "Try modifying an embedded field and replaying"
+      ],
+      "validate": "Token structure or entropy allows prediction, or the token discloses sensitive data client-side.",
       "items": [
         "WAPT-SESS-007",
         "WAPT-SESS-008"
@@ -1012,6 +1397,13 @@
       "category": "session-management",
       "title": "Fixation & rotation",
       "summary": "Pre-authentication fixation, post-auth rotation, and privilege-change rotation.",
+      "quick_test": [
+        "Note the pre-authentication token, log in, and compare",
+        "Set a chosen token before login and see if it survives",
+        "Change privilege or role and compare again",
+        "Repeat across SSO and step-up transitions"
+      ],
+      "validate": "The same session identifier survives authentication or privilege change.",
       "items": [
         "WAPT-SESS-009",
         "WAPT-SESS-010",
@@ -1029,6 +1421,13 @@
       "category": "session-management",
       "title": "Lifecycle & logout",
       "summary": "Concurrency, logout invalidation, revocation, idle and absolute timeouts, and server-side expiry.",
+      "quick_test": [
+        "Log out in one browser and replay the old token elsewhere",
+        "Test idle and absolute timeouts against the documented limits",
+        "Open concurrent sessions and check the policy",
+        "Force revocation and replay from a second client"
+      ],
+      "validate": "A token still authorises requests after logout, timeout, or revocation.",
       "items": [
         "WAPT-SESS-012",
         "WAPT-SESS-013",
@@ -1051,6 +1450,13 @@
       "category": "session-management",
       "title": "Identity & account changes",
       "summary": "Disablement, deletion, password or factor changes, and account switching.",
+      "quick_test": [
+        "Change password, MFA, or email in one session",
+        "Replay the other session's token afterwards",
+        "Disable or delete the account and replay",
+        "Switch accounts and check whether the old context lingers"
+      ],
+      "validate": "Existing sessions survive a credential, factor, or account-state change that should terminate them.",
       "items": [
         "WAPT-SESS-020",
         "WAPT-SESS-021",
@@ -1068,6 +1474,13 @@
       "category": "session-management",
       "title": "Puzzling & isolation",
       "summary": "Multiple token names, sibling-application isolation, and explicit session creation.",
+      "quick_test": [
+        "Identify all session-like names issued by the origin",
+        "Mix tokens from sibling applications on the same domain",
+        "Force an explicit session creation and compare handling",
+        "Check whether one application's token authorises another"
+      ],
+      "validate": "Tokens from different applications or names are interchangeable across a trust boundary.",
       "items": [
         "WAPT-SESS-022",
         "WAPT-SESS-023",
@@ -1085,6 +1498,13 @@
       "category": "session-management",
       "title": "Federation & distribution",
       "summary": "Coordinated logout, revocation propagation, and refresh-token family replay.",
+      "quick_test": [
+        "Log out at the IdP and replay the application session",
+        "Revoke at one node and test another node or region",
+        "Replay a refresh token after rotation",
+        "Check propagation delay windows for revocation"
+      ],
+      "validate": "Revocation fails to propagate, or a rotated refresh-token family remains usable.",
       "items": [
         "WAPT-SESS-025",
         "WAPT-SESS-027",
@@ -1102,6 +1522,13 @@
       "category": "session-management",
       "title": "Client storage",
       "summary": "Reusable session authority in script-readable storage.",
+      "quick_test": [
+        "Inspect localStorage, sessionStorage, and IndexedDB after login",
+        "Copy any token found into a clean browser and replay it",
+        "Check whether script-readable values alone grant access",
+        "Confirm cleanup at logout"
+      ],
+      "validate": "A script-readable stored value alone re-authenticates the account.",
       "items": [
         "WAPT-SESS-019"
       ],
@@ -1115,6 +1542,13 @@
       "category": "injection",
       "title": "SQL injection",
       "summary": "Detection, confirmation, identifiers, second-order, ORM, bulk, and asynchronous SQL paths.",
+      "quick_test": [
+        "Probe each parameter with a quote, a boolean pair, and a benign expression",
+        "Compare responses; confirm with a differential, not an error",
+        "Test identifiers, ORDER BY, and LIMIT positions separately",
+        "Follow stored values to second-order and asynchronous sinks"
+      ],
+      "validate": "Two logically opposite inputs produce consistently different, reproducible database behaviour.",
       "items": [
         "WAPT-INJ-001",
         "WAPT-INJ-002",
@@ -1137,6 +1571,13 @@
       "category": "injection",
       "title": "NoSQL injection",
       "summary": "Operator injection, auth bypass, blind predicates, server-side JavaScript, pipelines, and second-order fragments.",
+      "quick_test": [
+        "Send operator objects such as $ne, $gt, and $regex in JSON parameters",
+        "Attempt authentication bypass with an operator instead of a value",
+        "Use blind predicates with measurable timing or count differences",
+        "Test aggregation, pipeline, and server-side JavaScript paths"
+      ],
+      "validate": "Query operators supplied by the client change the document set returned or the authentication outcome.",
       "items": [
         "WAPT-INJ-009",
         "WAPT-INJ-010",
@@ -1157,6 +1598,13 @@
       "category": "injection",
       "title": "LDAP injection",
       "summary": "Filters in authentication lookups, directory searches, and DN construction.",
+      "quick_test": [
+        "Insert *, ), and boolean filter fragments into lookup fields",
+        "Test the login filter and the directory search separately",
+        "Attempt DN construction changes in user-controlled attributes",
+        "Compare result counts between crafted and clean queries"
+      ],
+      "validate": "Filter or DN structure changes with attacker input, altering matched directory entries.",
       "items": [
         "WAPT-INJ-015",
         "WAPT-INJ-016",
@@ -1173,6 +1621,13 @@
       "category": "injection",
       "title": "XML, XPath & entities",
       "summary": "Predicate injection, structure injection, external entities, DTDs, and XInclude.",
+      "quick_test": [
+        "Submit XML with a benign external entity pointing to your host",
+        "Test parameter entities and DTD retrieval for blind cases",
+        "Inject XPath predicates into value fields",
+        "Try XInclude where the raw document is not controllable"
+      ],
+      "validate": "The parser resolves attacker-controlled entities or changes the XPath result set.",
       "items": [
         "WAPT-INJ-018",
         "WAPT-INJ-019",
@@ -1193,6 +1648,13 @@
       "category": "injection",
       "title": "Command injection",
       "summary": "Separators, blind timing, argument injection, filenames, workers, and environment influence.",
+      "quick_test": [
+        "Append separators (; | & newline) with a harmless command",
+        "Use timing when there is no output channel",
+        "Test argument injection with leading dashes",
+        "Follow filenames and worker inputs into shell contexts"
+      ],
+      "validate": "A controlled, non-destructive command effect is reproducible and attributable to your input.",
       "items": [
         "WAPT-INJ-024",
         "WAPT-INJ-025",
@@ -1214,6 +1676,13 @@
       "category": "injection",
       "title": "Template & expression injection",
       "summary": "SSTI detection, context classification, stored and blind variants, sandboxes, includes, and dynamic evaluation.",
+      "quick_test": [
+        "Send arithmetic probes for each syntax: {{7*7}}, ${7*7}, #{7*7}",
+        "Classify the engine from the rendered result and errors",
+        "Test stored and blind rendering paths such as emails and PDFs",
+        "Probe sandbox escapes and dynamic evaluation entry points"
+      ],
+      "validate": "Server-side evaluation of your expression is proven by rendered output or a controlled side channel.",
       "items": [
         "WAPT-INJ-030",
         "WAPT-INJ-031",
@@ -1238,6 +1707,13 @@
       "category": "injection",
       "title": "Header, log & mail injection",
       "summary": "CRLF into headers and redirects, log sanitization, and email header injection.",
+      "quick_test": [
+        "Insert encoded CR and LF into header-reflected parameters",
+        "Test redirect Location and Set-Cookie construction",
+        "Inject newlines into values that reach logs",
+        "Try mail header injection on contact and invite flows"
+      ],
+      "validate": "Your input creates or alters a header, log record, or mail header boundary.",
       "items": [
         "WAPT-INJ-039",
         "WAPT-INJ-040",
@@ -1256,6 +1732,13 @@
       "category": "injection",
       "title": "Parameter pollution",
       "summary": "Duplicate-parameter rules and cross-source pollution.",
+      "quick_test": [
+        "Duplicate a parameter with conflicting values",
+        "Split the same name across query, body, and JSON",
+        "Compare which value the app, edge, and backend each use",
+        "Target authorization- and price-bearing parameters"
+      ],
+      "validate": "Two components resolve the duplicated parameter differently, changing the security decision.",
       "items": [
         "WAPT-INJ-043",
         "WAPT-INJ-044"
@@ -1271,6 +1754,13 @@
       "category": "injection",
       "title": "Export & host injection",
       "summary": "Spreadsheet formulas, CSV quoting, Host validation, link origins, cache keys, and forwarded values.",
+      "quick_test": [
+        "Store values starting with =, +, -, @ and export to CSV",
+        "Check quoting and delimiter handling in the generated file",
+        "Poison Host and forwarded headers on link-generating flows",
+        "Follow the injected value into cache keys and emails"
+      ],
+      "validate": "The exported file or generated link carries attacker-controlled structure to another consumer.",
       "items": [
         "WAPT-INJ-045",
         "WAPT-INJ-046",
@@ -1293,6 +1783,13 @@
       "category": "injection",
       "title": "Mail, regex & SSI",
       "summary": "SMTP and IMAP injection, regex injection and ReDoS, and server-side includes.",
+      "quick_test": [
+        "Inject SMTP and IMAP control sequences into mail parameters",
+        "Send regex metacharacters into user-supplied patterns",
+        "Test catastrophic backtracking with a bounded payload",
+        "Probe SSI directives where the stack supports them"
+      ],
+      "validate": "Mail structure, regex evaluation, or include processing changes because of your input.",
       "items": [
         "WAPT-INJ-051",
         "WAPT-INJ-052",
@@ -1312,6 +1809,13 @@
       "category": "xss",
       "title": "Reflected & stored XSS",
       "summary": "Input classification, stored user content, and blind stored payloads in privileged views.",
+      "quick_test": [
+        "Send a unique marker into every parameter and find where it lands",
+        "Determine the context: HTML body, attribute, script, or URL",
+        "Break out of that context with the minimum characters needed",
+        "Store the payload and check privileged and admin views"
+      ],
+      "validate": "Script executes in a victim context you did not control, not only in your own developer console.",
       "items": [
         "WAPT-XSS-001",
         "WAPT-XSS-002",
@@ -1329,6 +1833,13 @@
       "category": "xss",
       "title": "DOM & storage XSS",
       "summary": "Location sources, postMessage, and browser-storage values reaching executable sinks.",
+      "quick_test": [
+        "Trace location, referrer, postMessage, and storage into sinks",
+        "Set the source value and watch the sink in the debugger",
+        "Test fragment-only payloads that never reach the server",
+        "Repeat after a page reload that rehydrates stored values"
+      ],
+      "validate": "A client-side source reaches an executing sink without server involvement, reproducibly.",
       "items": [
         "WAPT-XSS-004",
         "WAPT-XSS-005",
@@ -1346,6 +1857,13 @@
       "category": "xss",
       "title": "Sinks & sources",
       "summary": "API and realtime message encoding, dangerous HTML and JavaScript sinks, and URL schemes.",
+      "quick_test": [
+        "List innerHTML, document.write, eval, and framework raw-HTML sinks",
+        "Feed API and realtime message fields into those sinks",
+        "Test javascript:, data:, and blob: URLs in link and src attributes",
+        "Confirm encoding at each sink, not only at input"
+      ],
+      "validate": "A dangerous sink receives unencoded attacker data and executes it.",
       "items": [
         "WAPT-XSS-007",
         "WAPT-XSS-008",
@@ -1365,6 +1883,13 @@
       "category": "xss",
       "title": "Sanitization",
       "summary": "Configuration bypasses, mutation XSS, rich text, SVG, and Markdown transformations.",
+      "quick_test": [
+        "Identify the sanitizer and its configuration",
+        "Test mutation payloads that change meaning after parsing",
+        "Push rich text, SVG, and Markdown transformations",
+        "Round-trip content through save, render, and export"
+      ],
+      "validate": "Sanitized content still executes after the application's own parse and render cycle.",
       "items": [
         "WAPT-XSS-012",
         "WAPT-XSS-013",
@@ -1385,6 +1910,13 @@
       "category": "xss",
       "title": "Frameworks & templates",
       "summary": "Framework escape hatches, client-side templates, and JSONP.",
+      "quick_test": [
+        "Find framework escape hatches such as raw-HTML bindings",
+        "Test client-side template expressions in user-controlled strings",
+        "Check JSONP endpoints and callback parameters",
+        "Confirm whether the framework's protection is actually enabled"
+      ],
+      "validate": "Framework or template evaluation runs attacker input as code or markup.",
       "items": [
         "WAPT-XSS-017",
         "WAPT-XSS-018",
@@ -1402,6 +1934,13 @@
       "category": "xss",
       "title": "Uploads & encoding",
       "summary": "Active upload files and character-encoding normalization.",
+      "quick_test": [
+        "Upload HTML, SVG, and XML files and request them back",
+        "Check the serving origin and Content-Type",
+        "Test charset confusion such as UTF-7 style normalization",
+        "Verify download versus inline disposition"
+      ],
+      "validate": "An uploaded or re-encoded file executes script on an origin that matters.",
       "items": [
         "WAPT-XSS-019",
         "WAPT-XSS-021"
@@ -1417,6 +1956,13 @@
       "category": "xss",
       "title": "Defenses & evidence",
       "summary": "CSP as impact reduction, Trusted Types, and evidence hygiene.",
+      "quick_test": [
+        "Read the CSP and decide whether it blocks the proven payload",
+        "Test Trusted Types enforcement on the same sink",
+        "Record execution evidence without harmful payloads",
+        "Note residual impact when CSP only reduces it"
+      ],
+      "validate": "Impact is stated against the deployed defenses, with evidence that is safe and reproducible.",
       "items": [
         "WAPT-XSS-022",
         "WAPT-XSS-029",
@@ -1434,6 +1980,13 @@
       "category": "xss",
       "title": "Boundaries & edge cases",
       "summary": "WAF bypass, self-XSS, extension noise, dangling markup, base injection, and script gadgets.",
+      "quick_test": [
+        "Check whether a block is the WAF or the application",
+        "Distinguish self-XSS from a cross-user path",
+        "Test dangling markup, base tag injection, and script gadgets",
+        "Rule out browser-extension artefacts before reporting"
+      ],
+      "validate": "The issue affects another user through an application path, not the tester's own browser or an extension.",
       "items": [
         "WAPT-XSS-023",
         "WAPT-XSS-024",
@@ -1455,6 +2008,13 @@
       "category": "csrf",
       "title": "CSRF inventory",
       "summary": "Sensitive actions using ambient browser credentials.",
+      "quick_test": [
+        "List state-changing actions that rely on cookies alone",
+        "Note the method, media type, and any token per action",
+        "Mark which actions are security-critical",
+        "Prioritise actions with no custom header requirement"
+      ],
+      "validate": "Every ambient-credential action is inventoried with its current defense.",
       "items": [
         "WAPT-CSRF-001"
       ],
@@ -1468,6 +2028,13 @@
       "category": "csrf",
       "title": "Token validation",
       "summary": "Missing, invalid, session-bound, action-bound, and leaking anti-CSRF tokens.",
+      "quick_test": [
+        "Remove the token, then send an empty and a malformed one",
+        "Reuse another user's token and an old token",
+        "Swap the token between two different actions",
+        "Check whether the token leaks in URLs or referrers"
+      ],
+      "validate": "The action succeeds without a valid, session- and action-bound token.",
       "items": [
         "WAPT-CSRF-002",
         "WAPT-CSRF-003",
@@ -1487,6 +2054,13 @@
       "category": "csrf",
       "title": "Origin & Referer",
       "summary": "Origin validation and privacy-aware Referer fallback.",
+      "quick_test": [
+        "Send the request with a foreign Origin header",
+        "Strip Origin and Referer entirely",
+        "Test look-alike origins and subdomain variants",
+        "Compare behaviour on the fallback path"
+      ],
+      "validate": "A cross-site origin, or a missing one, is accepted for a state-changing request.",
       "items": [
         "WAPT-CSRF-007",
         "WAPT-CSRF-008"
@@ -1502,6 +2076,13 @@
       "category": "csrf",
       "title": "SameSite & media types",
       "summary": "SameSite behavior and simple-request media types for JSON-only operations.",
+      "quick_test": [
+        "Check SameSite on the session cookie and its effective default",
+        "Test top-level POST navigation from a foreign site",
+        "Send JSON as text/plain to bypass preflight",
+        "Test the two-minute Lax exemption window where relevant"
+      ],
+      "validate": "A cross-site request carries session cookies and completes the action.",
       "items": [
         "WAPT-CSRF-009",
         "WAPT-CSRF-010"
@@ -1517,6 +2098,13 @@
       "category": "csrf",
       "title": "Methods & navigation",
       "summary": "Method overrides and cross-site GET state changes.",
+      "quick_test": [
+        "Convert POST actions to GET and to method-override forms",
+        "Trigger state change through simple navigation",
+        "Test HEAD and OPTIONS variants of the same route",
+        "Check whether overrides bypass the CSRF filter"
+      ],
+      "validate": "A state change is reachable through a method that skips CSRF validation.",
       "items": [
         "WAPT-CSRF-011",
         "WAPT-CSRF-012"
@@ -1532,6 +2120,13 @@
       "category": "csrf",
       "title": "Login, logout, uploads & GraphQL",
       "summary": "Login CSRF, forced logout, multipart actions, and GraphQL mutations.",
+      "quick_test": [
+        "Force a login into an attacker account and follow the impact",
+        "Trigger forced logout cross-site",
+        "Submit multipart actions from a foreign origin",
+        "Test GraphQL mutations sent as form-encoded requests"
+      ],
+      "validate": "Login, logout, upload, or mutation completes cross-site with the victim's browser.",
       "items": [
         "WAPT-CSRF-013",
         "WAPT-CSRF-014",
@@ -1551,6 +2146,13 @@
       "category": "csrf",
       "title": "Boundaries",
       "summary": "CORS-versus-CSRF distinction and step-up for critical actions.",
+      "quick_test": [
+        "Separate read exposure (CORS) from write forgery (CSRF)",
+        "Confirm whether the response is readable or only sent",
+        "Check step-up requirements on the critical actions",
+        "State impact in terms of the achievable action"
+      ],
+      "validate": "The report distinguishes forged writes from cross-origin reads and matches the observed behaviour.",
       "items": [
         "WAPT-CSRF-017",
         "WAPT-CSRF-018"
@@ -1566,6 +2168,13 @@
       "category": "graphql",
       "title": "Discovery & introspection",
       "summary": "Endpoint and transport inventory, introspection, and schema reconciliation.",
+      "quick_test": [
+        "Locate the endpoint and its GET, POST, and WebSocket transports",
+        "Run introspection; if blocked, test field suggestions",
+        "Reconcile the schema against the documented API",
+        "Note deprecated and internal fields"
+      ],
+      "validate": "The reachable schema surface is established, including anything beyond the documented contract.",
       "items": [
         "WAPT-GQL-001",
         "WAPT-GQL-002",
@@ -1583,6 +2192,13 @@
       "category": "graphql",
       "title": "Authorization",
       "summary": "Object, field, mutation, and function authorization in resolvers.",
+      "quick_test": [
+        "Request another user's object by node id or nested edge",
+        "Query sensitive fields as a low-privilege role",
+        "Call each mutation from a role that should not have it",
+        "Test the same object through alternate resolver paths"
+      ],
+      "validate": "A resolver returns or mutates data the caller's role must not reach.",
       "items": [
         "WAPT-GQL-004",
         "WAPT-GQL-005",
@@ -1602,6 +2218,13 @@
       "category": "graphql",
       "title": "Depth & cost",
       "summary": "Query depth, cost analysis, and alias-based bypasses.",
+      "quick_test": [
+        "Send progressively deeper nested queries",
+        "Repeat one expensive field with many aliases",
+        "Measure server time and response size against the limit",
+        "Check whether cost analysis counts aliases and fragments"
+      ],
+      "validate": "Depth, cost, or alias limits can be exceeded to force disproportionate server work.",
       "items": [
         "WAPT-GQL-008",
         "WAPT-GQL-009",
@@ -1618,6 +2241,13 @@
       "category": "graphql",
       "title": "Batching & pagination",
       "summary": "Batch operations and connection traversal limits.",
+      "quick_test": [
+        "Send an array of operations in one request",
+        "Repeat an authentication or OTP mutation inside a batch",
+        "Request very large first/last pagination values",
+        "Walk connections past their documented bounds"
+      ],
+      "validate": "Batching or pagination bypasses a per-request limit or rate control.",
       "items": [
         "WAPT-GQL-011",
         "WAPT-GQL-012"
@@ -1633,6 +2263,13 @@
       "category": "graphql",
       "title": "Transport boundaries",
       "summary": "CSRF over alternate encodings, subscription authorization, and error hygiene.",
+      "quick_test": [
+        "Send a mutation as form-encoded or text/plain from a foreign origin",
+        "Subscribe over WebSocket with another role's context",
+        "Force resolver errors and read the returned detail",
+        "Compare GET-versus-POST handling of mutations"
+      ],
+      "validate": "An alternate transport or error path bypasses the protections applied to the main endpoint.",
       "items": [
         "WAPT-GQL-013",
         "WAPT-GQL-014",
@@ -1650,6 +2287,13 @@
       "category": "jwt",
       "title": "Signature & algorithm",
       "summary": "Signature verification, algorithm allowlists, none, confusion, and HMAC secrets.",
+      "quick_test": [
+        "Strip the signature and set alg to none",
+        "Flip RS256 to HS256 and sign with the public key",
+        "Modify a claim and replay with the original signature",
+        "Test weak HMAC secrets against a bounded wordlist"
+      ],
+      "validate": "A token the server should reject is accepted and changes the authenticated identity or rights.",
       "items": [
         "WAPT-JWT-001",
         "WAPT-JWT-002",
@@ -1671,6 +2315,13 @@
       "category": "jwt",
       "title": "Claim validation",
       "summary": "Issuer, audience, token type, expiry, and not-before enforcement.",
+      "quick_test": [
+        "Change iss, aud, and typ and replay",
+        "Send an expired token and one with nbf in the future",
+        "Remove exp entirely and observe handling",
+        "Reuse a token from a sibling environment or tenant"
+      ],
+      "validate": "The service accepts a token outside its issuer, audience, type, or time bounds.",
       "items": [
         "WAPT-JWT-006",
         "WAPT-JWT-007",
@@ -1690,6 +2341,13 @@
       "category": "jwt",
       "title": "Identity & privilege claims",
       "summary": "Subject and tenant binding plus role and privilege claim trust.",
+      "quick_test": [
+        "Change sub, tenant, and role claims one at a time",
+        "Check whether authorization reads claims or server-side state",
+        "Test a token from a lower-privilege account against admin routes",
+        "Confirm tenant binding on multi-tenant endpoints"
+      ],
+      "validate": "Access decisions follow the client-supplied claim rather than server-side authority.",
       "items": [
         "WAPT-JWT-010",
         "WAPT-JWT-011"
@@ -1705,6 +2363,13 @@
       "category": "jwt",
       "title": "Key management",
       "summary": "kid lookup, external keys, and rotation fallback.",
+      "quick_test": [
+        "Manipulate kid for path traversal, SQL, or file references",
+        "Point jku or x5u at your own host",
+        "Embed jwk in the header and re-sign",
+        "Replay a token signed with a retired key"
+      ],
+      "validate": "The verifier resolves an attacker-influenced key or still trusts a rotated-out key.",
       "items": [
         "WAPT-JWT-012",
         "WAPT-JWT-013",
@@ -1722,6 +2387,13 @@
       "category": "jwt",
       "title": "Replay & lifecycle",
       "summary": "Token replay and refresh-token family rotation.",
+      "quick_test": [
+        "Replay a captured token after logout and after refresh",
+        "Use a refresh token twice and observe family behaviour",
+        "Test whether revocation is enforced before expiry",
+        "Check token reuse across devices"
+      ],
+      "validate": "A token or refresh family stays usable after the event that should have invalidated it.",
       "items": [
         "WAPT-JWT-015",
         "WAPT-JWT-016"
@@ -1737,6 +2409,13 @@
       "category": "jwt",
       "title": "Transport & storage",
       "summary": "URL and log leakage plus browser storage decisions.",
+      "quick_test": [
+        "Search URLs, referrers, and logs for tokens",
+        "Inspect localStorage versus cookie placement",
+        "Check whether the token is script-readable",
+        "Test cache and history exposure of token-bearing responses"
+      ],
+      "validate": "The token is exposed to a channel or store the threat model does not accept.",
       "items": [
         "WAPT-JWT-017",
         "WAPT-JWT-018"
@@ -1752,6 +2431,13 @@
       "category": "oauth-sso-saml",
       "title": "OAuth redirect & state",
       "summary": "Redirect URI matching, state binding, and OIDC nonce validation.",
+      "quick_test": [
+        "Test redirect_uri variants: subpaths, subdomains, and encoded suffixes",
+        "Remove and replay state, then reuse another session's state",
+        "Drop the nonce from an OIDC request and compare the ID token",
+        "Follow where the code or token ends up in each variant"
+      ],
+      "validate": "The authorization response can be delivered to, or replayed by, a party the flow should exclude.",
       "items": [
         "WAPT-OAUTH-001",
         "WAPT-OAUTH-002",
@@ -1769,6 +2455,13 @@
       "category": "oauth-sso-saml",
       "title": "Authorization code flow",
       "summary": "PKCE, code consumption, and authorization-server mix-up.",
+      "quick_test": [
+        "Remove or downgrade PKCE and complete the flow",
+        "Replay an authorization code a second time",
+        "Swap codes between clients or authorization servers",
+        "Complete a flow with a code issued for another client_id"
+      ],
+      "validate": "A code is consumable twice, without its verifier, or by the wrong client.",
       "items": [
         "WAPT-OAUTH-004",
         "WAPT-OAUTH-005",
@@ -1786,6 +2479,13 @@
       "category": "oauth-sso-saml",
       "title": "Response handling",
       "summary": "Parameter pollution and code/token leakage channels.",
+      "quick_test": [
+        "Duplicate code, state, and redirect parameters in the response",
+        "Look for the code in referrer, history, and logs",
+        "Test fragment-versus-query delivery handling",
+        "Force error responses and inspect what they carry"
+      ],
+      "validate": "Parameter handling or leakage lets another party obtain a usable authorization artefact.",
       "items": [
         "WAPT-OAUTH-007",
         "WAPT-OAUTH-008"
@@ -1801,6 +2501,13 @@
       "category": "oauth-sso-saml",
       "title": "Scopes & grants",
       "summary": "Scope and consent limits plus deprecated grant rejection.",
+      "quick_test": [
+        "Request scopes beyond the consent screen and see what is issued",
+        "Use a token outside its granted scope",
+        "Attempt implicit and password grants",
+        "Re-consent and check scope escalation between grants"
+      ],
+      "validate": "A token carries or exercises authority beyond the granted, consented scope.",
       "items": [
         "WAPT-OAUTH-009",
         "WAPT-OAUTH-010"
@@ -1816,6 +2523,13 @@
       "category": "oauth-sso-saml",
       "title": "Tokens & clients",
       "summary": "Refresh-token protections, audience validation, and client-credential security.",
+      "quick_test": [
+        "Replay refresh tokens after rotation and after revocation",
+        "Send an access token to a different resource server",
+        "Test public-client secrets exposed in the browser or app",
+        "Check client-credential tokens for user-scoped access"
+      ],
+      "validate": "Token audience, rotation, or client authentication fails to bind the token to its intended party.",
       "items": [
         "WAPT-OAUTH-011",
         "WAPT-OAUTH-012",
@@ -1833,6 +2547,13 @@
       "category": "oauth-sso-saml",
       "title": "Client navigation",
       "summary": "Open-redirect chains through OAuth clients.",
+      "quick_test": [
+        "Chain the client's post-login redirect parameter",
+        "Combine an allowed redirect_uri with an open redirect on the client",
+        "Follow the full navigation chain to the final host",
+        "Check whether the code survives the chain"
+      ],
+      "validate": "A redirect chain through the client delivers the authorization artefact off-origin.",
       "items": [
         "WAPT-OAUTH-014"
       ],
@@ -1846,6 +2567,13 @@
       "category": "oauth-sso-saml",
       "title": "SAML signatures",
       "summary": "Assertion signatures and XML signature wrapping.",
+      "quick_test": [
+        "Remove the signature and replay the assertion",
+        "Apply XML signature wrapping around a modified assertion",
+        "Re-sign with a self-generated certificate",
+        "Alter attributes after signing and observe validation"
+      ],
+      "validate": "The SP accepts an assertion whose signature does not cover the data it trusts.",
       "items": [
         "WAPT-OAUTH-015",
         "WAPT-OAUTH-016"
@@ -1861,6 +2589,13 @@
       "category": "oauth-sso-saml",
       "title": "SAML binding & time",
       "summary": "Audience, recipient, destination, issuer, replay, and time conditions.",
+      "quick_test": [
+        "Change Audience, Recipient, and Destination values",
+        "Replay a previously used assertion",
+        "Shift NotBefore and NotOnOrAfter outside the window",
+        "Swap the Issuer for another IdP you control"
+      ],
+      "validate": "An assertion is accepted outside its audience, destination, replay, or time conditions.",
       "items": [
         "WAPT-OAUTH-017",
         "WAPT-OAUTH-018",
@@ -1878,6 +2613,13 @@
       "category": "oauth-sso-saml",
       "title": "SAML state & attributes",
       "summary": "RelayState navigation and attribute-driven role mapping.",
+      "quick_test": [
+        "Point RelayState at an external destination",
+        "Modify role and group attributes in the assertion",
+        "Test attribute name and format variations",
+        "Check mapping when an attribute is missing or duplicated"
+      ],
+      "validate": "Navigation or role mapping follows attacker-influenced assertion content.",
       "items": [
         "WAPT-OAUTH-020",
         "WAPT-OAUTH-021"
@@ -1893,6 +2635,13 @@
       "category": "oauth-sso-saml",
       "title": "Logout & fallback",
       "summary": "Coordinated logout and local fallback beside federated assurance.",
+      "quick_test": [
+        "Log out at the IdP and replay the SP session",
+        "Test the local login path beside federated login",
+        "Check whether local credentials bypass IdP policy",
+        "Verify session termination across all SPs"
+      ],
+      "validate": "A local or stale path retains access that federated logout or policy should have removed.",
       "items": [
         "WAPT-OAUTH-022"
       ],
@@ -1907,6 +2656,13 @@
       "category": "ssrf",
       "title": "SSRF detection",
       "summary": "Confirmation with controlled callbacks and blind detection.",
+      "quick_test": [
+        "Point every URL-bearing parameter at your collaborator host",
+        "Watch for HTTP and DNS interactions, including delayed ones",
+        "Compare timing when there is no callback",
+        "Note which parameters reach a server-side fetch at all"
+      ],
+      "validate": "A server-side request to your controlled destination is observed and attributable to the input.",
       "items": [
         "WAPT-SSRF-001",
         "WAPT-SSRF-002"
@@ -1922,6 +2678,13 @@
       "category": "ssrf",
       "title": "Allowlists & schemes",
       "summary": "Scheme allowlists and parsed host allowlists.",
+      "quick_test": [
+        "Try file:, gopher:, dict:, and http on non-standard ports",
+        "Test allowlist bypasses: userinfo@, look-alike hosts, and suffixes",
+        "Use an allowed host that redirects onward",
+        "Check parsed host versus connected host"
+      ],
+      "validate": "A destination outside the intended allowlist or scheme set is fetched.",
       "items": [
         "WAPT-SSRF-003",
         "WAPT-SSRF-004"
@@ -1937,6 +2700,13 @@
       "category": "ssrf",
       "title": "Address normalization",
       "summary": "IP representation normalization and parser differentials.",
+      "quick_test": [
+        "Test decimal, octal, hex, and IPv6-mapped representations of 127.0.0.1",
+        "Use short forms and trailing dots on hostnames",
+        "Compare parser behaviour with unusual URL syntax",
+        "Try encoded characters inside the host component"
+      ],
+      "validate": "A blocked internal address is reachable through an alternative representation.",
       "items": [
         "WAPT-SSRF-005",
         "WAPT-SSRF-010"
@@ -1952,6 +2722,13 @@
       "category": "ssrf",
       "title": "Redirects & resolution",
       "summary": "Redirect revalidation and connection-time address validation.",
+      "quick_test": [
+        "Serve a 302 from your host to an internal address",
+        "Test multi-hop redirect chains",
+        "Use DNS records that resolve differently on the second lookup",
+        "Check whether validation happens at parse time or connect time"
+      ],
+      "validate": "The fetcher follows a redirect or late resolution into a destination it validated against.",
       "items": [
         "WAPT-SSRF-006",
         "WAPT-SSRF-007"
@@ -1967,6 +2744,13 @@
       "category": "ssrf",
       "title": "Metadata & egress",
       "summary": "Cloud metadata destinations, port constraints, and egress backstops.",
+      "quick_test": [
+        "Target cloud metadata endpoints and their required headers",
+        "Sweep a small set of internal ports on localhost",
+        "Test whether egress filtering blocks outbound to your host",
+        "Record any credential material returned, redacted"
+      ],
+      "validate": "Metadata or internal services respond with content the application should never reach.",
       "items": [
         "WAPT-SSRF-008",
         "WAPT-SSRF-009",
@@ -1984,6 +2768,13 @@
       "category": "ssrf",
       "title": "Response & consumers",
       "summary": "Response exposure limits and document renderer fetches.",
+      "quick_test": [
+        "Compare full-body, truncated, and error-only response exposure",
+        "Use response differences as a blind oracle",
+        "Test document renderers and preview generators for fetches",
+        "Follow fetched content into parsers and templates"
+      ],
+      "validate": "Fetched internal content is exposed to the requester or influences downstream processing.",
       "items": [
         "WAPT-SSRF-011",
         "WAPT-SSRF-013"
@@ -1999,6 +2790,13 @@
       "category": "ssrf",
       "title": "Webhooks & second-order",
       "summary": "Webhook binding and stored-URL re-fetching.",
+      "quick_test": [
+        "Register a webhook pointing at an internal address",
+        "Store URLs that other flows re-fetch later",
+        "Trigger the delayed fetch and watch the callback",
+        "Change the destination after validation and re-trigger"
+      ],
+      "validate": "A stored or webhook URL causes a later server-side fetch to an unvalidated destination.",
       "items": [
         "WAPT-SSRF-012",
         "WAPT-SSRF-014"
@@ -2014,6 +2812,13 @@
       "category": "request-smuggling",
       "title": "Planning & controls",
       "summary": "Topology mapping and framing baseline.",
+      "quick_test": [
+        "Map every hop: CDN, WAF, load balancer, and origin",
+        "Record HTTP versions and keep-alive behaviour per hop",
+        "Establish a normal timing and response baseline",
+        "Agree the safety window and rollback plan with the client"
+      ],
+      "validate": "Topology, framing baseline, and safety boundaries are documented before any desync probe.",
       "items": [
         "WAPT-SMUG-001",
         "WAPT-SMUG-002"
@@ -2029,6 +2834,13 @@
       "category": "request-smuggling",
       "title": "HTTP/1 desync",
       "summary": "CL.TE, TE.CL, and TE.TE disagreements.",
+      "quick_test": [
+        "Send CL.TE and TE.CL probes with a timing differential",
+        "Obfuscate Transfer-Encoding for TE.TE variants",
+        "Confirm with a self-targeted request, never a shared victim",
+        "Reset the connection after each probe"
+      ],
+      "validate": "A framing disagreement is proven with a controlled, self-contained request pair.",
       "items": [
         "WAPT-SMUG-003",
         "WAPT-SMUG-004",
@@ -2045,6 +2857,13 @@
       "category": "request-smuggling",
       "title": "HTTP/2 downgrade",
       "summary": "H2.CL, H2.TE, and header-value injection on downgrade.",
+      "quick_test": [
+        "Send H2 requests with conflicting Content-Length and body size",
+        "Include Transfer-Encoding through the downgrade path",
+        "Inject CR/LF into header values and observe rewriting",
+        "Compare edge and origin interpretation"
+      ],
+      "validate": "The downgrade rewrites the request so the origin sees a different message boundary.",
       "items": [
         "WAPT-SMUG-006",
         "WAPT-SMUG-007",
@@ -2061,6 +2880,13 @@
       "category": "request-smuggling",
       "title": "Confirmation & safety",
       "summary": "Queue-poisoning confirmation without user impact.",
+      "quick_test": [
+        "Use your own request as the poisoned victim",
+        "Keep the payload inert and short-lived",
+        "Stop immediately if a third-party response is observed",
+        "Record connection, timing, and response evidence"
+      ],
+      "validate": "Queue poisoning is demonstrated against your own request only, with no user impact.",
       "items": [
         "WAPT-SMUG-009"
       ],
@@ -2074,6 +2900,13 @@
       "category": "request-smuggling",
       "title": "Advanced variants",
       "summary": "0.CL, client-side, and pause-based desync in isolation.",
+      "quick_test": [
+        "Test 0.CL and client-side desync in an isolated window",
+        "Try pause-based desync with controlled delays",
+        "Confirm the browser-side variant with your own session",
+        "Re-verify the target is not shared infrastructure"
+      ],
+      "validate": "The advanced variant is reproduced in isolation with documented, contained impact.",
       "items": [
         "WAPT-SMUG-010",
         "WAPT-SMUG-011",
@@ -2091,6 +2924,13 @@
       "category": "request-smuggling",
       "title": "Verification",
       "summary": "False-positive exclusions and remediation verification.",
+      "quick_test": [
+        "Re-run each positive probe to exclude timeouts and load noise",
+        "Compare against a control request on a clean connection",
+        "Verify the fix by repeating the exact probe set",
+        "Check whether an intermediary changed between runs"
+      ],
+      "validate": "Findings survive repetition against a control, and remediation is confirmed with the original probes.",
       "items": [
         "WAPT-SMUG-013",
         "WAPT-SMUG-014"
@@ -2106,6 +2946,13 @@
       "category": "business-logic",
       "title": "Workflow & state",
       "summary": "State mapping, skipped steps, out-of-order transitions, replays, and token binding.",
+      "quick_test": [
+        "Record the intended step order with the proxy",
+        "Replay a later step directly without the earlier ones",
+        "Reorder and repeat steps, then read authoritative state",
+        "Reuse a step token from an older or another user's flow"
+      ],
+      "validate": "The flow reaches a completed or privileged state without the steps the business rule requires.",
       "items": [
         "WAPT-BL-001",
         "WAPT-BL-002",
@@ -2125,6 +2972,13 @@
       "category": "business-logic",
       "title": "Pricing & totals",
       "summary": "Ranges, signs, prices, quantities, currency, and recalculated totals.",
+      "quick_test": [
+        "Send negative, zero, fractional, and huge quantities",
+        "Change unit price, currency, and discount fields in the request",
+        "Compare the recalculated total against the server's charge",
+        "Test rounding at the boundary of the smallest unit"
+      ],
+      "validate": "The final charge or credit differs from the correct amount because of client-supplied values.",
       "items": [
         "WAPT-BL-006",
         "WAPT-BL-007",
@@ -2144,6 +2998,13 @@
       "category": "business-logic",
       "title": "Promotions & stored value",
       "summary": "Coupon eligibility and stacking plus gift cards, credits, and points.",
+      "quick_test": [
+        "Apply a coupon twice and stack incompatible coupons",
+        "Use an expired, other-user, or single-use code again",
+        "Redeem gift cards, credits, and points concurrently",
+        "Cancel the order and check whether value is returned twice"
+      ],
+      "validate": "Stored value or discount is obtained beyond entitlement and is reflected in authoritative balances.",
       "items": [
         "WAPT-BL-011",
         "WAPT-BL-012",
@@ -2160,6 +3021,13 @@
       "category": "business-logic",
       "title": "Checkout & payments",
       "summary": "Checkout state, payment binding, refunds, and cancellation windows.",
+      "quick_test": [
+        "Modify the cart after the payment amount is fixed",
+        "Confirm the order with a failed or pending payment",
+        "Bind a payment reference from another order",
+        "Test refund and cancellation windows for over-refunds"
+      ],
+      "validate": "Goods, service, or refund is granted without a matching completed payment.",
       "items": [
         "WAPT-BL-014",
         "WAPT-BL-015",
@@ -2178,6 +3046,13 @@
       "category": "business-logic",
       "title": "Subscriptions & limits",
       "summary": "Trial lifecycle, usage limits, and reset channels.",
+      "quick_test": [
+        "Start, cancel, and restart trials on the same identity",
+        "Exceed plan usage limits and check enforcement",
+        "Test the limit reset channel and its trigger",
+        "Downgrade while premium resources are active"
+      ],
+      "validate": "Entitlement beyond the purchased plan persists after the check should have stopped it.",
       "items": [
         "WAPT-BL-018",
         "WAPT-BL-019",
@@ -2195,6 +3070,13 @@
       "category": "business-logic",
       "title": "Referrals & approvals",
       "summary": "Invitation rules, reviewer eligibility, and maker-checker separation.",
+      "quick_test": [
+        "Self-refer and refer in a loop between controlled accounts",
+        "Approve your own submission as reviewer",
+        "Use a second account you also control as the checker",
+        "Test invitation rules for role and tenant escalation"
+      ],
+      "validate": "A reward or approval completes without an independent second party.",
       "items": [
         "WAPT-BL-021",
         "WAPT-BL-022",
@@ -2213,6 +3095,13 @@
       "category": "business-logic",
       "title": "Asynchronous & state",
       "summary": "Callback binding, job scope, retry duplicates, and account prerequisites.",
+      "quick_test": [
+        "Call the async callback endpoint directly with forged parameters",
+        "Change job identifiers to another account's job",
+        "Retry the same job and check for duplicate effects",
+        "Cancel the prerequisite while the job is in flight"
+      ],
+      "validate": "Asynchronous processing applies an effect that the synchronous path would have refused.",
       "items": [
         "WAPT-BL-025",
         "WAPT-BL-026",
@@ -2232,6 +3121,13 @@
       "category": "business-logic",
       "title": "Tenant & entitlement",
       "summary": "Tenant invariants and plan downgrade confusion.",
+      "quick_test": [
+        "Test invariants that must hold per tenant (limits, ownership, plan)",
+        "Downgrade a tenant plan with premium objects still present",
+        "Move objects between tenants and re-check entitlement",
+        "Verify enforcement on API as well as UI"
+      ],
+      "validate": "A tenant retains or gains entitlement its plan and boundary do not allow.",
       "items": [
         "WAPT-BL-029",
         "WAPT-BL-030"
@@ -2247,6 +3143,13 @@
       "category": "business-logic",
       "title": "Time, inventory & abuse",
       "summary": "Server-time windows, hoarding, and abuse through search or notifications.",
+      "quick_test": [
+        "Send client-supplied timestamps and timezone values",
+        "Act just outside a time-limited window",
+        "Hold inventory in repeated carts without checkout",
+        "Abuse search or notification volume for business impact"
+      ],
+      "validate": "A time- or inventory-bound rule is bypassed using values the client controls.",
       "items": [
         "WAPT-BL-031",
         "WAPT-BL-032",
@@ -2264,6 +3167,13 @@
       "category": "business-logic",
       "title": "Consent & retest",
       "summary": "Consent persistence and adjacent-channel remediation verification.",
+      "quick_test": [
+        "Withdraw consent and check whether processing stops",
+        "Re-check the same rule on adjacent channels (API, mobile, export)",
+        "Retest the fixed flow with the original request set",
+        "Confirm the fix is server-side, not UI-only"
+      ],
+      "validate": "Consent state and remediation hold on every channel that reaches the same logic.",
       "items": [
         "WAPT-BL-034",
         "WAPT-BL-035"
@@ -2279,6 +3189,13 @@
       "category": "race-conditions",
       "title": "Value & payment races",
       "summary": "Duplicate redemption and duplicate payment transactions.",
+      "quick_test": [
+        "Prepare the redemption or payment request once",
+        "Fire 20-50 parallel copies with single-packet or last-byte sync",
+        "Read the authoritative balance and ledger afterwards",
+        "Repeat to confirm it is not a one-off"
+      ],
+      "validate": "More value is redeemed or charged than the sequential rule permits, confirmed in authoritative state.",
       "items": [
         "WAPT-RACE-001",
         "WAPT-RACE-002"
@@ -2294,6 +3211,13 @@
       "category": "race-conditions",
       "title": "Inventory & balance",
       "summary": "Double allocation and atomic balance or quota checks.",
+      "quick_test": [
+        "Reserve the last unit concurrently from two sessions",
+        "Withdraw or spend the full balance in parallel requests",
+        "Check for negative balance or oversold inventory",
+        "Verify with a fresh authoritative read, not the UI"
+      ],
+      "validate": "Inventory or balance crosses a boundary the check-then-act sequence should prevent.",
       "items": [
         "WAPT-RACE-003",
         "WAPT-RACE-004"
@@ -2309,6 +3233,13 @@
       "category": "race-conditions",
       "title": "Tokens & authorization",
       "summary": "Atomic token consumption and state-plus-action authorization.",
+      "quick_test": [
+        "Submit the same one-time token in parallel requests",
+        "Race an authorization change against the action it should block",
+        "Test invite, reset, and OTP consumption concurrently",
+        "Confirm the effect after all requests settle"
+      ],
+      "validate": "A single-use token is consumed more than once, or an action lands after rights were revoked.",
       "items": [
         "WAPT-RACE-005",
         "WAPT-RACE-006"
@@ -2324,6 +3255,13 @@
       "category": "race-conditions",
       "title": "Workflow & idempotency",
       "summary": "Optimistic or pessimistic transitions and atomic idempotency keys.",
+      "quick_test": [
+        "Fire two conflicting state transitions simultaneously",
+        "Send the same idempotency key twice in parallel",
+        "Check for duplicate records or a skipped transition",
+        "Compare final state against the state machine"
+      ],
+      "validate": "Concurrency yields a state or duplicate the workflow definition forbids.",
       "items": [
         "WAPT-RACE-007",
         "WAPT-RACE-008"
@@ -2339,6 +3277,13 @@
       "category": "race-conditions",
       "title": "Processing & construction",
       "summary": "File-processing publish races and partial object construction.",
+      "quick_test": [
+        "Request a file between upload and post-processing",
+        "Access an object during its multi-step construction",
+        "Race publish and validation steps",
+        "Retrieve derived artefacts before scanning completes"
+      ],
+      "validate": "A transient window exposes unvalidated content or a partially constructed object.",
       "items": [
         "WAPT-RACE-009",
         "WAPT-RACE-010"
@@ -2354,6 +3299,13 @@
       "category": "race-conditions",
       "title": "Technique",
       "summary": "Synchronized delivery and adjacent-path retesting.",
+      "quick_test": [
+        "Warm the connection, then use single-packet or last-byte sync",
+        "Keep the concurrent batch small and reversible",
+        "Record request timing and server responses together",
+        "Retest the adjacent path after the fix"
+      ],
+      "validate": "The technique is reproducible, contained, and evidenced with timing plus authoritative state.",
       "items": [
         "WAPT-RACE-011",
         "WAPT-RACE-012"
@@ -2369,6 +3321,13 @@
       "category": "client-side",
       "title": "DOM sources & evaluation",
       "summary": "Source-to-sink tracing and dynamic evaluation of untrusted strings.",
+      "quick_test": [
+        "Trace each source (URL, storage, message) to its sink in devtools",
+        "Set a breakpoint on the sink and confirm the value",
+        "Test eval, Function, setTimeout-string, and template evaluation",
+        "Reproduce with the minimum payload"
+      ],
+      "validate": "Untrusted client input reaches an executing sink in a reproducible path.",
       "items": [
         "WAPT-CLIENT-001",
         "WAPT-CLIENT-002"
@@ -2384,6 +3343,13 @@
       "category": "client-side",
       "title": "HTML & CSS injection",
       "summary": "Non-script HTML injection and CSS injection or UI redressing.",
+      "quick_test": [
+        "Inject non-script HTML: forms, images, and anchors",
+        "Test CSS injection and attribute overrides",
+        "Attempt UI redressing over a sensitive control",
+        "Check what the injected markup can capture"
+      ],
+      "validate": "Injected markup or style changes the interface in a way that can deceive or capture user input.",
       "items": [
         "WAPT-CLIENT-003",
         "WAPT-CLIENT-005"
@@ -2399,6 +3365,13 @@
       "category": "client-side",
       "title": "Redirects & resources",
       "summary": "Client-side redirect destinations and resource URL manipulation.",
+      "quick_test": [
+        "Set client-side redirect targets to an external host",
+        "Manipulate script, image, and fetch URLs built in the browser",
+        "Test protocol-relative and encoded destinations",
+        "Follow the final navigation or resource origin"
+      ],
+      "validate": "The browser navigates or loads a resource from an attacker-chosen origin.",
       "items": [
         "WAPT-CLIENT-004",
         "WAPT-CLIENT-006"
@@ -2414,6 +3387,13 @@
       "category": "client-side",
       "title": "CORS & framing",
       "summary": "Browser CORS behavior and clickjacking on sensitive pages.",
+      "quick_test": [
+        "Attempt a cross-origin read with credentials from a test page",
+        "Frame sensitive pages and check frame-ancestors or XFO",
+        "Test overlay and drag-drop style redressing",
+        "Confirm which pages carry state-changing controls"
+      ],
+      "validate": "A foreign origin can read authenticated data or frame a sensitive, state-changing page.",
       "items": [
         "WAPT-CLIENT-007",
         "WAPT-CLIENT-008"
@@ -2429,6 +3409,13 @@
       "category": "client-side",
       "title": "postMessage",
       "summary": "Origin, source, and schema validation in both directions.",
+      "quick_test": [
+        "Log every message listener and its origin check",
+        "Send messages from a foreign origin with crafted payloads",
+        "Check the sender side for a wildcard target origin",
+        "Test schema assumptions in the handler"
+      ],
+      "validate": "A handler acts on a message whose origin, source, or shape it never validated.",
       "items": [
         "WAPT-CLIENT-009",
         "WAPT-CLIENT-010"
@@ -2444,6 +3431,13 @@
       "category": "client-side",
       "title": "Browser storage",
       "summary": "Sensitive data, untrusted input, and identity partitioning.",
+      "quick_test": [
+        "Inventory what the app stores client-side after login",
+        "Look for tokens, personal data, and authorization flags",
+        "Inject untrusted values that are later read and rendered",
+        "Check partitioning between accounts on a shared browser"
+      ],
+      "validate": "Client storage holds authority or sensitive data, or feeds untrusted values back into the app.",
       "items": [
         "WAPT-CLIENT-011",
         "WAPT-CLIENT-012",
@@ -2461,6 +3455,13 @@
       "category": "client-side",
       "title": "Workers & channels",
       "summary": "Service workers, Web Workers, and BroadcastChannel boundaries.",
+      "quick_test": [
+        "List registered service workers and their scope",
+        "Check what the worker caches and for how long",
+        "Test messages into Web Workers and BroadcastChannel",
+        "Try registering or updating a worker with controlled scope"
+      ],
+      "validate": "Worker scope, cache, or messaging crosses a boundary the application relies on.",
       "items": [
         "WAPT-CLIENT-014",
         "WAPT-CLIENT-015",
@@ -2480,6 +3481,13 @@
       "category": "client-side",
       "title": "Prototype pollution & DOM clobbering",
       "summary": "Client merge setters, gadget tracing, and clobbered globals.",
+      "quick_test": [
+        "Send __proto__ and constructor.prototype keys into merge functions",
+        "Check for polluted properties after the merge",
+        "Trace a gadget from the polluted property to an impactful sink",
+        "Test DOM clobbering with named elements shadowing globals"
+      ],
+      "validate": "A polluted or clobbered property reaches a gadget with a demonstrable security effect.",
       "items": [
         "WAPT-CLIENT-018",
         "WAPT-CLIENT-019",
@@ -2497,6 +3505,13 @@
       "category": "client-side",
       "title": "Navigation boundaries",
       "summary": "window.name and reverse tabnabbing.",
+      "quick_test": [
+        "Set window.name and follow it across navigation",
+        "Open target=_blank links and check opener access",
+        "Test reverse tabnabbing on user-supplied links",
+        "Confirm rel attributes on outbound links"
+      ],
+      "validate": "A navigation boundary lets the destination read or control the original page context.",
       "items": [
         "WAPT-CLIENT-021",
         "WAPT-CLIENT-022"
@@ -2512,6 +3527,13 @@
       "category": "client-side",
       "title": "Supply chain & inclusion",
       "summary": "Third-party scripts, SRI, cross-site script inclusion, and source maps.",
+      "quick_test": [
+        "List third-party scripts and the origins that serve them",
+        "Check SRI on externally hosted resources",
+        "Test cross-site script inclusion of dynamic JS responses",
+        "Look for exposed source maps and build artefacts"
+      ],
+      "validate": "A third-party or dynamic script can be substituted or read across origins.",
       "items": [
         "WAPT-CLIENT-023",
         "WAPT-CLIENT-024",
@@ -2531,6 +3553,13 @@
       "category": "client-side",
       "title": "Secrets & authority",
       "summary": "Client-bundle secrets, presentational authorization, and Web Crypto keys.",
+      "quick_test": [
+        "Grep the bundle for keys, tokens, and internal hosts",
+        "Toggle client-side role flags and re-issue the request",
+        "Check whether hidden UI controls map to enforced server rules",
+        "Inspect Web Crypto key material and extractability"
+      ],
+      "validate": "A secret is usable from the client, or a client-side flag changes what the server allows.",
       "items": [
         "WAPT-CLIENT-027",
         "WAPT-CLIENT-028",
@@ -2548,6 +3577,13 @@
       "category": "client-side",
       "title": "XS-Leaks & bfcache",
       "summary": "Cross-site leak channels and sensitive state resurfacing.",
+      "quick_test": [
+        "Measure cross-site observable differences (timing, frame count, errors)",
+        "Test whether a state answer leaks to another origin",
+        "Navigate back and check for restored sensitive state",
+        "Check Clear-Site-Data and cache headers on logout"
+      ],
+      "validate": "A cross-site observer can infer user state, or sensitive state returns after logout.",
       "items": [
         "WAPT-CLIENT-030",
         "WAPT-CLIENT-031"
@@ -2563,6 +3599,13 @@
       "category": "websocket",
       "title": "Transport",
       "summary": "WSS enforcement and Origin allowlisting.",
+      "quick_test": [
+        "Confirm the handshake uses wss and rejects ws",
+        "Replay the handshake with a foreign Origin header",
+        "Check subprotocol and header requirements",
+        "Test the endpoint from a non-browser client"
+      ],
+      "validate": "The channel accepts an insecure transport or a cross-origin handshake.",
       "items": [
         "WAPT-WS-001",
         "WAPT-WS-002"
@@ -2578,6 +3621,13 @@
       "category": "websocket",
       "title": "Authentication",
       "summary": "Session establishment and token placement.",
+      "quick_test": [
+        "Open the socket without any session material",
+        "Move the token between cookie, header, query, and first message",
+        "Replay a captured handshake from another client",
+        "Test whether an expired token still connects"
+      ],
+      "validate": "A socket authenticates without valid, current credentials bound to the session.",
       "items": [
         "WAPT-WS-003",
         "WAPT-WS-004"
@@ -2593,6 +3643,13 @@
       "category": "websocket",
       "title": "Authorization",
       "summary": "Message-action and subscription authorization.",
+      "quick_test": [
+        "Send actions your role should not be able to perform",
+        "Subscribe to another user's or tenant's channel",
+        "Change identifiers inside messages after connecting",
+        "Check authorization per message, not just at connect"
+      ],
+      "validate": "A message action or subscription is authorised beyond the connected identity's rights.",
       "items": [
         "WAPT-WS-005",
         "WAPT-WS-006"
@@ -2608,6 +3665,13 @@
       "category": "websocket",
       "title": "Messages & resources",
       "summary": "Schema validation and size, rate, and fan-out bounds.",
+      "quick_test": [
+        "Send malformed and oversized messages",
+        "Flood messages to test rate and fan-out limits",
+        "Inject unexpected types into schema fields",
+        "Watch server behaviour and other clients' load"
+      ],
+      "validate": "Message validation or resource bounds fail under malformed or high-volume input.",
       "items": [
         "WAPT-WS-007",
         "WAPT-WS-008"
@@ -2623,6 +3687,13 @@
       "category": "websocket",
       "title": "Replay & lifecycle",
       "summary": "Replay prevention and session-change reauthorization.",
+      "quick_test": [
+        "Replay a previously sent message",
+        "Change roles or log out and keep the socket open",
+        "Force a session change and continue sending",
+        "Test reconnection with an old ticket"
+      ],
+      "validate": "Replay succeeds, or an open socket keeps rights after the session or role changed.",
       "items": [
         "WAPT-WS-009",
         "WAPT-WS-010"
@@ -2638,6 +3709,13 @@
       "category": "security-headers",
       "title": "Exposure baseline",
       "summary": "Assessing headers against actual browser exposure.",
+      "quick_test": [
+        "Capture response headers on real user-facing routes, not just /",
+        "Note which pages actually carry sensitive state",
+        "Compare headers across HTML, API, and error responses",
+        "Judge each header against the exposure it must protect"
+      ],
+      "validate": "Header assessment is tied to routes with real exposure, not a homepage snapshot.",
       "items": [
         "WAPT-HDR-001"
       ],
@@ -2651,6 +3729,13 @@
       "category": "security-headers",
       "title": "HSTS & CSP",
       "summary": "HSTS deployment and CSP enforcement with nonces, hashes, and navigation constraints.",
+      "quick_test": [
+        "Check HSTS max-age, includeSubDomains, and preload",
+        "Read the CSP and test whether a real payload is blocked",
+        "Look for unsafe-inline, unsafe-eval, and wildcard sources",
+        "Test nonce reuse and base-uri or form-action gaps"
+      ],
+      "validate": "The deployed policy fails to stop the payload class it is claimed to mitigate.",
       "items": [
         "WAPT-HDR-002",
         "WAPT-HDR-003",
@@ -2670,6 +3755,13 @@
       "category": "security-headers",
       "title": "Framing & MIME",
       "summary": "Frame-ancestors, X-Frame-Options, nosniff, and content types.",
+      "quick_test": [
+        "Frame a sensitive page and check frame-ancestors and XFO",
+        "Confirm nosniff on user-controlled content",
+        "Check declared content types on downloads and APIs",
+        "Test legacy header conflicts"
+      ],
+      "validate": "Framing or MIME handling allows the browser behaviour the header should prevent.",
       "items": [
         "WAPT-HDR-006",
         "WAPT-HDR-007",
@@ -2688,6 +3780,13 @@
       "category": "security-headers",
       "title": "Referrer & features",
       "summary": "Referrer-Policy and Permissions-Policy.",
+      "quick_test": [
+        "Check Referrer-Policy on pages with tokens in URLs",
+        "Observe the referrer actually sent cross-origin",
+        "Review Permissions-Policy against features the app uses",
+        "Test iframe-delegated permissions"
+      ],
+      "validate": "Referrer or feature policy leaks data or grants capability beyond the app's needs.",
       "items": [
         "WAPT-HDR-010",
         "WAPT-HDR-011"
@@ -2703,6 +3802,13 @@
       "category": "security-headers",
       "title": "Cross-origin isolation",
       "summary": "COOP, COEP, and CORP decisions.",
+      "quick_test": [
+        "Check COOP, COEP, and CORP on authenticated pages",
+        "Test window handle access from a foreign opener",
+        "Verify resource loading under the isolation policy",
+        "Decide whether isolation is required for the app's threat model"
+      ],
+      "validate": "Cross-origin isolation decisions match the app's actual cross-window and resource exposure.",
       "items": [
         "WAPT-HDR-012",
         "WAPT-HDR-013",
@@ -2720,6 +3826,13 @@
       "category": "security-headers",
       "title": "Caching & downloads",
       "summary": "Cache-Control, Clear-Site-Data, and Content-Disposition.",
+      "quick_test": [
+        "Inspect Cache-Control on authenticated pages and API responses",
+        "Check Clear-Site-Data at logout",
+        "Test Content-Disposition on user-supplied files",
+        "Confirm shared-cache behaviour on the edge"
+      ],
+      "validate": "Cache or download headers allow sensitive content to persist or render unsafely.",
       "items": [
         "WAPT-HDR-015",
         "WAPT-HDR-016",
@@ -2737,6 +3850,13 @@
       "category": "security-headers",
       "title": "Disclosure & obsolete headers",
       "summary": "Version disclosure, X-XSS-Protection, HPKP, and Expect-CT.",
+      "quick_test": [
+        "Collect Server, X-Powered-By, and framework version headers",
+        "Note obsolete headers: X-XSS-Protection, HPKP, Expect-CT",
+        "Compare header sets across environments",
+        "Decide reportability against real exploitability"
+      ],
+      "validate": "Version disclosure or obsolete headers are reported with accurate, non-inflated impact.",
       "items": [
         "WAPT-HDR-018",
         "WAPT-HDR-019",
@@ -2755,6 +3875,13 @@
       "category": "security-headers",
       "title": "Consistency",
       "summary": "Route-level consistency, duplicates, and report-only handling.",
+      "quick_test": [
+        "Sample headers across many routes, not one",
+        "Look for duplicate or conflicting header values",
+        "Check report-only policies mistaken for enforcement",
+        "Compare edge-added versus origin-added headers"
+      ],
+      "validate": "Header protection is consistent across the surface, with no route silently unprotected.",
       "items": [
         "WAPT-HDR-022",
         "WAPT-HDR-023",
@@ -2772,6 +3899,13 @@
       "category": "cloud-storage",
       "title": "Inventory & public access",
       "summary": "Storage inventory and unintended public reads or listings.",
+      "quick_test": [
+        "Enumerate buckets and containers referenced by the app",
+        "Attempt anonymous read and list on each",
+        "Check predictable naming variants of known buckets",
+        "Record any object retrievable without credentials"
+      ],
+      "validate": "Storage content is readable or listable without the authorization the data requires.",
       "items": [
         "WAPT-CLOUD-001",
         "WAPT-CLOUD-002",
@@ -2789,6 +3923,13 @@
       "category": "cloud-storage",
       "title": "Authorization",
       "summary": "Tenant, owner, and purpose-scoped reads plus write constraints.",
+      "quick_test": [
+        "Fetch tenant A's object path with tenant B's credentials",
+        "Attempt writes, deletes, and ACL changes as a normal user",
+        "Test purpose-scoped paths for cross-purpose reads",
+        "Confirm enforcement at the storage layer, not just the app"
+      ],
+      "validate": "Storage-level authorization permits access the application layer denies.",
       "items": [
         "WAPT-CLOUD-004",
         "WAPT-CLOUD-005"
@@ -2804,6 +3945,13 @@
       "category": "cloud-storage",
       "title": "Signed URLs",
       "summary": "Scoped downloads and constrained presigned uploads.",
+      "quick_test": [
+        "Inspect a signed URL's scope, method, and expiry",
+        "Replay it after expiry and from a different context",
+        "Modify path or query parameters and re-sign attempts",
+        "Test presigned uploads for content-type and size constraints"
+      ],
+      "validate": "A signed URL grants access wider or longer than the operation required.",
       "items": [
         "WAPT-CLOUD-006",
         "WAPT-CLOUD-007"
@@ -2819,6 +3967,13 @@
       "category": "cloud-storage",
       "title": "Storage CORS",
       "summary": "Browser origin and method configuration.",
+      "quick_test": [
+        "Read the bucket CORS configuration",
+        "Send cross-origin reads and writes from a test page",
+        "Test wildcard origins with credentials",
+        "Check allowed methods and exposed headers"
+      ],
+      "validate": "Storage CORS lets a foreign origin read or write objects it should not.",
       "items": [
         "WAPT-CLOUD-008"
       ],
@@ -2832,6 +3987,13 @@
       "category": "cloud-storage",
       "title": "Metadata & credentials",
       "summary": "Workload metadata blocking, credential leakage, least privilege, and cross-account trust.",
+      "quick_test": [
+        "From any SSRF or fetch primitive, target the metadata service",
+        "Check IMDSv2 enforcement and hop limits",
+        "Search app responses and files for credential material",
+        "Review the role's permissions against least privilege"
+      ],
+      "validate": "Workload credentials are obtainable or over-privileged relative to the workload's purpose.",
       "items": [
         "WAPT-CLOUD-009",
         "WAPT-CLOUD-010",
@@ -2851,6 +4013,13 @@
       "category": "cloud-storage",
       "title": "Origin & tenant isolation",
       "summary": "CDN-protected endpoints and canonical tenant prefixes.",
+      "quick_test": [
+        "Request the origin endpoint directly, bypassing the CDN",
+        "Test canonical tenant prefixes for cross-tenant paths",
+        "Compare edge and origin authorization",
+        "Check custom-domain to tenant binding"
+      ],
+      "validate": "Origin access or tenant prefixing lets a request escape the intended boundary.",
       "items": [
         "WAPT-CLOUD-013",
         "WAPT-CLOUD-014"
@@ -2866,6 +4035,13 @@
       "category": "cloud-storage",
       "title": "Lifecycle & events",
       "summary": "Versioning, soft deletes, retention, and event consumers.",
+      "quick_test": [
+        "Request previous object versions and soft-deleted keys",
+        "Check retention and deletion behaviour for sensitive data",
+        "Trace event notifications to their consumers",
+        "Test whether a consumer trusts object metadata"
+      ],
+      "validate": "Deleted or superseded content remains retrievable, or an event consumer trusts unvalidated input.",
       "items": [
         "WAPT-CLOUD-015",
         "WAPT-CLOUD-016",
@@ -2883,6 +4059,13 @@
       "category": "cloud-storage",
       "title": "Logging",
       "summary": "Access and policy-change logging without secret exposure.",
+      "quick_test": [
+        "Confirm access and policy-change logging is enabled",
+        "Check whether log records contain secrets or tokens",
+        "Verify log access is itself restricted",
+        "Test whether your own test actions were recorded"
+      ],
+      "validate": "Security-relevant storage events are recorded without exposing secrets in the records.",
       "items": [
         "WAPT-CLOUD-018"
       ],
@@ -2896,6 +4079,13 @@
       "category": "information-disclosure",
       "title": "Errors & debug",
       "summary": "Generic errors and disabled debug modes.",
+      "quick_test": [
+        "Force type, path, and dependency errors on each entry point",
+        "Read stack traces, SQL fragments, and internal hostnames",
+        "Check for debug modes, profilers, and verbose flags",
+        "Compare error detail across environments"
+      ],
+      "validate": "An error response reveals internal implementation detail that aids further attack.",
       "items": [
         "WAPT-INFO-001",
         "WAPT-INFO-002"
@@ -2911,6 +4101,13 @@
       "category": "information-disclosure",
       "title": "Client secrets & maps",
       "summary": "Client-delivered secrets and source-map content.",
+      "quick_test": [
+        "Grep client bundles for keys, tokens, and endpoints",
+        "Fetch .map files and reconstruct the sources",
+        "Test any discovered secret for validity, safely",
+        "Distinguish public identifiers from real secrets"
+      ],
+      "validate": "A live secret or internal source detail is retrievable from client-delivered assets.",
       "items": [
         "WAPT-INFO-003",
         "WAPT-INFO-004"
@@ -2926,6 +4123,13 @@
       "category": "information-disclosure",
       "title": "Comments & files",
       "summary": "Sensitive comments and backup or temporary files.",
+      "quick_test": [
+        "Read HTML and JS comments for credentials and internal notes",
+        "Probe for .bak, .old, ~, and editor swap files",
+        "Check archive and export files left in web roots",
+        "Verify each hit actually returns content"
+      ],
+      "validate": "A comment or leftover file discloses sensitive information and is reachable.",
       "items": [
         "WAPT-INFO-005",
         "WAPT-INFO-006"
@@ -2941,6 +4145,13 @@
       "category": "information-disclosure",
       "title": "VCS & environment files",
       "summary": "Version-control metadata and environment configuration files.",
+      "quick_test": [
+        "Request /.git/HEAD, /.svn/entries, and similar metadata",
+        "Probe .env, config, and settings files",
+        "If exposed, confirm the extent without mass extraction",
+        "Record exactly which files were retrievable"
+      ],
+      "validate": "Version-control metadata or environment configuration is retrievable over HTTP.",
       "items": [
         "WAPT-INFO-007",
         "WAPT-INFO-008"
@@ -2956,6 +4167,13 @@
       "category": "information-disclosure",
       "title": "Listing & versions",
       "summary": "Directory listing and precise version disclosure.",
+      "quick_test": [
+        "Request directories without an index file",
+        "Collect version strings from headers, files, and errors",
+        "Compare disclosed versions against known vulnerable ranges",
+        "Confirm listings actually enumerate content"
+      ],
+      "validate": "Directory contents or precise versions are disclosed to unauthenticated users.",
       "items": [
         "WAPT-INFO-009",
         "WAPT-INFO-010"
@@ -2971,6 +4189,13 @@
       "category": "information-disclosure",
       "title": "Operational endpoints",
       "summary": "Health, metrics, tracing, and actuator exposure.",
+      "quick_test": [
+        "Probe /health, /metrics, /actuator, /debug, and tracing paths",
+        "Check what each returns to an unauthenticated caller",
+        "Look for configuration, env, and heap endpoints",
+        "Test whether any allow state change"
+      ],
+      "validate": "An operational endpoint exposes internal data or control to an unauthorised caller.",
       "items": [
         "WAPT-INFO-011"
       ],
@@ -2984,6 +4209,13 @@
       "category": "information-disclosure",
       "title": "API & log disclosure",
       "summary": "Sensitive data in errors and accessible logs.",
+      "quick_test": [
+        "Trigger API errors and inspect returned detail",
+        "Look for accessible log files or log-viewing endpoints",
+        "Check whether logs contain tokens or personal data",
+        "Test log access across roles"
+      ],
+      "validate": "API errors or logs expose sensitive data to a party that should not read it.",
       "items": [
         "WAPT-INFO-012",
         "WAPT-INFO-013"
@@ -2999,6 +4231,13 @@
       "category": "information-disclosure",
       "title": "Cache & history",
       "summary": "Post-authentication cache and history exposure.",
+      "quick_test": [
+        "Log out and press back on an authenticated page",
+        "Inspect disk cache for authenticated responses",
+        "Check history entries containing tokens",
+        "Verify cache directives on sensitive routes"
+      ],
+      "validate": "Authenticated content remains accessible from cache or history after logout.",
       "items": [
         "WAPT-INFO-014"
       ],
@@ -3012,6 +4251,13 @@
       "category": "information-disclosure",
       "title": "Leads & personal data",
       "summary": "Route-name leads and personal information exposure.",
+      "quick_test": [
+        "Collect route and parameter names that hint at internals",
+        "Check responses for personal data beyond what the view needs",
+        "Compare data returned to different roles",
+        "Note identifiers that enable enumeration"
+      ],
+      "validate": "Disclosed names or personal data provide real attack leads or exceed the view's purpose.",
       "items": [
         "WAPT-INFO-015",
         "WAPT-INFO-016"
@@ -3027,6 +4273,13 @@
       "category": "information-disclosure",
       "title": "Metadata & retest",
       "summary": "Document metadata and alternate-format remediation checks.",
+      "quick_test": [
+        "Download documents and read embedded metadata",
+        "Check alternate formats (print, export, API) for the same leak",
+        "Retest previously fixed disclosures",
+        "Confirm the fix covers every representation"
+      ],
+      "validate": "Metadata or an alternate format still discloses what the primary path has fixed.",
       "items": [
         "WAPT-INFO-017",
         "WAPT-INFO-018"
@@ -3042,6 +4295,13 @@
       "category": "rate-limiting",
       "title": "Authentication abuse",
       "summary": "Guessing, stuffing, OTP, push, recovery, and registration limits.",
+      "quick_test": [
+        "Burst login, OTP, reset, and registration attempts",
+        "Vary IP, device, user-agent, and account to find the key",
+        "Test push-approval fatigue with repeated prompts",
+        "Check whether limits differ between web and API"
+      ],
+      "validate": "Authentication abuse continues past the documented threshold on at least one path.",
       "items": [
         "WAPT-RATE-001",
         "WAPT-RATE-002",
@@ -3064,6 +4324,13 @@
       "category": "rate-limiting",
       "title": "Resource & content abuse",
       "summary": "API budgets, search and export, uploads, and notification fan-out.",
+      "quick_test": [
+        "Repeat expensive search, export, and report calls",
+        "Upload repeatedly to test storage budgets",
+        "Trigger notification fan-out to many recipients",
+        "Measure cost and duration per request"
+      ],
+      "validate": "Resource-intensive operations run without an effective budget or throttle.",
       "items": [
         "WAPT-RATE-007",
         "WAPT-RATE-008",
@@ -3083,6 +4350,13 @@
       "category": "rate-limiting",
       "title": "Commerce & bypass",
       "summary": "Checkout abuse and client-controlled source identifiers.",
+      "quick_test": [
+        "Repeat checkout, quote, and payment attempts rapidly",
+        "Rotate client-controlled identifiers (X-Forwarded-For, device id)",
+        "Test whether the limit keys on a client-supplied value",
+        "Combine with coupon and gift-card flows"
+      ],
+      "validate": "The limit is bypassable by changing a value the client controls, with commercial impact.",
       "items": [
         "WAPT-RATE-011",
         "WAPT-RATE-012"
@@ -3098,6 +4372,13 @@
       "category": "advanced",
       "title": "Cache poisoning & deception",
       "summary": "Unkeyed inputs, deception, key canonicalization, and CDN-origin parity.",
+      "quick_test": [
+        "Find unkeyed headers with a cache buster and Param Miner style probes",
+        "Poison a benign, self-scoped key first",
+        "Check cache deception with path confusion on authenticated pages",
+        "Compare CDN and origin key normalization"
+      ],
+      "validate": "A cached response is influenced by an unkeyed input, demonstrated without harming real users.",
       "items": [
         "WAPT-ADV-001",
         "WAPT-ADV-002",
@@ -3117,6 +4398,13 @@
       "category": "advanced",
       "title": "Deserialization",
       "summary": "Java, Python, PHP, and .NET deserialization boundaries.",
+      "quick_test": [
+        "Identify serialized formats in cookies, params, and bodies",
+        "Detect the language from magic bytes and structure",
+        "Use a benign detection gadget, not a destructive chain",
+        "Confirm with an out-of-band signal where possible"
+      ],
+      "validate": "Untrusted serialized data is deserialized, proven with a safe, controlled signal.",
       "items": [
         "WAPT-ADV-005",
         "WAPT-ADV-006",
@@ -3136,6 +4424,13 @@
       "category": "advanced",
       "title": "Parsing & coercion",
       "summary": "Duplicate JSON keys, URL parsing, type coercion, and signed-request canonicalization.",
+      "quick_test": [
+        "Send duplicate JSON keys and compare which one wins",
+        "Test URL parsing differentials between components",
+        "Coerce types: string versus number versus array versus object",
+        "Alter canonicalization inputs on signed requests"
+      ],
+      "validate": "Two components interpret the same payload differently, changing a security decision.",
       "items": [
         "WAPT-ADV-009",
         "WAPT-ADV-010",
@@ -3155,6 +4450,13 @@
       "category": "advanced",
       "title": "Tenant & domain boundaries",
       "summary": "Shared caches and custom-domain binding.",
+      "quick_test": [
+        "Check whether shared caches key on tenant",
+        "Test custom domains bound to the wrong tenant",
+        "Request tenant A resources through tenant B's domain",
+        "Compare edge routing against application tenancy"
+      ],
+      "validate": "A shared cache or domain binding crosses the tenant boundary.",
       "items": [
         "WAPT-ADV-013",
         "WAPT-ADV-014"
@@ -3170,6 +4472,13 @@
       "category": "advanced",
       "title": "Integration boundaries",
       "summary": "Confused-deputy chains and webhook signature validation.",
+      "quick_test": [
+        "Map which integration acts on behalf of which principal",
+        "Ask the integration to act on a resource you should not reach",
+        "Forge or replay webhook deliveries",
+        "Test signature validation and timestamp windows"
+      ],
+      "validate": "An integration performs a privileged action for an unauthorised requester, or accepts a forged callback.",
       "items": [
         "WAPT-ADV-015",
         "WAPT-ADV-016"
@@ -3185,6 +4494,13 @@
       "category": "advanced",
       "title": "Chain validation & retest",
       "summary": "Least-impact chain validation and adjacent-path retesting.",
+      "quick_test": [
+        "Prove each link with the least-impact evidence available",
+        "Stop at the first step that demonstrates control",
+        "Document the chain order and prerequisites",
+        "Retest the whole chain and its adjacent paths after fixes"
+      ],
+      "validate": "The chain is demonstrated end to end with minimal impact and reproducible steps.",
       "items": [
         "WAPT-ADV-017",
         "WAPT-ADV-018"
@@ -3200,6 +4516,13 @@
       "category": "advanced",
       "title": "LLM boundary",
       "summary": "LLM prompt and tool-call authority.",
+      "quick_test": [
+        "Map what the model may call and with whose authority",
+        "Attempt an instruction that crosses that authority",
+        "Test tool arguments derived from user text",
+        "Check whether model output reaches a privileged sink"
+      ],
+      "validate": "Model-driven actions exceed the authority of the requesting user.",
       "items": [
         "WAPT-ADV-019"
       ],
@@ -3213,6 +4536,13 @@
       "category": "ai-llm-security",
       "title": "Prompt injection",
       "summary": "Direct and indirect instruction-boundary control.",
+      "quick_test": [
+        "Send direct instruction overrides in user input",
+        "Plant instructions in retrieved content the model will read",
+        "Ask the model to reveal or ignore its constraints",
+        "Confirm the behaviour change is repeatable"
+      ],
+      "validate": "Injected instructions change model behaviour in a way the application must prevent.",
       "items": [
         "WAPT-AI-001",
         "WAPT-AI-002"
@@ -3228,6 +4558,13 @@
       "category": "ai-llm-security",
       "title": "Prompt & retrieval disclosure",
       "summary": "System-prompt leakage and unauthorized retrieval.",
+      "quick_test": [
+        "Ask for the system prompt in several indirect ways",
+        "Request documents outside your entitlement through the assistant",
+        "Compare retrieved content against your permissions",
+        "Test summarisation as an exfiltration channel"
+      ],
+      "validate": "The assistant discloses system instructions or content the user is not entitled to.",
       "items": [
         "WAPT-AI-003",
         "WAPT-AI-004"
@@ -3243,6 +4580,13 @@
       "category": "ai-llm-security",
       "title": "Retrieval poisoning",
       "summary": "Corpus content steering other users.",
+      "quick_test": [
+        "Insert content into the corpus through a normal user path",
+        "Ask a question that retrieves it from another account",
+        "Check whether the planted text steers the answer",
+        "Remove the content and confirm the change reverses"
+      ],
+      "validate": "Content one user can insert changes another user's answers.",
       "items": [
         "WAPT-AI-005"
       ],
@@ -3256,6 +4600,13 @@
       "category": "ai-llm-security",
       "title": "Tool-call security",
       "summary": "Generated arguments, excessive agency, and URL-fetching tools.",
+      "quick_test": [
+        "Inspect the tool schema and the arguments the model may set",
+        "Steer the model into a tool call you should not be able to make",
+        "Test URL-fetching tools against internal destinations",
+        "Check whether tool results are trusted without validation"
+      ],
+      "validate": "A tool executes with arguments or authority the requesting user does not have.",
       "items": [
         "WAPT-AI-006",
         "WAPT-AI-007",
@@ -3273,6 +4624,13 @@
       "category": "ai-llm-security",
       "title": "Output handling",
       "summary": "Model output at rendering and parser sinks.",
+      "quick_test": [
+        "Make the model emit HTML, Markdown, and code",
+        "Follow the output into renderers, parsers, and shells",
+        "Test image and link syntax as exfiltration channels",
+        "Confirm encoding at the sink"
+      ],
+      "validate": "Model output is rendered or executed without the encoding its sink requires.",
       "items": [
         "WAPT-AI-008"
       ],
@@ -3286,6 +4644,13 @@
       "category": "ai-llm-security",
       "title": "Context isolation",
       "summary": "Cross-user and cross-tenant model context.",
+      "quick_test": [
+        "Ask about other users' or tenants' conversations",
+        "Check whether memory or cache persists across sessions",
+        "Test shared embeddings and history features",
+        "Repeat from a second account and compare"
+      ],
+      "validate": "Context from one user or tenant is reachable from another.",
       "items": [
         "WAPT-AI-009"
       ],
@@ -3299,6 +4664,13 @@
       "category": "ai-llm-security",
       "title": "Resource bounds",
       "summary": "Generation and tool-loop cost limits.",
+      "quick_test": [
+        "Request very long generations repeatedly",
+        "Trigger tool loops and recursive planning",
+        "Measure cost and duration per request",
+        "Check for per-user and per-tenant budgets"
+      ],
+      "validate": "Generation or tool loops run without an effective cost or iteration bound.",
       "items": [
         "WAPT-AI-011"
       ],

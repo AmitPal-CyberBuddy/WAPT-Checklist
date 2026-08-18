@@ -4,6 +4,34 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Tester-first round 2 — families as the working unit)
+
+- **Test families view** (`#families`) and **family workspace** (`#family/<id>`): every attack surface with `tested/executable`, coverage bar, blocked, N/A, confirmed and don't-miss counts; surface/text/"unfinished only" filters; a Continue control that resumes the last family; and per-family quick test, tickable don't-miss list, dense check rows, "after this family", and "what else should I check?".
+- **Authored Quick Test data** — `checklist/families.json` is now schema 2.0.0: all 196 families carry an explicit `quick_test` (3–5 imperative lines) and a one-line `validate`, validated for count, length, and imperative phrasing. Quick Test is no longer derived from methodology steps.
+- **Don't Miss as coverage** — each reminder is a checkbox keyed `<family-id>#<content-hash>`, stored in `state.variants`, counted on the board, family header, category coverage view, and dashboard gaps, and persisted across reloads.
+- **Coverage state separation** — `blocked` is a first-class status; `coverage.js` classifies each check as tested / active / blocked / N/A (context or tester) / not tested, and `coverage = tested / executable` excludes N/A while keeping blocked work owed.
+- **Check ≠ coverage ≠ finding** — two controls per check (coverage and finding verdict) composing into the existing single status; recording a finding implies execution, recording coverage never invents a finding.
+- **Contextual Suggested next** — bounded proximity layer (focus family +1500, adjacent family +420, part-finished family +700, related test +500, same surface +150) with plain-language reasons; a family workspace sets the focus explicitly, so the answer is right on a cold start.
+- **"What else should I check?"** — `js/engine/families.js` derives cross-family navigation from existing data only: `item.related`, attack-chain successors, same-surface siblings, and workflow adjacency, with per-surface caps for variety.
+- **Dashboard rebuilt around three questions** — what have I tested / what have I missed (family gaps + blocked list) / what should I test next (suggestions + Continue), with retest queue, chains, surface progress, findings, and evidence packs below.
+- **Engagement memory** — `state.position` records the last view/family/category; the workspace reopens there while a fresh browser still starts at the wizard.
+- **Keyboard** — `g t` (families), `e` (expand the focused check), `n`/`p` now walk family check rows as well as cards.
+- **Compact scan lists** — "All tests" and Search render family-grouped one-line check rows that expand into the full card in place; searching the whole catalog dropped from 4 163 ms to 825 ms in the jsdom harness.
+- `tools/tester-audit.mjs` (15 tester-workflow checks) and `tools/jsdom-harness.mjs` (shared runtime harness), plus `docs/TESTER-UX-REVIEW-2.md` with the before/after evidence tables.
+
+### Changed (Tester-first round 2)
+
+- Card hierarchy: level 1 is ID · severity · title · objective · VALIDATE with the status controls; procedure, methodology, references, and notes/evidence sit behind progressive disclosure; the family's quick test appears once per family instead of once per card.
+- Status labels: `Not tested`, `Testing now`, `Tested — not vulnerable`, `Potential finding`, `Confirmed finding`, `N/A`, `Blocked`; reports and exports use the same vocabulary and report per-category N/A and blocked counts.
+- Engagement state schema 2 → 3 (transparent migration; `variants` and `position` added).
+- UI split into `js/ui/dom.js`, `js/ui/card.js`, and `js/ui/family-view.js`, with `js/ui/workspace.js` as the orchestrator.
+
+### Fixed (Tester-first round 2 — found by running the application)
+
+- **PRE-EXISTING BUG:** dashboard attack-chain and retest lists rendered the anchor's href as text (`element('li', '', anchorNode)` stringifies a node), so five identical URLs appeared instead of chain titles.
+- **PRE-EXISTING BUG:** N/A counted as tested — the dashboard "Tested" metric, coverage percentage, category progress, and the exported checklist all treated a scoped-out or blocked item as completed work.
+- **Redundancy removed:** the card's "Quick Test" was `steps.slice(0, 4)` while 607 of 623 items have exactly four steps, so every card printed the same procedure twice.
+
 ### Added (Functionality testing — test the application, not just the code)
 
 - `tools/functional-workflows.mjs`: executes the REAL application (app.html + all UI modules) inside a jsdom window with real HTTP against the local server, real localStorage, real event dispatch, and simulated browser reloads. 41/41 checks: Workflow 1 (full WAPT journey: wizard → preset → dashboard → search → filters → methodology → status → note → evidence pack → report → export → reload → import), Workflow 2 (attack chain: prerequisite completion → node unlock → status chips), 12 edge cases, keyboard/theme/print, and a runtime audit (123 requests, all same-origin, zero external, zero console errors).

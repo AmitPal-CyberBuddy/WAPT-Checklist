@@ -53,3 +53,61 @@ test('retest queue splits pending from closed evidence packs', async () => {
   assert.equal(queue.total, 2);
   assert.equal(retestQueue(createState()).total, 0);
 });
+
+test('N/A, blocked, and in-progress are never counted as tested', async () => {
+  const [{ deriveContext }, { computeCoverage }] = await Promise.all([contextModule, coverageModule]);
+  const items = [
+    item('WAPT-AUTHZ-001', 'authorization'),
+    item('WAPT-AUTHZ-002', 'authorization'),
+    item('WAPT-AUTHZ-003', 'authorization'),
+    item('WAPT-AUTHZ-004', 'authorization'),
+    item('WAPT-AUTHZ-005', 'authorization')
+  ];
+  const coverage = computeCoverage(items, deriveContext({}), {
+    'WAPT-AUTHZ-001': 'passed',
+    'WAPT-AUTHZ-002': 'na',
+    'WAPT-AUTHZ-003': 'blocked',
+    'WAPT-AUTHZ-004': 'in_progress'
+  });
+  const overall = coverage.overall;
+  assert.equal(overall.total, 5);
+  assert.equal(overall.tested, 1, 'only the executed check counts as tested');
+  assert.equal(overall.na, 1);
+  assert.equal(overall.na_user, 1);
+  assert.equal(overall.na_context, 0);
+  assert.equal(overall.blocked, 1);
+  assert.equal(overall.active, 1);
+  assert.equal(overall.not_tested, 1);
+  assert.equal(overall.executable, 4, 'tester N/A leaves the denominator, blocked stays in it');
+  assert.equal(overall.coverage, 25);
+  assert.equal(overall.remaining, 3);
+});
+
+test('credential-blocked context work is reported as blocked, not as progress', async () => {
+  const [{ deriveContext }, { computeCoverage, classifyItem }] = await Promise.all([contextModule, coverageModule]);
+  const context = deriveContext({ mode: 'black_box', has_login: 'yes', creds: 'none' });
+  const items = [item('WAPT-AUTHZ-900', 'authorization', { requires: ['has_login:yes', 'creds:low|high'] })];
+  const coverage = computeCoverage(items, context, {});
+  assert.equal(coverage.overall.blocked, 1);
+  assert.equal(coverage.overall.tested, 0);
+  assert.equal(classifyItem(items[0], { state: 'active', blocked: true }, 'not_tested').bucket, 'blocked');
+  assert.equal(classifyItem(items[0], { state: 'active', blocked: false }, 'confirmed_finding').bucket, 'tested');
+  assert.equal(classifyItem(items[0], { state: 'na_context', blocked: false }, 'passed').bucket, 'na');
+});
+
+test('coverageOfRecords aggregates a family bucket with resolved applicability', async () => {
+  const { coverageOfRecords } = await coverageModule;
+  const records = [
+    { item: item('WAPT-AUTHZ-001', 'authorization'), applicability: { state: 'active', blocked: false } },
+    { item: item('WAPT-AUTHZ-002', 'authorization'), applicability: { state: 'na_context', blocked: false } },
+    { item: item('WAPT-AUTHZ-003', 'authorization'), applicability: { state: 'active', blocked: true } }
+  ];
+  const coverage = coverageOfRecords(records, { 'WAPT-AUTHZ-001': 'confirmed_finding' }, 'authorization-object-level');
+  assert.equal(coverage.slug, 'authorization-object-level');
+  assert.equal(coverage.executable, 2);
+  assert.equal(coverage.tested, 1);
+  assert.equal(coverage.confirmed, 1);
+  assert.equal(coverage.blocked, 1);
+  assert.equal(coverage.na_context, 1);
+  assert.equal(coverage.coverage, 50);
+});

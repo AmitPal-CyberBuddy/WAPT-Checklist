@@ -200,7 +200,7 @@ async function run() {
   await waitFor(() => doc.querySelectorAll('[data-suggested-next] .suggested-row').length >= 1, 10000, 'suggested next');
   record('Workflow 1: dashboard renders Suggested next with explanations', 'PASS', `${doc.querySelectorAll('[data-suggested-next] .suggested-row').length} rows, first: ${text(doc.querySelector('[data-suggested-next] .suggested-row small'))?.slice(0, 90)}`);
   record('Workflow 1: dashboard metrics populated', text(doc.querySelector('[data-dashboard-items]')) === '623' ? 'PASS' : 'FAIL', `catalog=${text(doc.querySelector('[data-dashboard-items]'))}`);
-  record('Workflow 1: coverage panel computed', doc.querySelector('[data-coverage-summary]')?.textContent?.includes('coverage confidence') ? 'PASS' : 'FAIL');
+  record('Workflow 1: coverage panel computed', doc.querySelector('[data-coverage-summary]')?.textContent?.includes('of executable checks tested') ? 'PASS' : 'FAIL');
 
   // Search
   doc.querySelector('[data-go-search]').click();
@@ -221,15 +221,17 @@ async function run() {
   doc.querySelector('#sidebar a[href="#checklist/authorization"]').click();
   await waitFor(() => doc.querySelector('[data-checklist-results] .test-card'), 10000, 'checklist category');
   const card = doc.querySelector('[data-checklist-results] .test-card');
-  record('Tester-first card: Quick Test and Validate visible without expanding', !!card.querySelector('.quick-check') && card.querySelectorAll('.quick-steps li').length >= 3 && !!card.querySelector('.quick-validate') ? 'PASS' : 'FAIL', `${card.querySelectorAll('.quick-steps li').length} quick steps`);
+  const groupQuick = doc.querySelector('.family-group .family-quick-inline .quick-steps');
+  record('Tester-first card: objective and validation visible without expanding', !!card.querySelector('.test-objective') && !!card.querySelector('.test-validate') ? 'PASS' : 'FAIL', text(card.querySelector('.test-validate')).slice(0, 70));
+  record('Tester-first family: authored Quick Test shown once per family group', (groupQuick?.children.length || 0) >= 3 ? 'PASS' : 'FAIL', `${groupQuick?.children.length || 0} authored quick lines`);
   record('Tester-first card: family headers group the category with counts', doc.querySelectorAll('.family-group').length >= 4 && /\d+\/\d+ tested/.test(doc.querySelector('.family-count')?.textContent || '') ? 'PASS' : 'FAIL', `${doc.querySelectorAll('.family-group').length} groups, first: ${doc.querySelector('.family-header h3')?.textContent}`);
   card.querySelector('.level-details summary').click();
-  record('Tester-first card: Don\'t miss list renders at level 2', card.querySelectorAll('.dont-miss-list li').length >= 2 ? 'PASS' : 'FAIL', `${card.querySelectorAll('.dont-miss-list li').length} overlooked variants`);
+  record('Tester-first card: procedure and related links open in one click', card.querySelectorAll('.method-section li').length >= 3 ? 'PASS' : 'FAIL', `${card.querySelectorAll('.method-section li').length} procedure lines`);
   doc.querySelector('[data-checklist-mode="coverage"]').click();
   await waitFor(() => doc.querySelectorAll('.coverage-family').length >= 4, 5000, 'coverage families');
   record('Coverage view: family tick lists render with statuses and counts', doc.querySelectorAll('.coverage-row').length >= 20 && /\d+\/\d+/.test(doc.querySelector('.coverage-family .family-count')?.textContent || '') ? 'PASS' : 'FAIL', `${doc.querySelectorAll('.coverage-family').length} families, ${doc.querySelectorAll('.coverage-row').length} rows`);
-  const coverageOverview = doc.querySelector('.coverage-overview')?.textContent || '';
-  record('Coverage view: category summary explains tested, percent, and scoped-out', /executable tests recorded/.test(coverageOverview) && /scoped out/.test(coverageOverview) ? 'PASS' : 'FAIL', coverageOverview.slice(0, 90));
+  const coverageOverview = doc.querySelector('.coverage-family .stat-row')?.textContent || '';
+  record('Coverage view: family summary separates tested, blocked, N/A, and variants', /tested/.test(coverageOverview) && /N\/A/.test(coverageOverview) && /don't miss/.test(coverageOverview) ? 'PASS' : 'FAIL', coverageOverview.replace(/\s+/g, ' ').slice(0, 90));
   doc.querySelector('[data-checklist-mode="testing"]').click();
   await waitFor(() => doc.querySelectorAll('.test-card').length > 0, 5000, 'testing view restored');
   record('Coverage view: toggling back to Testing restores cards', 'PASS');
@@ -238,9 +240,9 @@ async function run() {
   record('Methodology: detailed level keeps the full decision procedure', ['Prerequisites', 'Steps', 'Secure behavior', 'Vulnerable behavior', 'Validation', 'False positives', 'Impact', 'Evidence'].every((s) => methodText.includes(s)) ? 'PASS' : 'FAIL');
   card.querySelectorAll('.method-details > summary').forEach((summaryNode) => { if (summaryNode.textContent === 'References & mappings') summaryNode.click(); });
   record('Methodology: references and mappings render at level 4', card.textContent.includes('References and mappings') && card.textContent.includes('OWASP') ? 'PASS' : 'FAIL');
-  const statusSelect = card.querySelector('.status-select');
-  statusSelect.value = 'confirmed_finding';
-  statusSelect.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+  const findingSelect = card.querySelector('.finding-select');
+  findingSelect.value = 'confirmed';
+  findingSelect.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
   await waitFor(() => text(doc.querySelector('[data-dashboard-confirmed]')) === '1', 3000, 'confirmed metric');
   record('Status: transition to Confirmed Finding updates dashboard', 'PASS', 'confirmed=1');
   const note = card.querySelector('.notes-section textarea');
@@ -295,7 +297,7 @@ async function run() {
   doc.querySelector('[data-export-json]').click();
   await waitFor(() => exports.some((e) => e.filename.endsWith('-state.json')), 3000, 'state export');
   const exportedState = exports.find((e) => e.filename.endsWith('-state.json')).text;
-  record('Export: state JSON produced', exportedState.includes('"schema_version": 2') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
+  record('Export: state JSON produced', exportedState.includes('"schema_version": 3') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
 
   // Reload simulation + import
   const dom2 = await boot('reloaded', dom.window.localStorage.getItem('wapt.state.v1'));
@@ -330,7 +332,7 @@ async function run() {
   await waitFor(() => dom2.window.document.querySelector(`[data-checklist-results] .test-card[data-item-id="${fromId}"]`), 8000, 'prerequisite card');
   const fromCard = dom2.window.document.querySelector(`[data-checklist-results] .test-card[data-item-id="${fromId}"]`);
   const fromSelect = fromCard.querySelector('.status-select');
-  fromSelect.value = 'passed';
+  fromSelect.value = 'tested';
   fromSelect.dispatchEvent(new dom2.window.Event('change', { bubbles: true }));
   dom2.window.document.querySelector('#sidebar a[href="#chains"]').click();
   await waitFor(() => dom2.window.document.querySelector(`.chain-node.unlocked a[href^="#checklist"]`)?.textContent === toId, 8000, 'unlocked node');
@@ -371,7 +373,10 @@ async function run() {
   dom4.window.document.querySelector('[data-wizard-finish]').click();
   await waitFor(() => dom4.window.document.querySelectorAll('[data-suggested-next] .suggested-row').length >= 1, 12000, 'static dashboard');
   dom4.window.document.querySelector('#sidebar a[href="#checklist"]').click();
-  await waitFor(() => dom4.window.document.querySelector('[data-checklist-results] .test-card'), 12000, 'static checklist');
+  await waitFor(() => dom4.window.document.querySelector('[data-checklist-results] [data-family-check-row]'), 12000, 'static checklist');
+  record('All tests: catalog renders as a compact family-grouped scan list', dom4.window.document.querySelectorAll('[data-checklist-results] [data-family-check-row]').length > 20 ? 'PASS' : 'FAIL', `${dom4.window.document.querySelectorAll('[data-checklist-results] [data-family-check-row]').length} check rows, ${dom4.window.document.querySelectorAll('[data-checklist-results] .test-card').length} cards expanded`);
+  dom4.window.document.querySelector('[data-checklist-results] .check-open').click();
+  await waitFor(() => dom4.window.document.querySelector('[data-checklist-results] .test-card'), 8000, 'expanded card');
   const staticCard = dom4.window.document.querySelector('[data-checklist-results] .test-card');
   const longNote = staticCard.querySelector('.notes-section textarea');
   longNote.value = 'x'.repeat(21000);
@@ -391,20 +396,23 @@ async function run() {
   // n/p card walk + tester-first labels + bottom quick status
   dom4.window.document.querySelector('#sidebar a[href="#checklist"]').click();
   await new Promise((resolve) => setTimeout(resolve, 300));
-  await waitFor(() => /tests shown/.test(dom4.window.document.querySelector('[data-checklist-summary]')?.textContent || '') && dom4.window.document.querySelectorAll('[data-checklist-results] .test-card').length > 0, 8000, 'cards for walk');
+  await waitFor(() => /tests shown/.test(dom4.window.document.querySelector('[data-checklist-summary]')?.textContent || '') && dom4.window.document.querySelectorAll('[data-checklist-results] [data-family-check-row]').length > 0, 8000, 'rows for walk');
   dom4.window.document.activeElement?.blur?.();
   dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
   const focusedAfterN = dom4.window.document.activeElement;
-  record('Keyboard: n walks to the next card status control', focusedAfterN?.className?.includes('status-select') ? 'PASS' : 'FAIL', String(focusedAfterN?.className || focusedAfterN?.tagName));
-  const firstStatus = dom4.window.document.querySelector('[data-checklist-results] .test-card .status-select');
-  firstStatus.value = 'passed';
+  record('Keyboard: n walks to the next check status control', focusedAfterN?.className?.includes('status-select') ? 'PASS' : 'FAIL', String(focusedAfterN?.className || focusedAfterN?.tagName));
+  const firstStatus = dom4.window.document.querySelector('[data-checklist-results] .status-select');
+  firstStatus.value = 'tested';
   firstStatus.dispatchEvent(new dom4.window.Event('change', { bubbles: true }));
-  await waitFor(() => dom4.window.document.querySelector('[data-checklist-results] .coverage-row, [data-checklist-results] .test-card') && JSON.parse(dom4.window.localStorage.getItem('wapt.state.v1')).engagements[0].state.statuses[dom4.window.document.querySelector('[data-checklist-results] .test-card').dataset.itemId] === 'passed', 3000, 'passed status stored');
-  const labelCheck = [...dom4.window.document.querySelectorAll('[data-checklist-results] .test-card .status-select option')].some((option) => option.textContent === 'Not Vulnerable');
-  record('Status vocabulary: passed relabeled Not Vulnerable in the UI', labelCheck ? 'PASS' : 'FAIL');
-  const recordsSummary = dom4.window.document.querySelector('[data-checklist-results] .test-card .level-details:last-of-type summary');
-  if (recordsSummary) recordsSummary.click();
-  record('Quick status: second control available in the records drawer', dom4.window.document.querySelectorAll('[data-checklist-results] .test-card .records-status .status-select').length > 0 ? 'PASS' : 'FAIL');
+  const walkedItemId = dom4.window.document.querySelector('[data-checklist-results] [data-family-check-row]').dataset.familyCheckRow;
+  await waitFor(() => JSON.parse(dom4.window.localStorage.getItem('wapt.state.v1')).engagements[0].state.statuses[walkedItemId] === 'passed', 3000, 'tested status stored');
+  const coverageLabels = [...dom4.window.document.querySelectorAll('[data-checklist-results] .status-select option')].map((option) => option.textContent);
+  const findingLabels = [...dom4.window.document.querySelectorAll('[data-checklist-results] .finding-select option')].map((option) => option.textContent);
+  record('Status vocabulary: coverage and finding are separate controls',
+    coverageLabels.includes('Tested') && coverageLabels.includes('Blocked') && coverageLabels.includes('N/A') && findingLabels.includes('Confirmed') ? 'PASS' : 'FAIL',
+    `coverage: ${coverageLabels.join('/')} · finding: ${findingLabels.join('/')}`);
+  const storedAfter = JSON.parse(dom4.window.localStorage.getItem('wapt.state.v1')).engagements[0].state.statuses[walkedItemId];
+  record('Status vocabulary: Tested without a finding records "not vulnerable"', storedAfter === 'passed' ? 'PASS' : 'FAIL', `stored=${storedAfter}`);
   dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: '?', bubbles: true }));
   record('Keyboard: "?" opens the shortcuts dialog', dom4.window.document.querySelector('#shortcuts-dialog')?.hasAttribute('open') ? 'PASS' : 'FAIL');
 
