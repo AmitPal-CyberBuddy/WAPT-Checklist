@@ -19,6 +19,6 @@
     "status": "active",
     "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
     "verified_at": "2026-08-18",
-    "note": "GitHub Pages is active; the release remains a candidate until the current reviewed main deployment receives final verification."
+    "note": "GitHub Pages is active; PR #3 merged and deployed on 2026-08-18. The release remains a candidate until browser and visual QA sign-off is recorded."
   }
 }

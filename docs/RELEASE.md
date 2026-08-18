@@ -26,7 +26,7 @@
 | Browser QA | **Pending maintainer** | No headless browser in this session; the manual matrix in `docs/QA.md` must be signed off in Chromium and Firefox |
 | Functional verification | **Green (automated)** | `docs/FEATURE-VERIFICATION.md`: 623-item catalog, 25 categories, search/filter/state/import/report/retest/chains/payloads/workflows verified with executed tests; browser-only rows explicitly NOT TESTED |
 | Visual QA | **Pending maintainer** | No screenshot runner; token-level redesign verified by source assertions only |
-| Deployment | **Pending maintainer merge** | Pages deploys from `main` automatically on merge; CI already green on the review PR |
+| Deployment | **Deployed** | PR #3 merged (`9874987`, 2026-08-18); Pages deploy succeeded; live site verified serving r6 (623 items / 25 categories / state schema v2) |
 
 The project is not called production-ready while the browser and visual rows remain unsigned.
 
