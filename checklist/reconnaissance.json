@@ -873,7 +873,7 @@
       ],
       "examples": [
         {
-          "response": "<!-- TODO remove /legacy-admin before release -->",
+          "response": "<!-- Internal deployment note: remove /legacy-admin before release -->",
           "note": "A comment is a lead; report only live sensitive exposure or secret material."
         }
       ],

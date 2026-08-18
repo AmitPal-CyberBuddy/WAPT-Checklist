@@ -4676,7 +4676,8 @@
         ]
       },
       "variants": [],
-      "remediation": "Keep untrusted data out of interpreter syntax by using parameterized or structured APIs, strict typed schemas, contextual escaping, least privilege, and removal of unsafe dynamic evaluation."
+      "remediation": "Keep untrusted data out of interpreter syntax by using parameterized or structured APIs, strict typed schemas, contextual escaping, least privilege, and removal of unsafe dynamic evaluation.",
+      "safety": "Use only short inert metacharacter controls and one request at a time; stop immediately on latency or errors and never submit catastrophic-backtracking patterns."
     },
     {
       "id": "WAPT-INJ-054",

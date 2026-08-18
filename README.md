@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–8 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Every category floor and authoritative reference/mapping gate passes.
+> **Project status:** Phases 1–9 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Category floors, references/mappings, duplicate detection, terminology, false-positive depth, and safety gates all pass.
 
 ## What is implemented
 
@@ -41,7 +41,8 @@ node --test
 node tools/validate.js checklist/sample.json
 node tools/validate.js --floors
 node tools/check-references.js
-# Network-enabled release gate:
+node tools/audit-content.js
+# Optional network-enabled recheck after the committed live snapshot:
 node tools/check-references.js --live
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
@@ -111,6 +112,7 @@ See:
 - [Engagement workspace](docs/PHASE5-WORKSPACE.md)
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
+- [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
 - [Taxonomy and stable identifiers](docs/TAXONOMY.md)
 - [Content authoring guide](docs/CONTENT-GUIDE.md)
 - [Manual browser QA](docs/QA.md)
@@ -135,5 +137,5 @@ This repository's original software and content are licensed under the [Apache L
 6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
 7. ~~Attack chains, contextual payload library, and Burp workflows~~
 8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
-9. Content and safety QA
+9. ~~Content and safety QA~~ — **0 errors and 0 unresolved warnings**
 10. Public release hardening and deployment review

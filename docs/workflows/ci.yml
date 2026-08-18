@@ -23,3 +23,5 @@ jobs:
         run: node tools/validate.js --floors
       - name: Validate authoritative references and mapping editions
         run: node tools/check-references.js
+      - name: Audit content quality and safety
+        run: node tools/audit-content.js
