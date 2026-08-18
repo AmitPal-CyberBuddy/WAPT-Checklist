@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "category": "rate-limiting",
+  "items": [
+    {
+      "id": "PAYLOAD-RL-001",
+      "title": "Written request ceiling gate",
+      "category": "rate-limiting",
+      "context": "Any login, OTP, API, messaging, upload, or payment abuse test",
+      "intended_use": "Record a hard cap and stop conditions before sending repeated requests",
+      "payload": "REVIEW-ONLY: stop count = owner-approved small integer",
+      "caveats": [
+        "Never brute-force, spray, spam, flood, or create provider cost"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "limiting",
+        "rate",
+        "review-only"
+      ],
+      "related": [
+        "WAPT-RATE-001"
+      ]
+    }
+  ]
+}

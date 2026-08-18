@@ -1,0 +1,1447 @@
+{
+  "schema_version": "1.0.0",
+  "category": "ssrf",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-SSRF-001",
+      "title": "Confirm server-side URL fetching with unique controlled callbacks",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a user-supplied URL causes the application server or worker to make an outbound request.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for an import, preview, webhook, avatar, document, feed, or callback URL field",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "an import, preview, webhook, avatar, document, feed, or callback URL field; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a unique callback arrives with server/worker characteristics and correlates to one source request",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "the user's browser or extension can make the request",
+        "a third-party scanning/preview provider can fetch from an unrelated network"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "basic",
+        "callback",
+        "url-fetcher"
+      ],
+      "attack_chains": [
+        "SSRF-01"
+      ],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use only a controlled public HTTPS destination and inert response, one request at a time; never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-002",
+      "title": "Detect blind SSRF without relying on response content",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether non-reflected fetches can reach a controlled destination through asynchronous or background processing.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a queued URL-consuming feature and unique per-request callback token",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a queued URL-consuming feature and unique per-request callback token; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a delayed server-originated DNS/HTTP callback correlates reproducibly with the submitted value",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "mail/link security scanners can visit embedded URLs",
+        "retries can create multiple callbacks from one safe fetch"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "blind-ssrf",
+        "asynchronous",
+        "callback"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use one controlled public HTTPS callback per request and a strict request ceiling; never target internal networks."
+    },
+    {
+      "id": "WAPT-SSRF-003",
+      "title": "Allowlist URL schemes before server-side fetches",
+      "category": "ssrf",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether non-HTTP schemes or scheme confusion reach local files, sockets, handlers, or unexpected clients.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for the parser's scheme decision using only owner-approved inert controls",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "the parser's scheme decision using only owner-approved inert controls; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "an unsupported scheme reaches a handler or bypasses destination policy",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "a parser can normalize scheme case safely",
+        "the feature can intentionally support a small documented scheme set"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "scheme",
+        "protocol",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Do not use file, gopher, dict, data, or other active schemes against production. Prefer parser/configuration evidence or isolated inert fixtures."
+    },
+    {
+      "id": "WAPT-SSRF-004",
+      "title": "Validate URL hosts with parsed exact allowlists",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether substring, suffix, prefix, userinfo, trailing-dot, or case tricks bypass destination allowlists.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a controlled allowed hostname and controlled disallowed hostname",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a controlled allowed hostname and controlled disallowed hostname; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a disallowed controlled destination is fetched because string validation differs from parsed authority",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "internationalized/trailing-dot names can be valid when canonicalized consistently",
+        "redirect services can make the final host differ after correct initial validation"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "host-allowlist",
+        "userinfo",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use only a controlled public HTTPS destination and inert response, one request at a time; never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-005",
+      "title": "Normalize IP address representations before network policy",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether decimal, hexadecimal, octal, shortened, IPv6, IPv4-mapped, or encoded addresses bypass blocked ranges.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for parser behavior using public documentation addresses only",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "parser behavior using public documentation addresses only; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "an alternate representation is classified differently and reaches a destination class policy should block",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "libraries can normalize several forms to the same safely checked address",
+        "a proxy can resolve and enforce policy after application validation"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "ip-address",
+        "canonicalization",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use only public documentation address ranges in runtime probes; evaluate private/link-local representations through isolated parser tests. Never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-006",
+      "title": "Revalidate every redirect target during server-side fetches",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an allowed URL redirects to a host, scheme, port, or address class that would be denied directly.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a controlled public redirect chain whose final destination remains an owner-approved test endpoint",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a controlled public redirect chain whose final destination remains an owner-approved test endpoint; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "the fetcher follows to a destination that violates the original policy",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "the browser can follow the redirect rather than the server",
+        "a documented arbitrary-webhook feature can intentionally follow public HTTPS redirects"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "redirect",
+        "destination-validation",
+        "url-fetcher"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Keep every redirect hop on controlled public test hosts; never redirect to private, loopback, link-local, metadata, or alternate schemes."
+    },
+    {
+      "id": "WAPT-SSRF-007",
+      "title": "Validate resolved addresses at connection time",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether DNS rebinding, multiple records, or resolution changes can move an allowed name into a prohibited network.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for owner-controlled DNS using only public test addresses plus configuration evidence for denied classes",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "owner-controlled DNS using only public test addresses plus configuration evidence for denied classes; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "the connected address is not rechecked against policy after resolution",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "CDNs legitimately rotate among many public addresses",
+        "a trusted egress proxy can enforce address policy centrally"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "dns-rebinding",
+        "resolution",
+        "egress"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use only controlled public addresses at runtime. Do not resolve to private/link-local networks; use design or isolated test evidence."
+    },
+    {
+      "id": "WAPT-SSRF-008",
+      "title": "Block cloud metadata destinations at egress",
+      "category": "ssrf",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether URL fetchers could reach provider metadata or workload identity endpoints despite application validation.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for provider-specific architecture and an owner-provided harmless metadata canary or blocked-route evidence",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "provider-specific architecture and an owner-provided harmless metadata canary or blocked-route evidence; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "the fetcher can reach a metadata-equivalent protected route or policy lacks both app and network controls",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "the application may run outside a cloud environment",
+        "modern metadata services can require session headers that generic fetchers cannot supply"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "cloud-metadata",
+        "egress",
+        "credential"
+      ],
+      "attack_chains": [
+        "SSRF-01"
+      ],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [
+        {
+          "when": {
+            "cloud": [
+              "aws"
+            ]
+          },
+          "steps": [
+            "Verify egress blocks link-local metadata and that generic fetchers cannot obtain or forward IMDSv2 session headers."
+          ],
+          "notes": "Do not request 169.254.169.254 in production."
+        },
+        {
+          "when": {
+            "cloud": [
+              "gcp"
+            ]
+          },
+          "steps": [
+            "Verify metadata destination and required Metadata-Flavor semantics are blocked from untrusted fetchers."
+          ],
+          "notes": "Use architecture or owner-provided canary evidence."
+        },
+        {
+          "when": {
+            "cloud": [
+              "azure"
+            ]
+          },
+          "steps": [
+            "Verify metadata destination and required request headers are inaccessible to untrusted fetchers."
+          ],
+          "notes": "Never retrieve workload tokens."
+        }
+      ],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "REVIEW ONLY. Never request real metadata addresses, tokens, or credentials. Use architecture, egress logs, or an owner-provided inert canary.",
+      "priority_when": {
+        "cloud": [
+          "aws",
+          "gcp",
+          "azure"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-SSRF-009",
+      "title": "Constrain server-side fetch ports and services",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a URL feature can reach arbitrary public/internal ports or speak HTTP to unintended management services.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a controlled public test host on a tiny owner-approved port set",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a controlled public test host on a tiny owner-approved port set; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "the fetcher reaches a port outside its documented destination contract",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "a webhook feature can intentionally support standard alternate HTTPS ports",
+        "connection errors do not prove internal reachability"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "port",
+        "service-discovery",
+        "egress"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use only a controlled public host and tiny approved port set. Never scan internal addresses or broad port ranges."
+    },
+    {
+      "id": "WAPT-SSRF-010",
+      "title": "Prevent response-parser SSRF differentials",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether URL validation and the HTTP client disagree on authority due to backslashes, encoded delimiters, Unicode, fragments, or malformed URLs.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a small reviewed corpus resolving only to controlled public destinations",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a small reviewed corpus resolving only to controlled public destinations; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a malformed form passes validation but the client connects to the controlled disallowed host",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "different libraries can reject the input at separate stages",
+        "a WAF can normalize before both application and client"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "parser-differential",
+        "url-parser",
+        "authority"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use a minimal reviewed URL set and controlled public hosts only; stop after one authority discrepancy. Never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-011",
+      "title": "Limit SSRF response exposure and content processing",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether fetched response bodies, headers, redirects, errors, or timing reveal sensitive destination data or enter unsafe parsers.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a controlled response containing synthetic headers/body and bounded size",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a controlled response containing synthetic headers/body and bounded size; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "the application returns or processes content beyond the feature's intended subset",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "a preview feature can intentionally display public response content",
+        "generic connection errors can reveal limited network state without sensitive data"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "response-handling",
+        "data-exposure",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use small inert controlled responses; never return scripts, parser exploits, large bodies, or sensitive content."
+    },
+    {
+      "id": "WAPT-SSRF-012",
+      "title": "Bind webhook delivery to registered destinations",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can change webhook destinations per request, cross tenant boundaries, or bypass verification/ownership checks.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a disposable webhook configured to a controlled HTTPS receiver",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a disposable webhook configured to a controlled HTTPS receiver; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "an unauthorized user/tenant redirects delivery or sends protected event data to an unverified destination",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "self-service webhooks intentionally deliver selected events to user URLs",
+        "test events can contain only synthetic data"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "webhook",
+        "tenant",
+        "destination"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use a controlled receiver and synthetic events only; delete the webhook and redact signing secrets. Never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-013",
+      "title": "Constrain document, image, and media renderers that fetch URLs",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether PDF, image, screenshot, office, or markup rendering retrieves unintended URLs with privileged network access.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for an inert document/media fixture referencing one controlled public asset",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "an inert document/media fixture referencing one controlled public asset; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a renderer-originated callback bypasses the feature's intended asset policy",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "a user's browser can load the asset during preview",
+        "an isolated rendering vendor can fetch from a separate controlled network"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "document-renderer",
+        "image",
+        "external-resource"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use one tiny inert public asset; never reference internal hosts, metadata, local files, scripts, or large resources."
+    },
+    {
+      "id": "WAPT-SSRF-014",
+      "title": "Prevent second-order SSRF from stored URLs",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a URL validated or stored in one flow is fetched later by another worker under different policy.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for a disposable profile/integration/feed URL and a controlled callback",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "a disposable profile/integration/feed URL and a controlled callback; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a later job fetches a destination that current policy would deny or skips revalidation",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "stored URLs can be intentionally polled after validation",
+        "DNS legitimately changes among public addresses and still requires connection-time checks"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "second-order",
+        "stored-url",
+        "worker"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Use disposable records and one controlled public callback; remove the stored URL and queued jobs after testing. Never target private, loopback, link-local, metadata, internal, or third-party systems."
+    },
+    {
+      "id": "WAPT-SSRF-015",
+      "title": "Enforce network egress as a backstop for SSRF",
+      "category": "ssrf",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether fetch-capable components have least-privilege outbound DNS, network, proxy, and credential access.",
+      "prerequisites": [
+        "A confirmed server-side URL-consuming feature or architecture evidence",
+        "Controlled public callback hosts and explicit destination/port/request limits"
+      ],
+      "steps": [
+        "Establish the intended fetch contract for owner architecture, egress policy, and sanitized connection logs rather than broad runtime probing",
+        "Send a unique controlled public HTTPS baseline and identify the actual requester",
+        "Change one scheme, authority, address, redirect, port, parser, response, or lifecycle condition",
+        "Correlate callbacks/logs, repeat a safe control, and stop at the least-impact proof"
+      ],
+      "examples": [
+        {
+          "note": "Use unique controlled public HTTPS callbacks only; never target private, loopback, link-local, metadata, or third-party systems."
+        }
+      ],
+      "manipulate": "owner architecture, egress policy, and sanitized connection logs rather than broad runtime probing; change one URL component, resolution, redirect, port, response, or fetch lifecycle condition at a time",
+      "secure_behavior": "The fetcher allowlists required schemes/destinations/ports, canonicalizes and resolves safely, revalidates every redirect and connection address, limits responses, and runs behind least-privilege egress.",
+      "vulnerable_behavior": "a fetch worker can reach sensitive network classes/services unnecessary for its role",
+      "validation": "Correlate a unique server/worker callback or owner log and exclude browser, scanner, proxy, and third-party fetches; response differences alone are insufficient.",
+      "false_positives": [
+        "some integrations require broad public Internet egress",
+        "a centralized authenticated proxy can provide effective policy outside the application"
+      ],
+      "impact": "Confirmed SSRF can expose internal services or data, retrieve cloud credentials, perform trusted-network actions, bypass network boundaries, or feed unsafe downstream parsers.",
+      "evidence": [
+        "Source request and unique correlation token",
+        "Controlled callback time, source/protocol, and redirect/DNS chain",
+        "Application/worker identity, egress, destination policy, and auth context",
+        "Bounded proof, false-positive exclusions, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Collaborator or controlled callback service",
+        "Owner egress logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Server-side Request Forgery",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/19-Testing_for_Server-Side_Request_Forgery"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Server-side request forgery",
+          "url": "https://portswigger.net/web-security/ssrf"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-19"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.6"
+        ],
+        "owasp_top10": [
+          "A10:2021",
+          "A01:2025"
+        ],
+        "api_top10": [
+          "API7:2023"
+        ],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/ssrf"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "ssrf",
+        "egress",
+        "network-policy",
+        "defense-in-depth"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use strict parsed destination allowlists, revalidate redirects and resolved addresses, isolate fetchers, block sensitive network classes at egress, limit protocols/ports/responses, and avoid forwarding ambient credentials.",
+      "safety": "Prefer architecture and log review. Do not validate egress by scanning or contacting sensitive services."
+    }
+  ]
+}

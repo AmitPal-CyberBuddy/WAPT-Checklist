@@ -1,0 +1,1386 @@
+{
+  "schema_version": "1.0.0",
+  "category": "request-smuggling",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-SMUG-001",
+      "title": "Map HTTP hops and approve a desync-safe test plan",
+      "category": "request-smuggling",
+      "severity": "informational",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Identify front ends, gateways, protocol versions, downgrade paths, connection reuse, backend affinity, monitoring, and stop conditions before probes.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "the owner cannot establish a safe isolated route/window or identify shared-user impact controls, so runtime testing remains blocked",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "external observations can leave some internal hops uncertain",
+        "a single-origin deployment can still use several managed proxy layers"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "topology",
+        "safe-testing",
+        "scope"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-002",
+      "title": "Establish well-formed framing and connection-reuse controls",
+      "category": "request-smuggling",
+      "severity": "informational",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Measure normal Content-Length, chunked, HTTP/2 DATA length, keep-alive, timing, and follow-up behavior before ambiguous probes.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "controls reveal pre-existing queue anomalies or inconsistent framing that must be resolved before active testing",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "load balancing can send controls to different backends",
+        "normal retries and timeouts can create occasional anomalies"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1",
+          "v5.0.0-4.2.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "baseline",
+        "message-framing",
+        "connection-reuse"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-003",
+      "title": "Detect CL.TE request-boundary disagreement safely",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a front end uses Content-Length while a downstream HTTP/1 hop honors Transfer-Encoding.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "repeatable paired controls show downstream bytes interpreted as a separate harmless request only under CL.TE framing",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "a WAF can reject conflicting headers without parser disagreement",
+        "backend latency or connection reassignment can alter follow-up timing"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "cl-te",
+        "http1",
+        "desync"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-004",
+      "title": "Detect TE.CL request-boundary disagreement safely",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a front end honors Transfer-Encoding while a downstream HTTP/1 hop uses Content-Length.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "repeatable paired controls show a harmless boundary shift only under TE.CL framing",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "client tooling can normalize one framing header before transmission",
+        "a proxy can close rather than reuse the connection after rejection"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "te-cl",
+        "http1",
+        "desync"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-005",
+      "title": "Detect TE.TE normalization disagreement",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether two HTTP/1 hops disagree after an obfuscated or duplicated Transfer-Encoding field is normalized differently.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "one reviewed syntax is accepted/normalized inconsistently and causes a repeatable harmless boundary shift",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "different rejection codes do not prove desynchronization",
+        "obsolete syntax can be blocked by a gateway before reaching another hop"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "te-te",
+        "transfer-encoding",
+        "normalization"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-006",
+      "title": "Detect H2.CL downgrade desynchronization",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether an HTTP/2 request with Content-Length is downgraded into an inconsistent HTTP/1 message boundary.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "a controlled HTTP/2 request produces a repeatable harmless downstream boundary anomaly tied to Content-Length translation",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "HTTP/2 clients can correct or refuse inconsistent lengths",
+        "the edge can reject the stream before downgrade"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1",
+          "v5.0.0-4.2.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "h2-cl",
+        "http2",
+        "downgrade"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-007",
+      "title": "Detect H2.TE downgrade desynchronization",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether forbidden or injected Transfer-Encoding semantics survive HTTP/2-to-HTTP/1 downgrade.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "a controlled HTTP/2 header/translation case creates a repeatable harmless downstream framing anomaly",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "compliant HTTP/2 stacks reject Transfer-Encoding",
+        "a custom header can be renamed or stripped before the backend"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "h2-te",
+        "http2",
+        "downgrade"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-008",
+      "title": "Reject HTTP/2 header values that inject HTTP/1 fields on downgrade",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether CRLF or pseudo-header/authority translation can create extra HTTP/1 headers or request lines.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "a harmless synthetic header appears as a separate downstream field after translation",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "the client library can block control characters before sending",
+        "edge diagnostics can echo a value without injecting downstream syntax"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "http2",
+        "header-injection",
+        "downgrade"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-009",
+      "title": "Confirm suspected desync without poisoning another user's response",
+      "category": "request-smuggling",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Differentiate true queue poisoning from timing noise using an isolated endpoint, unique harmless canary, and same-client controls.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "the canary deterministically appears in the assessor's isolated follow-up response/route and never shared traffic",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "connection pools can interleave assessor requests across backends",
+        "cache or application state can persist a canary independently of request queues"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "confirmation",
+        "response-queue",
+        "canary"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-010",
+      "title": "Assess 0.CL and early-response desynchronization only in isolation",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a backend sends an early response while leaving request-body bytes to prefix the next request.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "an isolated paired request demonstrates a harmless next-request boundary shift after an early response",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "normal 0-length responses do not imply leftover bytes",
+        "client/proxy connection closure can prevent any persistent desync"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "zero-cl",
+        "early-response",
+        "desync"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-011",
+      "title": "Assess client-side desync on dedicated browser-facing connections",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a browser-attributable request leaves bytes that affect a subsequent request on the same connection.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "a controlled same-user browser sequence causes a harmless second request to be prefixed or rerouted",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "browsers and proxies can use separate connections",
+        "service workers or extensions can generate unexpected requests"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "client-side-desync",
+        "browser",
+        "connection-reuse"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-012",
+      "title": "Assess pause-based desync only with owner instrumentation",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether delayed body forwarding creates front-end/back-end timeout disagreement without sending large or sustained traffic.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "owner logs and one isolated timed request show the hops commit different message boundaries",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "ordinary upstream timeout differences can close safely",
+        "network jitter can resemble a pause threshold"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "pause-based",
+        "timeout",
+        "desync"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-013",
+      "title": "Exclude load balancing, retries, caching, and affinity false positives",
+      "category": "request-smuggling",
+      "severity": "informational",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Use repeated same-backend controls and infrastructure evidence before classifying any anomalous timeout or response as smuggling.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "the anomaly remains tied to ambiguous framing after backend, cache, retry, and connection variables are controlled",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "a load balancer can route follow-ups to different workers",
+        "automatic retries can duplicate or reorder harmless requests"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "false-positive",
+        "load-balancer",
+        "retries"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    },
+    {
+      "id": "WAPT-SMUG-014",
+      "title": "Verify desync remediation across every protocol hop",
+      "category": "request-smuggling",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Confirm ambiguous messages are rejected, downgrade output is canonical, connections are closed safely, and no alternate route retains parser disagreement.",
+      "prerequisites": [
+        "Written authorization for desynchronization testing and an owner-reviewed proxy topology",
+        "An isolated endpoint/window, dedicated test clients, monitoring, and immediate stop/purge capability"
+      ],
+      "steps": [
+        "Document the exact client-to-edge-to-gateway-to-backend protocol path and normal connection reuse",
+        "Send repeated well-formed framing and follow-up controls on a dedicated route",
+        "Send one minimal ambiguous-framing/canary pair for the specific variant",
+        "Stop immediately on anomalies and require repeatable isolated plus owner-log confirmation"
+      ],
+      "examples": [
+        {
+          "note": "No smuggling payload is provided. Build only an owner-reviewed inert canary pair for the confirmed protocol path."
+        }
+      ],
+      "manipulate": "One message-framing, downgrade, normalization, timeout, or connection-reuse condition at a time on an isolated path",
+      "secure_behavior": "Every hop rejects ambiguous framing or derives the same boundary; protocol downgrade creates canonical messages and closes safely after errors.",
+      "vulnerable_behavior": "a previously confirmed isolated canary still crosses a boundary or another protocol path remains inconsistent",
+      "validation": "Require repeatable paired controls, same-path connection evidence, and isolated owner-assisted confirmation; a timeout, rejection difference, or one odd response is insufficient.",
+      "false_positives": [
+        "a changed rejection status can be secure if no bytes reach downstream",
+        "different routes can intentionally use separate proxy stacks"
+      ],
+      "impact": "Confirmed desynchronization can poison request/response queues, bypass front-end controls, capture another user’s response, poison caches, or route attacker-controlled prefixes into victim requests.",
+      "evidence": [
+        "Approved hop/protocol topology and isolated test route",
+        "Exact raw bytes/frames for baseline and one canary pair",
+        "Connection, backend affinity, timestamps, and owner proxy logs",
+        "Repeatable assessor-only effect, stop conditions, and proof no shared traffic was affected"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "HTTP Request Smuggler in manual safe mode",
+        "Owner proxy and connection logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for HTTP Splitting and Smuggling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/15-Testing_for_HTTP_Splitting_Smuggling"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "HTTP request smuggling",
+          "url": "https://portswigger.net/web-security/request-smuggling"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9112: HTTP/1.1",
+          "url": "https://www.rfc-editor.org/rfc/rfc9112"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9113: HTTP/2",
+          "url": "https://www.rfc-editor.org/rfc/rfc9113"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-15"
+        ],
+        "asvs": [
+          "v5.0.0-4.2.1",
+          "v5.0.0-4.2.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/request-smuggling"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "request-smuggling",
+        "retest",
+        "remediation",
+        "protocol-parity"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "REVIEW ONLY. Obtain explicit owner approval, prefer an isolated environment and dedicated route, send one paired canary probe at a time, never target shared-user traffic, and stop on any queue, latency, error-rate, or unexpected-response anomaly.",
+      "remediation": "Reject conflicting/ambiguous framing at the first hop, align patched parsers, canonicalize HTTP/2/3 downgrade, avoid forwarding forbidden fields, close connections on errors, and test every route/protocol path."
+    }
+  ]
+}

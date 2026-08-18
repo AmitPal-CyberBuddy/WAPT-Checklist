@@ -1,0 +1,2443 @@
+{
+  "schema_version": "1.0.0",
+  "category": "xss",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-XSS-001",
+      "title": "Classify reflected input before testing browser execution",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether reflected input can cross its exact HTML, attribute, JavaScript, CSS, or URL parser boundary.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through the reflected source and record every occurrence",
+        "For HTML text, test only whether contextual encoding prevents creation of a new element boundary",
+        "For quoted or unquoted attributes, test whether the value can escape its quote/delimiter and create an event or active attribute",
+        "For JavaScript strings, template literals, and JSON-in-script, test whether the value can escape its exact string/expression grammar",
+        "For URL attributes, test parsing and allowlisted schemes without loading external active content",
+        "Trace the final parsed DOM and reproduce only a harmless local marker in a clean browser"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a query, path, body, or header value reflected in an HTML response. Sink: the exact browser parser context at the final reflection."
+        }
+      ],
+      "manipulate": "a query, path, body, or header value reflected in an HTML response, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless unique marker becomes executable only after context-appropriate boundary escape",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "literal marker text is contextually encoded",
+        "a proxy or browser extension injects the apparent reflection"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Reflected Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/01-Testing_for_Reflected_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1",
+          "v5.0.0-1.2.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "reflected-xss",
+        "context-analysis"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [
+        {
+          "when": {
+            "app_type": [
+              "server_rendered",
+              "hybrid"
+            ]
+          },
+          "steps": [
+            "Classify each raw-response reflection as HTML text, quoted/unquoted attribute, script/string/template, style, or URL context before choosing syntax."
+          ],
+          "notes": "One input can appear in several contexts; each sink needs its own encoding."
+        },
+        {
+          "when": {
+            "app_type": [
+              "spa"
+            ]
+          },
+          "steps": [
+            "Trace the reflected API value into the parsed DOM because client rendering can change its context after the response."
+          ],
+          "notes": "API encoding does not guarantee safe DOM insertion."
+        }
+      ],
+      "remediation": "Apply output encoding for the final parser context, use safe templating/DOM APIs, validate URL schemes, and keep CSP as defense in depth."
+    },
+    {
+      "id": "WAPT-XSS-002",
+      "title": "Confirm stored XSS in ordinary user-generated content",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether persisted user content executes for the author or another authorized test viewer.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a disposable comment, profile, message, or object field",
+        "Trace it to every page, preview, notification, and API-to-DOM renderer that displays it in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a disposable comment, profile, message, or object field. Sink: every page, preview, notification, and API-to-DOM renderer that displays it."
+        }
+      ],
+      "manipulate": "a disposable comment, profile, message, or object field, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless unique proof executes in the application origin for a designated viewer",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the value is stored but safely encoded on every render",
+        "only the submitter can view the content and no realistic escalation exists"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "stored-xss",
+        "user-content"
+      ],
+      "attack_chains": [
+        "XSS-01"
+      ],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Encode at every output sink, sanitize intentional HTML with a maintained library, and preserve the original as data rather than trusted markup.",
+      "safety": "Use a unique harmless marker visible only to designated test accounts; delete the stored record immediately after validation."
+    },
+    {
+      "id": "WAPT-XSS-003",
+      "title": "Detect blind stored XSS in privileged review surfaces",
+      "category": "xss",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether submitted content executes later in moderation, support, administration, email preview, or reporting interfaces.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a synthetic support ticket, moderation item, contact field, or report label",
+        "Trace it to an owner-approved privileged rendering surface in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a synthetic support ticket, moderation item, contact field, or report label. Sink: an owner-approved privileged rendering surface."
+        }
+      ],
+      "manipulate": "a synthetic support ticket, moderation item, contact field, or report label, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "one controlled callback or owner-observed harmless marker proves browser execution",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "mail/security scanners fetch embedded links",
+        "a server-side preview service, not a privileged browser, generates the callback"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "stored-xss",
+        "blind-xss",
+        "admin"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Treat all cross-role content as untrusted, apply context encoding in privileged tools, sanitize rich content, and isolate administration origins.",
+      "safety": "Coordinate with the owner, use one inert unique HTTPS callback or visible marker, never capture cookies/data, and remove the record promptly."
+    },
+    {
+      "id": "WAPT-XSS-004",
+      "title": "Trace URL-derived DOM XSS from location sources to executable sinks",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether location, search, hash, referrer, or URL object data reaches a dangerous DOM sink.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through location.href, search, hash, document.URL, or referrer",
+        "Trace it to HTML, script, URL-navigation, or dynamic-code DOM sinks in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: location.href, search, hash, document.URL, or referrer. Sink: HTML, script, URL-navigation, or dynamic-code DOM sinks."
+        }
+      ],
+      "manipulate": "location.href, search, hash, document.URL, or referrer, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a normal victim-reachable URL causes harmless execution in the target origin",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the source value reaches only textContent or another safe sink",
+        "execution requires manual console changes unavailable to an attacker"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1",
+          "v5.0.0-1.2.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "url-source"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Parse URLs with standard APIs, allowlist schemes/destinations, and use textContent, setAttribute with safe attributes, or vetted sanitization instead of HTML/code sinks."
+    },
+    {
+      "id": "WAPT-XSS-005",
+      "title": "Validate postMessage data before DOM insertion",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether messages from an untrusted origin can deliver executable content to a page sink.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a message event from a controlled origin",
+        "Trace it to the receiving handler and its DOM or navigation sinks in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a message event from a controlled origin. Sink: the receiving handler and its DOM or navigation sinks."
+        }
+      ],
+      "manipulate": "a message event from a controlled origin, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a cross-origin message causes harmless execution or unsafe navigation",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the handler accepts only non-sensitive cosmetic data into safe text sinks",
+        "origin validation occurs in a helper not adjacent to the listener"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-3.5.5",
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "postmessage",
+        "origin-validation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Allowlist exact origins and expected source windows, validate a strict message schema, and keep message values out of HTML, code, and unsafe URL sinks."
+    },
+    {
+      "id": "WAPT-XSS-006",
+      "title": "Keep browser-storage values out of executable DOM sinks",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker-influenceable localStorage, sessionStorage, IndexedDB, or cookies flow into unsafe rendering.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a storage key set through an application-controlled test path",
+        "Trace it to rendering performed at startup, navigation, or feature use in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a storage key set through an application-controlled test path. Sink: rendering performed at startup, navigation, or feature use."
+        }
+      ],
+      "manipulate": "a storage key set through an application-controlled test path, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a stored harmless marker executes when the application consumes it",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "only direct developer-tools editing can set the value",
+        "the key is cryptographically integrity-protected and not attacker-influenceable"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "browser-storage",
+        "persistent-client"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Treat client storage as untrusted, validate schemas, use safe DOM sinks, and do not rely on storage integrity for authorization or markup safety.",
+      "safety": "Use a designated browser profile and synthetic key/value, then clear all test storage."
+    },
+    {
+      "id": "WAPT-XSS-007",
+      "title": "Encode API response data at the final DOM sink",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether untrusted API data becomes executable when client code renders it.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a synthetic API-backed field controlled by a designated account",
+        "Trace it to the client component that renders response fields in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a synthetic API-backed field controlled by a designated account. Sink: the client component that renders response fields."
+        }
+      ],
+      "manipulate": "a synthetic API-backed field controlled by a designated account, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "harmless content executes after client transformation/insertion",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the API returns metacharacters but the client uses a safe text sink",
+        "execution occurs only in a third-party debug viewer"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "api-response",
+        "client-rendering"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Preserve API values as data and use framework auto-escaping or safe DOM properties at the final sink; sanitize only intentional HTML."
+    },
+    {
+      "id": "WAPT-XSS-008",
+      "title": "Encode WebSocket and real-time messages at browser sinks",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker-controlled channel messages execute in recipients' clients.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a synthetic chat, notification, or real-time event",
+        "Trace it to message rendering for sender and designated recipient in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a synthetic chat, notification, or real-time event. Sink: message rendering for sender and designated recipient."
+        }
+      ],
+      "manipulate": "a synthetic chat, notification, or real-time event, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless message marker executes in a recipient origin",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the channel is private to the sender with no escalation",
+        "the browser plugin, not application code, renders the message"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "websocket",
+        "chat"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "api_style": [
+            "websocket"
+          ],
+          "features": [
+            "chat"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Validate message schemas and render text with safe APIs; sanitize intentional markup consistently on every real-time and history renderer.",
+      "safety": "Use only designated sender/recipient accounts and delete test messages."
+    },
+    {
+      "id": "WAPT-XSS-009",
+      "title": "Remove dangerous HTML insertion sinks for untrusted values",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether innerHTML, outerHTML, insertAdjacentHTML, document.write, or equivalent receives attacker-controlled data.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a traced untrusted source in first-party client code",
+        "Trace it to an HTML-parsing DOM API in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a traced untrusted source in first-party client code. Sink: an HTML-parsing DOM API."
+        }
+      ],
+      "manipulate": "a traced untrusted source in first-party client code, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless marker crosses into parsed active markup",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the sink receives only a fixed trusted template",
+        "a sanitizer returns a TrustedHTML value under enforced policy"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "dangerous-sink",
+        "html"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Replace HTML sinks with text/DOM construction, or pass intentional HTML through one maintained sanitizer and Trusted Types policy."
+    },
+    {
+      "id": "WAPT-XSS-010",
+      "title": "Keep untrusted data out of dynamic JavaScript execution sinks",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether eval, Function, string timers, script creation, or framework expression compilation receives attacker input.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a URL, message, storage, or API value reaching client code",
+        "Trace it to eval-like functions, string timers, script text, or dynamic module URLs in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a URL, message, storage, or API value reaching client code. Sink: eval-like functions, string timers, script text, or dynamic module URLs."
+        }
+      ],
+      "manipulate": "a URL, message, storage, or API value reaching client code, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "constant harmless JavaScript executes from attacker-controlled data",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "JSON.parse is used rather than eval",
+        "the dynamic code input is a fixed developer-controlled string"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.2"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-95"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "eval",
+        "code-sink"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove eval-like execution, use data parsers and function references, enforce strict CSP/Trusted Types, and allowlist any unavoidable module destinations."
+    },
+    {
+      "id": "WAPT-XSS-011",
+      "title": "Reject unsafe URL schemes in navigation and resource sinks",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attacker-controlled href, src, action, location, or window.open values accept executable or untrusted schemes.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a redirect, link, media, iframe, or navigation value",
+        "Trace it to URL-bearing DOM properties and browser navigation in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a redirect, link, media, iframe, or navigation value. Sink: URL-bearing DOM properties and browser navigation."
+        }
+      ],
+      "manipulate": "a redirect, link, media, iframe, or navigation value, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a victim-reachable interaction executes script or loads an unauthorized active origin",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the browser blocks the scheme in that element/context",
+        "the value is displayed as text and never used as a URL"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.2"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dom-xss",
+        "url-scheme",
+        "navigation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Parse URLs, allowlist required schemes and destinations, resolve relative URLs safely, and avoid assigning untrusted values to active resource/navigation sinks."
+    },
+    {
+      "id": "WAPT-XSS-012",
+      "title": "Verify HTML sanitization against context and configuration bypasses",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the configured sanitizer permits dangerous elements, attributes, protocols, namespaces, or hooks.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through intentional user-authored HTML in a disposable record",
+        "Trace it to the exact sanitizer configuration and every subsequent DOM transformation in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: intentional user-authored HTML in a disposable record. Sink: the exact sanitizer configuration and every subsequent DOM transformation."
+        }
+      ],
+      "manipulate": "intentional user-authored HTML in a disposable record, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless browser event or script-capable URL survives sanitization and executes",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "raw input contains active syntax but sanitized output removes it",
+        "a payload targets a tag not permitted by the product feature"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.3.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "xss",
+        "sanitization",
+        "allowlist"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use a maintained allowlist sanitizer with minimal tags/attributes/schemes, freeze configuration, and sanitize immediately before the final sink.",
+      "safety": "Use a designated viewer and harmless proof; store no external scripts and delete the test record."
+    },
+    {
+      "id": "WAPT-XSS-013",
+      "title": "Detect mutation XSS after browser reparsing",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether sanitized markup mutates into executable structure when parsed, serialized, or moved through DOM operations.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through sanitized synthetic HTML with namespace or parser-sensitive structure",
+        "Trace it to the browser DOM after every parse/serialize transformation in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: sanitized synthetic HTML with namespace or parser-sensitive structure. Sink: the browser DOM after every parse/serialize transformation."
+        }
+      ],
+      "manipulate": "sanitized synthetic HTML with namespace or parser-sensitive structure, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "the final parsed DOM executes harmless content absent from the sanitizer output model",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "browser differences change DOM without creating execution",
+        "the sanitizer version already handles the tested parser behavior"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.3.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mutation-xss",
+        "sanitization",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use a sanitizer tested against browser parsing, avoid repeated HTML serialization, keep dependencies current, and apply Trusted Types where supported.",
+      "safety": "Use only a harmless local proof in a disposable record and test supported browsers without external callbacks."
+    },
+    {
+      "id": "WAPT-XSS-014",
+      "title": "Sanitize rich-text editor output on the trusted boundary",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether paste, source mode, embeds, links, or editor plugins preserve active markup.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a disposable rich-text document using each supported input path",
+        "Trace it to server storage plus editor preview, reader, email, and export renderers in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a disposable rich-text document using each supported input path. Sink: server storage plus editor preview, reader, email, and export renderers."
+        }
+      ],
+      "manipulate": "a disposable rich-text document using each supported input path, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "active content survives one input path and executes for a designated viewer",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the editor UI accepts markup but the server sanitizer strips it",
+        "only unsupported raw HTML mode can create the value"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rich-text",
+        "wysiwyg",
+        "stored-xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Sanitize server-side with one reviewed policy, constrain embeds/links, normalize paste and source paths, and encode in non-HTML renderers.",
+      "safety": "Use disposable rich-text content, designated viewers, no external embeds, and remove it after testing."
+    },
+    {
+      "id": "WAPT-XSS-015",
+      "title": "Constrain active content in user-supplied SVG",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether uploaded or embedded SVG can execute scripts, events, external resources, or active links in the serving context.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through an inert synthetic SVG through the approved upload or editor path",
+        "Trace it to direct, img, object, iframe, inline, thumbnail, and download contexts in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: an inert synthetic SVG through the approved upload or editor path. Sink: direct, img, object, iframe, inline, thumbnail, and download contexts."
+        }
+      ],
+      "manipulate": "an inert synthetic SVG through the approved upload or editor path, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a supported serving context executes a harmless local marker",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "SVG served as attachment or isolated origin cannot execute in the app origin",
+        "image processing rasterizes and strips active content"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.4"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "svg",
+        "file-upload",
+        "active-content"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Rasterize or strictly sanitize SVG, serve user content from an isolated origin with safe types/disposition, and prevent inline/object rendering where unnecessary.",
+      "safety": "Use an inert SVG and local visual marker only; no external loads, scripts accessing data, or persistent real-user exposure."
+    },
+    {
+      "id": "WAPT-XSS-016",
+      "title": "Sanitize Markdown and other markup transformations",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Markdown, BBCode, wiki, or document converters emit unsafe HTML, links, or embeds.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a disposable markup field using documented features",
+        "Trace it to preview, saved view, email, export, and server/client conversion paths in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a disposable markup field using documented features. Sink: preview, saved view, email, export, and server/client conversion paths."
+        }
+      ],
+      "manipulate": "a disposable markup field using documented features, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless marker becomes active HTML or unsafe URL after conversion",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "raw HTML is disabled or sanitized correctly",
+        "a converter outputs HTML that is later encoded as text"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-1.3.5"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "markdown",
+        "markup",
+        "stored-xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Disable raw HTML unless required, sanitize converter output, allowlist URL schemes, and apply the same policy to preview and final renderers.",
+      "safety": "Use disposable content and designated viewers; remove generated previews and exports."
+    },
+    {
+      "id": "WAPT-XSS-017",
+      "title": "Keep framework escape hatches away from untrusted content",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether dangerous framework APIs such as raw HTML directives receive user data.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through an untrusted prop, state value, API field, or CMS fragment",
+        "Trace it to raw HTML/trust-bypass directives in the confirmed frontend framework in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: an untrusted prop, state value, API field, or CMS fragment. Sink: raw HTML/trust-bypass directives in the confirmed frontend framework."
+        }
+      ],
+      "manipulate": "an untrusted prop, state value, API field, or CMS fragment, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "the framework bypass renders executable attacker-controlled markup",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "normal interpolation auto-escapes the value",
+        "the raw directive contains only a fixed audited template"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "framework",
+        "unsafe-html",
+        "template"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Use default auto-escaping, ban/lint raw HTML APIs, sanitize intentional HTML centrally, and represent UI as components/data rather than markup strings."
+    },
+    {
+      "id": "WAPT-XSS-018",
+      "title": "Prevent client-side template injection from becoming script execution",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether user input is compiled as a client template or expression instead of treated as template data.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a value inserted before a client framework/template compile step",
+        "Trace it to runtime template compilation or expression parser in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a value inserted before a client framework/template compile step. Sink: runtime template compilation or expression parser."
+        }
+      ],
+      "manipulate": "a value inserted before a client framework/template compile step, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a constant expression evaluates and reaches a harmless execution sink",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "server-side template evaluation can be mistaken for client evaluation",
+        "modern production builds can disable runtime compilation"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "client-template-injection",
+        "expression",
+        "dom-xss"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Never compile templates from untrusted strings; ship precompiled templates and insert user values only as data through escaped bindings."
+    },
+    {
+      "id": "WAPT-XSS-019",
+      "title": "Serve uploaded active files outside the application execution origin",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether HTML, SVG, XML, or text uploads render as active same-origin content.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through an inert owner-approved active-format file",
+        "Trace it to direct download, preview, thumbnail, and embedded rendering contexts in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: an inert owner-approved active-format file. Sink: direct download, preview, thumbnail, and embedded rendering contexts."
+        }
+      ],
+      "manipulate": "an inert owner-approved active-format file, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "the file executes a harmless marker with application-origin authority",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the file runs only on an isolated untrusted origin",
+        "Content-Disposition attachment prevents browser rendering"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Stored Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/02-Testing_for_Stored_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-02"
+        ],
+        "asvs": [
+          "v5.0.0-3.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "file-upload",
+        "same-origin",
+        "stored-xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Serve untrusted files from a separate non-cookie origin, set accurate type/nosniff/disposition, sanitize or rasterize previews, and prohibit inline active formats.",
+      "safety": "Use an inert local marker in a disposable file; never read cookies/data or share the URL with real users."
+    },
+    {
+      "id": "WAPT-XSS-020",
+      "title": "Validate JSONP callback names or remove JSONP",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a callback parameter creates arbitrary JavaScript in a script response.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a legacy JSONP endpoint and callback parameter",
+        "Trace it to the JavaScript response wrapper loaded by a script element in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a legacy JSONP endpoint and callback parameter. Sink: the JavaScript response wrapper loaded by a script element."
+        }
+      ],
+      "manipulate": "a legacy JSONP endpoint and callback parameter, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "an attacker-controlled callback changes executable program structure",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "a strict identifier allowlist rejects punctuation",
+        "the endpoint returns JSON with nosniff rather than JavaScript"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Reflected Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/01-Testing_for_Reflected_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "jsonp",
+        "callback",
+        "reflected-xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Remove JSONP in favor of CORS JSON; otherwise validate callback as a restricted identifier and never expose sensitive credentialed data."
+    },
+    {
+      "id": "WAPT-XSS-021",
+      "title": "Normalize character encoding before XSS validation and output",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether alternate encodings, invalid sequences, or charset disagreement bypass filters and change browser parsing.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a reflected or stored field with known output context",
+        "Trace it to decoders, validators, template engine, response charset, and browser parser in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a reflected or stored field with known output context. Sink: decoders, validators, template engine, response charset, and browser parser."
+        }
+      ],
+      "manipulate": "a reflected or stored field with known output context, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless boundary marker becomes active only under an alternate encoding path",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the server rejects malformed encoding consistently",
+        "a scanner decodes bytes differently from the browser"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Reflected Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/01-Testing_for_Reflected_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.5.3"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "charset",
+        "canonicalization",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Accept a small encoding set, decode once before validation, use UTF-8 consistently, emit an explicit correct charset, and encode at the final sink."
+    },
+    {
+      "id": "WAPT-XSS-022",
+      "title": "Assess CSP as impact reduction rather than an XSS substitute",
+      "category": "xss",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an existing CSP blocks the confirmed execution path and whether realistic allowed script gadgets remain.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a separately confirmed harmless XSS sink",
+        "Trace it to the enforced CSP directives, nonces/hashes, allowed origins, and browser console in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a separately confirmed harmless XSS sink. Sink: the enforced CSP directives, nonces/hashes, allowed origins, and browser console."
+        }
+      ],
+      "manipulate": "a separately confirmed harmless XSS sink, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "the proof executes despite policy or can invoke an approved same-origin gadget",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "a report-only policy does not enforce blocking",
+        "an inline proof is blocked and no realistic allowed execution path is shown"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-693"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "csp",
+        "xss-impact",
+        "defense-in-depth"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Fix the injection sink first; deploy strict nonce/hash CSP without unsafe-inline/eval or broad hosts, and manage third-party script trust.",
+      "safety": "Use only a confirmed sink and harmless local proof; do not load third-party scripts or search for destructive gadgets."
+    },
+    {
+      "id": "WAPT-XSS-023",
+      "title": "Treat WAF bypass as validation of a real sink, not a finding by itself",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether normalization or payload variation reaches a confirmed vulnerable sink despite edge filtering.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a confirmed context and minimal proof currently blocked by an intermediary",
+        "Trace it to edge normalization followed by application and browser parsing in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a confirmed context and minimal proof currently blocked by an intermediary. Sink: edge normalization followed by application and browser parsing."
+        }
+      ],
+      "manipulate": "a confirmed context and minimal proof currently blocked by an intermediary, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "one minimally transformed harmless proof reaches the same executable sink",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "different block pages do not prove backend vulnerability",
+        "an encoded marker is reflected but remains inert"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "waf",
+        "xss-validation",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Fix contextual output handling in the application; keep WAF rules only as monitored defense in depth.",
+      "safety": "Attempt bypass only after confirming the sink with the owner, use a tiny variant set and harmless proof, and stop on rate controls."
+    },
+    {
+      "id": "WAPT-XSS-024",
+      "title": "Require a realistic delivery path for self-XSS",
+      "category": "xss",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether script execution requiring the same user to edit their own request, console, or local storage can affect another principal.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a claimed self-only execution path",
+        "Trace it to all possible sharing, invitation, import, support, link, and cross-user delivery mechanisms in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a claimed self-only execution path. Sink: all possible sharing, invitation, import, support, link, and cross-user delivery mechanisms."
+        }
+      ],
+      "manipulate": "a claimed self-only execution path, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a controlled attacker can deliver the value to a different designated victim context",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "manual console paste is the only trigger",
+        "the value never leaves a user-private non-shareable field"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "self-xss",
+        "exploitability",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Fix unsafe sinks where practical, but rate/report based on a demonstrated cross-user or privilege-changing delivery path rather than execution alone.",
+      "safety": "Use only designated attacker/victim accounts and never social-engineer real users."
+    },
+    {
+      "id": "WAPT-XSS-025",
+      "title": "Exclude browser extensions and tooling from XSS evidence",
+      "category": "xss",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether apparent execution originates from the application rather than an extension, proxy renderer, scanner, or development tool.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a reported XSS request and response",
+        "Trace it to a clean supported browser profile and raw application response in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a reported XSS request and response. Sink: a clean supported browser profile and raw application response."
+        }
+      ],
+      "manipulate": "a reported XSS request and response, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "execution reproduces with extensions disabled and source/sink traced to first-party code",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "an extension injects script or markup",
+        "a proxy/scanner renders captured HTML in its own origin"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "false-positive",
+        "browser-extension",
+        "validation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "No application remediation is needed for tooling-only execution; reproduce first-party behavior before reporting and address the actual sink if confirmed."
+    },
+    {
+      "id": "WAPT-XSS-026",
+      "title": "Prevent dangling-markup data capture after HTML injection",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether non-script HTML injection can open an element that captures subsequent sensitive page content into an attacker-controlled request.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a reflected field before synthetic sensitive content",
+        "Trace it to HTML attribute/tag parsing and any outbound resource URL in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a reflected field before synthetic sensitive content. Sink: HTML attribute/tag parsing and any outbound resource URL."
+        }
+      ],
+      "manipulate": "a reflected field before synthetic sensitive content, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a controlled URL receives only a synthetic marker from later page markup",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "CSP blocks outbound loads or encoding prevents tag creation",
+        "the injection occurs after all sensitive content"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Reflected Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/01-Testing_for_Reflected_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "dangling-markup",
+        "html-injection",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply context-specific encoding, strict CSP for outbound resources, avoid secrets in DOM markup, and use safe templating.",
+      "safety": "Use only synthetic page markers and a controlled callback; never capture real tokens, personal data, or credentials."
+    },
+    {
+      "id": "WAPT-XSS-027",
+      "title": "Prevent base-element injection from rewriting trusted relative URLs",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether injected base markup changes form, link, script, or asset destinations to an untrusted origin.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a reflection before relative URLs in the document head/body",
+        "Trace it to browser base URL resolution for relative actions and resources in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a reflection before relative URLs in the document head/body. Sink: browser base URL resolution for relative actions and resources."
+        }
+      ],
+      "manipulate": "a reflection before relative URLs in the document head/body, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a controlled inert relative link resolves to the test origin",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "the document already fixes an earlier trusted base element",
+        "CSP base-uri prevents untrusted base application"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Reflected Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/07-Input_Validation_Testing/01-Testing_for_Reflected_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INPV-01"
+        ],
+        "asvs": [
+          "v5.0.0-1.2.1"
+        ],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "base-tag",
+        "html-injection",
+        "url"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "remediation": "Encode HTML contexts, set CSP base-uri 'self' or 'none', use trusted absolute form actions where needed, and avoid untrusted head markup.",
+      "safety": "Use a controlled origin and harmless link/resource only; never collect form submissions or load active scripts."
+    },
+    {
+      "id": "WAPT-XSS-028",
+      "title": "Evaluate script gadgets only after confirming attacker-controlled data flow",
+      "category": "xss",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether allowed first-party scripts transform attacker-controlled data into execution under CSP.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a confirmed untrusted source under a restrictive CSP",
+        "Trace it to first-party libraries/components that parse selectors, templates, or URLs in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a confirmed untrusted source under a restrictive CSP. Sink: first-party libraries/components that parse selectors, templates, or URLs."
+        }
+      ],
+      "manipulate": "a confirmed untrusted source under a restrictive CSP, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "a harmless source value reaches an allowed script gadget and executes",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "library presence alone does not provide controllable data flow",
+        "the gadget exists only in dead or privileged code"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "script-gadget",
+        "csp",
+        "dom-xss"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove dangerous gadget patterns, update libraries, validate sources, enforce Trusted Types, and reduce CSP script trust while fixing the originating sink.",
+      "safety": "Use only harmless local proof after source-to-gadget control is established; do not load external code."
+    },
+    {
+      "id": "WAPT-XSS-029",
+      "title": "Enforce Trusted Types without permissive bypass policies",
+      "category": "xss",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Trusted Types blocks unsafe DOM sinks and whether application policies sanitize rather than blindly bless strings.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a first-party path to an HTML or script sink",
+        "Trace it to enforced require-trusted-types-for and policy creation/use in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a first-party path to an HTML or script sink. Sink: enforced require-trusted-types-for and policy creation/use."
+        }
+      ],
+      "manipulate": "a first-party path to an HTML or script sink, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "untrusted input reaches a permissive policy and then an executable sink",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "report-only violations do not enforce protection",
+        "a narrow reviewed sanitizer policy creates safe TrustedHTML"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for DOM-based Cross Site Scripting",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/01-Testing_for_DOM-based_Cross_Site_Scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "trusted-types",
+        "dom-xss",
+        "csp"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Enforce Trusted Types, minimize policy creation, remove default/permissive policies, combine with sanitization and safe APIs, and monitor violations."
+    },
+    {
+      "id": "WAPT-XSS-030",
+      "title": "Demonstrate XSS impact without collecting sensitive data",
+      "category": "xss",
+      "severity": "informational",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Confirm origin-level execution and realistic victim context using a reversible non-sensitive proof.",
+      "prerequisites": [
+        "A confirmed attacker-influenceable source and browser rendering path",
+        "A clean supported browser and designated test account/content"
+      ],
+      "steps": [
+        "Place a unique inert marker through a previously identified reflected, stored, or DOM sink",
+        "Trace it to a designated victim account and harmless DOM-visible canary in raw response, parsed DOM, and first-party code",
+        "Classify every parser context before selecting minimal syntax",
+        "Reproduce harmless execution in a clean browser and designated victim context"
+      ],
+      "examples": [
+        {
+          "note": "Use a unique harmless DOM-visible marker only. Source: a previously identified reflected, stored, or DOM sink. Sink: a designated victim account and harmless DOM-visible canary."
+        }
+      ],
+      "manipulate": "a previously identified reflected, stored, or DOM sink, using only syntax needed for the confirmed parser context",
+      "secure_behavior": "Untrusted values remain data through contextual output encoding, safe DOM APIs, or a maintained allowlist sanitizer at the final sink.",
+      "vulnerable_behavior": "the application origin executes a unique local proof under the expected victim interaction",
+      "validation": "Trace source to final sink, reproduce in a clean browser under the application origin, and prove a realistic delivery/victim context.",
+      "false_positives": [
+        "an alert-like UI is simulated by the application rather than script execution",
+        "execution occurs only in an assessor-controlled non-victim context"
+      ],
+      "impact": "Confirmed XSS can perform victim-authorized actions, alter trusted content, read origin-accessible data, or pivot across application workflows subject to victim privilege and browser defenses.",
+      "evidence": [
+        "Source request or state with secrets redacted",
+        "Raw response, parsed DOM, and source-to-sink trace",
+        "Harmless execution marker in a clean browser",
+        "Victim interaction, authentication, CSP, and origin context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Cross-site scripting",
+          "url": "https://portswigger.net/web-security/cross-site-scripting"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A03:2021",
+          "A05:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/cross-site-scripting"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "xss",
+        "evidence",
+        "safe-testing"
+      ],
+      "attack_chains": [
+        "XSS-01"
+      ],
+      "applies": {},
+      "variants": [],
+      "remediation": "Fix the root sink with contextual encoding/safe APIs or sanitization and retain CSP/Trusted Types as defense in depth.",
+      "safety": "Never read or transmit cookies, tokens, personal data, or credentials. Use a local DOM marker, designated accounts, and remove persistent content."
+    }
+  ]
+}

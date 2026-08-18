@@ -1,0 +1,1208 @@
+{
+  "schema_version": "1.0.0",
+  "category": "race-conditions",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-RACE-001",
+      "title": "Detect duplicate redemption of single-use value",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether concurrent requests redeem one coupon, gift card, credit, voucher, or token more times than allowed.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "more committed redemptions/value occur than the synthetic resource permits",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "multiple success responses can collapse to one ledger entry",
+        "a resource can intentionally allow several uses"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "duplicate-redemption",
+        "single-use",
+        "stored-value"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-RACE-002",
+      "title": "Prevent duplicate payment or checkout transactions",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether concurrent submissions create multiple charges, orders, or settlement effects for one user intent.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "one zero-value sandbox intent creates more than one authoritative transaction/effect",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "provider retries can return several responses for one idempotent charge",
+        "separate clicks can intentionally create separate orders without a shared key"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "payment",
+        "duplicate-transaction",
+        "idempotency"
+      ],
+      "attack_chains": [
+        "PAY-01"
+      ],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-RACE-003",
+      "title": "Protect limited inventory from double allocation",
+      "category": "race-conditions",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether concurrent reservations or purchases allocate more units than authoritative stock/capacity.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "synthetic scarce inventory is oversold or double-booked beyond its configured quantity",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "backorders or overbooking can be intentional policy",
+        "eventual UI counts can lag a correct allocation ledger"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "inventory",
+        "double-booking",
+        "limited-resource"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries.",
+      "priority_when": {
+        "features": [
+          "payments"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-RACE-004",
+      "title": "Enforce balance and quota checks atomically",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether parallel debits, transfers, uploads, invitations, or usage requests each pass a stale pre-check.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "the final synthetic balance becomes negative or usage exceeds the authoritative quota",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "pending transactions can temporarily reserve value before final reconciliation",
+        "different quota dimensions can apply independently"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "toctou",
+        "balance",
+        "quota"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-005",
+      "title": "Consume authentication and recovery tokens atomically",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether one-time OTP, reset, invitation, verification, or recovery tokens can establish multiple outcomes concurrently.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "one synthetic token creates multiple sessions, resets, memberships, or verified actions",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "duplicate responses can reference one committed result",
+        "a TOTP can be valid for one accepted transaction per account/time step"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "single-use-token",
+        "authentication",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-006",
+      "title": "Authorize object state and action in one atomic operation",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether permissions or ownership can change between an authorization check and the protected mutation.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "a coordinated synthetic permission/ownership change allows an otherwise denied action to commit",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "distributed revocation can have a documented bounded delay",
+        "the mutation can safely recheck a version at commit"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "toctou",
+        "authorization",
+        "object-state"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-007",
+      "title": "Enforce workflow transitions with optimistic or pessimistic concurrency",
+      "category": "race-conditions",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether simultaneous approve/cancel/publish/close transitions create an impossible state or duplicate side effect.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "a disposable workflow object reaches conflicting states or produces duplicated effects",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "event sourcing can preserve competing attempts while selecting one valid outcome",
+        "asynchronous status views can temporarily disagree"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "workflow",
+        "state-transition",
+        "concurrency"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-008",
+      "title": "Bind idempotency keys atomically to caller, action, and body",
+      "category": "race-conditions",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether concurrent requests reuse, race, or collide idempotency records before the result is stored.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "one key creates multiple commits or can be reused with a different caller/body/action",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "a server can return conflict for an in-progress key safely",
+        "naturally repeatable operations need not implement idempotency"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "idempotency-key",
+        "transaction",
+        "atomicity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-009",
+      "title": "Prevent file-processing and publish races",
+      "category": "race-conditions",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a file becomes downloadable, attachable, or processable before validation/scanning completes or after replacement.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "an inert test file is served/processed from an unvalidated or stale version during a controlled race",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "status APIs can expose metadata while bytes remain private",
+        "versioned storage can safely process immutable object generations"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "file-upload",
+        "validation-race",
+        "object-version"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-010",
+      "title": "Prevent partial account or object construction races",
+      "category": "race-conditions",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether parallel create/verify/update requests observe or mutate an entity before required initialization is complete.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "a synthetic account/object gains a state or default privilege impossible in sequential execution",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "eventual creation workflows can expose a safe pending state",
+        "client retries can return the same created object"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "partial-construction",
+        "initialization",
+        "account-state"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-011",
+      "title": "Use synchronized race delivery without flooding",
+      "category": "race-conditions",
+      "severity": "informational",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Establish whether a suspected invariant fails under a tiny coordinated request set using last-byte or HTTP/2 stream synchronization.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "a failure appears only under synchronized release and is confirmed in authoritative state",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "connection setup/order can create timing differences without concurrency at the commit point",
+        "tool retries can send more requests than configured"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "last-byte-sync",
+        "http2",
+        "safe-testing"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    },
+    {
+      "id": "WAPT-RACE-012",
+      "title": "Verify race remediation under adjacent concurrency paths",
+      "category": "race-conditions",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Retest the original invariant plus API/UI, retries, workers, and alternate transitions with a strict bounded request set.",
+      "prerequisites": [
+        "A sequentially verified business invariant and authoritative state/ledger view",
+        "Disposable synthetic resources, explicit concurrency ceiling, monitoring, and cleanup/rollback plan"
+      ],
+      "steps": [
+        "Run a sequential control and record authoritative before/after state",
+        "Create a fresh equivalent disposable resource",
+        "Prepare only the minimum identical or coordinated requests and release them simultaneously",
+        "Collect every response, verify authoritative committed state, stop, and clean/void the resource"
+      ],
+      "examples": [
+        {
+          "note": "Use a tiny synchronized request set against one disposable object; never use a flood or production transaction."
+        }
+      ],
+      "manipulate": "Request timing and concurrency only while keeping the designated identity, synthetic resource, and business inputs controlled",
+      "secure_behavior": "The invariant is enforced atomically: one operation commits, conflicting requests fail/retry safely, and ledger/object state remains consistent.",
+      "vulnerable_behavior": "the original or equivalent synthetic invariant still fails under another path or transaction boundary",
+      "validation": "Count authoritative committed effects rather than success responses, repeat only once with a fresh synthetic resource, and exclude eventual-read lag, retries, and duplicate response delivery.",
+      "false_positives": [
+        "test fixtures can retain prior inconsistent state",
+        "a conflict/retry response can be correct remediation behavior"
+      ],
+      "impact": "A confirmed race can duplicate value or transactions, oversell inventory, bypass single-use tokens/limits/authorization, expose unvalidated files, or create impossible workflow/account state.",
+      "evidence": [
+        "Sequential control and exact synchronized request count/method",
+        "All raw responses with timing/stream identifiers",
+        "Authoritative before/after object or ledger state",
+        "Concurrency ceiling, monitoring, cleanup, and proof no unrelated resource was affected"
+      ],
+      "tools": [
+        "Burp Repeater parallel groups",
+        "Turbo Intruder with a strict request cap",
+        "Owner transaction and application logs"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Process Timing",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/04-Test_for_Process_Timing"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "Race conditions",
+          "url": "https://portswigger.net/web-security/race-conditions"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-BUSL-04"
+        ],
+        "asvs": [
+          "v5.0.0-2.3.4",
+          "v5.0.0-15.4.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-362"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/race-conditions"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "race-condition",
+        "retest",
+        "remediation",
+        "channel-parity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ],
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Use one disposable synthetic resource, an owner-approved concurrency ceiling of only a few requests, synchronized delivery rather than volume, active operations monitoring, and stop on latency, errors, duplicate effects, or impact outside the test object.",
+      "remediation": "Enforce the complete invariant in one atomic transaction using uniqueness constraints, locks, compare-and-swap/version checks, idempotency records, immutable object versions, and safe conflict retries."
+    }
+  ]
+}

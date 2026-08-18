@@ -1,0 +1,3872 @@
+{
+  "schema_version": "1.0.0",
+  "category": "authentication",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-AUTH-001",
+      "title": "Transmit credentials only over authenticated encrypted channels",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether any login, enrollment, recovery, or factor submission sends credentials over plaintext or to an untrusted origin.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Map every credential-bearing form and API request",
+        "Inspect form actions, redirects, script requests, and mixed-content transitions",
+        "Submit only synthetic credentials while observing the full chain",
+        "Confirm scheme, origin, certificate, and referrer behavior at every hop"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: transmit credentials only over authenticated encrypted channels."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Credentials travel only over validated HTTPS to intended origins and never appear in downgrade redirects.",
+      "vulnerable_behavior": "A real authentication secret can traverse plaintext or an unintended origin under a realistic user flow.",
+      "validation": "Use synthetic values and prove the browser or client would transmit the field; an HTTP link that redirects before submission is not enough.",
+      "false_positives": [
+        "A plaintext landing page can redirect before displaying or accepting credentials",
+        "Development-only endpoints can be unreachable in the assessed environment"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Credentials Transported over an Encrypted Channel",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/01-Testing_for_Credentials_Transported_over_an_Encrypted_Channel"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-01"
+        ],
+        "asvs": [
+          "v5.0.0-4.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-319"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "credential-transport",
+        "tls",
+        "login"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce HTTPS before credential collection, use secure form/actions and API origins, block mixed content, and deploy HSTS after complete HTTPS readiness."
+    },
+    {
+      "id": "WAPT-AUTH-002",
+      "title": "Keep credentials out of URLs, logs, and referrer-bearing navigation",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether passwords, OTPs, recovery tokens, or assertions enter query strings, paths, or other routinely logged URL components.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Inspect credential-bearing requests and redirect chains",
+        "Check Location values, browser history, analytics calls, and Referer behavior",
+        "Use unique synthetic secrets to trace propagation",
+        "Review only owner-approved logs where available"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: keep credentials out of urls, logs, and referrer-bearing navigation."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Secrets remain in protected request bodies or headers and are redacted from telemetry and diagnostics.",
+      "vulnerable_behavior": "A reusable credential appears in a URL, history, referrer, analytics request, or accessible log.",
+      "validation": "Show where the synthetic secret persists and who can access it; a one-time opaque state value is not automatically a credential.",
+      "false_positives": [
+        "OAuth state values are not credentials when random and correctly bound",
+        "Redacted log fields can contain a marker without retaining the secret"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Credentials Transported over an Encrypted Channel",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/01-Testing_for_Credentials_Transported_over_an_Encrypted_Channel"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-01"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "credential-transport",
+        "url",
+        "logging"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use POST bodies or protected headers, apply Referrer-Policy, redact secrets at ingestion, and prevent credential values from entering navigation URLs."
+    },
+    {
+      "id": "WAPT-AUTH-003",
+      "title": "Reject documented vendor default credentials",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an exposed login accepts official default username and password pairs for the confirmed product.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Confirm product identity from multiple signals or owner evidence",
+        "Build a tiny list from official vendor documentation",
+        "Attempt each approved pair once",
+        "Stop on success and confirm identity through a harmless account page"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: reject documented vendor default credentials."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Default accounts are disabled or require a unique secret during provisioning.",
+      "vulnerable_behavior": "A documented default pair establishes an authenticated session.",
+      "validation": "Confirm the assigned identity and role without browsing unrelated data.",
+      "false_positives": [
+        "A redirect can return the login form without authentication",
+        "Owner-provided fixture accounts can be intentional in an isolated test environment"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Default Credentials",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/02-Testing_for_Default_Credentials"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-02"
+        ],
+        "asvs": [
+          "v5.0.0-13.2.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-1392"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "default-credentials",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Force unique secrets at installation, disable unused built-in accounts, and continuously audit deployed products for defaults.",
+      "safety": "Use only an owner-approved tiny list, respect lockout limits, never spray accounts, and stop immediately after the first success."
+    },
+    {
+      "id": "WAPT-AUTH-004",
+      "title": "Expire bootstrap passwords and activation codes after first use",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether initial credentials remain reusable, long-lived, or usable after account activation.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Obtain an owner-issued test invitation or bootstrap credential",
+        "Complete first activation normally",
+        "Attempt reuse from a clean browser",
+        "Check expiry and invalidation after replacement or cancellation"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: expire bootstrap passwords and activation codes after first use."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Bootstrap secrets are random, short-lived, single-use, and force establishment of the user's own factor.",
+      "vulnerable_behavior": "An initial password or activation code remains valid after use, replacement, or its intended lifetime.",
+      "validation": "Confirm reuse creates identity access rather than only redisplaying an expired workflow.",
+      "false_positives": [
+        "An invitation link can show a public status page after consumption",
+        "A test tenant can deliberately use reusable fixture codes outside production"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Default Credentials",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/02-Testing_for_Default_Credentials"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-02"
+        ],
+        "asvs": [
+          "v5.0.0-6.4.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-798"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "bootstrap-credential",
+        "activation",
+        "account-lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Generate high-entropy single-use activation secrets, bind them to one account/action, expire quickly, and invalidate atomically on completion.",
+      "safety": "Use only an owner-issued disposable account and bootstrap credential; restore or remove the account after confirming invalidation."
+    },
+    {
+      "id": "WAPT-AUTH-005",
+      "title": "Return indistinguishable login failures for valid and invalid accounts",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether login responses disclose account existence through text, status, redirects, headers, or body shape.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Choose one designated valid username and one format-valid nonexistent control",
+        "Submit the same incorrect synthetic password for each",
+        "Compare status, body, redirects, headers, and client rendering",
+        "Repeat to exclude transient edge behavior"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: return indistinguishable login failures for valid and invalid accounts."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Failures expose no reliable account-existence distinction while preserving useful generic guidance.",
+      "vulnerable_behavior": "An unauthenticated observer can reliably classify registered accounts from login responses.",
+      "validation": "Require repeated paired controls and exclude lockout, CAPTCHA, localization, and cache differences.",
+      "false_positives": [
+        "A valid test account can be in a different lifecycle state",
+        "Adaptive defenses can intentionally vary responses without confirming validity"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Account Enumeration and Guessable User Account",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/04-Testing_for_Account_Enumeration_and_Guessable_User_Account"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-IDNT-04"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.8"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-204"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-enumeration",
+        "login",
+        "response-differential"
+      ],
+      "attack_chains": [
+        "ATO-01"
+      ],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use a common external failure contract, normalize response paths, and retain precise reasons only in protected logs."
+    },
+    {
+      "id": "WAPT-AUTH-006",
+      "title": "Equalize login processing time across account-existence branches",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether repeatable timing differences reveal valid usernames despite generic messages.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Select one valid and several format-valid nonexistent usernames",
+        "Warm connections and alternate request order",
+        "Collect a bounded sample under stable conditions",
+        "Compare distributions rather than individual latency values"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: equalize login processing time across account-existence branches."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Externally observable processing time does not reliably distinguish account existence.",
+      "vulnerable_behavior": "A bounded remote observer can classify valid accounts from a stable statistically meaningful timing difference.",
+      "validation": "Control for network, password hashing, rate controls, cold starts, and edge location; do not report one slow response.",
+      "false_positives": [
+        "Autoscaling and cache warm-up create timing clusters",
+        "Rate limiting can add delays unrelated to username validity"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Account Enumeration and Guessable User Account",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/04-Testing_for_Account_Enumeration_and_Guessable_User_Account"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-IDNT-04"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.8"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-208"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-enumeration",
+        "timing",
+        "login"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Perform equivalent expensive work or otherwise normalize externally visible branches, while logging internal reasons securely.",
+      "safety": "Use a small owner-approved sample and request ceiling; stop if rate controls, latency, or service health change."
+    },
+    {
+      "id": "WAPT-AUTH-007",
+      "title": "Prevent registration responses from disclosing existing accounts",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether open registration reveals whether an email, phone number, or username is already registered.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use a designated existing identity and a controlled new identity",
+        "Submit identical registration stages for each",
+        "Compare immediate responses and controlled inbox delivery",
+        "Check whether resend or invitation paths create a clearer oracle"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: prevent registration responses from disclosing existing accounts."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Public registration avoids a reliable existence oracle or accepts the documented privacy trade-off with compensating abuse controls.",
+      "vulnerable_behavior": "An unauthenticated actor can enumerate registered identities through a reliable registration difference.",
+      "validation": "Account for intentional username uniqueness requirements and demonstrate realistic privacy or attack-chain impact.",
+      "false_positives": [
+        "Public community usernames can be intentionally discoverable",
+        "A generic response can still send different emails only to controlled inboxes by design"
+      ],
+      "impact": "Enumeration can support credential stuffing, phishing, and user-privacy harm.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test User Registration Process",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/02-Test_User_Registration_Process"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-IDNT-02"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.8"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-204"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-enumeration",
+        "registration",
+        "privacy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "registration:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use privacy-preserving generic responses and out-of-band handling where practical, then rate-limit and monitor registration abuse."
+    },
+    {
+      "id": "WAPT-AUTH-008",
+      "title": "Prevent recovery flows from revealing account existence",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password recovery, username reminders, or factor recovery expose registered identities.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Submit a designated account and nonexistent control to recovery",
+        "Compare status, body, redirect, timing, and controlled delivery behavior",
+        "Check resend and alternate-channel branches",
+        "Repeat within a strict message limit"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: prevent recovery flows from revealing account existence."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Recovery returns a common external result and avoids attacker-observable delivery differences where feasible.",
+      "vulnerable_behavior": "An unauthenticated actor can reliably determine whether an identity is registered.",
+      "validation": "Use only controlled destinations and prove a stable signal; mail arriving only for a valid account is not observable to an external attacker unless another oracle exists.",
+      "false_positives": [
+        "Only the legitimate inbox owner can observe delivery",
+        "Anti-abuse controls can intentionally challenge repeated requests"
+      ],
+      "impact": "Enumeration supports targeted takeover, phishing, and privacy attacks.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Account Enumeration and Guessable User Account",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/04-Testing_for_Account_Enumeration_and_Guessable_User_Account"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-IDNT-04"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.8"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-204"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-enumeration",
+        "password-reset",
+        "recovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Return generic responses, equalize processing, protect message endpoints with anti-automation, and never disclose destination details unnecessarily.",
+      "safety": "Use controlled inboxes/numbers, cap recovery messages, and do not trigger communications to real users."
+    },
+    {
+      "id": "WAPT-AUTH-009",
+      "title": "Canonicalize usernames consistently across registration and login",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether case, whitespace, Unicode, or normalization differences create aliases or authentication inconsistencies.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Create or use designated identities with owner-approved similar names",
+        "Test leading/trailing space and case according to documented policy",
+        "Use harmless Unicode equivalents only in an isolated tenant",
+        "Compare registration uniqueness, login, recovery, and display identity"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: canonicalize usernames consistently across registration and login."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "One documented canonical representation is used consistently for uniqueness and authentication while display names remain separate.",
+      "vulnerable_behavior": "Equivalent-looking or normalized usernames bind to different accounts or authenticate/recover inconsistently.",
+      "validation": "Confirm account identity and ownership effects; visual similarity alone is not proof of an authentication flaw.",
+      "false_positives": [
+        "Usernames can intentionally be case-sensitive",
+        "Display names need not be unique or authentication identifiers"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak or Unenforced Username Policy",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/03-Identity_Management_Testing/05-Testing_for_Weak_or_Unenforced_Username_Policy"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-IDNT-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-180"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "username",
+        "unicode",
+        "canonicalization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Canonicalization errors can cause account confusion, impersonation, or recovery of the wrong identity.",
+      "safety": "Use only designated synthetic identities and avoid lookalikes of real users or brands."
+    },
+    {
+      "id": "WAPT-AUTH-010",
+      "title": "Accept sufficiently long passwords without hidden truncation",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password creation and verification support long passphrases and compare every character exactly.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Set a unique long password on a disposable account",
+        "Authenticate with the exact value",
+        "Change one character beyond common truncation boundaries",
+        "Test a maximum-boundary value without causing resource stress"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: accept sufficiently long passwords without hidden truncation."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "At least 64 characters are accepted and every received character participates in verification.",
+      "vulnerable_behavior": "Authentication succeeds when only a truncated suffix differs or strong passphrases are rejected without a justified backend limit.",
+      "validation": "Confirm across change, login, and recovery-set flows; exclude password-manager copy errors and Unicode transformations.",
+      "false_positives": [
+        "A documented higher maximum can prevent denial-of-service",
+        "A UI counter can differ from the server's actual accepted length"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Policy",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/07-Testing_for_Weak_Password_Policy"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-07"
+        ],
+        "asvs": [
+          "v5.0.0-6.2.8",
+          "v5.0.0-6.2.9"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-521"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-policy",
+        "truncation",
+        "passphrase"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use modern password hashing with bounded input handling, support at least 64 characters, and reject rather than silently truncate.",
+      "safety": "Use a disposable account and retain an approved recovery path before changing its password."
+    },
+    {
+      "id": "WAPT-AUTH-011",
+      "title": "Allow password-manager paste and broad character composition",
+      "category": "authentication",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password fields or policy rules unnecessarily block managers, paste, spaces, or character classes.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Inspect registration, change, and login password fields",
+        "Paste a generated synthetic passphrase",
+        "Test spaces and representative printable characters",
+        "Confirm identical handling across creation and verification"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: allow password-manager paste and broad character composition."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Users can use managers and passwords of any composition without arbitrary class requirements.",
+      "vulnerable_behavior": "Controls force predictable composition or block safe password-manager behavior in a way that materially weakens credential choice.",
+      "validation": "Distinguish usability guidance from enforced restrictions and show the same constraint server-side.",
+      "false_positives": [
+        "Some control characters can be reasonably rejected",
+        "A show-password control does not imply insecure storage or transport"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Policy",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/07-Testing_for_Weak_Password_Policy"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-07"
+        ],
+        "asvs": [
+          "v5.0.0-6.2.5",
+          "v5.0.0-6.2.7"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-521"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-manager",
+        "password-policy",
+        "usability-security"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Permit paste and password managers, support broad Unicode/printable composition, and emphasize length and breached-password blocking over composition formulas."
+    },
+    {
+      "id": "WAPT-AUTH-012",
+      "title": "Reject common, breached, and context-specific passwords",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password-setting flows block high-risk values rather than relying only on composition complexity.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use a disposable account and a tiny approved weak-password set",
+        "Include common, breached, and organization-specific examples",
+        "Test registration, change, reset, and admin-set paths",
+        "Confirm rejection without sending candidate passwords to an untrusted service"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: reject common, breached, and context-specific passwords."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Every password-setting path rejects known weak values using a privacy-preserving current blocklist.",
+      "vulnerable_behavior": "A materially common or breached password is accepted through a path that should enforce policy.",
+      "validation": "Use only synthetic/test values and confirm the exact policy scope; one accepted context word may not represent a meaningful weakness alone.",
+      "false_positives": [
+        "A risk-based system can allow a low-ranked value with compensating controls",
+        "An admin fixture path can be intentionally isolated from production identities"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Policy",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/07-Testing_for_Weak_Password_Policy"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-07"
+        ],
+        "asvs": [
+          "v5.0.0-6.2.4",
+          "v5.0.0-6.2.11",
+          "v5.0.0-6.2.12"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-521"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "breached-password",
+        "password-policy",
+        "credential-stuffing"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply breached/common/context blocklists locally or through k-anonymous services, consistently across all password-setting channels.",
+      "safety": "Use only synthetic weak values on a disposable account; never set a weak password on a privileged or shared identity."
+    },
+    {
+      "id": "WAPT-AUTH-013",
+      "title": "Avoid forced periodic password changes without compromise evidence",
+      "category": "authentication",
+      "severity": "low",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether policy drives predictable password cycling instead of event-based rotation.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Review owner policy and account prompts",
+        "Observe expiry behavior using a designated test account or configuration evidence",
+        "Check whether compromise, reset, or factor changes trigger appropriate rotation",
+        "Assess whether old patterns are discouraged without collecting passwords"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: avoid forced periodic password changes without compromise evidence."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Passwords remain valid until compromise or user choice, with rotation required after credible exposure.",
+      "vulnerable_behavior": "Frequent arbitrary expiry causes predictable changes or insecure workarounds without reducing a demonstrated threat.",
+      "validation": "Prefer policy/configuration evidence; do not wait out or accelerate production expiry solely for testing.",
+      "false_positives": [
+        "Regulated environments may impose explicit rotation requirements",
+        "Short-lived service credentials follow different lifecycle models"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Policy",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/07-Testing_for_Weak_Password_Policy"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-07"
+        ],
+        "asvs": [
+          "v5.0.0-6.2.10"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-521"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-rotation",
+        "password-policy",
+        "credential-lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Adopt event-driven password changes, screen new values against breached sets, and support password managers and MFA."
+    },
+    {
+      "id": "WAPT-AUTH-014",
+      "title": "Rate-limit online password guessing without relying on one IP",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether repeated failures against one or many accounts are bounded by account, device, network, and risk signals.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Agree on a very small request and account ceiling",
+        "Send sequential failures to one disposable account",
+        "Distribute fewer failures across controlled source contexts only if approved",
+        "Record challenges, delay, rejection, alerting, and recovery"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: rate-limit online password guessing without relying on one ip."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Layered controls make sustained guessing uneconomic without permanently denying legitimate access.",
+      "vulnerable_behavior": "A bounded sample shows no meaningful friction and extrapolates to practical online guessing under the documented threat model.",
+      "validation": "Respect thresholds and do not claim unlimited guessing from a handful of successes; incorporate password entropy and MFA.",
+      "false_positives": [
+        "Controls can activate only after a risk threshold above the safe test ceiling",
+        "Edge controls can differ by assessor allowlisting"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03"
+        ],
+        "asvs": [
+          "v5.0.0-6.1.1",
+          "v5.0.0-6.3.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "brute-force",
+        "rate-limiting",
+        "login"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Combine per-account and contextual throttling, progressive delay/challenges, breached-password defense, MFA, monitoring, and user notification.",
+      "safety": "Use only disposable accounts, a written low request ceiling, and an approved window; stop on lockout, latency, alert, or service instability."
+    },
+    {
+      "id": "WAPT-AUTH-015",
+      "title": "Resist credential stuffing with breached-credential and anomaly controls",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether known-valid username/password pairs can be replayed at scale without adaptive defenses.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use only owner-created synthetic credential pairs",
+        "Perform a tiny mixed valid/invalid sequence within limits",
+        "Observe device, IP, velocity, breached-password, MFA, and alerting responses",
+        "Confirm whether users/operators receive actionable signals"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: resist credential stuffing with breached-credential and anomaly controls."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Layered controls detect and contain stuffing while allowing legitimate recovery.",
+      "vulnerable_behavior": "Synthetic reused credentials authenticate repeatedly without expected friction, detection, or stronger verification under a realistic attack model.",
+      "validation": "Do not use leaked real credentials; assess controls jointly rather than reporting absence of CAPTCHA alone.",
+      "false_positives": [
+        "Low-volume normal-looking login may intentionally avoid challenge",
+        "MFA can contain takeover even when the password is accepted"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03"
+        ],
+        "asvs": [
+          "v5.0.0-6.1.1",
+          "v5.0.0-6.3.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "credential-stuffing",
+        "anti-automation",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Detect breached credentials and anomalous reuse, require MFA, apply adaptive throttles, notify users, and support rapid session revocation.",
+      "safety": "Never use real breach data. Use synthetic owner-provided accounts, a strict request ceiling, and stop on any unintended account or alert impact."
+    },
+    {
+      "id": "WAPT-AUTH-016",
+      "title": "Prevent account lockout from becoming a denial-of-service primitive",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an unauthenticated actor can repeatedly disable another user's access.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Review lockout thresholds and recovery with the owner",
+        "Use one disposable account",
+        "Reach at most the approved threshold",
+        "Verify duration, notifications, safe unlock, and whether attacker repetition extends denial"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: prevent account lockout from becoming a denial-of-service primitive."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Controls slow attacks without allowing indefinite third-party lockout and provide secure recovery.",
+      "vulnerable_behavior": "A small unauthenticated sequence persistently locks a victim identity or repeatedly resets the lock period.",
+      "validation": "Use a disposable account and measure actual recovery; a brief progressive delay can be intended secure behavior.",
+      "false_positives": [
+        "Temporary delays are not permanent lockout",
+        "Administrative test policies can differ from production policy"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-645"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-lockout",
+        "denial-of-service",
+        "login"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use progressive throttling, risk-based challenges, bounded lock duration, secure self-recovery, and monitoring rather than indefinite hard lockout.",
+      "safety": "Use one disposable account with owner supervision; stop at the agreed threshold and confirm recovery before continuing."
+    },
+    {
+      "id": "WAPT-AUTH-017",
+      "title": "Require authentication on every protected route and representation",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether direct navigation, API calls, alternate formats, or nested resources bypass the login gate.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Identify a protected resource using a test account",
+        "Remove the session and request it directly",
+        "Repeat for documented alternate representation or API route",
+        "Compare content and server-side effects with a nonexistent control"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: require authentication on every protected route and representation."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Every protected handler validates current authentication before returning data or acting.",
+      "vulnerable_behavior": "An unauthenticated request receives protected data or performs a protected action.",
+      "validation": "Confirm sensitivity and absence of a valid ambient credential; a login-page 200 or public metadata is insufficient.",
+      "false_positives": [
+        "Applications can intentionally expose public previews",
+        "A service worker or browser cache can display stale content without a server bypass"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authentication Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/04-Testing_for_Bypassing_Authentication_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-04"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-306"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "authentication-bypass",
+        "forced-browsing",
+        "protected-route"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Centralize authentication enforcement at trusted service boundaries and deny by default across every route and representation."
+    },
+    {
+      "id": "WAPT-AUTH-018",
+      "title": "Apply authentication consistently across methods and media types",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing HTTP method or body format reaches an unauthenticated parser or handler.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture an authenticated protected operation",
+        "Remove credentials to establish the denial control",
+        "Change one supported method or media type at a time",
+        "Compare handler identity, data, and committed state"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: apply authentication consistently across methods and media types."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Authentication runs before method/content dispatch and is equivalent for all supported representations.",
+      "vulnerable_behavior": "An alternate method or parser reaches protected logic without a valid identity.",
+      "validation": "Show protected data or state, not merely different error text.",
+      "false_positives": [
+        "A public OPTIONS response can describe methods safely",
+        "An endpoint can accept syntax before rejecting at business processing"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authentication Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/04-Testing_for_Bypassing_Authentication_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-04"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.4",
+          "v5.0.0-4.1.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-288"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "authentication-bypass",
+        "http-methods",
+        "content-type"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Enforce authentication before dispatch and route all protocol variants through the same trusted policy layer.",
+      "safety": "Use only a harmless read or reversible operation on a disposable object."
+    },
+    {
+      "id": "WAPT-AUTH-019",
+      "title": "Reject omitted, duplicated, and ambiguous authentication fields",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether missing or repeated usernames, passwords, factors, or flow fields select an unintended authentication branch.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture a failed login control with all expected fields",
+        "Omit one field at a time",
+        "Duplicate one field with distinct safe values and reverse order",
+        "Compare parser outcome and identity establishment"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: reject omitted, duplicated, and ambiguous authentication fields."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Malformed or ambiguous authentication input is rejected before credential verification.",
+      "vulnerable_behavior": "A malformed field set establishes identity or bypasses a required factor.",
+      "validation": "Confirm authenticated identity through a safe account endpoint; a redirect alone is insufficient.",
+      "false_positives": [
+        "Frameworks can choose a documented first/last value and still reject login",
+        "Missing optional tenant or locale fields can be valid"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authentication Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/04-Testing_for_Bypassing_Authentication_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "authentication-bypass",
+        "duplicate-parameter",
+        "parser"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use a strict typed login schema, reject unexpected duplicates/unknown fields, and make every required factor explicit.",
+      "safety": "Use designated accounts and a small mutation set to avoid lockout or alert noise."
+    },
+    {
+      "id": "WAPT-AUTH-020",
+      "title": "Generate unpredictable remember-device and persistent-login tokens",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether long-lived authentication tokens contain guessable identifiers or insufficient entropy.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Enable remember-me on multiple disposable sessions",
+        "Record token length, format, and changes with values redacted",
+        "Compare tokens across accounts and issuance times",
+        "Use statistical/structural analysis without guessing live tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: generate unpredictable remember-device and persistent-login tokens."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Persistent tokens are random, opaque, bound server-side, and reveal no reusable password-derived material.",
+      "vulnerable_behavior": "Tokens are predictable, reversible to credentials, or structurally forgeable with practical evidence.",
+      "validation": "Do not claim weakness from encoding alone; demonstrate prediction, forgery, or sensitive decoded material using test accounts.",
+      "false_positives": [
+        "Base64 is encoding, not evidence of missing integrity",
+        "Structured encrypted tokens can remain secure"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Vulnerable Remember Password",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/05-Testing_for_Vulnerable_Remember_Password"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-330"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "remember-me",
+        "persistent-login",
+        "token-entropy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Issue high-entropy opaque selectors/validators, store validators hashed, protect integrity, and avoid embedding passwords or stable secrets."
+    },
+    {
+      "id": "WAPT-AUTH-021",
+      "title": "Rotate and revoke persistent-login tokens throughout their lifecycle",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether remember-me tokens survive logout, password/factor changes, explicit revocation, or replay after rotation.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Issue a persistent token to a disposable browser",
+        "Use it once and record whether it rotates",
+        "Log out and test the old token",
+        "Repeat after password/factor change and account-level session revocation"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: rotate and revoke persistent-login tokens throughout their lifecycle."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Tokens rotate on use where designed and are revoked on logout, security changes, expiry, and explicit user action.",
+      "vulnerable_behavior": "An old persistent token restores access after a revocation event that should invalidate it.",
+      "validation": "Use clean browser contexts and confirm which token was presented; distinguish active SSO from token reuse.",
+      "false_positives": [
+        "Federated login can silently create a new local session",
+        "Logout can intentionally be device-local unless global revocation is selected"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Vulnerable Remember Password",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/05-Testing_for_Vulnerable_Remember_Password"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-05"
+        ],
+        "asvs": [
+          "v5.0.0-7.4.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "remember-me",
+        "token-revocation",
+        "logout"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use server-side token families, rotate validators, detect reuse, expose device revocation, and invalidate families on security events."
+    },
+    {
+      "id": "WAPT-AUTH-022",
+      "title": "Require the current password for password changes",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an active but unattended or stolen session can change the password without re-verifying the existing factor.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture a normal password-change request on a disposable account",
+        "Remove or alter the current-password field",
+        "Replay with only the new password",
+        "Verify login with old/new values and restore the account"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: require the current password for password changes."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Password change requires the current password or an equivalently strong recent reauthentication.",
+      "vulnerable_behavior": "A session alone can replace the password without current-factor proof where the threat model requires it.",
+      "validation": "Confirm the change committed and account recovery is not an intentionally equivalent reauthentication path.",
+      "false_positives": [
+        "A very recent step-up session can intentionally satisfy reauthentication",
+        "Passwordless accounts may use another enrolled factor"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-6.2.3",
+          "v5.0.0-7.5.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-620"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-change",
+        "reauthentication",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Require current-factor or recent strong step-up verification and notify the user of credential changes.",
+      "safety": "Use a disposable account, restore its credential immediately, and avoid terminating other testers' sessions."
+    },
+    {
+      "id": "WAPT-AUTH-023",
+      "title": "Bind password changes to the authenticated account server-side",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether account identifiers in password-change requests can target another user.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture a password change for account A",
+        "Identify any account, email, or user identifier",
+        "Change only that identifier to designated account B",
+        "Verify neither credential nor security state changed for B"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: bind password changes to the authenticated account server-side."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "The target identity derives from the authenticated/reauthenticated principal, not client input.",
+      "vulnerable_behavior": "Account A can change account B's credential or trigger its replacement by modifying an identifier.",
+      "validation": "Use two designated accounts and verify login/security events for both; a generic accepted response is insufficient.",
+      "false_positives": [
+        "An administrator can intentionally reset users through a separately authorized function",
+        "The supplied identifier can be ignored in favor of session identity"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-change",
+        "account-binding",
+        "idor"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Derive self-service target identity from the trusted session and enforce explicit admin authorization on separate reset workflows.",
+      "safety": "Use two designated disposable accounts, retain recovery access, and restore credentials immediately if any unauthorized change commits."
+    },
+    {
+      "id": "WAPT-AUTH-024",
+      "title": "Issue high-entropy password-reset tokens",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether recovery tokens are predictable, short, sequential, or derived from public account data.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Request a small owner-approved set of tokens for disposable accounts",
+        "Compare length, alphabet, structure, and issuance correlation with values redacted",
+        "Check whether account identifiers or timestamps substitute for entropy",
+        "Avoid online guessing; use structural evidence or owner implementation evidence"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: issue high-entropy password-reset tokens."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Reset tokens use a CSPRNG with sufficient entropy and are stored/handled as authentication secrets.",
+      "vulnerable_behavior": "A practical attacker can predict or feasibly guess a valid reset token.",
+      "validation": "Encoding or visible timestamps alone do not prove predictability; require entropy evidence, collision, or controlled prediction.",
+      "false_positives": [
+        "Signed structured tokens can expose timestamps safely",
+        "Short displayed codes can be backed by strict attempts and stronger entropy requirements appropriate to channel"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-6.5.3",
+          "v5.0.0-6.5.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-640"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-reset",
+        "token-entropy",
+        "recovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Generate at least appropriate high entropy with a CSPRNG, bind to one account/action, and hash stored validators.",
+      "safety": "Request only a small number of tokens for controlled accounts and never brute-force the live recovery endpoint."
+    },
+    {
+      "id": "WAPT-AUTH-025",
+      "title": "Expire and consume reset tokens atomically",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password-reset links remain valid after use, replacement, cancellation, or their intended lifetime.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Request a token for a disposable account",
+        "Use it to set a test password",
+        "Replay it from a clean browser",
+        "Request a second token and test whether issuance invalidates the first according to policy"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: expire and consume reset tokens atomically."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Tokens are short-lived, single-use, and atomically invalidated by completion and relevant security events.",
+      "vulnerable_behavior": "A consumed, superseded, or expired token can set another password.",
+      "validation": "Confirm password state and exact token identity; a reused link can display an expired status page safely.",
+      "false_positives": [
+        "The link can remain viewable while final submission is blocked",
+        "Multiple outstanding tokens can be an intentional documented choice if all remain short-lived"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-6.5.1",
+          "v5.0.0-6.5.5"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-640"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-reset",
+        "single-use",
+        "token-expiry"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Store hashed single-purpose tokens with expiry, consume transactionally, and revoke outstanding tokens after successful recovery or account changes.",
+      "safety": "Use only disposable accounts and tokens, preserve a recovery path, and restore the final credential after replay checks."
+    },
+    {
+      "id": "WAPT-AUTH-026",
+      "title": "Build recovery links from trusted canonical origins",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Host or forwarding inputs can poison password-reset links or redirect tokens to an attacker-controlled origin.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use a controlled test account and inbox",
+        "Request recovery with the canonical host as a control",
+        "Repeat with one untrusted Host/forwarded value through the approved edge",
+        "Inspect the delivered link without visiting any untrusted token URL"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: build recovery links from trusted canonical origins."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Recovery links use a configured canonical HTTPS origin independent of client-controlled headers.",
+      "vulnerable_behavior": "A client-controlled authority places a valid reset token in a link to an untrusted destination.",
+      "validation": "Use only a controlled domain and test token; prove the delivered effective URL, not merely reflected host text.",
+      "false_positives": [
+        "The edge can overwrite altered Host values before link generation",
+        "A message preview can sanitize links differently from the delivered email"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-4.1.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-640"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-reset",
+        "host-header",
+        "link-generation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Configure canonical origins, validate Host at the edge, ignore untrusted forwarding headers, and avoid absolute links derived from requests.",
+      "safety": "Use a controlled non-lookalike domain and inbox; never capture or follow reset tokens belonging to real users."
+    },
+    {
+      "id": "WAPT-AUTH-027",
+      "title": "Bind reset completion to the requested account and action",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether recovery tokens can reset a different account, factor, tenant, or security action than originally requested.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Request a reset token for designated account A",
+        "Capture the final reset request",
+        "Change any user/account/action identifier to designated account B",
+        "Submit a synthetic replacement and verify both accounts"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: bind reset completion to the requested account and action."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "The server derives account and action exclusively from the validated token and rejects conflicting client identifiers.",
+      "vulnerable_behavior": "A token issued for A or one action can reset B or perform a different security action.",
+      "validation": "Verify resulting credentials for both accounts and restore state; a generic response is insufficient.",
+      "false_positives": [
+        "Visible account fields can be display-only and ignored",
+        "Admin-assisted workflows can use separate explicitly authorized targeting"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-6.4.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-640"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-reset",
+        "token-binding",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Bind tokens server-side to account, tenant, action, nonce, and expiry; ignore or strictly compare client-supplied identity fields.",
+      "safety": "Use two designated disposable accounts and synthetic passwords; restore both accounts immediately after validation."
+    },
+    {
+      "id": "WAPT-AUTH-028",
+      "title": "Avoid knowledge-based security questions as an authentication factor",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password recovery or sensitive actions rely on guessable personal knowledge.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Map recovery and support-assisted flows",
+        "Identify fixed or user-chosen questions",
+        "Use only owner-provided synthetic answers on a disposable account",
+        "Assess whether questions alone establish identity or replace a factor"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: avoid knowledge-based security questions as an authentication factor."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Knowledge-based questions are absent or never used as an authentication factor.",
+      "vulnerable_behavior": "Public, guessable, or reusable answers alone permit recovery or sensitive account access.",
+      "validation": "Do not research real people; prove weakness only with synthetic account data and the actual decision path.",
+      "false_positives": [
+        "Questions can be optional profile prompts unrelated to authentication",
+        "A question can be combined with stronger identity proof rather than serving as a factor"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Security Question Answer",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/08-Testing_for_Weak_Security_Question_Answer"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-08"
+        ],
+        "asvs": [
+          "v5.0.0-6.4.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-640"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "security-question",
+        "knowledge-based-authentication",
+        "recovery"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Remove security questions from authentication/recovery and use possession-bound, revocable factors with secure recovery proofing.",
+      "safety": "Never research or guess personal answers for real users; use only synthetic owner-approved account data."
+    },
+    {
+      "id": "WAPT-AUTH-029",
+      "title": "Require recent authentication before enrolling a new factor",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a session alone can add MFA, passkey, phone, or recovery factor without reauthentication.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture normal factor enrollment on a disposable account",
+        "Attempt enrollment without current-factor or recent step-up proof",
+        "Check direct API and alternate setup route",
+        "Verify enrolled factors and notifications, then remove the test factor"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: require recent authentication before enrolling a new factor."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Enrollment requires recent strong authentication and user notification.",
+      "vulnerable_behavior": "A stolen/unattended session can add an attacker-controlled factor and retain access.",
+      "validation": "Confirm the factor can authenticate or affect recovery; a pending unverified factor is not equivalent to enrollment.",
+      "false_positives": [
+        "A session created moments ago can satisfy documented recent authentication",
+        "A phone/email destination can require independent verification before becoming a factor"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-7.5.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-308"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "factor-enrollment",
+        "reauthentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa|passkey"
+        ]
+      },
+      "variants": [],
+      "remediation": "Require recent factor proof, verify the new authenticator, notify through an existing channel, and provide rapid revocation.",
+      "safety": "Use a disposable account and controlled factor, preserve a recovery method, and remove the enrolled factor after testing."
+    },
+    {
+      "id": "WAPT-AUTH-030",
+      "title": "Enforce MFA completion before issuing full application access",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can skip the MFA challenge through direct routes, flow fields, or session reuse.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Authenticate first factor on a disposable account",
+        "Before completing MFA, request a protected route directly",
+        "Test only observed flow-state parameters and API routes",
+        "Compare session privilege before and after valid MFA"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: enforce mfa completion before issuing full application access."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Pre-MFA sessions have minimal temporary privilege and cannot access protected functions.",
+      "vulnerable_behavior": "First-factor state can be promoted or used as a full session without completing MFA.",
+      "validation": "Confirm protected data/action and distinguish public or challenge-setup endpoints.",
+      "false_positives": [
+        "Pre-MFA sessions can access logout and factor-selection endpoints intentionally",
+        "Some low-risk public content is available before authentication"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.3.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-308"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "authentication-bypass",
+        "challenge"
+      ],
+      "attack_chains": [
+        "ATO-01"
+      ],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa"
+        ]
+      },
+      "variants": [],
+      "remediation": "Represent authentication assurance server-side, gate every protected route on completed assurance, and expire pre-auth sessions quickly.",
+      "safety": "Use a disposable account and harmless protected route; do not access real-user data if pre-MFA access unexpectedly succeeds."
+    },
+    {
+      "id": "WAPT-AUTH-031",
+      "title": "Rate-limit OTP and recovery-code verification",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether short authentication codes can be guessed online within their lifetime.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Agree on a tiny attempt ceiling",
+        "Generate a challenge for a disposable account",
+        "Submit a bounded sequence of invalid codes",
+        "Record attempt binding, delay, challenge invalidation, and alerting"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: rate-limit otp and recovery-code verification."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Attempts are tightly bounded per challenge/account and codes have sufficient entropy and short lifetime.",
+      "vulnerable_behavior": "A practical number of attempts can be made against one live code without invalidation or meaningful friction.",
+      "validation": "Do not exhaust the code space; combine measured controls, entropy, and lifetime to assess feasibility.",
+      "false_positives": [
+        "Global edge throttles can activate beyond the safe test limit",
+        "A high-entropy code can remain infeasible despite a modest attempt allowance"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.6.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "otp",
+        "rate-limiting"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use sufficient code entropy, short lifetime, per-challenge attempt limits, adaptive throttling, and alerting.",
+      "safety": "Use one disposable account and a strict low attempt ceiling; never brute-force the full code space."
+    },
+    {
+      "id": "WAPT-AUTH-032",
+      "title": "Make OTPs and authentication approvals single-use",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a TOTP, SMS code, email code, or push approval can be replayed across attempts or sessions.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Generate one challenge on a disposable account",
+        "Complete it successfully",
+        "Replay the same code/approval in a clean pre-auth session",
+        "Test only one concurrent duplicate if owner-approved"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: make otps and authentication approvals single-use."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "A successful code/approval is consumed and bound to the originating authentication transaction.",
+      "vulnerable_behavior": "The same value completes another transaction or can be accepted concurrently more than once.",
+      "validation": "Confirm separate session establishment; a duplicate success page for one session is not proof.",
+      "false_positives": [
+        "TOTP implementations can accept the same time-step once per account only",
+        "Client retries can replay a response without re-verifying the code"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.5.1",
+          "v5.0.0-6.6.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "otp",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa"
+        ]
+      },
+      "variants": [],
+      "remediation": "Bind approvals to transaction and account, consume atomically, detect duplicates, and keep narrow time windows.",
+      "safety": "Use one code and at most one approved concurrent duplicate; stop after establishing whether two sessions are issued."
+    },
+    {
+      "id": "WAPT-AUTH-033",
+      "title": "Protect MFA recovery codes as independent high-value credentials",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether backup codes are predictable, stored/exposed unsafely, reusable, or insufficiently revocable.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Generate codes for a disposable account",
+        "Record count/format with values redacted",
+        "Use one code and test only its reuse",
+        "Regenerate the set and verify old unused codes are revoked"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: protect mfa recovery codes as independent high-value credentials."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Codes are high entropy, displayed once, stored hashed, single-use, and fully replaced on regeneration.",
+      "vulnerable_behavior": "A used or superseded code authenticates, or codes are practically predictable/exposed.",
+      "validation": "Confirm session issuance and exact code set; never retain code values in evidence.",
+      "false_positives": [
+        "Human-readable grouping does not reduce entropy materially",
+        "A code can remain displayed in a protected one-time setup view before acknowledgement"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.5.1",
+          "v5.0.0-6.5.2",
+          "v5.0.0-6.5.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-330"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "recovery-code",
+        "credential-lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa"
+        ]
+      },
+      "variants": [],
+      "remediation": "Generate CSPRNG codes, hash validators, consume atomically, display once, support regeneration, and notify users of use.",
+      "safety": "Never retain recovery-code values in evidence; use a disposable account and regenerate its code set after testing."
+    },
+    {
+      "id": "WAPT-AUTH-034",
+      "title": "Require strong proof to remove or replace authentication factors",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether factor removal, phone change, passkey deletion, or MFA disablement can be performed with weak session proof.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture normal factor management on a disposable account",
+        "Remove current-factor and recent-auth proof",
+        "Test direct API and recovery branches",
+        "Verify factor state, notifications, and active sessions"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: require strong proof to remove or replace authentication factors."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Changes require recent strong proof at enrollment-equivalent assurance and trigger notification/revocation choices.",
+      "vulnerable_behavior": "A session or weaker channel can remove/replace a stronger factor and preserve attacker access.",
+      "validation": "Confirm committed factor state and avoid locking out the test account.",
+      "false_positives": [
+        "An already recent phishing-resistant session can satisfy policy",
+        "Support recovery can intentionally use separately documented identity proofing"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.4.4",
+          "v5.0.0-6.5.6",
+          "v5.0.0-7.5.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-308"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "factor-removal",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa|passkey"
+        ]
+      },
+      "variants": [],
+      "remediation": "Apply recent strong step-up, equivalent recovery proofing, out-of-band notification, delay for high-risk changes, and session review.",
+      "safety": "Keep a second recovery method, use a disposable account, and restore factor state immediately."
+    },
+    {
+      "id": "WAPT-AUTH-035",
+      "title": "Bind trusted-device exemptions to revocable device credentials",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether remember-device tokens are transferable, overly long-lived, or survive factor and password security events.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Mark a disposable browser as trusted",
+        "Copy only the test token to a clean profile where permitted",
+        "Change password or MFA state",
+        "Review device list, expiry, and explicit revocation"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: bind trusted-device exemptions to revocable device credentials."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Exemptions use protected device-bound credentials, expire, are visible/revocable, and invalidate on relevant security events.",
+      "vulnerable_behavior": "A copied or revoked trust token suppresses MFA from another context or after a security change.",
+      "validation": "Confirm MFA suppression and exclude a still-active federated session.",
+      "false_positives": [
+        "Risk engines can still challenge a trusted device conditionally",
+        "Cookie copying in test tools can omit browser/device binding material"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Vulnerable Remember Password",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/05-Testing_for_Vulnerable_Remember_Password"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-05"
+        ],
+        "asvs": [
+          "v5.0.0-6.5.6"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "trusted-device",
+        "remember-device"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:remember_device"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use device-bound rotating tokens, short risk-based lifetime, user-visible device management, and invalidation on credential/factor changes.",
+      "safety": "Copy only a disposable test token, keep a recovery method, and revoke every test device/token after validation."
+    },
+    {
+      "id": "WAPT-AUTH-036",
+      "title": "Resist push-notification fatigue and approval ambiguity",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether repeated push challenges or unclear prompts make unauthorized approval practical.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use one disposable account/device with owner approval",
+        "Trigger only the agreed small number of challenges",
+        "Record prompt context, number matching, rate response, and cancellation",
+        "Verify users can report/block unexpected requests"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: resist push-notification fatigue and approval ambiguity."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Push requests are rate-limited, transaction-specific, informative, and preferably require number matching.",
+      "vulnerable_behavior": "A small attacker-driven sequence creates ambiguous approval prompts without effective throttling or context.",
+      "validation": "Assess the complete user/control design; absence of number matching alone is not automatically exploitable.",
+      "false_positives": [
+        "Risk-based systems can block only after a threshold above the safe test cap",
+        "A detailed prompt can sufficiently bind the transaction without number matching"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.6.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "mfa",
+        "push-fatigue",
+        "number-matching"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:mfa"
+        ]
+      },
+      "variants": [],
+      "remediation": "Rate-limit push creation, bind and display transaction context, use number matching, notify/report suspicious attempts, and offer phishing-resistant factors.",
+      "safety": "Use only a designated device and very small prompt limit; stop immediately if a real user or operator is notified."
+    },
+    {
+      "id": "WAPT-AUTH-037",
+      "title": "Apply equivalent authentication strength across alternate channels",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether mobile, legacy, API, support, or alternate-host login paths provide weaker assurance than the primary channel.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Inventory all owner-confirmed authentication paths",
+        "Use the same disposable identity in each",
+        "Compare password, MFA, rate, recovery, device, and notification controls",
+        "Check whether a weak channel issues credentials accepted by stronger channels"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: apply equivalent authentication strength across alternate channels."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Every channel enforces documented equivalent assurance or limits tokens to an appropriately narrow audience.",
+      "vulnerable_behavior": "A weaker channel establishes identity or tokens accepted for higher-assurance access.",
+      "validation": "Prove cross-channel privilege/acceptance; visual or UX differences alone are insufficient.",
+      "false_positives": [
+        "Native clients can use different but equivalent phishing-resistant controls",
+        "A low-assurance token can be deliberately audience-restricted"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weaker Authentication in Alternative Channel",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/10-Testing_for_Weaker_Authentication_in_Alternative_Channel"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-10"
+        ],
+        "asvs": [
+          "v5.0.0-6.1.3",
+          "v5.0.0-6.3.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-288"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "alternate-channel",
+        "authentication-strength",
+        "legacy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain one assurance model, retire legacy paths, enforce token audience/strength, and require step-up before higher-risk access.",
+      "safety": "Use only designated accounts and low-volume normal logins; stop if alternate-channel testing triggers real-user or operator alerts."
+    },
+    {
+      "id": "WAPT-AUTH-038",
+      "title": "Prevent local fallback from bypassing federated authentication policy",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether local passwords, break-glass routes, or direct IdP alternatives bypass required SSO or MFA.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Identify local and federated routes for a designated account",
+        "Attempt the documented local fallback without changing credentials",
+        "Compare MFA, account status, role, and recent-auth enforcement",
+        "Review break-glass restrictions with the owner"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: prevent local fallback from bypassing federated authentication policy."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Fallback is absent, tightly restricted/audited, or enforces equivalent assurance and lifecycle state.",
+      "vulnerable_behavior": "A normal federated user can use a weaker local path to bypass identity-provider policy.",
+      "validation": "Confirm the same account/privilege and exclude intentionally isolated break-glass identities.",
+      "false_positives": [
+        "Dedicated emergency accounts can be intentionally local and separately controlled",
+        "A local form can redirect every user back to the IdP"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weaker Authentication in Alternative Channel",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/10-Testing_for_Weaker_Authentication_in_Alternative_Channel"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-10"
+        ],
+        "asvs": [
+          "v5.0.0-6.3.4",
+          "v5.0.0-6.8.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-288"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "sso",
+        "fallback-authentication",
+        "authentication-bypass"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "saml",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Disable local auth for federated identities, isolate monitored break-glass accounts, and synchronize disablement and assurance requirements.",
+      "safety": "Test only owner-approved federated and break-glass identities; do not attempt guessed emergency credentials."
+    },
+    {
+      "id": "WAPT-AUTH-039",
+      "title": "Fail closed on malformed authentication and dependency errors",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether parser exceptions, unavailable identity services, or unexpected challenge state grant access or skip factors.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Establish normal success and failure controls",
+        "Send one harmless malformed field or stale flow token",
+        "Use owner-coordinated dependency-failure evidence rather than disrupting services",
+        "Check resulting identity, assurance, and session state"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: fail closed on malformed authentication and dependency errors."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Errors deny authentication, preserve no partial privilege, and return generic responses while logging diagnostics.",
+      "vulnerable_behavior": "An exception or unavailable verifier establishes identity, retains elevated partial state, or skips a required factor.",
+      "validation": "Confirm session privilege; a 500 response alone is not an authentication bypass.",
+      "false_positives": [
+        "An upstream error can leave an already authenticated session valid by design",
+        "Retry pages can preserve non-privileged transaction state"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Bypassing Authentication Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/04-Testing_for_Bypassing_Authentication_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-636"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "fail-closed",
+        "error-handling",
+        "authentication-bypass"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use explicit deny defaults, transactional auth state, strict exception handling, dependency timeouts, and tests for failure branches.",
+      "safety": "Do not induce production dependency outages; use malformed local inputs or owner-provided fault-injection evidence."
+    },
+    {
+      "id": "WAPT-AUTH-040",
+      "title": "Require recent step-up authentication for sensitive operations",
+      "category": "authentication",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether high-risk account, financial, administrative, or data-export actions rely only on an old session.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Identify owner-defined sensitive actions and safe stopping points",
+        "Use a deliberately aged test session where feasible",
+        "Attempt the action without recent factor proof",
+        "Complete approved step-up and compare assurance/session changes"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: require recent step-up authentication for sensitive operations."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Sensitive actions require risk-appropriate recent factor proof and bind approval to the intended action.",
+      "vulnerable_behavior": "An old or lower-assurance session performs a high-impact action without required step-up.",
+      "validation": "Use a reversible action or stop before commit; confirm documented risk requirement rather than imposing step-up on every action.",
+      "false_positives": [
+        "Low-risk profile changes may not require reauthentication",
+        "A recent high-assurance login can satisfy a documented freshness window"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-7.5.1",
+          "v5.0.0-7.5.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-308"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "step-up-authentication",
+        "sensitive-action",
+        "reauthentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define action assurance/freshness policy, require transaction-bound step-up, and rotate or annotate session assurance after verification.",
+      "safety": "Use reversible test actions and stop before payments, deletion, privilege grant, or irreversible export unless explicitly approved."
+    },
+    {
+      "id": "WAPT-AUTH-041",
+      "title": "Notify users of credential and factor security events",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether password resets, factor enrollment/removal, recovery, and suspicious login events produce timely safe notifications.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use controlled contact channels on a disposable account",
+        "Perform one approved credential or factor event",
+        "Record notification timing, channel, content, and revocation guidance",
+        "Confirm messages contain no secrets and cannot themselves approve the change"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: notify users of credential and factor security events."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Users receive timely, non-secret notifications through an existing trusted channel with actionable recovery instructions.",
+      "vulnerable_behavior": "High-risk security changes occur silently or notifications leak reusable secrets/materially mislead the user.",
+      "validation": "Consider owner threat model and alternate operational alerting; email delay alone may be provider-related.",
+      "false_positives": [
+        "Some enterprise accounts notify administrators rather than end users",
+        "Queued delivery latency can occur outside application control"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-6.3.5",
+          "v5.0.0-6.3.7"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-778"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "security-notification",
+        "credential-change",
+        "monitoring"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Notify through pre-existing channels, include event context and recovery path, avoid secrets, and log/alert security events centrally.",
+      "safety": "Use controlled inboxes/numbers and one event per channel to avoid message abuse."
+    },
+    {
+      "id": "WAPT-AUTH-042",
+      "title": "Log authentication outcomes without recording secrets",
+      "category": "authentication",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether successful/failed authentication, factor, recovery, and security changes are auditable without credentials or tokens in logs.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Review owner-approved event schemas or sanitized test logs",
+        "Generate one success and one failure with synthetic values",
+        "Correlate account alias, result, factor type, source context, and request ID",
+        "Verify passwords, OTPs, reset tokens, assertions, and full session tokens are absent"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: log authentication outcomes without recording secrets."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Logs capture useful auth events and correlation while excluding secrets and unnecessary personal data.",
+      "vulnerable_behavior": "Security events are unauditable or reusable credentials/tokens are stored in accessible logs.",
+      "validation": "Use synthetic markers and verify access scope/retention; lack of tester log access is not proof events are missing.",
+      "false_positives": [
+        "Sensitive log details can be protected in a separate restricted audit system",
+        "Redacted hashes/fingerprints can safely correlate tokens without storing them"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Authentication vulnerabilities",
+          "url": "https://portswigger.net/web-security/authentication"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-16.3.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-532"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/authentication"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "authentication-logging",
+        "secret-redaction",
+        "monitoring"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Define structured auth events, redact at source, restrict and monitor log access, set retention, and alert on suspicious patterns."
+    },
+    {
+      "id": "WAPT-AUTH-043",
+      "title": "Bind passkey registration to the intended relying party and account",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether WebAuthn credential creation can be initiated or completed for the wrong account or relying-party scope.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Use a disposable account and authenticator",
+        "Capture registration options and challenge",
+        "Check RP ID, user handle, origin, challenge freshness, and current-factor proof",
+        "Attempt only safe replay or account-field changes, then remove the credential"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: bind passkey registration to the intended relying party and account."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "The server fixes RP/account context, validates origin/challenge/attestation policy, and requires recent auth for enrollment.",
+      "vulnerable_behavior": "A challenge can register an attacker-controlled credential to another account or outside intended RP scope.",
+      "validation": "Confirm the new credential authenticates the affected test account; client-side option changes alone are insufficient.",
+      "false_positives": [
+        "Related-origin RP IDs can be intentionally valid within registrable-domain rules",
+        "Resident credential user handles are opaque and need not equal usernames"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Web Authentication: Level 3",
+          "url": "https://www.w3.org/TR/webauthn-3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "webauthn",
+        "passkey",
+        "factor-enrollment"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:passkey"
+        ]
+      },
+      "variants": [],
+      "remediation": "Generate server-side single-use challenges, bind user/RP/origin, verify all WebAuthn results, require recent auth, and notify the account owner.",
+      "safety": "Use only a disposable account and authenticator, and remove test credentials after validation."
+    },
+    {
+      "id": "WAPT-AUTH-044",
+      "title": "Verify passkey assertions against fresh challenges and expected origins",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether WebAuthn authentication accepts replayed assertions, wrong origins, or incorrect relying-party context.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Capture one successful assertion for a disposable account",
+        "Replay it against a new authentication transaction",
+        "Compare challenge, origin, RP ID hash, credential ID, user verification, and sign count policy",
+        "Confirm no session is issued on mismatch"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: verify passkey assertions against fresh challenges and expected origins."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Assertions require a fresh server challenge and expected RP/origin, with user verification enforced according to policy.",
+      "vulnerable_behavior": "A replayed or context-mismatched assertion establishes identity.",
+      "validation": "Confirm session issuance and ensure tooling did not obtain a new assertion from the authenticator automatically.",
+      "false_positives": [
+        "Sign-count zero can be valid for authenticators that do not implement counters",
+        "Related origins can be intentionally authorized under current WebAuthn rules"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "W3C",
+          "title": "Web Authentication: Level 3",
+          "url": "https://www.w3.org/TR/webauthn-3/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "webauthn",
+        "passkey",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:passkey"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use short-lived single-use challenges, validate clientDataJSON and authenticatorData fully, enforce UV policy, and monitor cloned-credential signals.",
+      "safety": "Use one disposable account and assertion, never replay real-user authenticator data, and revoke the test credential after validation."
+    },
+    {
+      "id": "WAPT-AUTH-045",
+      "title": "Preserve MFA and account state across password recovery",
+      "category": "authentication",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether completing password recovery silently disables MFA, reactivates disabled accounts, or downgrades assurance.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "An approved authentication flow and safe stopping point"
+      ],
+      "steps": [
+        "Record a disposable account's MFA and lifecycle state",
+        "Complete owner-approved password recovery",
+        "Attempt login and sensitive access",
+        "Verify factors, disablement, roles, sessions, and notifications remain according to policy"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic credentials and a disposable account when testing: preserve mfa and account state across password recovery."
+        }
+      ],
+      "manipulate": "One authentication field, token, flow state, or timing condition at a time while preserving all unrelated values",
+      "secure_behavior": "Recovery changes only the intended factor and preserves or safely re-proofs all other account security state.",
+      "vulnerable_behavior": "Password recovery bypasses MFA, reactivates a disabled identity, or weakens account assurance unexpectedly.",
+      "validation": "Confirm state before/after and distinguish an intentional full identity-recovery process with equivalent proofing.",
+      "false_positives": [
+        "A documented high-assurance recovery can replace lost factors after equivalent identity proof",
+        "Password reset can intentionally revoke rather than preserve sessions"
+      ],
+      "impact": "A confirmed weakness can enable account enumeration, credential compromise, authentication bypass, or account takeover depending on the affected control.",
+      "evidence": [
+        "Baseline and modified requests with secrets redacted",
+        "Paired responses and authenticated identity outcome",
+        "Test account, factor, channel, and timing context",
+        "Before/after account or assurance state"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Password Change or Reset Functionalities",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/09-Testing_for_Weak_Password_Change_or_Reset_Functionalities"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-09"
+        ],
+        "asvs": [
+          "v5.0.0-6.4.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-308"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "password-reset",
+        "mfa",
+        "account-state"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high",
+          "identity_features:recovery"
+        ]
+      },
+      "variants": [],
+      "remediation": "Model recovery as a controlled state transition, preserve independent factors/disablement, require equivalent proof for factor recovery, and notify users.",
+      "safety": "Use a disposable account with a recovery path and restore its factor/lifecycle state after testing."
+    }
+  ]
+}

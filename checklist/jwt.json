@@ -1,0 +1,1744 @@
+{
+  "schema_version": "1.0.0",
+  "category": "jwt",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-JWT-001",
+      "title": "Verify every JWT signature before trusting claims",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether APIs reject modified payloads, malformed signatures, and tokens whose signature is never verified.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a token with one harmless changed test-account claim is accepted as authenticated or authorized",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "a debugger or client can decode without server verification",
+        "a public endpoint returns the same data regardless of token validity"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "signature-verification",
+        "tampering"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-002",
+      "title": "Allowlist JWT algorithms from trusted server configuration",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether the verifier accepts an algorithm selected only by attacker-controlled JOSE metadata.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a token signed under an unconfigured algorithm family is accepted",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "multiple algorithms can be intentionally configured for migration",
+        "a gateway can reject while a downstream decoder merely echoes claims"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-327"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "algorithm",
+        "allowlist"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-003",
+      "title": "Reject unsecured JWTs using the none algorithm",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether alg none or an empty signature bypasses authenticity checks.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "an unsecured modified token establishes identity or changes privilege",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "a library can parse none tokens for diagnostics without accepting them",
+        "a test endpoint can intentionally display decoded claims"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "none-algorithm",
+        "signature-verification"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-004",
+      "title": "Prevent symmetric-asymmetric JWT algorithm confusion",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a public verification key can be misused as an HMAC secret when algorithm families are mixed.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a synthetic test token using the wrong algorithm family is accepted",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "the service can deliberately use separate endpoints/keys for both families safely",
+        "key formatting errors can cause rejection differences without acceptance"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "algorithm-confusion",
+        "hmac",
+        "rsa"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use only a designated test account and public test key material; never impersonate real users or access their data."
+    },
+    {
+      "id": "WAPT-JWT-005",
+      "title": "Use strong random secrets for HMAC-signed JWTs",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an HMAC signing secret is weak enough for practical offline recovery.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "an owner-approved synthetic token secret is recovered within a strict offline test budget and forges only the test identity",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "token structure or short signature display does not reveal key entropy",
+        "rate limits do not affect offline guessing but key rotation/unique environments can constrain impact"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-321"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "weak-secret",
+        "hmac",
+        "offline"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "REVIEW ONLY. Use only an owner-approved synthetic token and strict offline guess/time budget; never crack production tokens or retain recovered secrets."
+    },
+    {
+      "id": "WAPT-JWT-006",
+      "title": "Validate JWT issuer against a configured trust set",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tokens from an untrusted or attacker-selected issuer are accepted.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a token from a controlled untrusted issuer authenticates to the service",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "multi-issuer systems can intentionally trust a documented set",
+        "discovery metadata can be fetched but not trusted for token validation"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "issuer",
+        "trust-boundary"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-007",
+      "title": "Validate JWT audience for each receiving service",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a token issued for another API, client, or tenant is accepted by the target service.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a valid test token with a different audience grants target-service access",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "shared audiences can be intentional within one documented service boundary",
+        "a token exchange can legitimately mint a new target-audience token"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.2.3",
+          "v5.0.0-9.2.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "audience",
+        "cross-service"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-008",
+      "title": "Validate JWT token type and intended purpose",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether ID, access, refresh, email-verification, reset, or session tokens are interchangeable.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a token issued for one purpose is directly accepted for another protected purpose",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "typ and token_use claims are defense signals but endpoint context can also enforce purpose",
+        "opaque refresh tokens may not be JWTs and follow a different validator"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.2.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "token-type",
+        "purpose",
+        "token-confusion"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-009",
+      "title": "Enforce JWT expiry and not-before time claims",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether expired or not-yet-valid tokens are accepted outside a small configured clock tolerance.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a test token beyond exp or before nbf remains authenticated",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "small documented clock skew is necessary in distributed systems",
+        "a refreshed session can silently issue a new valid token"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.2.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "expiration",
+        "not-before",
+        "time"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-010",
+      "title": "Bind JWT subject and tenant claims to authoritative identity",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing sub, tenant, account, or user claims selects another identity without current policy checks.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a modified or stale claim grants another test identity or tenant authority",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "signed claim changes are correctly rejected by signature verification",
+        "some services map immutable subject while ignoring display claims"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "subject",
+        "tenant",
+        "identity"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use only designated identities and synthetic tenant data; never target real users."
+    },
+    {
+      "id": "WAPT-JWT-011",
+      "title": "Ignore untrusted JWT role and privilege claim manipulation",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether client-modified roles, groups, scopes, or admin flags change authorization.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a modified test token or stale privilege claim grants a protected function",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "correctly signed roles can intentionally carry authorization within their lifetime",
+        "UI changes from decoded claims do not prove server privilege"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-269"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "claim-manipulation",
+        "role",
+        "privilege"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use a harmless privilege-check endpoint and designated account; remove any temporary role and revoke tokens afterward."
+    },
+    {
+      "id": "WAPT-JWT-012",
+      "title": "Constrain kid lookup to trusted key identifiers",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether kid causes path traversal, SQL/NoSQL selection, command behavior, or fallback to attacker-influenced key material.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a controlled kid selects key material outside the configured key set and validates a synthetic token",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "unknown kid errors can disclose harmless lookup behavior without verification bypass",
+        "key rotation can legitimately accept several configured identifiers"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "kid",
+        "key-selection",
+        "header"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use only inert configured test key identifiers; never target filesystem paths, databases, commands, or real signing keys."
+    },
+    {
+      "id": "WAPT-JWT-013",
+      "title": "Reject attacker-controlled jku, x5u, and embedded JWK keys",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether JOSE key URL or embedded key headers override the issuer's configured trust source.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a synthetic token validates with an attacker-controlled test key or key-set URL",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "dynamic key discovery can be safe when pinned to a trusted issuer and TLS identity",
+        "the server can fetch a URL but reject the resulting key"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "jku",
+        "x5u",
+        "jwk",
+        "key-source"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use one controlled public HTTPS key endpoint and synthetic account only; never redirect to internal networks or provide real key material."
+    },
+    {
+      "id": "WAPT-JWT-014",
+      "title": "Handle JWT key rotation without unsafe fallback",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether retired, unknown, or failed keys cause acceptance without verification or indefinite old-key trust.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a token signed by a retired/unknown test key remains accepted beyond documented overlap",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "a bounded rotation overlap can be intentional",
+        "cached keys can have a documented short refresh delay"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-9.1.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "key-rotation",
+        "jwks",
+        "lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-015",
+      "title": "Limit JWT replay according to token risk and channel",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a captured test token can be replayed from another client after logout, rotation, or a one-time transaction.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "replay restores authority after a revocation event or reuses a token documented as one-time",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "bearer access tokens are inherently replayable within a short valid lifetime unless sender-constrained",
+        "a federated session can issue a new token after logout"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "replay",
+        "revocation",
+        "bearer-token"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use only a disposable token and harmless identity endpoint; revoke every test token after one replay."
+    },
+    {
+      "id": "WAPT-JWT-016",
+      "title": "Rotate and revoke JWT refresh-token families",
+      "category": "jwt",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether old refresh tokens mint parallel descendants after rotation, logout, password change, or reuse detection.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a consumed or revoked refresh token mints a new access token contrary to lifecycle policy",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "a tiny retry grace window can intentionally tolerate one near-simultaneous client retry",
+        "some refresh tokens are opaque reference tokens rather than JWTs"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "refresh-token",
+        "rotation",
+        "reuse-detection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage.",
+      "safety": "Use one disposable refresh family and one replay, then revoke all descendants; never retain token values in evidence."
+    },
+    {
+      "id": "WAPT-JWT-017",
+      "title": "Keep JWTs out of URLs, logs, and referrer-bearing channels",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether bearer JWTs leak through query strings, paths, redirects, analytics, errors, or accessible logs.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a reusable synthetic token reaches browser history, Referer, third-party requests, or an attacker-accessible log",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "redacted token fingerprints can safely support correlation",
+        "an OAuth authorization code is not the final API JWT"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "token-leakage",
+        "url",
+        "logging"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    },
+    {
+      "id": "WAPT-JWT-018",
+      "title": "Store browser JWTs according to their authority and lifetime",
+      "category": "jwt",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether long-lived access or refresh JWTs are unnecessarily exposed to same-origin script or ambient cross-site requests.",
+      "prerequisites": [
+        "A JWT issued to a designated disposable test identity",
+        "A harmless identity or authorization endpoint and permission to submit modified tokens"
+      ],
+      "steps": [
+        "Decode the test token locally and record header, claims, issuer, audience, purpose, key identifier, and lifetime with values redacted",
+        "Establish a valid control and one invalid-signature control",
+        "Change only the algorithm, key source, claim, time, token type, or lifecycle condition under test",
+        "Confirm accepted or rejected server identity/authority and revoke all test tokens"
+      ],
+      "examples": [
+        {
+          "note": "Use only synthetic identities and fully redact compact JWT values; decoding is not signature verification."
+        }
+      ],
+      "manipulate": "One JOSE header, signature/key condition, registered/private claim, token purpose, replay, or lifecycle event at a time",
+      "secure_behavior": "The service verifies signature/MAC with configured trusted keys and algorithms, then validates issuer, audience, type, purpose, time, identity, and current authorization before use.",
+      "vulnerable_behavior": "a broad long-lived refresh/access token is stored in a context with a demonstrated XSS or CSRF theft/use path",
+      "validation": "Prove a security-relevant server decision at a harmless endpoint; local decoding, response differences, or an echoed claim alone are insufficient.",
+      "false_positives": [
+        "memory-held short-lived tokens can be a documented SPA design",
+        "HttpOnly cookies reduce script theft but require CSRF controls"
+      ],
+      "impact": "A confirmed JWT weakness can permit token forgery, identity impersonation, privilege escalation, cross-service confusion, replay, or prolonged session compromise.",
+      "evidence": [
+        "Original and modified JOSE header/claims with complete compact tokens redacted",
+        "Valid and invalid signature controls",
+        "Issuer, audience, purpose, key, time, and test-identity context",
+        "Server-side identity/authorization result and revocation cleanup"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Decoder",
+        "Offline JOSE tooling with synthetic keys"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 8725: JSON Web Token Best Current Practices",
+          "url": "https://www.rfc-editor.org/rfc/rfc8725"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "JWT attacks",
+          "url": "https://portswigger.net/web-security/jwt"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-922"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/jwt"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "jwt",
+        "browser-storage",
+        "cookie",
+        "token-lifetime"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [
+        {
+          "when": {
+            "auth_mechanism": [
+              "jwt"
+            ]
+          },
+          "steps": [
+            "Distinguish header-attached tokens from JWTs stored in ambient cookies before assessing XSS and CSRF exposure."
+          ],
+          "notes": "JWT format does not determine browser transport safety."
+        }
+      ],
+      "priority_when": {
+        "auth_mechanism": [
+          "jwt",
+          "mixed"
+        ]
+      },
+      "remediation": "Use a maintained JOSE library with server-configured algorithm/key trust, strict registered-claim and purpose validation, short lifetimes, safe refresh rotation/revocation, and protected transport/storage."
+    }
+  ]
+}

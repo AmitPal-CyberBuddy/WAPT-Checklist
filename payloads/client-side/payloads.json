@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "category": "client-side",
+  "items": [
+    {
+      "id": "PAYLOAD-CS-001",
+      "title": "Local DOM canary",
+      "category": "client-side",
+      "context": "A confirmed client-side execution sink in a clean test profile",
+      "intended_use": "Create a local visible proof without reading or transmitting data",
+      "payload": "document.body.dataset.waptCanary=\"1\"",
+      "caveats": [
+        "Never access tokens, storage, personal data, or external networks"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "client",
+        "review-only",
+        "side"
+      ],
+      "related": [
+        "WAPT-CLIENT-001"
+      ]
+    }
+  ]
+}

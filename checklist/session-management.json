@@ -1,0 +1,2474 @@
+{
+  "schema_version": "1.0.0",
+  "category": "session-management",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-SESS-001",
+      "title": "Inventory every session token and its transport",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Identify all cookies, headers, body fields, URLs, and client stores that establish or continue authenticated state.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Capture login, normal navigation, refresh, step-up, and logout",
+        "Mark values that appear or change with identity",
+        "Remove one candidate at a time on a harmless request",
+        "Classify primary, pre-auth, CSRF, device, and auxiliary tokens"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: inventory every session token and its transport."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "The session contract is explicit and only intended protected tokens confer identity.",
+      "vulnerable_behavior": "An undocumented or lower-protected value independently restores authenticated state.",
+      "validation": "Confirm identity through a safe endpoint and distinguish authentication tokens from correlation or preference values.",
+      "false_positives": [
+        "Opaque analytics identifiers can change at login without authenticating",
+        "Multiple cookies can jointly represent one protected session"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Management Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/01-Testing_for_Session_Management_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-01"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-token",
+        "inventory",
+        "transport"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Maintain a session-token inventory and apply the strongest required transport, lifecycle, and validation controls to every identity-bearing value."
+    },
+    {
+      "id": "WAPT-SESS-002",
+      "title": "Set Secure on every cookie carrying session authority",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether authentication-bearing cookies can be sent over plaintext HTTP.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Identify cookies that actually carry or bind authentication",
+        "Record each Set-Cookie Secure attribute",
+        "Attempt an HTTP navigation without transmitting real credentials manually",
+        "Observe whether the browser would attach the cookie before redirect"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: set secure on every cookie carrying session authority."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Every session-authority cookie is Secure and HTTPS is enforced before sensitive processing.",
+      "vulnerable_behavior": "A browser sends a reusable session cookie over attacker-observable plaintext transport.",
+      "validation": "Demonstrate browser send behavior and a realistic HTTP reachability path; a missing flag on a non-auth preference is not a vulnerability.",
+      "false_positives": [
+        "A cookie can be non-sensitive and unrelated to identity",
+        "The host can be completely unreachable over HTTP, reducing exploitability though Secure remains recommended"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cookies Attributes",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-614"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cookie",
+        "secure",
+        "transport"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Set Secure when issuing session cookies, enforce HTTPS, and deploy HSTS after all covered hosts are HTTPS-ready."
+    },
+    {
+      "id": "WAPT-SESS-003",
+      "title": "Keep session cookies inaccessible to client-side scripts",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether identity-bearing cookies lack HttpOnly without a documented need for script access.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Classify each cookie by purpose",
+        "Record HttpOnly on authentication-bearing cookies",
+        "Check whether first-party scripts read or duplicate the value",
+        "Assess actual script exposure and related XSS threat"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: keep session cookies inaccessible to client-side scripts."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Session cookies are HttpOnly and the same token is not copied into script-readable storage.",
+      "vulnerable_behavior": "A reusable session token is unnecessarily readable by JavaScript, increasing impact of script execution.",
+      "validation": "Show the cookie carries session authority; missing HttpOnly alone does not create XSS.",
+      "false_positives": [
+        "A non-secret UI preference can intentionally be script-readable",
+        "Some CSRF patterns use a separate non-session readable cookie"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cookies Attributes",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-02"
+        ],
+        "asvs": [
+          "v5.0.0-3.3.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-1004"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cookie",
+        "httponly",
+        "xss-defense"
+      ],
+      "attack_chains": [
+        "XSS-01"
+      ],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Keep session authority only in HttpOnly cookies and expose separate least-privilege state to client code when necessary."
+    },
+    {
+      "id": "WAPT-SESS-004",
+      "title": "Choose SameSite according to the real authentication flow",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether session-cookie cross-site behavior permits unwanted ambient authentication without breaking required federation or embeds.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Record the actual SameSite value and default browser treatment",
+        "Map required top-level, iframe, and federated cross-site flows",
+        "Test a harmless cross-site navigation and request",
+        "Assess CSRF controls independently of the attribute"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: choose samesite according to the real authentication flow."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "The narrowest workable SameSite value is used and sensitive actions have independent intent validation.",
+      "vulnerable_behavior": "Cross-site cookie attachment enables a demonstrated request-forgery or data exposure path.",
+      "validation": "Use a real browser and exact method/navigation context; a missing attribute without an exploitable flow is not enough.",
+      "false_positives": [
+        "SameSite=None can be required for a documented federated or embedded flow",
+        "Lax browser defaults can differ for legacy or recently created cookies"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cookies Attributes",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-02"
+        ],
+        "asvs": [
+          "v5.0.0-3.3.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-1275"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cookie",
+        "samesite",
+        "cross-site"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [
+        {
+          "when": {
+            "auth_mechanism": [
+              "oauth",
+              "saml",
+              "mixed"
+            ]
+          },
+          "steps": [
+            "Verify federation callbacks under the chosen SameSite policy before recommending a stricter value."
+          ],
+          "notes": "Federated top-level POST and embedded flows can require explicit cross-site cookie design."
+        }
+      ],
+      "remediation": "Use Strict or Lax where flows permit, require Secure with None, and protect sensitive actions with origin-bound anti-forgery controls."
+    },
+    {
+      "id": "WAPT-SESS-005",
+      "title": "Minimize session-cookie Domain and Path scope",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether broad cookie scope exposes session authority to sibling hosts or unrelated application paths.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Record Domain, Path, host-only status, and cookie name prefix",
+        "Inventory sibling hosts and applications within scope",
+        "Observe which requests receive the cookie",
+        "Check whether a lower-trust scoped host can set a colliding cookie using a harmless value"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: minimize session-cookie domain and path scope."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Cookies are host-only with Path=/ and __Host- where practical, or deliberately scoped to equally trusted applications.",
+      "vulnerable_behavior": "A lower-trust sibling can receive, overwrite, or fix a session cookie used by a sensitive application.",
+      "validation": "Prove trust difference and browser cookie behavior; a broad Domain among equally controlled apps is not automatically exploitable.",
+      "false_positives": [
+        "Path is a delivery control, not a robust confidentiality boundary",
+        "Shared SSO applications can intentionally use a parent-domain cookie under one trust model"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cookies Attributes",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-02"
+        ],
+        "asvs": [
+          "v5.0.0-3.3.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-565"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cookie",
+        "domain",
+        "path"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Prefer host-only __Host- cookies, avoid parent-domain sharing, and separate applications with different trust levels onto distinct registrable domains."
+    },
+    {
+      "id": "WAPT-SESS-006",
+      "title": "Limit persistent cookie lifetime to documented session needs",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether Max-Age or Expires keeps session authority valid longer than the server-side risk policy.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Record cookie persistence for ordinary and remember-me sessions",
+        "Close and reopen a clean test browser",
+        "Compare client expiry with server acceptance",
+        "Check clock and renewal behavior without waiting beyond an approved test window"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: limit persistent cookie lifetime to documented session needs."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Client persistence and server lifetime match documented risk, with shorter server-side revocation taking precedence.",
+      "vulnerable_behavior": "A cookie remains usable materially beyond intended lifetime or after expected browser-session termination.",
+      "validation": "Confirm server acceptance, not just cookie presence; browser restore features can reopen session cookies.",
+      "false_positives": [
+        "Browsers can restore session cookies after restart",
+        "A persistent cookie can hold an opaque selector whose server record has expired"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Cookies Attributes",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-02"
+        ],
+        "asvs": [
+          "v5.0.0-7.1.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cookie",
+        "persistent-session",
+        "expiry"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "cookie",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Set explicit risk-based lifetime, enforce expiry server-side, rotate persistent tokens, and provide device/session revocation."
+    },
+    {
+      "id": "WAPT-SESS-007",
+      "title": "Generate reference session tokens with sufficient entropy",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "automated",
+      "objective": "Determine whether server-side session identifiers are unique and unpredictable across accounts and issuance events.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Collect a small approved sample from disposable sessions",
+        "Decode only obvious transport encodings locally",
+        "Compare length, alphabet, collisions, and visible structure",
+        "Use implementation evidence or bounded analysis rather than live guessing"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: generate reference session tokens with sufficient entropy."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Reference tokens use a CSPRNG with at least 128 bits of entropy and no predictable identity/time component.",
+      "vulnerable_behavior": "A practical attacker can predict, collide, or enumerate valid session identifiers.",
+      "validation": "Encoding and structure alone do not prove weak entropy; require controlled prediction, collision, or implementation evidence.",
+      "false_positives": [
+        "Base64 or hex formatting does not reduce underlying entropy",
+        "Encrypted or authenticated structured tokens can remain unpredictable"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Management Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/01-Testing_for_Session_Management_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-01"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.2",
+          "v5.0.0-7.2.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-330"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-token",
+        "entropy",
+        "randomness"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use framework CSPRNG session generation, at least 128 bits of entropy, collision checks, and opaque tokens without public derivation inputs."
+    },
+    {
+      "id": "WAPT-SESS-008",
+      "title": "Keep client-visible session tokens free of sensitive plaintext",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether session values disclose usernames, roles, internal IDs, secrets, or unnecessary personal data.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Capture tokens only from disposable accounts",
+        "Decode common encodings locally without bypass attempts",
+        "Compare claims/fields with server behavior",
+        "Redact full values and assess whether integrity/confidentiality are separately protected"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: keep client-visible session tokens free of sensitive plaintext."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Tokens contain only necessary claims and expose no secrets; sensitive server state remains server-side.",
+      "vulnerable_behavior": "A session value reveals reusable secrets or sensitive data with concrete privacy/security impact.",
+      "validation": "Readable claims are not automatically vulnerable; verify sensitivity and whether values are already intentionally visible to the user.",
+      "false_positives": [
+        "JWT claims are intentionally readable and rely on signatures rather than encryption",
+        "Opaque identifiers can resemble database keys without exposing records"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Exposed Session Variables",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/04-Testing_for_Exposed_Session_Variables"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-04"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-token",
+        "information-disclosure",
+        "token-structure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Minimize token claims, never embed passwords or backend secrets, and use opaque references or encryption when confidentiality is required."
+    },
+    {
+      "id": "WAPT-SESS-009",
+      "title": "Prevent pre-authentication session fixation",
+      "category": "session-management",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an attacker-chosen pre-login session identifier survives authentication and gains victim privileges.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Obtain a pre-auth session in browser A",
+        "Place only that test identifier in browser B",
+        "Authenticate a disposable account in B",
+        "Check whether A's original identifier now accesses the authenticated identity"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: prevent pre-authentication session fixation."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Authentication invalidates pre-auth state and issues a fresh unpredictable session token.",
+      "vulnerable_behavior": "The pre-auth identifier remains valid with authenticated privileges after login.",
+      "validation": "Confirm identity in A and exclude copied post-login cookies or SSO creating a separate session.",
+      "false_positives": [
+        "A non-auth correlation cookie can remain unchanged safely",
+        "The app can rotate one of several cookies while a stable auxiliary cookie persists"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Fixation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/03-Testing_for_Session_Fixation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-03"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-384"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-fixation",
+        "login",
+        "rotation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Rotate the authoritative session identifier atomically on authentication and never accept client-supplied IDs as authenticated sessions.",
+      "safety": "Use only disposable accounts and test browser profiles; invalidate all resulting sessions after the check."
+    },
+    {
+      "id": "WAPT-SESS-010",
+      "title": "Rotate session authority after authentication",
+      "category": "session-management",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether successful login replaces and invalidates all pre-authentication tokens that could carry identity.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Record pre-login cookies and tokens",
+        "Authenticate a disposable account",
+        "Compare every candidate token before and after",
+        "Replay each old candidate only to a harmless identity endpoint"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: rotate session authority after authentication."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "A new session token is issued and old identity-bearing candidates cannot access authenticated state.",
+      "vulnerable_behavior": "A pre-login token independently retains full authenticated access.",
+      "validation": "Classify auxiliary cookies and prove old-token identity; unchanged values alone are not fixation.",
+      "false_positives": [
+        "Load-balancer affinity cookies can remain stable",
+        "A CSRF or device cookie can persist while the session token rotates"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Fixation",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/03-Testing_for_Session_Fixation"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-03"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-384"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-rotation",
+        "login",
+        "token-lifecycle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Create a new backend session and token on login, migrate only necessary non-security state, and invalidate the old session atomically."
+    },
+    {
+      "id": "WAPT-SESS-011",
+      "title": "Rotate sessions after privilege or assurance changes",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether role elevation, impersonation, step-up, or reauthentication retains a token exposed at lower privilege.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Capture a low-assurance session on a designated account",
+        "Perform an approved role/assurance transition",
+        "Compare tokens and server-side assurance state",
+        "Replay the old token against a harmless high-privilege endpoint"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: rotate sessions after privilege or assurance changes."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Privilege or assurance elevation creates new session authority and invalidates or confines the old token.",
+      "vulnerable_behavior": "A token from lower trust automatically gains elevated privileges without rotation or safe server-side binding.",
+      "validation": "Confirm old-token privilege separately; stable tokens can be safe if server-side assurance changes are protected from fixation and replay.",
+      "false_positives": [
+        "Server-side sessions can update privilege safely without token rotation under a strong design",
+        "Impersonation tools can intentionally nest audited identities"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Management Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/01-Testing_for_Session_Management_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-01"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-384"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-rotation",
+        "privilege-change",
+        "step-up"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Rotate on material trust changes, bind assurance server-side, terminate superseded authority, and log elevation/impersonation.",
+      "safety": "Use only designated role-transition accounts and harmless privileged reads; end impersonation and revoke sessions afterward."
+    },
+    {
+      "id": "WAPT-SESS-012",
+      "title": "Define and enforce concurrent-session limits",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether parallel sessions behave according to documented account risk and user expectations.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Create sessions in a small number of controlled browsers",
+        "Observe whether limits, warnings, or oldest-session eviction occur",
+        "Verify each session remains bound to its own device context",
+        "Review whether users can see and revoke them"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: define and enforce concurrent-session limits."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Concurrency matches documented policy and users/operators can identify and revoke unexpected sessions.",
+      "vulnerable_behavior": "Unlimited or confused concurrency materially undermines a stated single-session, licensing, or high-risk account control.",
+      "validation": "Absence of a low limit is not inherently vulnerable; tie the result to documented risk and revocation capability.",
+      "false_positives": [
+        "Consumer applications often intentionally allow many devices",
+        "A new login can revoke an old session asynchronously"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Management Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/01-Testing_for_Session_Management_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-01"
+        ],
+        "asvs": [
+          "v5.0.0-7.1.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "concurrent-session",
+        "device-management",
+        "policy"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Document risk-based concurrency, expose session/device lists, alert on anomalies, and enforce atomic limits where required."
+    },
+    {
+      "id": "WAPT-SESS-013",
+      "title": "Invalidate the current session on logout",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a captured session token remains usable after the user logs out.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Capture a disposable authenticated session token",
+        "Use visible logout normally",
+        "Replay the old token from a clean client",
+        "Check browser history separately from server acceptance"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: invalidate the current session on logout."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Logout invalidates server-side authority immediately and clears relevant client tokens.",
+      "vulnerable_behavior": "The pre-logout token still accesses authenticated data or actions.",
+      "validation": "Use a fresh network request and distinguish browser cache or automatic SSO re-login.",
+      "false_positives": [
+        "Back navigation can display cached content without server acceptance",
+        "An IdP session can create a new local session after logout"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.4.1",
+          "v5.0.0-7.4.4"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "logout",
+        "session-invalidation",
+        "token-replay"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Invalidate the session server-side, clear scoped cookies/storage, use POST plus anti-forgery for logout where needed, and prevent cached sensitive pages."
+    },
+    {
+      "id": "WAPT-SESS-014",
+      "title": "Let users review and revoke other active sessions",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can identify and terminate unexpected device sessions with recent authentication.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Create two controlled sessions",
+        "Open the account session/device view",
+        "Reauthenticate and revoke one other session",
+        "Replay the revoked token and verify the current session behavior"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: let users review and revoke other active sessions."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Users see meaningful session context and can revoke individual or all other sessions promptly.",
+      "vulnerable_behavior": "A supposedly revoked device token remains valid or no practical revocation path exists for a high-risk account.",
+      "validation": "Confirm server acceptance after revocation; display lag alone is insufficient.",
+      "false_positives": [
+        "Low-risk applications can provide global logout instead of per-device revocation",
+        "Federated sessions may require coordinated IdP termination"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.5.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-revocation",
+        "device-management",
+        "account-security"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Provide authenticated session inventory, individual/all revocation, clear device context, and notifications for suspicious sessions."
+    },
+    {
+      "id": "WAPT-SESS-015",
+      "title": "Enforce inactivity timeout from server-observed activity",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an idle authenticated session remains usable beyond documented inactivity policy.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Confirm the documented idle interval",
+        "Authenticate a disposable session and make no application requests",
+        "After an approved boundary, request a harmless identity endpoint",
+        "Compare browser/UI timeout with server token rejection"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: enforce inactivity timeout from server-observed activity."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "The server expires idle authority and requires reauthentication according to risk.",
+      "vulnerable_behavior": "The session remains authenticated materially beyond its documented idle timeout.",
+      "validation": "Account for background polling that resets activity and clock tolerance; client warnings are not server enforcement.",
+      "false_positives": [
+        "SPAs can generate background requests that legitimately count as activity",
+        "The documented policy can vary by account risk"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Session Timeout",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/07-Testing_Session_Timeout"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-07"
+        ],
+        "asvs": [
+          "v5.0.0-7.3.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "idle-timeout",
+        "session-expiry",
+        "reauthentication"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Track meaningful server-side activity, expire sessions centrally, avoid silent client-only timers, and require fresh authentication after expiry."
+    },
+    {
+      "id": "WAPT-SESS-016",
+      "title": "Enforce an absolute maximum session lifetime",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether continuous activity or refresh prevents mandatory reauthentication indefinitely.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Confirm the documented maximum lifetime",
+        "Use a disposable session with normal low-rate activity",
+        "Observe refresh/rotation near the approved boundary",
+        "Verify the session eventually requires full reauthentication"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: enforce an absolute maximum session lifetime."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Sessions expire at an absolute risk-based limit regardless of activity or token refresh.",
+      "vulnerable_behavior": "Refresh or continued use extends authentication indefinitely beyond policy.",
+      "validation": "Prefer configuration/owner evidence when the lifetime is too long for safe runtime testing; token exp alone may not equal session lifetime.",
+      "false_positives": [
+        "Federated reauthentication can be silent if the IdP session remains valid",
+        "Different assurance levels can have different absolute limits"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Session Timeout",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/07-Testing_Session_Timeout"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-07"
+        ],
+        "asvs": [
+          "v5.0.0-7.3.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "absolute-timeout",
+        "session-expiry",
+        "refresh"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Store original authentication time server-side, cap refresh families, coordinate IdP/RP freshness, and require full authentication at the limit."
+    },
+    {
+      "id": "WAPT-SESS-017",
+      "title": "Enforce expiry server-side rather than trusting client timers",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether altering client clocks, expiry fields, or UI state bypasses session termination.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Capture a session near an owner-approved expiry boundary",
+        "Disable or alter only local timeout UI behavior",
+        "Replay the token after server expiry",
+        "For self-contained tokens, change expiry only without a valid signature as a rejection control"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: enforce expiry server-side rather than trusting client timers."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Trusted backend validation enforces time and state independent of client behavior.",
+      "vulnerable_behavior": "Client-controlled time/state keeps an otherwise expired session valid.",
+      "validation": "Confirm server-authenticated access; keeping a page visible is not the same as extending authority.",
+      "false_positives": [
+        "Offline UI can remain rendered after network session expiry",
+        "Unsigned local display state can control warnings without controlling authentication"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing Session Timeout",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/07-Testing_Session_Timeout"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-07"
+        ],
+        "asvs": [
+          "v5.0.0-7.2.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-602"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-expiry",
+        "client-trust",
+        "server-validation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Validate expiry, revocation, and assurance on trusted backend services using trusted clocks; treat client timers only as UX."
+    },
+    {
+      "id": "WAPT-SESS-018",
+      "title": "Keep session tokens out of URLs and referrers",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether authenticated session identifiers appear in paths, queries, redirects, browser history, or Referer headers.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Trace login and authenticated navigation",
+        "Search redacted proxy history for token markers",
+        "Inspect redirects, links, analytics, and Referer behavior",
+        "Use a synthetic token marker only on a disposable flow"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: keep session tokens out of urls and referrers."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Session authority travels in protected cookies or authorization headers and never in URLs.",
+      "vulnerable_behavior": "A reusable session token leaks through URL storage, logs, referrers, or shared links.",
+      "validation": "Prove the value grants session access and identify an attacker-accessible disclosure channel.",
+      "false_positives": [
+        "OAuth authorization codes are short-lived flow credentials, not application session IDs",
+        "Opaque URL state can be non-authenticating correlation data"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Exposed Session Variables",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/04-Testing_for_Exposed_Session_Variables"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-token",
+        "url",
+        "referrer"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Move sessions to Secure HttpOnly cookies or protected headers, scrub legacy URL sessions, set Referrer-Policy, and redact logs."
+    },
+    {
+      "id": "WAPT-SESS-019",
+      "title": "Avoid storing reusable session authority in script-readable storage",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether localStorage, sessionStorage, IndexedDB, or caches hold bearer tokens exposed to same-origin script.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Inspect a clean test profile before and after login",
+        "Classify stored values without retaining secrets",
+        "Trace which scripts read and attach tokens",
+        "Assess token scope, lifetime, XSS exposure, and alternatives"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: avoid storing reusable session authority in script-readable storage."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Reusable session authority is kept in HttpOnly cookies where suitable, or script-held tokens are narrowly scoped/short-lived under a documented model.",
+      "vulnerable_behavior": "A long-lived broad bearer token is unnecessarily exposed to script and creates a demonstrated theft path.",
+      "validation": "Storage choice alone is not a standalone vulnerability; establish token authority and relevant script compromise/threat context.",
+      "false_positives": [
+        "Native-style SPAs may intentionally hold short-lived access tokens in memory",
+        "Non-secret UI/session metadata can be stored safely"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Exposed Session Variables",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/04-Testing_for_Exposed_Session_Variables"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-04"
+        ],
+        "asvs": [
+          "v5.0.0-14.3.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-922"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "browser-storage",
+        "bearer-token",
+        "xss-impact"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [
+        {
+          "when": {
+            "auth_mechanism": [
+              "jwt"
+            ]
+          },
+          "steps": [
+            "Distinguish access, ID, and refresh tokens; prioritize any long-lived refresh token exposed to script."
+          ],
+          "notes": "JWT format does not determine safe browser storage."
+        },
+        {
+          "when": {
+            "auth_mechanism": [
+              "cookie"
+            ]
+          },
+          "steps": [
+            "Check whether the cookie value is duplicated into storage even when the authoritative cookie is HttpOnly."
+          ],
+          "notes": "Duplicating the same bearer value defeats HttpOnly's theft mitigation."
+        }
+      ],
+      "remediation": "Prefer backend-for-frontend and HttpOnly cookies for browser sessions; otherwise keep tokens in memory, short-lived, audience-scoped, and protected by strong XSS controls."
+    },
+    {
+      "id": "WAPT-SESS-020",
+      "title": "Reject replayed sessions after account disablement or deletion",
+      "category": "session-management",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether disabling or deleting an identity terminates all of its active sessions and persistent tokens.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Create controlled sessions for a disposable identity",
+        "Have the owner disable or delete it through an approved path",
+        "Replay ordinary and persistent tokens",
+        "Check APIs and alternate applications sharing identity"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: reject replayed sessions after account disablement or deletion."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "All sessions and token families stop authorizing immediately across dependent services.",
+      "vulnerable_behavior": "A disabled/deleted account retains authenticated access through an existing token.",
+      "validation": "Confirm authoritative account state and avoid confusing delayed UI propagation with accepted protected actions.",
+      "false_positives": [
+        "Distributed systems can have a documented short revocation propagation window",
+        "Deletion can be soft while access is still correctly denied"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.4.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-disablement",
+        "session-revocation",
+        "offboarding"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Publish revocation events, check account state at trusted boundaries, use short token lifetimes, and terminate every session family during offboarding.",
+      "safety": "Use only an owner-controlled disposable account and restore or permanently remove it according to the test plan."
+    },
+    {
+      "id": "WAPT-SESS-021",
+      "title": "Offer session termination after password or factor changes",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can revoke other sessions following credential reset, password change, or MFA modification.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Create two sessions for a disposable account",
+        "Perform an approved password or factor change",
+        "Choose terminate-other-sessions where offered",
+        "Replay both old sessions and persistent tokens"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: offer session termination after password or factor changes."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Users can terminate other sessions and security-critical recovery can force revocation according to policy.",
+      "vulnerable_behavior": "Sessions selected for termination remain valid after the security event.",
+      "validation": "Confirm explicit policy: preserving the current session can be intentional while other sessions terminate.",
+      "false_positives": [
+        "Password change need not always force every session out if the user chooses otherwise",
+        "A federated session can create a new session after local revocation"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.4.3"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "credential-change",
+        "session-revocation",
+        "account-recovery"
+      ],
+      "attack_chains": [
+        "ATO-01"
+      ],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Provide clear revoke options, force revocation after high-risk recovery where appropriate, and invalidate persistent/refresh token families.",
+      "safety": "Use disposable accounts, preserve one recovery path, and coordinate changes so other testers are not logged out."
+    },
+    {
+      "id": "WAPT-SESS-022",
+      "title": "Prevent session puzzling across multiple cookie or token names",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether swapping, omitting, or mixing parallel session values selects another identity or authentication state.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Inventory primary and auxiliary tokens across anonymous and authenticated states",
+        "Create sessions for two designated accounts",
+        "Mix one token at a time between controlled requests",
+        "Observe identity, tenant, role, and logout behavior"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: prevent session puzzling across multiple cookie or token names."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Ambiguous token combinations are rejected or resolve to one consistently bound principal.",
+      "vulnerable_behavior": "Mixed token state authenticates as an unintended account, tenant, or privilege.",
+      "validation": "Confirm identity at the server and exclude cache artifacts; different preferences alone are not puzzling.",
+      "false_positives": [
+        "Applications can use separate independent sessions for distinct modules",
+        "An affinity cookie can be safely mixed without identity effect"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Puzzling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/08-Testing_for_Session_Puzzling"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-08"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-384"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "session-puzzling",
+        "cookie",
+        "state-confusion"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use one canonical session authority per boundary, bind auxiliary state to it, reject conflicts, and namespace cookies across applications.",
+      "safety": "Use only two designated accounts and harmless identity endpoints; revoke every mixed test session afterward."
+    },
+    {
+      "id": "WAPT-SESS-023",
+      "title": "Isolate session authority across sibling applications and subdomains",
+      "category": "session-management",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether tokens issued by one application are accepted by another with a different trust or tenant boundary.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Map cookie scope and token audiences across approved sibling apps",
+        "Authenticate to the lower-trust test application",
+        "Present its token only to a harmless higher-trust identity endpoint",
+        "Reverse the comparison where approved"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: isolate session authority across sibling applications and subdomains."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Sessions are audience/host scoped unless applications intentionally share one equal trust boundary.",
+      "vulnerable_behavior": "A lower-trust application's token establishes unintended access to a higher-trust app or tenant.",
+      "validation": "Confirm token issuer, audience, principal, and intended SSO design; shared login alone is not a flaw.",
+      "false_positives": [
+        "A documented SSO architecture can intentionally share authenticated identity",
+        "Different apps can accept an IdP assertion but create separate local sessions"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Hijacking",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/09-Testing_for_Session_Hijacking"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-668"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "cross-subdomain",
+        "session-sharing",
+        "trust-boundary"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use host-only cookies, issuer/audience validation, separate signing keys where needed, and explicit token exchange for cross-app SSO.",
+      "safety": "Use only approved sibling applications and designated identities; never present a token to an unrelated or third-party host."
+    },
+    {
+      "id": "WAPT-SESS-024",
+      "title": "Prevent session adoption when users switch accounts",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether logout/login, account switching, or tenant switching leaves objects or authority from the prior identity.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Login as designated account A and open a synthetic object",
+        "Use the normal switch/logout flow to account B",
+        "Check cookies, storage, caches, and pending requests",
+        "Request A's object only as an authorization control and restore state"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: prevent session adoption when users switch accounts."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Switching identity creates fresh session state and clears prior identity caches, tokens, and queued actions.",
+      "vulnerable_behavior": "Account B inherits A's authority, data, tenant context, or pending privileged operation.",
+      "validation": "Separate client display/cache bugs from server authorization and confirm the active principal.",
+      "false_positives": [
+        "Browser autofill can display A's value without server access",
+        "Shared objects can intentionally remain visible to both accounts"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Puzzling",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/08-Testing_for_Session_Puzzling"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-08"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-384"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "account-switch",
+        "session-state",
+        "tenant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Reinitialize session and client state on identity/tenant switch, cancel pending requests, and authorize every object against the current principal.",
+      "safety": "Use only designated accounts and synthetic objects; do not attempt access to real-user resources."
+    },
+    {
+      "id": "WAPT-SESS-025",
+      "title": "Coordinate local and federated logout semantics",
+      "category": "session-management",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether relying-party logout, identity-provider logout, and session expiry behave as documented without unsafe surprise reauthentication.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Map RP and IdP sessions using a disposable federated identity",
+        "Perform local logout and revisit the RP",
+        "Perform approved global logout and revisit each RP",
+        "Compare expiry, reauthentication, and other-application impact"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: coordinate local and federated logout semantics."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Local/global logout scope is clear, tokens terminate as documented, and fresh access requires appropriate user action or authentication.",
+      "vulnerable_behavior": "A terminated federated session or token remains valid contrary to policy, or logout silently recreates access in a security-relevant context.",
+      "validation": "Distinguish a new SSO session from replay of an old local token and account for intended IdP persistence.",
+      "false_positives": [
+        "Local logout often intentionally leaves the IdP session active",
+        "Global logout support varies by federation protocol and product policy"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.1.3",
+          "v5.0.0-7.6.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "federated-logout",
+        "sso",
+        "session-invalidation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "saml",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Document logout scope, implement protocol termination correctly, revoke local/refresh tokens, and require explicit user action before creating replacement sessions.",
+      "safety": "Use a disposable federated identity and coordinate global logout because it can terminate sessions in multiple relying parties."
+    },
+    {
+      "id": "WAPT-SESS-026",
+      "title": "Require explicit user action before creating application sessions",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cross-site navigation, embedded content, or IdP state silently creates an authenticated local session without user intent.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Start with a clean browser that has only an approved IdP/test identity session",
+        "Navigate through a controlled cross-site or embedded entry path",
+        "Observe whether the RP creates a local session",
+        "Verify identity and whether state/nonce or user action bound the login"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: require explicit user action before creating application sessions."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Creating an RP session requires an initiated, bound flow or explicit user action and cannot log a victim into an attacker-selected account.",
+      "vulnerable_behavior": "A cross-site trigger silently creates a session for an unintended identity or security context.",
+      "validation": "Prove the resulting identity and attacker control; convenient IdP SSO alone is not necessarily login CSRF.",
+      "false_positives": [
+        "Enterprise portals can intentionally use seamless SSO after explicit navigation",
+        "A session can be created for the user's own correct IdP identity without attacker account control"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Management Schema",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/01-Testing_for_Session_Management_Schema"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-01"
+        ],
+        "asvs": [
+          "v5.0.0-7.6.2"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-352"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "login-csrf",
+        "session-creation",
+        "user-intent"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "auth_mechanism": [
+            "oauth",
+            "saml",
+            "mixed"
+          ]
+        },
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Bind login transactions to browser state/nonce, require user intent where risk warrants, and prevent attacker-selected identity/session initiation.",
+      "safety": "Use only controlled identities and origins; never cause real users to enter a test account session."
+    },
+    {
+      "id": "WAPT-SESS-027",
+      "title": "Propagate revocation within the documented distributed-system window",
+      "category": "session-management",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether session termination reaches APIs, gateways, workers, and regional services consistently.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Identify services that accept the same session family",
+        "Logout or revoke a disposable session",
+        "Replay harmless identity requests at each service at bounded intervals",
+        "Compare acceptance with the documented propagation target"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: propagate revocation within the documented distributed-system window."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Every service rejects revoked authority within the justified bounded window.",
+      "vulnerable_behavior": "A revoked token remains usable at one service materially beyond policy.",
+      "validation": "Use synchronized timestamps and confirm the same token; caches and newly issued tokens can confuse results.",
+      "false_positives": [
+        "Short documented propagation delay can be an accepted availability trade-off",
+        "Different services can use independently issued token families"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Logout Functionality",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/06-Testing_for_Logout_Functionality"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-06"
+        ],
+        "asvs": [
+          "v5.0.0-7.4.1"
+        ],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "revocation",
+        "distributed-system",
+        "api"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Centralize or broadcast revocation, use short-lived access tokens with revocable refresh families, and monitor propagation health.",
+      "safety": "Use low-rate identity checks on a disposable session and stop when the documented propagation window is measured."
+    },
+    {
+      "id": "WAPT-SESS-028",
+      "title": "Detect replay of rotated refresh or persistent token families",
+      "category": "session-management",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an old token reused after rotation revokes the family or creates parallel valid descendants.",
+      "prerequisites": [
+        "A designated disposable test account",
+        "A captured authenticated session and clean comparison client"
+      ],
+      "steps": [
+        "Issue a rotating persistent or refresh token to a disposable client",
+        "Use it once and retain the old value securely",
+        "Replay the old value once from a clean client",
+        "Check whether descendants and account sessions are revoked or alerted according to policy"
+      ],
+      "examples": [
+        {
+          "note": "Redact all token values while testing: detect replay of rotated refresh or persistent token families."
+        }
+      ],
+      "manipulate": "One session token, cookie attribute, lifecycle event, or client context at a time",
+      "secure_behavior": "Rotated tokens are single-use and reuse triggers family containment appropriate to risk.",
+      "vulnerable_behavior": "An old token can mint parallel sessions repeatedly after rotation.",
+      "validation": "Confirm token versions and resulting session families; client retries can accidentally reuse a token without attacker theft.",
+      "false_positives": [
+        "Some reference-token designs rotate only at defined intervals",
+        "A race-safe grace window can intentionally accept one near-simultaneous retry"
+      ],
+      "impact": "A confirmed weakness can expose or preserve authenticated authority, enabling session theft, fixation, replay, cross-account access, or prolonged account compromise.",
+      "evidence": [
+        "Baseline and modified requests with complete tokens redacted",
+        "Session issuance, rotation, expiry, or revocation timeline",
+        "Test account, client, protocol, and authentication context",
+        "Fresh server response proving accepted or rejected identity"
+      ],
+      "tools": [
+        "Burp Proxy",
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Session Hijacking",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/06-Session_Management_Testing/09-Testing_for_Session_Hijacking"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-SESS-09"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A07:2021",
+          "A07:2025"
+        ],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "token-rotation",
+        "replay-detection",
+        "refresh-token"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "has_login:yes",
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "remediation": "Use one-time rotating validators, atomic compare-and-swap, bounded retry grace, family identifiers, reuse detection, and user-visible revocation.",
+      "safety": "Use one disposable token family and one replay; revoke all descendants and remove retained token values after testing."
+    }
+  ]
+}

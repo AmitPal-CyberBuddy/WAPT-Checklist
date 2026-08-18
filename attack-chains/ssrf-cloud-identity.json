@@ -1,0 +1,17 @@
+{
+  "id": "SSRF-01",
+  "title": "SSRF to cloud workload identity",
+  "summary": "Connect a controlled server-side fetch to metadata isolation, credential exposure, and least-privilege analysis without retrieving real metadata credentials.",
+  "safety": "Never request metadata endpoints, identity documents, or credentials. Use a controlled public callback, architecture evidence, egress logs, and owner-provided inert canaries.",
+  "nodes": [
+    {"item_id": "WAPT-SSRF-001", "label": "Confirm the server-side requester with a public callback"},
+    {"item_id": "WAPT-SSRF-008", "label": "Review metadata destination and header isolation"},
+    {"item_id": "WAPT-CLOUD-010", "label": "Check workload credential disclosure channels"},
+    {"item_id": "WAPT-CLOUD-011", "label": "Assess least-privilege storage authority"}
+  ],
+  "edges": [
+    {"from": "WAPT-SSRF-001", "to": "WAPT-SSRF-008", "condition": "Server-side fetching is confirmed and the owner confirms cloud context."},
+    {"from": "WAPT-SSRF-008", "to": "WAPT-CLOUD-010", "condition": "Architecture or an inert canary shows inadequate metadata isolation."},
+    {"from": "WAPT-CLOUD-010", "to": "WAPT-CLOUD-011", "condition": "Credential exposure is confirmed by the owner without using the credential."}
+  ]
+}

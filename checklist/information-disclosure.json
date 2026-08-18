@@ -1,0 +1,1447 @@
+{
+  "schema_version": "1.0.0",
+  "category": "information-disclosure",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-INFO-001",
+      "title": "Return generic errors without stack traces or secret-bearing internals",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether validation, authorization, missing-route, and unexpected errors expose stack frames, queries, paths, secrets, tokens, or sensitive object data.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a response reveals actionable internals, valid secrets, or protected synthetic data with realistic utility",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "correlation IDs and stable problem codes are useful and safe",
+        "an upstream proxy can generate product-like errors unrelated to application code"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [
+          "v5.0.0-16.5.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-209"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "stack-trace",
+        "error-handling",
+        "debug"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-002",
+      "title": "Disable production debug modes and interactive consoles",
+      "category": "information-disclosure",
+      "severity": "critical",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether framework debug pages, REPLs, profilers, developer toolbars, or diagnostics expose code/data or execution capability.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended audience accesses sensitive runtime state, valid secrets, privileged actions, or interactive execution",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "a debug console can be intentionally isolated and strongly authenticated in non-production",
+        "a branded error page does not prove debug functionality"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [
+          "v5.0.0-13.4.2"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-489"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "debug-mode",
+        "console",
+        "profiler"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Do not execute code or alter runtime state. Use read-only synthetic evidence and notify the owner immediately if an interactive console is exposed."
+    },
+    {
+      "id": "WAPT-INFO-003",
+      "title": "Remove valid secrets from client-delivered assets",
+      "category": "information-disclosure",
+      "severity": "critical",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether JavaScript, WASM, configuration, manifests, HTML, or source maps contain reusable credentials, private keys, signing secrets, or privileged provider tokens.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a client-extractable value grants protected server/provider authority in a harmless owner-approved check",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "public API identifiers and telemetry keys are not secrets",
+        "expired or placeholder examples can resemble credentials"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-798"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "client-secret",
+        "javascript",
+        "configuration"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Never retain or broadly use a discovered credential; perform only an owner-approved harmless identity/scope check, redact, and rotate/revoke immediately."
+    },
+    {
+      "id": "WAPT-INFO-004",
+      "title": "Review source maps for confidential source and embedded data",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether deployed maps expose valid secrets, private server source, sensitive paths, or configuration beyond public client code.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a map contains a valid secret or confidential non-client source with demonstrated impact",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "readable client source is already public even when minified",
+        "developer paths and symbol names are often informational"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-540"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "source-map",
+        "source-disclosure",
+        "javascript"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-005",
+      "title": "Remove sensitive comments, hidden fields, and disabled markup",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether HTML/XML/JS comments, hidden inputs, templates, or disabled controls disclose credentials, internal instructions, sensitive identifiers, or live privileged routes.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "source contains a valid secret or leads to a live unauthorized sensitive function after separate confirmation",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "placeholder keys can resemble production secrets",
+        "hidden/disabled controls can coexist with correct server authorization"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-615"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "comment",
+        "hidden-field",
+        "markup"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-006",
+      "title": "Prevent publication of backup, temporary, and unreferenced files",
+      "category": "information-disclosure",
+      "severity": "high",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether editor backups, archives, old deployments, temporary outputs, swap files, or renamed copies expose source, data, or credentials.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended file discloses sensitive source/data/secrets or a supported-but-forgotten application",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "a file can be intentionally published as a release archive",
+        "a guessed filename returning a generic page is not a file exposure"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Old Backup and Unreferenced Files for Sensitive Information",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-530"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "backup-file",
+        "temporary-file",
+        "old-deployment"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use only a small evidence-based candidate list from observed filenames/deployment conventions; do not brute-force broad backup wordlists."
+    },
+    {
+      "id": "WAPT-INFO-007",
+      "title": "Block exposed version-control metadata",
+      "category": "information-disclosure",
+      "severity": "high",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether .git, .svn, Mercurial, IDE, or repository metadata permits source/history/configuration reconstruction.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "repository metadata exposes source history, secrets, internal URLs, or deleted sensitive content",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "a 403/404 for the root metadata path is secure",
+        "static references to a public repository can be intentional"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Old Backup and Unreferenced Files for Sensitive Information",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-527"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "git",
+        "version-control",
+        "source-disclosure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Request only standard metadata roots on confirmed in-scope origins; do not crawl or reconstruct unrelated/private repositories beyond least-impact proof."
+    },
+    {
+      "id": "WAPT-INFO-008",
+      "title": "Protect environment and deployment configuration files",
+      "category": "information-disclosure",
+      "severity": "critical",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether .env, settings, manifests, infrastructure templates, package configs, or deployment descriptors are web-readable.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended configuration response exposes valid secrets, private endpoints, identity, or security settings",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "public package manifests can intentionally describe client dependencies",
+        "example environment files can contain placeholders only"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test File Extensions Handling for Sensitive Information",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/03-Test_File_Extensions_Handling_for_Sensitive_Information"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-03"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-538"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "environment-file",
+        "deployment",
+        "configuration"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use only filenames evidenced by the observed stack or source; stop and redact immediately if credentials appear."
+    },
+    {
+      "id": "WAPT-INFO-009",
+      "title": "Disable unintended directory and object-index listing",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether web/storage directory listing reveals private filenames, versions, backups, tenant keys, or sensitive structure.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended audience enumerates non-public object names/metadata that materially aids access or leaks data",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "public download directories can intentionally list files",
+        "listing alone can be informational when every object is public and non-sensitive"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-548"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "directory-listing",
+        "object-listing",
+        "enumeration"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-010",
+      "title": "Minimize precise backend component and version disclosure",
+      "category": "information-disclosure",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether headers, errors, assets, diagnostics, or default pages expose exact obsolete component versions with actionable reachability.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a precise confirmed version maps to a reachable applicable weakness or materially sensitive architecture",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "generic framework/product family is usually informational",
+        "proxies and copied assets can report misleading versions"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Fingerprint Web Application Framework",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/08-Fingerprint_Web_Application_Framework"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-08"
+        ],
+        "asvs": [
+          "v5.0.0-13.4.6"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "version-disclosure",
+        "component",
+        "fingerprinting"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-011",
+      "title": "Protect health, metrics, tracing, and actuator endpoints",
+      "category": "information-disclosure",
+      "severity": "high",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether operational endpoints expose environment, routes, dependencies, queries, tokens, heap/thread data, or privileged operations.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended audience obtains sensitive runtime data, secrets, internal topology, or management capability",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "basic liveness status can be intentionally public",
+        "metrics can be safely aggregated and authenticated"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "metrics",
+        "actuator",
+        "tracing",
+        "management"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use read-only requests only; never invoke shutdown, reload, heap dump, profiling, or state-changing management operations."
+    },
+    {
+      "id": "WAPT-INFO-012",
+      "title": "Prevent sensitive data in API error and validation responses",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether errors echo protected fields, full records, credentials, queries, tenant data, or internal object existence.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a lower-trust caller receives sensitive synthetic data or actionable internals through an error path",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "field names and validation constraints can be safe developer guidance",
+        "403 versus 404 can be intentional when existence is not confidential"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [
+          "v5.0.0-16.5.1"
+        ],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-209"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "api-error",
+        "validation",
+        "data-exposure"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-013",
+      "title": "Keep secrets and personal data out of accessible logs",
+      "category": "information-disclosure",
+      "severity": "high",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether application/audit logs, client logs, downloadable diagnostics, or log APIs contain passwords, tokens, keys, payment data, personal data, or protected tenant content.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended viewer can access reusable secrets or sensitive synthetic/user data retained in logs",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "redacted fingerprints can safely correlate events",
+        "restricted audit systems can contain approved sensitive metadata under policy"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-532"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "log-disclosure",
+        "secret-redaction",
+        "personal-data"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use synthetic markers and owner-approved sanitized logs; never copy real secrets or personal data into evidence."
+    },
+    {
+      "id": "WAPT-INFO-014",
+      "title": "Prevent cache and history disclosure after authentication ends",
+      "category": "information-disclosure",
+      "severity": "high",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether browser, proxy, CDN, service-worker, or application caches expose sensitive pages/data after logout or to another identity.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "private synthetic content is served after session termination or across account/tenant context",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "back navigation can trigger a fresh authorized request",
+        "public/static responses should remain cached"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Application Platform Configuration",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/02-Test_Application_Platform_Configuration"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-02"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-525"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "cache-disclosure",
+        "logout",
+        "service-worker"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use synthetic account data and clean browser profiles; clear test caches and workers after validation."
+    },
+    {
+      "id": "WAPT-INFO-015",
+      "title": "Treat robots, sitemaps, and route names as leads rather than findings",
+      "category": "information-disclosure",
+      "severity": "informational",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether disclosed route names correspond to live sensitive resources lacking controls instead of reporting metadata presence.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a listed route exposes protected data/functionality after separate authorization validation",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "crawler directives intentionally publish route preferences",
+        "stale paths can return 404 or canonical redirects"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "robots-txt",
+        "sitemap",
+        "false-positive"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-016",
+      "title": "Limit email, username, and personnel information exposure",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether public pages, errors, documents, metadata, or APIs reveal personal/contact/account identifiers beyond intended publication.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "an unintended audience can enumerate sensitive synthetic/real identity data with realistic privacy or takeover impact",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "business contact details can be intentionally public",
+        "public community usernames can be discoverable by product design"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-359"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "personal-data",
+        "email",
+        "account-enumeration"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    },
+    {
+      "id": "WAPT-INFO-017",
+      "title": "Remove sensitive metadata from downloadable documents and media",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether EXIF, author, revision, comments, hidden layers, tracked changes, paths, or embedded files disclose confidential information.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "a published file reveals sensitive identity, location, internal path, revision, or hidden content with realistic impact",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "author metadata can be intentionally public attribution",
+        "thumbnail/preview metadata can differ from the original"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Webpage Content for Information Leakage",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/01-Information_Gathering/05-Review_Webpage_Content_for_Information_Leakage"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-INFO-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "document-metadata",
+        "exif",
+        "hidden-content"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems.",
+      "safety": "Use owner-approved synthetic documents where possible and redact personal metadata in evidence."
+    },
+    {
+      "id": "WAPT-INFO-018",
+      "title": "Verify disclosure remediation across alternate formats and stale copies",
+      "category": "information-disclosure",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Retest fixed secrets/data across HTML, JSON, XML, downloads, maps, caches, backups, CDNs, old versions, and search indexes.",
+      "prerequisites": [
+        "Representative public/authenticated routes, assets, errors, downloads, and owner-approved diagnostics",
+        "Synthetic marker data and a plan to redact/rotate any valid secret immediately"
+      ],
+      "steps": [
+        "Identify an evidence-based disclosure source and intended audience",
+        "Request or inspect it with the least privilege and smallest candidate set",
+        "Classify data sensitivity, validity, freshness, reachability, and attacker utility",
+        "Confirm impact without expanding access, redact evidence, and notify/rotate where required"
+      ],
+      "examples": [
+        {
+          "note": "Treat names, banners, and metadata as leads; report only confirmed sensitive content or meaningful exploitability."
+        }
+      ],
+      "manipulate": "One response/error/asset/file/cache/log/metadata representation or access context at a time",
+      "secure_behavior": "Public outputs contain only intended data; diagnostics, source/configuration, secrets, personal data, internal state, and stale private copies remain access-controlled and redacted.",
+      "vulnerable_behavior": "the same or equivalent sensitive synthetic content remains reachable through an alternate/stale representation",
+      "validation": "Confirm current live exposure, intended audience, sensitivity/validity, and realistic attacker utility; names, versions, scanner labels, or stale snippets alone are insufficient.",
+      "false_positives": [
+        "cache invalidation can have a documented bounded propagation time",
+        "search snippets can persist after the live origin is fixed"
+      ],
+      "impact": "Confirmed disclosure can expose credentials, source, personal/tenant data, internal topology, vulnerable components, account identifiers, operational state, or attack paths that enable compromise.",
+      "evidence": [
+        "Minimal redacted response/asset/file excerpt and URL",
+        "Authentication/role/tenant and intended audience",
+        "Sensitivity, validity, freshness, and harmless impact confirmation",
+        "Owner notification, rotation/removal/cache purge, and retest context"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy",
+        "Static text/metadata inspection offline"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Review Old Backup and Unreferenced Files for Sensitive Information",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/04-Review_Old_Backup_and_Unreferenced_Files_for_Sensitive_Information"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-04"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A05:2021",
+          "A02:2025"
+        ],
+        "api_top10": [
+          "API8:2023"
+        ],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "information-disclosure",
+        "retest",
+        "stale-copy",
+        "representation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Remove sensitive content at its source, disable production diagnostics, keep secrets server-side and rotate exposures, minimize public metadata, enforce access/cache controls, purge stale copies, and log details only in protected systems."
+    }
+  ]
+}

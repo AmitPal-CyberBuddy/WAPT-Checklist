@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A context-aware WAPT methodology, checklist, and local-first tester workspace for authorized web security assessments.">
+  <meta name="theme-color" content="#07090d">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>WAPT Checklist — Context-aware web security methodology</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r3">
+  <script type="module" src="js/ui/home.js?v=1.0.0-r3"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <div class="site-alert" role="note">
+    <span class="status-dot" aria-hidden="true"></span>
+    Authorized testing only. Use the least disruptive proof and redact sensitive evidence.
+  </div>
+  <header class="site-header">
+    <a class="brand" href="index.html" aria-label="WAPT Checklist home">
+      <img src="assets/logo.svg" width="42" height="42" alt="">
+      <span><strong>WAPT</strong> Checklist</span>
+    </a>
+    <nav class="header-nav" aria-label="Primary navigation">
+      <a href="app.html#checklist">Checklist</a>
+      <a href="methodology.html">Methodology</a>
+      <a href="https://github.com/AmitPal-CyberBuddy/WAPT-Checklist">GitHub</a>
+      <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">◐</button>
+    </nav>
+  </header>
+
+  <main id="main">
+    <section class="hero shell" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span>LOCAL-FIRST</span> / CONTEXT-AWARE / OPEN SOURCE</p>
+        <h1 id="hero-title">Test what matters.<br><em>Prove what is real.</em></h1>
+        <p class="hero-lede">A professional WAPT methodology that adapts to the target, keeps assessment state in your browser, and turns security checks into defensible evidence—not scanner noise.</p>
+        <div class="hero-actions">
+          <a class="button button-primary" href="app.html#wizard">Start testing <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="app.html#checklist">Browse checklist</a>
+          <a class="button button-quiet" href="app.html#search">Search <kbd>/</kbd></a>
+        </div>
+        <p class="privacy-note"><span aria-hidden="true">◆</span> No backend · No telemetry · Your engagement stays on this device</p>
+      </div>
+      <div class="hero-visual" aria-label="Example adaptive assessment flow">
+        <div class="signal-card signal-card-main">
+          <div class="signal-head"><span>ENGAGEMENT CONTEXT</span><span class="live-chip">LOCAL</span></div>
+          <div class="signal-row"><span>Delivery</span><strong>SPA + REST API</strong></div>
+          <div class="signal-row"><span>Identity</span><strong>JWT · multi-role</strong></div>
+          <div class="signal-row"><span>Features</span><strong>Multi-tenant</strong></div>
+          <div class="context-result">
+            <span class="context-icon" aria-hidden="true">✓</span>
+            <span><strong>Authorization suite boosted</strong><small>Tenant isolation and BOLA move up next</small></span>
+          </div>
+        </div>
+        <div class="signal-card signal-card-back" aria-hidden="true">
+          <span>WAPT-AUTHZ-014</span>
+          <strong>Object-level authorization</strong>
+        </div>
+        <div class="grid-decoration" aria-hidden="true"></div>
+      </div>
+    </section>
+
+    <section class="stats-band" aria-labelledby="stats-title">
+      <h2 class="sr-only" id="stats-title">Live project statistics</h2>
+      <div class="stats shell" aria-live="polite">
+        <div class="stat"><strong data-stat="categories">—</strong><span>Categories</span></div>
+        <div class="stat"><strong data-stat="active">—</strong><span>Active tests</span></div>
+        <div class="stat"><strong data-stat="tested">—</strong><span>Tested locally</span></div>
+        <div class="stat"><strong data-stat="findings">—</strong><span>Findings locally</span></div>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="product-title">
+      <div class="section-heading">
+        <p class="eyebrow">A METHODOLOGY, NOT A PAYLOAD DUMP</p>
+        <h2 id="product-title">Built for the full assessment loop</h2>
+        <p>Scope, test, validate, evidence, report, and retest from one static workspace.</p>
+      </div>
+      <div class="feature-grid">
+        <article class="feature-card">
+          <span class="feature-number">01</span>
+          <h3>Adaptive scope</h3>
+          <p>Optional answers, presets, and conservative URL hints surface relevant checks and keep unknowns visible for confirmation.</p>
+          <a href="app.html#wizard">Open the scoping wizard <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="feature-card">
+          <span class="feature-number">02</span>
+          <h3>Decision-grade methodology</h3>
+          <p>Every check defines its objective, controls, secure and vulnerable behavior, false positives, impact, evidence, and authoritative references.</p>
+          <a href="docs.html?doc=content-guide">Read the content standard <span aria-hidden="true">→</span></a>
+        </article>
+        <article class="feature-card">
+          <span class="feature-number">03</span>
+          <h3>Private tester workflow</h3>
+          <p>Statuses, notes, findings, and exports stay in localStorage. There is no account, sync service, or analytics endpoint.</p>
+          <a href="app.html#dashboard">View workspace <span aria-hidden="true">→</span></a>
+        </article>
+      </div>
+    </section>
+
+    <section class="section principles-section">
+      <div class="shell principles-layout">
+        <div>
+          <p class="eyebrow">OPERATING PRINCIPLES</p>
+          <h2>Safe by default.<br>Rigorous by design.</h2>
+        </div>
+        <ul class="principle-list">
+          <li><span>01</span><div><strong>Context before coverage</strong><p>Unknown answers widen the plan. Known exclusions reduce noise without deleting your recorded work.</p></div></li>
+          <li><span>02</span><div><strong>Evidence before severity</strong><p>A scanner lead, absent header, or theoretical path is not a finding until behavior and impact are demonstrated.</p></div></li>
+          <li><span>03</span><div><strong>Do no harm</strong><p>Disruptive methods carry stop conditions. Destructive and denial-of-service material remains review-only.</p></div></li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer shell">
+    <div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div>
+    <p>Original methodology mapped to OWASP WSTG 4.2, ASVS 5.0.0, API Security Top 10, CWE, and primary specifications.</p>
+    <nav aria-label="Footer"><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=contributing">Contribute</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{
+  "id": "IDOR-01",
+  "title": "Object discovery to cross-account access",
+  "summary": "Move from parameter and object inventory to a paired object-level authorization proof and API-wide adjacent-operation review.",
+  "safety": "Use two designated accounts and synthetic objects. Change one identifier at a time and never access real-user or customer records.",
+  "nodes": [
+    {"item_id": "WAPT-RECON-017", "label": "Inventory object references in every request location"},
+    {"item_id": "WAPT-AUTHZ-003", "label": "Confirm horizontal read authorization"},
+    {"item_id": "WAPT-AUTHZ-004", "label": "Check reversible object mutation separately"},
+    {"item_id": "WAPT-API-001", "label": "Expand BOLA coverage across the API inventory"}
+  ],
+  "edges": [
+    {"from": "WAPT-RECON-017", "to": "WAPT-AUTHZ-003", "condition": "A sensitive object reference and two owned test objects are available."},
+    {"from": "WAPT-AUTHZ-003", "to": "WAPT-AUTHZ-004", "condition": "Cross-account read access is confirmed and a reversible mutation is approved."},
+    {"from": "WAPT-AUTHZ-003", "to": "WAPT-API-001", "condition": "The same object family appears in API routes or alternate representations."}
+  ]
+}

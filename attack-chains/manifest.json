@@ -1,0 +1,11 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-18",
+  "chains": [
+    {"id": "ATO-01", "file": "account-takeover.json", "title": "Enumeration to account takeover"},
+    {"id": "XSS-01", "file": "stored-xss-session.json", "title": "Stored XSS to authenticated victim impact"},
+    {"id": "IDOR-01", "file": "idor-cross-account.json", "title": "Object discovery to cross-account access"},
+    {"id": "SSRF-01", "file": "ssrf-cloud-identity.json", "title": "SSRF to cloud workload identity"},
+    {"id": "PAY-01", "file": "payment-race.json", "title": "Payment logic to duplicate value"}
+  ]
+}

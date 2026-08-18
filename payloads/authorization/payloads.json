@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "category": "authorization",
+  "items": [
+    {
+      "id": "PAYLOAD-AUTHZ-001",
+      "title": "Paired synthetic object aliases",
+      "category": "authorization",
+      "context": "Two designated accounts with separately owned disposable objects",
+      "intended_use": "Keep ownership context explicit during paired authorization tests",
+      "payload": "account-A/object-A and account-B/object-B",
+      "caveats": [
+        "Never substitute real customer IDs"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "authorization",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-AUTHZ-003"
+      ]
+    }
+  ]
+}

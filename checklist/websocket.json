@@ -1,0 +1,970 @@
+{
+  "schema_version": "1.0.0",
+  "category": "websocket",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-WS-001",
+      "title": "Use WSS for every authenticated WebSocket connection",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether socket handshakes or reconnects expose credentials/messages over plaintext ws.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a normal client sends session authority or non-public messages over an attacker-reachable plaintext connection",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "development-only plaintext endpoints can be unreachable externally",
+        "a ws URL can immediately fail before credentials are sent"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [
+          "v5.0.0-4.4.1"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-319"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "wss",
+        "transport",
+        "tls"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-002",
+      "title": "Validate WebSocket Origin against an exact allowlist",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an untrusted website can open a victim-authenticated socket.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a controlled untrusted origin establishes a socket with ambient victim authority and reaches non-public capability",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "non-browser clients can spoof Origin but do not create a victim-browser threat",
+        "public unauthenticated sockets can intentionally allow broad origins"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [
+          "v5.0.0-4.4.2"
+        ],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-346"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "origin-validation",
+        "cross-site-websocket-hijacking",
+        "handshake"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-003",
+      "title": "Authenticate WebSocket sessions explicitly and safely",
+      "category": "websocket",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether handshake cookies, query tokens, first messages, or subprotocol credentials correctly establish one identity.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a missing, malformed, stale, or attacker-controlled credential establishes an authenticated socket",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "a public handshake can require authentication in the first application message",
+        "the HTTP upgrade can return 101 before application authentication completes"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [
+          "v5.0.0-4.4.4"
+        ],
+        "owasp_top10": [],
+        "api_top10": [
+          "API2:2023"
+        ],
+        "cwe": [
+          "CWE-287"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "authentication",
+        "handshake",
+        "session-token"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-004",
+      "title": "Keep WebSocket tokens out of URLs and logs",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether bearer/session tokens in handshake queries leak through history, proxies, analytics, errors, or logs.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a reusable synthetic socket token reaches an attacker-accessible URL/log/referrer channel",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "redacted token fingerprints can support safe correlation",
+        "short-lived one-time connection tickets reduce impact when correctly consumed"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-598"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "token-leakage",
+        "query-string",
+        "logging"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-005",
+      "title": "Authorize every WebSocket message action",
+      "category": "websocket",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a connected low-privilege user can invoke privileged message types or operations.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a designated low role sends a harmless privileged message and the protected action commits",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "connection authentication alone does not prove missing message authorization",
+        "some message types can be public to all connected users"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-863"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-035"
+      ],
+      "tags": [
+        "websocket",
+        "message-authorization",
+        "bfla",
+        "action"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-006",
+      "title": "Authorize WebSocket subscriptions and object channels",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether changing topic, room, user, object, or tenant identifiers exposes another scope's events.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a designated user receives synthetic private events for another user or tenant",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "public broadcast topics can intentionally be shared",
+        "opaque topic IDs do not replace authorization but can reduce discovery"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A01:2021",
+          "A01:2025"
+        ],
+        "api_top10": [],
+        "cwe": [
+          "CWE-639"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-035"
+      ],
+      "tags": [
+        "websocket",
+        "subscription",
+        "bola",
+        "multi-tenant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-007",
+      "title": "Validate WebSocket message schemas and parser boundaries",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether malformed types, extra properties, duplicate keys, encoding, or nested data bypass validation or reach injection sinks.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a schema-invalid message changes protected behavior or reaches a confirmed interpreter/DOM sink",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "protocol error responses can differ without security impact",
+        "versioned messages can intentionally accept additional documented fields"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "message-schema",
+        "parser",
+        "input-validation"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization."
+    },
+    {
+      "id": "WAPT-WS-008",
+      "title": "Bound WebSocket message size, rate, fan-out, and subscriptions",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether one connection can consume disproportionate memory, CPU, bandwidth, downstream work, or recipient fan-out.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "a tiny bounded increase shows absent limits and disproportionate owner-observed cost",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "persistent connections can intentionally have higher burst limits",
+        "network jitter can resemble server saturation"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "resource-consumption",
+        "rate-limiting",
+        "fan-out"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization.",
+      "safety": "REVIEW ONLY. Use one disposable connection, tiny messages, a strict low count, no broad fan-out, and stop on latency or errors."
+    },
+    {
+      "id": "WAPT-WS-009",
+      "title": "Prevent WebSocket message replay and duplicate side effects",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether captured state-changing messages can be replayed after completion, reconnect, logout, or sequence advancement.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "one synthetic state-changing message commits twice or after its session should be invalid",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "idempotent retries can return repeated acknowledgments for one commit",
+        "chat messages can intentionally be repeatable when each is a new action"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-294"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "replay",
+        "idempotency",
+        "sequence"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization.",
+      "safety": "Use one reversible synthetic action and at most one replay; verify authoritative state and restore it."
+    },
+    {
+      "id": "WAPT-WS-010",
+      "title": "Terminate and reauthorize sockets across session changes",
+      "category": "websocket",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether logout, role/tenant change, disablement, token expiry, or reconnect leaves stale socket authority/subscriptions.",
+      "prerequisites": [
+        "A confirmed in-scope WebSocket endpoint, subprotocol, and normal client flow",
+        "Designated test identities, synthetic channels/messages, and protocol documentation"
+      ],
+      "steps": [
+        "Capture a valid handshake plus representative client/server messages",
+        "Record origin, credentials, subprotocol, message schema, identity, channel, and sequence state",
+        "Change one handshake, identity, message, object, channel, replay, or resource condition",
+        "Verify server acknowledgment, authoritative state/event delivery, then close and clean test sockets/data"
+      ],
+      "examples": [
+        {
+          "note": "Use synthetic channels, tiny inert messages, and designated accounts only."
+        }
+      ],
+      "manipulate": "One WebSocket handshake field, credential, message type/property, channel/object reference, sequence, or bounded resource dimension at a time",
+      "secure_behavior": "The service uses WSS, validates browser origin, authenticates the socket, authorizes every message/subscription, validates schemas, bounds resources, and revokes stale connections.",
+      "vulnerable_behavior": "an existing or reconnected socket retains protected access after the documented revocation event",
+      "validation": "Confirm application-level identity, event delivery, or committed server state; HTTP 101, connection success, or differing errors alone are insufficient.",
+      "false_positives": [
+        "short propagation delay can be documented in distributed systems",
+        "the UI can appear connected while the server rejects messages"
+      ],
+      "impact": "A confirmed WebSocket weakness can enable cross-site socket hijacking, unauthorized actions/subscriptions, cross-tenant data exposure, injection, duplicate transactions, resource exhaustion, or stale access after revocation.",
+      "evidence": [
+        "Raw upgrade request/response with credentials redacted",
+        "Minimal message and server acknowledgment/event",
+        "Identity, role, tenant, origin, subprotocol, channel, and object context",
+        "Authoritative state, limits, revocation, and cleanup confirmation"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp WebSockets history",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing WebSockets",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/11-Client-side_Testing/10-Testing_WebSockets"
+        },
+        {
+          "source": "PortSwigger",
+          "title": "WebSocket vulnerabilities",
+          "url": "https://portswigger.net/web-security/websockets"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 6455: The WebSocket Protocol",
+          "url": "https://www.rfc-editor.org/rfc/rfc6455"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CLNT-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-613"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/websockets"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "websocket",
+        "revocation",
+        "reconnect",
+        "permission-change"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "requires": [
+          "creds:low|high"
+        ]
+      },
+      "variants": [],
+      "priority_when": {
+        "api_style": [
+          "websocket"
+        ]
+      },
+      "remediation": "Use WSS, exact Origin validation, explicit short-lived socket authentication, per-message/subscription authorization and schemas, bounded size/rate/fan-out, idempotency, and prompt revocation/reauthorization.",
+      "safety": "Use a disposable identity and synthetic subscription; revoke sockets and restore role/tenant state afterward."
+    }
+  ]
+}

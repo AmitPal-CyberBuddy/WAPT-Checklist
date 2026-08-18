@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Local-first WAPT assessment workspace and context-aware scoping wizard.">
+  <meta name="theme-color" content="#07090d">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
+  <title>Assessment workspace — WAPT Checklist</title>
+  <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r3">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r3" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r3"></script>
+</head>
+<body class="app-body">
+  <a class="skip-link" href="#workspace">Skip to workspace</a>
+  <div class="app-layout">
+    <aside class="sidebar" id="sidebar" aria-label="Application sidebar">
+      <div class="sidebar-top">
+        <a class="brand" href="index.html" aria-label="WAPT Checklist home">
+          <img src="assets/logo.svg" width="40" height="40" alt="">
+          <span><strong>WAPT</strong> Checklist</span>
+        </a>
+        <button class="sidebar-close icon-button" type="button" data-sidebar-close aria-label="Close navigation">×</button>
+      </div>
+
+      <nav class="app-nav" aria-label="Workspace">
+        <p class="nav-label">Workspace</p>
+        <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">⌂</span> Dashboard</a>
+        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Scope wizard</a>
+        <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> All tests</a>
+        <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search</a>
+        <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
+        <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Payloads & workflows</a>
+      </nav>
+
+      <nav class="category-nav" aria-label="Checklist categories">
+        <div class="nav-label-row"><p class="nav-label">Categories</p><span data-category-total>—</span></div>
+        <div data-category-nav class="category-list" aria-live="polite"><p class="loading-line">Loading catalog…</p></div>
+      </nav>
+
+      <div class="sidebar-foot">
+        <div class="local-card">
+          <span aria-hidden="true">◆</span>
+          <div><strong>Local-only workspace</strong><small>No sync · No telemetry</small></div>
+        </div>
+        <a href="methodology.html">Methodology <span aria-hidden="true">→</span></a>
+        <a href="docs.html?doc=security">Security policy <span aria-hidden="true">→</span></a>
+        <a href="https://github.com/AmitPal-CyberBuddy/WAPT-Checklist">View on GitHub <span aria-hidden="true">↗</span></a>
+      </div>
+    </aside>
+
+    <div class="sidebar-scrim" data-sidebar-close hidden></div>
+
+    <main id="workspace" class="workspace">
+      <div class="authorization-bar" role="note"><span class="status-dot" aria-hidden="true"></span> Authorized testing only <span>·</span> Use designated accounts and redact evidence</div>
+      <header class="workspace-header">
+        <button class="mobile-menu icon-button" type="button" data-sidebar-open aria-label="Open navigation">☰</button>
+        <div class="engagement-identity">
+          <span class="context-kicker">ACTIVE ENGAGEMENT</span>
+          <strong data-engagement-name>Untitled engagement</strong>
+          <small data-engagement-target>No target URL set</small>
+        </div>
+        <div class="engagement-manager" aria-label="Engagement manager">
+          <label class="sr-only" for="engagement-select">Switch engagement</label>
+          <select id="engagement-select" data-engagement-select title="Switch engagement"></select>
+          <button class="button button-quiet" type="button" data-engagement-new title="Create a separate engagement">+ New</button>
+          <button class="icon-button" type="button" data-engagement-delete aria-label="Delete active engagement" title="Delete active engagement">×</button>
+        </div>
+        <div class="workspace-actions">
+          <button class="search-trigger" type="button" data-go-search><span aria-hidden="true">⌕</span> Search <kbd>/</kbd></button>
+          <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">◐</button>
+        </div>
+      </header>
+
+      <section class="view" data-view="wizard" aria-labelledby="wizard-page-title">
+        <div class="view-heading compact-heading">
+          <div><p class="eyebrow">START A WAPT</p><h1 id="wizard-page-title">Build the right test plan</h1></div>
+          <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
+        </div>
+        <p class="view-intro">Questions adapt to earlier answers, so irrelevant scope fields are skipped. Choose “Not confirmed yet” whenever scope is uncertain—the engine will keep affected tests visible for confirmation.</p>
+        <aside class="local-persistence-notice" role="note"><strong>Automatic local save</strong><span>You can close this page and continue later on this browser. Engagements, progress, findings, and notes remain only in this site’s local storage until you delete them or clear browser data. There is no cloud backup or cross-device sync; export JSON regularly and handle exports as sensitive.</span></aside>
+        <div id="wizard-root" class="wizard-shell" aria-live="polite"></div>
+      </section>
+
+      <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>Context-aware coverage, suggested next actions, findings, and portable local reports.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Edit scope</a><button class="button button-primary" type="button" data-export-report>Generate report</button></div></div>
+        <div class="dashboard-grid">
+          <article class="metric-card"><span>Catalog</span><strong data-dashboard-items>0</strong><small>production tests</small></article>
+          <article class="metric-card"><span>Tested</span><strong data-dashboard-tested>0</strong><small>recorded locally</small></article>
+          <article class="metric-card"><span>Potential</span><strong data-dashboard-potential>0</strong><small>findings to validate</small></article>
+          <article class="metric-card"><span>Confirmed</span><strong data-dashboard-confirmed>0</strong><small>findings</small></article>
+        </div>
+        <div class="dashboard-columns">
+          <section class="panel dashboard-panel" aria-labelledby="suggested-title"><div class="panel-heading"><div><p class="eyebrow">ADAPTIVE WORKFLOW</p><h2 id="suggested-title">Suggested next</h2></div></div><div data-suggested-next class="loading-line">Loading methodology…</div></section>
+          <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">CATEGORY COVERAGE</p><h2 id="progress-title">Progress</h2></div></div><div data-category-progress class="progress-list"></div></section>
+        </div>
+        <section class="panel dashboard-panel findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
+      </section>
+
+      <section class="view" data-view="checklist" aria-labelledby="checklist-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div>
+        <div class="panel filter-panel" data-checklist-filters></div>
+        <div class="result-summary" data-checklist-summary aria-live="polite"></div>
+        <div class="test-list" data-checklist-results aria-live="polite"></div>
+      </section>
+
+      <section class="view" data-view="search" aria-labelledby="search-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1><p>Search titles, objectives, steps, tags, IDs, tools, technologies, and mappings.</p></div></div>
+        <div class="panel filter-panel" data-search-filters></div>
+        <div class="result-summary" data-search-summary aria-live="polite"></div>
+        <div class="test-list" data-search-results aria-live="polite"></div>
+      </section>
+
+      <section class="view" data-view="chains" aria-labelledby="chains-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">CONNECTED TESTING</p><h1 id="chains-title">Attack chains</h1><p>Directed hypotheses over stable test IDs. A chain never substitutes for validating every prerequisite and safety boundary.</p></div></div>
+        <div class="chain-browser" data-chain-browser aria-live="polite"><p class="loading-line">Loading attack chains…</p></div>
+      </section>
+
+      <section class="view" data-view="payloads" aria-labelledby="payloads-title" hidden>
+        <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1><p>Every value includes intended context, caveats, related tests, and a safety boundary. REVIEW-ONLY entries never auto-expand.</p></div></div>
+        <div data-payload-browser aria-live="polite"><p class="loading-line">Loading payload references…</p></div>
+      </section>
+
+      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+    </main>
+  </div>
+</body>
+</html>

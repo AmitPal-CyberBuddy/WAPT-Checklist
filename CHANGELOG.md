@@ -1,0 +1,57 @@
+# Changelog
+
+All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
+
+## [Unreleased]
+
+## [1.0.0] - 2026-08-18
+
+### Added
+
+- Adaptive wizard branching that skips identity questions when authentication is absent and runtime/data/API-definition questions when earlier scope answers make them irrelevant.
+- Identity-capability scoping for MFA, passkeys, recovery, passwordless, and trusted devices, plus API-only delivery support that removes browser-runtime work and improves protocol suggestions.
+- Eight analyst presets covering static sites, SaaS, enterprise SSO, commerce, REST/mobile APIs, GraphQL, document portals, and realtime chat.
+- Broader explicit “none,” “mixed / other,” and modern mechanism choices across role, identity, backend, data, hosting, API, and workflow questions.
+- Multiple independently resumable local engagements with switching, creation, deletion, automatic legacy-state migration, and clear local-storage/no-backup disclosure.
+- Version 1.0.0 release manifest, deployment runbook, release consistency tests, final CI/deploy quality gates, and cache-version promotion.
+- Responsive release hardening for monitor width caps, laptop dashboard recomposition, tablet off-canvas navigation, compact-phone action stacks, long-content overflow, and mobile focus isolation.
+- Designed methodology and documentation experiences for security, contributing, licensing, architecture, QA, release guidance, and Burp workflows, replacing user-facing raw text/Markdown navigation.
+- Phase 9 zero-dependency content audit for exact/near duplicates, imperative wording, terminology, placeholders, evidence/false-positive depth, risky-technique safety, payload syntax, and integrated reference/Phase 7 validation.
+- Human and machine content QA reports covering all 608 items, with zero unresolved errors or warnings.
+- Phase 8 authoritative reference catalog and zero-dependency offline/live checker for WSTG paths, ASVS IDs, edition-qualified Top 10 mappings, PortSwigger URLs, CWE links, and source domains.
+- Reference QA tests covering all 608 production items, 83 pinned WSTG pages, 153 used ASVS 5.0.0 requirements, 104 MITRE-verified CWE weaknesses, 42 live-verified non-WSTG URLs, and mapping editions.
+- Removed prohibited CWE category mappings (`CWE-16`, `CWE-840`) and replaced configuration cases with specific weakness mappings where appropriate.
+- Phase 7 directed attack-chain library with five validated DAGs, bidirectional checklist memberships, linked UI cards, and Suggested next unlock boosts.
+- Contextual payload/reference library with 24 safety-labeled entries, searchable browser UI, related test IDs, and collapsed REVIEW-ONLY content.
+- Safe Burp workflows for Proxy, Repeater, Intruder, Scanner, Comparer, Decoder, Sequencer, Logger, Param Miner, Autorize, Turbo Intruder, and Collaborator.
+- Extended semantic validation for chain resolution/acyclicity, payload schema/count/safety, and Burp workflow completeness.
+- Completed Phase 6 with 260 advanced production items and 608 total items across all 24 categories; every independent floor passes.
+- Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
+- Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.
+- Dashboard category progress, context-aware Suggested next queue, findings table, and live sidebar tested counts.
+- Client-side Markdown checklist/report generation, findings summary, retest matrix, strict JSON import/export, HTML-safe notes, and A4 print view.
+- Phase 5 tests for exact CORS indexing, combined filters, category fetch caching, safe Markdown, report/retest composition, and workspace shell controls.
+- Completed Phase 4 categories 01–10 with 348 original, context-aware production items; every core category floor passes without counting review samples.
+- Incremental production-floor validation (`--floors-present`), production document envelope checks, manifest/file count tests, and reconnaissance safety/content QA assertions.
+- Phase 3 pure context, applicability, priority, and state engines shared by the browser and Node tests.
+- Active, Confirm, and context-N/A evaluation with machine-readable reasons, URL-hint uncertainty, visible blocked credential work, and conditional variants.
+- Deterministic Suggested next scoring with bounded workflow, severity, prerequisite, context, and attack-chain components.
+- Strict local-state normalization, immutable item updates, reasoned overrides, JSON import/export, and Confirmed Finding retest rules.
+- Unit and scenario coverage for every derivation rule, all eight presets, URL-hint hardening, state round trips, and priority behavior.
+- Phase 2 static homepage and application workspace shell.
+- Eight editable analyst presets spanning static, SaaS, SSO, commerce, REST, GraphQL, document, and realtime applications.
+- Optional target and engagement fields plus all 15 context questions.
+- Local-only persistence under `wapt.state.v1`, wizard navigation, progress, reset, and keyboard behavior.
+- Manifest-driven 24-category navigation and honest live project/engagement statistics.
+- Independent dark/light design tokens, responsive application layout, print baseline, logo, favicon, and self-hosted Sora and IBM Plex Mono fonts.
+- Restrictive page CSP, authorized-use notices, reduced-motion support, and visible focus treatment.
+- Apache-2.0 license, contributor guide, security policy, sitemap, robots policy, and ready-to-apply GitHub Pages/CI workflow templates.
+- Phase 2 preset and static-shell test coverage.
+
+## [0.1.0] - 2026-08-17
+
+### Added
+
+- Phase 1 architecture, taxonomy, content guidance, item schema, semantic validator, and 20-item review sample.
+- Stable 24-category ID system with a quality-gated floor of 512 production items.
+- ASVS 5.0.0 and WSTG 4.2 versioning policy.

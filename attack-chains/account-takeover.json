@@ -1,0 +1,17 @@
+{
+  "id": "ATO-01",
+  "title": "Enumeration to account takeover",
+  "summary": "Connect a reliable account oracle, weak online-attack controls, MFA weakness, and session persistence into an account-takeover hypothesis.",
+  "safety": "Use only designated disposable identities and synthetic credentials. Never spray, stuff breached credentials, trigger real-user MFA prompts, or retain tokens.",
+  "nodes": [
+    {"item_id": "WAPT-AUTH-005", "label": "Confirm a reliable login account oracle"},
+    {"item_id": "WAPT-RATE-001", "label": "Measure bounded password-guessing controls"},
+    {"item_id": "WAPT-AUTH-030", "label": "Verify MFA completion cannot be bypassed"},
+    {"item_id": "WAPT-SESS-021", "label": "Verify other sessions can be terminated after factor changes"}
+  ],
+  "edges": [
+    {"from": "WAPT-AUTH-005", "to": "WAPT-RATE-001", "condition": "A repeatable account-existence signal is confirmed."},
+    {"from": "WAPT-RATE-001", "to": "WAPT-AUTH-030", "condition": "The bounded attack model shows practical credential-guessing exposure."},
+    {"from": "WAPT-AUTH-030", "to": "WAPT-SESS-021", "condition": "A designated account can reach authenticated state without required MFA."}
+  ]
+}

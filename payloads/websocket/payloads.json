@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "category": "websocket",
+  "items": [
+    {
+      "id": "PAYLOAD-W-001",
+      "title": "Harmless schema marker",
+      "category": "websocket",
+      "context": "A designated WebSocket test channel and documented message schema",
+      "intended_use": "Test schema rejection with no state-changing message",
+      "payload": "{\"type\":\"wapt-canary\",\"value\":\"synthetic\"}",
+      "caveats": [
+        "Do not send to real-user channels or broad subscriptions"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "safe-control",
+        "websocket"
+      ],
+      "related": [
+        "WAPT-WS-007"
+      ]
+    }
+  ]
+}

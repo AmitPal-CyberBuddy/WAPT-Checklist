@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "ssrf",
+  "items": [
+    {
+      "id": "PAYLOAD-S-001",
+      "title": "Unique public callback URL",
+      "category": "ssrf",
+      "context": "A server-side URL-consuming feature and controlled HTTPS callback host",
+      "intended_use": "Correlate one source request with a server/worker callback",
+      "payload": "https://callback.example.test/wapt-UNIQUE",
+      "caveats": [
+        "Never replace with private, loopback, link-local, metadata, internal, or third-party targets"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "safe-control",
+        "ssrf"
+      ],
+      "related": [
+        "WAPT-SSRF-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-S-002",
+      "title": "Public redirect control",
+      "category": "ssrf",
+      "context": "A controlled redirect service where every hop remains public and authorized",
+      "intended_use": "Verify redirect revalidation without crossing network classes",
+      "payload": "https://redirect.example.test/to-controlled-public-canary",
+      "caveats": [
+        "Never redirect to internal or metadata addresses"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "safe-control",
+        "ssrf"
+      ],
+      "related": [
+        "WAPT-SSRF-006"
+      ]
+    },
+    {
+      "id": "PAYLOAD-S-003",
+      "title": "Metadata route review marker",
+      "category": "ssrf",
+      "context": "Cloud-hosted fetcher with explicit owner review",
+      "intended_use": "Document metadata isolation without requesting real endpoints",
+      "payload": "REVIEW-ONLY: use architecture or owner-provided inert canary",
+      "caveats": [
+        "No metadata IP, token, credential, or identity-document request is permitted"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "review-only",
+        "ssrf"
+      ],
+      "related": [
+        "WAPT-SSRF-008"
+      ]
+    }
+  ]
+}

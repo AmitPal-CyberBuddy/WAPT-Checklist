@@ -1,0 +1,1527 @@
+{
+  "schema_version": "1.0.0",
+  "category": "advanced",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-ADV-001",
+      "title": "Prevent web cache poisoning through unkeyed inputs",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a header, query field, cookie, method, or path normalization affects a cacheable response without entering its cache key.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "an inert unique marker from one prime request persists in a clean canonical response",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "the origin can reflect the value on every request without caching",
+        "different edge nodes can produce inconsistent observations"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web cache poisoning",
+          "url": "https://portswigger.net/web-security/web-cache-poisoning"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/web-cache-poisoning"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "web-cache-poisoning",
+        "cache-key",
+        "unkeyed-input"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use an isolated route or approved cache-buster, one inert prime/control sequence, and purge immediately if persistence occurs."
+    },
+    {
+      "id": "WAPT-ADV-002",
+      "title": "Prevent web cache deception of authenticated responses",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether path/extension tricks cause a shared cache to store a victim-specific dynamic response as a static asset.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a designated second client retrieves synthetic private content cached from the victim test account",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "the route can return public data independent of authentication",
+        "the apparent cache hit can be a browser cache rather than shared edge"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web cache poisoning",
+          "url": "https://portswigger.net/web-security/web-cache-poisoning"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.2",
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-524"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/web-cache-poisoning"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "web-cache-deception",
+        "cache-control",
+        "path"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only synthetic account data, an isolated route/cache key, and purge/expire the object immediately."
+    },
+    {
+      "id": "WAPT-ADV-003",
+      "title": "Canonicalize cache keys consistently across proxy and origin",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether delimiters, case, encoding, duplicate parameters, ports, host, or path segments map differently at the cache and application.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "two semantically different protected requests share a cache key or equivalent requests split a security policy",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "cache normalization differences can affect performance without crossing data/security boundaries",
+        "the CDN can include hidden configured key dimensions"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web cache poisoning",
+          "url": "https://portswigger.net/web-security/web-cache-poisoning"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-14.2.5"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-444"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/web-cache-poisoning"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "cache-key",
+        "canonicalization",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use unique inert markers and synthetic objects on an isolated route; avoid public/high-traffic cache keys."
+    },
+    {
+      "id": "WAPT-ADV-004",
+      "title": "Keep CDN and origin authorization behavior equivalent",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether direct origin, alternate edge, regional route, or cache bypass parameters omit controls or expose private responses.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "an owner-confirmed alternate path serves synthetic protected data/action denied through the canonical edge",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "diagnostic headers can differ while security decisions remain equal",
+        "origins can intentionally serve public assets directly"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web cache poisoning",
+          "url": "https://portswigger.net/web-security/web-cache-poisoning"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/web-cache-poisoning"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "cdn",
+        "origin-bypass",
+        "control-parity"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only owner-confirmed origins/edges and synthetic data; never enumerate guessed infrastructure."
+    },
+    {
+      "id": "WAPT-ADV-005",
+      "title": "Reject unsafe Java object deserialization",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether JVM endpoints instantiate attacker-selected types or invoke gadget behavior from untrusted serialized data.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "an owner-approved inert canary or code review proves attacker-controlled type construction beyond an allowlist",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "Java serialization signatures can identify inert data that is never deserialized",
+        "a maintained allowlist can safely deserialize specific DTOs"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Insecure deserialization",
+          "url": "https://portswigger.net/web-security/deserialization"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-502"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/deserialization"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "deserialization",
+        "java",
+        "gadget"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "backend": [
+            "java"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "REVIEW ONLY. Prefer code review. Never use gadget chains or execute commands; use only an inert owner-provided canary in an isolated environment.",
+      "priority_when": {
+        "backend": [
+          "java"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-006",
+      "title": "Reject untrusted Python pickle and equivalent object formats",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether Python services load pickle, shelve, job, cache, or model objects from attacker-controlled bytes.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "code/configuration evidence or an inert isolated canary proves untrusted pickle loading",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "a pickle-like binary marker can be a different safe format",
+        "signed artifacts can be trusted only when key/lifecycle and verification are sound"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Insecure deserialization",
+          "url": "https://portswigger.net/web-security/deserialization"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-502"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/deserialization"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "deserialization",
+        "python",
+        "pickle"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "backend": [
+            "python"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "REVIEW ONLY. Do not create executing pickle payloads. Use code review or an inert owner-provided canary in isolation.",
+      "priority_when": {
+        "backend": [
+          "python"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-007",
+      "title": "Prevent PHP object injection during unserialize",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether PHP serialized input permits attacker-controlled classes, magic methods, or gadget invocation.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "an isolated inert object or code evidence shows untrusted classes reach unserialize/magic methods",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "serialized-looking cookies can be integrity-protected and never trusted directly",
+        "allowed_classes false or strict DTO mapping can prevent object creation"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Insecure deserialization",
+          "url": "https://portswigger.net/web-security/deserialization"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-502"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/deserialization"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "deserialization",
+        "php",
+        "object-injection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "backend": [
+            "php"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "REVIEW ONLY. Never use a gadget chain or magic-method side effect; prefer code review and inert isolated fixtures.",
+      "priority_when": {
+        "backend": [
+          "php"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-008",
+      "title": "Validate .NET deserialization and ViewState integrity",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether .NET formatters, ViewState, data contracts, or type metadata accept untrusted object graphs without strong integrity/type restrictions.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "owner evidence or an inert isolated canary proves attacker-controlled type instantiation or unsigned ViewState acceptance",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "ViewState is not automatically vulnerable when MAC and user binding are correct",
+        "JSON type metadata can be disabled or allowlisted"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Insecure deserialization",
+          "url": "https://portswigger.net/web-security/deserialization"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.2"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-502"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/deserialization"
+        ]
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "deserialization",
+        "dotnet",
+        "viewstate"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "backend": [
+            "dotnet"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "REVIEW ONLY. Never use formatter gadget chains or execute code; use configuration/code review and inert isolated fixtures.",
+      "priority_when": {
+        "backend": [
+          "dotnet"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-009",
+      "title": "Handle duplicate JSON keys consistently across trust boundaries",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether gateways, signature validators, schemas, application parsers, and logs choose different duplicate-key values.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "one component validates/signs one synthetic value while downstream authorization/business logic acts on another",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "a parser can reject duplicates safely",
+        "array/multi-value semantics can be explicitly documented outside JSON objects"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.3"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "json",
+        "duplicate-key",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path."
+    },
+    {
+      "id": "WAPT-ADV-010",
+      "title": "Align URL parsing across validators, clients, proxies, and browsers",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether scheme, authority, userinfo, slash, backslash, Unicode, encoding, or fragment differences select an unintended destination/origin.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a controlled URL passes one trust check but another component uses a different controlled authority or scheme",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "components can reject malformed URLs at different safe stages",
+        "browser display normalization can differ without changing network destination"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "IETF",
+          "title": "RFC 3986: URI Generic Syntax",
+          "url": "https://www.rfc-editor.org/rfc/rfc3986"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.3"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "url-parser",
+        "parser-differential",
+        "authority"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only controlled public destinations and a tiny reviewed corpus; never target internal or third-party systems."
+    },
+    {
+      "id": "WAPT-ADV-011",
+      "title": "Align numeric and type coercion across API layers",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether strings, numbers, booleans, nulls, arrays, large integers, NaN-like values, or Unicode forms change security decisions between schema, language, database, and client.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a type accepted by one layer bypasses a range, identity, price, permission, or signature decision downstream",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "lenient coercion can be intentional for non-security fields",
+        "display serialization can differ while authoritative typed value remains correct"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [
+          "v5.0.0-1.5.3"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-704"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "type-confusion",
+        "numeric",
+        "parser-differential"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path."
+    },
+    {
+      "id": "WAPT-ADV-012",
+      "title": "Canonicalize signed requests identically before MAC verification and use",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether method, path, query, headers, body, encoding, duplicate values, or whitespace are interpreted differently by signer and service.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a modified synthetic request preserves signature validity but changes the downstream action/resource",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "signatures can intentionally omit non-security metadata",
+        "client and server can share one versioned canonicalization specification"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-347"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "request-signing",
+        "canonicalization",
+        "mac"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only owner-issued synthetic signing keys/requests and harmless operations; revoke test credentials afterward."
+    },
+    {
+      "id": "WAPT-ADV-013",
+      "title": "Prevent cross-tenant leakage through shared caches and indexes",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether shared application caches, search indexes, object maps, queues, or analytics omit tenant dimensions.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "tenant B receives/finds tenant A's unique synthetic canary from a shared component",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "global public catalogs can intentionally be shared",
+        "eventual deletion lag can retain synthetic index entries briefly"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-668"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "multi-tenant",
+        "shared-cache",
+        "search-index"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use designated tenants and synthetic canaries; purge cache/index entries after testing.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-014",
+      "title": "Bind custom domains and vanity hosts to verified tenants",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether custom-domain onboarding, reassignment, DNS changes, or Host routing can claim another tenant or stale domain.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a controlled domain binds to the wrong tenant or remains claimable after removal without ownership proof",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "shared preview domains can intentionally route by path rather than host",
+        "DNS propagation can delay legitimate verification"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-284"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "multi-tenant",
+        "custom-domain",
+        "host-routing"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "multi_tenant"
+          ]
+        }
+      },
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only controlled domains and test tenants; never claim or modify a real customer domain.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-ADV-015",
+      "title": "Prevent confused-deputy access in service-to-service chains",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether a privileged backend service performs an operation for a caller lacking downstream resource permission.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a low-privilege designated caller induces a service identity to access a synthetic resource outside caller authority",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "curated service-owned data can intentionally be exposed",
+        "downstream services can enforce propagated caller context"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-441"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "confused-deputy",
+        "service-account",
+        "delegation"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use synthetic resources and harmless reads; never invoke privileged mutations or real downstream data."
+    },
+    {
+      "id": "WAPT-ADV-016",
+      "title": "Validate webhook signatures, timestamps, and replay state",
+      "category": "advanced",
+      "severity": "critical",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether unsigned, wrongly keyed, stale, duplicated, or cross-tenant webhook events change trusted state.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a synthetic invalid/replayed event commits a protected transition",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "providers can retry valid events and require idempotent handling",
+        "network source allowlists can be defense in depth but not signature replacement"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-345"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "webhook",
+        "signature",
+        "replay"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only provider sandbox/synthetic events and disposable transactions; never spoof real provider events."
+    },
+    {
+      "id": "WAPT-ADV-017",
+      "title": "Validate exploit chains with least-impact evidence at each edge",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether individually low-severity observations compose into a realistic path while preserving prerequisite identity, state, reachability, and safety.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "a controlled chain over designated assets proves each prerequisite and reaches a meaningful harmless impact",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "co-located findings can lack a usable transition between them",
+        "one mitigated step can break the chain despite other observations"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "attack-chain",
+        "evidence",
+        "prerequisite"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
+      "safety": "Use only designated accounts, synthetic data, and harmless transitions; stop before privilege, data, payment, cloud, or third-party impact."
+    },
+    {
+      "id": "WAPT-ADV-018",
+      "title": "Retest parser, cache, tenant, and serialization fixes across adjacent paths",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Verify root-cause remediation across protocol versions, gateways, workers, caches, batch paths, and alternate content types.",
+      "prerequisites": [
+        "A confirmed cross-component boundary and owner-reviewed architecture/data flow",
+        "Synthetic identities/data/keys/resources, isolated paths where needed, and explicit safety/cleanup plan"
+      ],
+      "steps": [
+        "Map every component/parser/cache/service/tenant/identity boundary and its canonical input/state",
+        "Establish clean controls at each side of the boundary",
+        "Change one representation, type, key, principal, object, or lifecycle condition using inert synthetic evidence",
+        "Confirm the downstream security decision and root cause, then purge/revoke/restore all test state"
+      ],
+      "examples": [
+        {
+          "note": "Use inert cross-component canaries only; advanced-topic presence is not proof of exploitability."
+        }
+      ],
+      "manipulate": "One cache-key, serialized type, parser representation, signature canonical form, tenant dimension, service identity, event, or chain prerequisite at a time",
+      "secure_behavior": "All components share canonical semantics, enforce identity/tenant/resource policy at the trusted action point, reject untrusted object types, isolate shared state, verify signatures/replay, and preserve root-cause controls across paths.",
+      "vulnerable_behavior": "the original or equivalent synthetic condition remains reachable through an adjacent component or representation",
+      "validation": "Demonstrate the complete cross-component decision/effect with synthetic data and exclude cache staleness, parser rejection, public/shared policy, retry semantics, and missing chain prerequisites.",
+      "false_positives": [
+        "stale cache/test state can resemble an unfixed parser",
+        "some alternate formats can be intentionally unsupported and rejected"
+      ],
+      "impact": "Confirmed advanced weaknesses can poison shared content, leak tenant data, execute deserialization gadgets, bypass signatures/validation, abuse privileged services, replay trusted events, or combine into high-impact attack chains.",
+      "evidence": [
+        "Component/data-flow diagram and trust boundaries",
+        "Baseline and modified canonical/raw inputs",
+        "Identity, tenant, cache, parser, key, service, and lifecycle context",
+        "Downstream authoritative effect, chain prerequisites, cleanup, and root-cause retest"
+      ],
+      "tools": [
+        "Burp Repeater/Comparer",
+        "Owner cache, gateway, service, and audit logs",
+        "Offline parser/signature tools with synthetic data"
+      ],
+      "references": [
+        {
+          "source": "OWASP ASVS",
+          "title": "OWASP ASVS 5.0.0",
+          "url": "https://github.com/OWASP/ASVS/tree/v5.0.0"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API8:2023",
+          "API10:2023"
+        ],
+        "cwe": [
+          "CWE-436"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "advanced",
+        "retest",
+        "root-cause",
+        "control-parity"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path."
+    }
+  ]
+}

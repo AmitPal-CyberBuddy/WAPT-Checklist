@@ -1,0 +1,129 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/schema/item.schema.json",
+  "title": "WAPT Checklist item",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id", "title", "category", "severity", "difficulty", "mode", "objective",
+    "prerequisites", "steps", "examples", "manipulate", "secure_behavior",
+    "vulnerable_behavior", "validation", "false_positives", "impact", "evidence",
+    "tools", "references", "mappings", "related", "tags", "attack_chains",
+    "applies", "variants"
+  ],
+  "properties": {
+    "id": { "type": "string", "pattern": "^WAPT-[A-Z]+-[0-9]{3}$" },
+    "title": { "$ref": "#/$defs/nonEmptyString" },
+    "category": { "$ref": "#/$defs/category" },
+    "severity": { "enum": ["critical", "high", "medium", "low", "informational"] },
+    "difficulty": { "enum": ["low", "medium", "high"] },
+    "mode": { "enum": ["manual", "automated"] },
+    "objective": { "$ref": "#/$defs/nonEmptyString" },
+    "prerequisites": { "$ref": "#/$defs/stringArray" },
+    "steps": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "examples": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "minProperties": 1,
+        "properties": {
+          "request": { "$ref": "#/$defs/nonEmptyString" },
+          "response": { "$ref": "#/$defs/nonEmptyString" },
+          "note": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "manipulate": { "$ref": "#/$defs/nonEmptyString" },
+    "secure_behavior": { "$ref": "#/$defs/nonEmptyString" },
+    "vulnerable_behavior": { "$ref": "#/$defs/nonEmptyString" },
+    "validation": { "$ref": "#/$defs/nonEmptyString" },
+    "false_positives": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "impact": { "$ref": "#/$defs/nonEmptyString" },
+    "evidence": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "tools": { "$ref": "#/$defs/nonEmptyStringArray" },
+    "references": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source", "title", "url"],
+        "properties": {
+          "source": {
+            "enum": ["OWASP", "OWASP WSTG", "OWASP ASVS", "OWASP API Security", "OWASP Top 10", "PortSwigger", "CWE", "IETF", "OASIS", "W3C", "WHATWG", "Official vendor"]
+          },
+          "title": { "$ref": "#/$defs/nonEmptyString" },
+          "url": { "type": "string", "format": "uri", "pattern": "^https://" }
+        }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["wstg", "asvs", "owasp_top10", "api_top10", "cwe", "portswigger"],
+      "properties": {
+        "wstg": { "type": "array", "items": { "type": "string", "pattern": "^WSTG-v42-[A-Z]{4}-[0-9]{2}$" }, "uniqueItems": true },
+        "asvs": { "type": "array", "items": { "type": "string", "pattern": "^v5\\.0\\.0-[0-9]+\\.[0-9]+\\.[0-9]+$" }, "uniqueItems": true },
+        "owasp_top10": { "type": "array", "items": { "type": "string", "pattern": "^A(0[1-9]|10):(2021|2025)$" }, "uniqueItems": true },
+        "api_top10": { "type": "array", "items": { "type": "string", "pattern": "^API([1-9]|10):2023$" }, "uniqueItems": true },
+        "cwe": { "type": "array", "items": { "type": "string", "pattern": "^CWE-[1-9][0-9]*$" }, "uniqueItems": true },
+        "portswigger": { "type": "array", "items": { "type": "string", "pattern": "^https://portswigger\\.net/web-security(?:/|$)" }, "uniqueItems": true }
+      }
+    },
+    "related": { "type": "array", "items": { "type": "string", "pattern": "^WAPT-[A-Z]+-[0-9]{3}$" }, "uniqueItems": true },
+    "tags": { "type": "array", "minItems": 1, "items": { "type": "string", "pattern": "^[a-z0-9]+(?:-[a-z0-9]+)*$" }, "uniqueItems": true },
+    "attack_chains": { "type": "array", "items": { "type": "string", "pattern": "^[A-Z][A-Z0-9]*-[0-9]{2}$" }, "uniqueItems": true },
+    "applies": { "$ref": "#/$defs/applicability" },
+    "variants": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["when", "steps"],
+        "properties": {
+          "when": { "$ref": "#/$defs/conditionMap" },
+          "steps": { "$ref": "#/$defs/nonEmptyStringArray" },
+          "notes": { "$ref": "#/$defs/nonEmptyString" }
+        }
+      }
+    },
+    "priority_when": { "$ref": "#/$defs/conditionMap" },
+    "safety": { "$ref": "#/$defs/nonEmptyString" },
+    "remediation": { "$ref": "#/$defs/nonEmptyString" }
+  },
+  "$defs": {
+    "nonEmptyString": { "type": "string", "minLength": 1, "pattern": "\\S" },
+    "stringArray": { "type": "array", "items": { "$ref": "#/$defs/nonEmptyString" }, "uniqueItems": true },
+    "nonEmptyStringArray": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/nonEmptyString" }, "uniqueItems": true },
+    "category": {
+      "enum": [
+        "reconnaissance", "http", "authentication", "session-management", "authorization",
+        "injection", "xss", "csrf", "file-handling", "api-security", "graphql", "jwt",
+        "oauth-sso-saml", "ssrf", "request-smuggling", "business-logic", "race-conditions",
+        "client-side", "websocket", "security-headers", "cloud-storage",
+        "information-disclosure", "rate-limiting", "advanced"
+      ]
+    },
+    "conditionMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {
+        "type": "array",
+        "minItems": 1,
+        "items": { "type": ["string", "boolean"] },
+        "uniqueItems": true
+      }
+    },
+    "applicability": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "any_of": { "$ref": "#/$defs/conditionMap" },
+        "requires": { "type": "array", "items": { "type": "string", "pattern": "^[a-z_]+(?:\\.[a-z_]+)?:[^:|]+(?:\\|[^:|]+)*$" }, "uniqueItems": true },
+        "excludes": { "type": "array", "items": { "type": "string", "pattern": "^[a-z_]+(?:\\.[a-z_]+)?:[^:|]+(?:\\|[^:|]+)*$" }, "uniqueItems": true }
+      }
+    }
+  }
+}
