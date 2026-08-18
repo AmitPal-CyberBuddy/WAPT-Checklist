@@ -6,6 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Phase 8 authoritative reference catalog and zero-dependency offline/live checker for WSTG paths, ASVS IDs, edition-qualified Top 10 mappings, PortSwigger URLs, CWE links, and source domains.
+- Reference QA tests covering all 608 production items, 83 pinned WSTG pages, 153 used ASVS 5.0.0 requirements, and mapping editions.
 - Phase 7 directed attack-chain library with five validated DAGs, bidirectional checklist memberships, linked UI cards, and Suggested next unlock boosts.
 - Contextual payload/reference library with 24 safety-labeled entries, searchable browser UI, related test IDs, and collapsed REVIEW-ONLY content.
 - Safe Burp workflows for Proxy, Repeater, Intruder, Scanner, Comparer, Decoder, Sequencer, Logger, Param Miner, Autorize, Turbo Intruder, and Collaborator.

@@ -520,9 +520,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -801,9 +799,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -894,9 +890,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -988,9 +982,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -1081,9 +1073,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -1175,9 +1165,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
@@ -1269,9 +1257,7 @@
         }
       ],
       "mappings": {
-        "wstg": [
-          "WSTG-v42-INPV-05"
-        ],
+        "wstg": [],
         "asvs": [
           "v5.0.0-1.2.4"
         ],
