@@ -711,6 +711,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     activeView = view;
     activeCategory = slug;
     if (view === 'dashboard') {
+      renderDashboardMetrics();
       await ensureAll();
       await renderDashboard();
     } else if (view === 'search') {

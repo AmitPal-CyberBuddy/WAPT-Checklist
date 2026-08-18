@@ -4,6 +4,15 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Phase 6+7 — QA, automation, and release hardening)
+
+- Vocabulary parity test: the validator's context vocabulary and the engine's `ATTRIBUTE_OPTIONS` must stay byte-identical.
+- Severity-diversity audit rule: a category with fewer than two severity levels fails content audit; HTTP re-rated honestly (CORS credentialed-read, compression-oracle, and framing-translation items raised to high; open-redirect item lowered to low).
+- End-to-end workflow test: scope → prioritized queue → confirmed finding → evidence pack → reportable gate → retest verdict → coverage → report generation.
+- Dashboard hydration split: metrics render from the manifest before the full catalog loads.
+- New `docs/EVIDENCE-WORKFLOW.md` (designed documentation page) covering the finding-decision gate, evidence-pack fields, retest verdicts, and coverage math.
+- Release-state matrix in `docs/RELEASE.md` with honest per-dimension status: content/reference/automated/security QA green, browser and visual QA pending maintainer sign-off, deployment pending merge.
+
 ### Added (Phase 5 — visual and interaction modernization)
 
 - Dashboard command center: six metrics (catalog, tested, potential, confirmed, credential-blocked, scoped-out), coverage-confidence panel, retest queue panel, and attack-chain progress panel — answering "what should I test next" at a glance.

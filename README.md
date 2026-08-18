@@ -115,6 +115,7 @@ See:
 - [Adaptive engine contract](docs/ENGINE.md)
 - [Engagement workspace](docs/PHASE5-WORKSPACE.md)
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
+- [Evidence, reportability, and retest workflow](docs/EVIDENCE-WORKFLOW.md)
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
 - [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
 - [Version 1.0.0 release and deployment runbook](docs/RELEASE.md)
@@ -145,3 +146,9 @@ This repository's original software and content are licensed under the [Apache L
 8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
 9. ~~Content and safety QA~~ — **0 errors and 0 unresolved warnings**
 10. ~~Release hardening and deployment review~~ — **deployment pending maintainer workflow installation and merge**
+11. ~~Post-release review~~ — **609-item baseline verified; five defects fixed; scope dimensions, Suggested-next explanations, and privacy regression suite**
+12. ~~Reportability layer~~ — **do-not-report boundaries and retest guidance on 59+17 items**
+13. ~~Modern coverage~~ — **gated AI/LLM category, XS-Leaks, bfcache, subdomain-takeover identification (623 items / 25 categories)**
+14. ~~Evidence and retesting~~ — **state v2 evidence packs, reportability gate, coverage confidence, retest verdicts**
+15. ~~UI/UX modernization~~ — **dashboard command center, homepage loop, shortcuts, skeletons, filter chips**
+16. ~~QA and release hardening~~ — **vocabulary parity, severity diversity, end-to-end workflow test, evidence documentation**

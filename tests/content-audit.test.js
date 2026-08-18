@@ -50,3 +50,9 @@ test('audit rejects verbatim shared do-not-report wording across items', () => {
   const result = audit(items);
   assert.ok(result.errors.some((error) => error.includes('duplicated verbatim')));
 });
+
+test('audit rejects categories with fewer than two severity levels', () => {
+  const items = readProduction().map((item) => (item.category === 'authentication' ? { ...item, severity: 'high' } : item));
+  const result = audit(items);
+  assert.ok(result.errors.some((error) => error.includes('authentication') && error.includes('severity levels')));
+});

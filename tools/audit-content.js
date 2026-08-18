@@ -112,6 +112,16 @@ function audit(items) {
     }
   }
 
+  const severitySpread = new Map();
+  for (const item of items) {
+    const severities = severitySpread.get(item.category) || new Set();
+    severities.add(item.severity);
+    severitySpread.set(item.category, severities);
+  }
+  for (const [category, severities] of severitySpread) {
+    if (severities.size < 2) errors.push(`${category}: category contains fewer than two severity levels (possible padding or misrated content)`);
+  }
+
   const phase7 = validatePhase7(new Set(items.map(({ id }) => id)));
   errors.push(...phase7.errors.map((error) => `phase7: ${error}`));
   metrics.attackChains = phase7.chainIds.size;

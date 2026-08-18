@@ -240,5 +240,5 @@ Residual notes for the plan: (a) the export file name embeds the engagement name
 | 3 — Modern coverage | All gates green | **Complete** | AI/LLM category (11 items, 25th category), XS-Leaks + bfcache, subdomain-takeover identification, rationale engine; catalog 623 |
 | 4 — Evidence & retesting | All gates green | **Complete** | State schema v2 + v1 migration, evidence packs, reportability classifier, coverage confidence, chain node states, retest verdicts |
 | 5 — UI/UX modernization | All gates green | **Complete** | Dashboard command center, retest queue, chain overview, homepage project metrics + pipeline + chain preview, filter chips, skeletons, glyphs, shortcuts dialog, touch/typography floors |
-| 6 — QA & automation | — | **Not started** | Queued after Phase 5 |
-| 7 — Release hardening | — | **Not started** | Queued last |
+| 6 — QA & automation | All gates green | **Complete** | Vocabulary parity test, severity-diversity audit rule (+4 honest HTTP re-ratings), end-to-end workflow test (196 tests) |
+| 7 — Release hardening | All gates green | **Complete** | Dashboard hydration split, evidence-workflow doc, honest release-state matrix, roadmap, changelog, PR refreshed |
