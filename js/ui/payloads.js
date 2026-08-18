@@ -64,6 +64,19 @@ export function createPayloadStore() {
     body.append(node('h4', '', 'Intended use'), node('p', '', payload.intended_use));
     body.append(node('h4', '', 'Reference value'));
     body.append(node('pre', '', payload.payload));
+    const copy = node('button', 'copy-button', 'Copy');
+    copy.type = 'button';
+    copy.setAttribute('aria-label', `Copy ${payload.id} reference value`);
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(String(payload.payload || ''));
+        copy.textContent = 'Copied';
+        setTimeout(() => { copy.textContent = 'Copy'; }, 1200);
+      } catch {
+        copy.textContent = 'Unavailable';
+      }
+    });
+    body.append(copy);
     body.append(node('h4', '', 'Caveats'));
     const caveats = node('ul'); payload.caveats.forEach((value) => caveats.append(node('li', '', value))); body.append(caveats);
     body.append(node('p', 'payload-safety', `Safety: ${payload.safety}`));

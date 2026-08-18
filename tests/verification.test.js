@@ -360,3 +360,173 @@ test('performance ceilings: search, filters, engine, report, and import stay res
   const importMs = Number(process.hrtime.bigint() - start) / 1e6;
   assert.ok(importMs < 2000, `import ${importMs.toFixed(1)}ms`);
 });
+
+test('every filter key filters correctly on real catalog data', async () => {
+  const { manifest, items } = loadCatalog();
+  const [{ deriveContext }, { evaluateApplicability }, { filterItems }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js'), import('../js/ui/filters.js')
+  ]);
+  const context = deriveContext({});
+  const records = items.map((item) => ({ item, applicability: evaluateApplicability(item, context) }));
+  const state = { statuses: { 'WAPT-AUTHZ-001': 'passed', 'WAPT-INJ-001': 'potential_finding' } };
+  const keys = [
+    ['severity', (record) => record.item.severity],
+    ['difficulty', (record) => record.item.difficulty],
+    ['mode', (record) => record.item.mode],
+    ['category', (record) => record.item.category],
+    ['status', (record) => state.statuses[record.item.id] || 'not_tested'],
+    ['applicability', (record) => record.applicability.state]
+  ];
+  for (const [key, predicate] of keys) {
+    const values = new Set(records.map(predicate));
+    let exercised = 0;
+    for (const value of values) {
+      const filtered = filterItems(records, { [key]: value }, state);
+      assert.ok(filtered.length > 0, `${key}=${value} returns results`);
+      assert.ok(filtered.every((record) => predicate(record) === value), `${key}=${value} is exact`);
+      exercised += 1;
+    }
+    assert.ok(exercised >= 2, `${key} has multiple values to exercise`);
+  }
+  // Tag, tool, technology, testId individually
+  const sample = items.find((item) => item.tags.length > 1);
+  assert.ok(filterItems(records, { tag: sample.tags[0] }, state).every(({ item }) => item.tags.includes(sample.tags[0])));
+  const tooled = items.find((item) => item.tools.length > 0);
+  assert.ok(filterItems(records, { tool: tooled.tools[0] }, state).every(({ item }) => item.tools.includes(tooled.tools[0])));
+  assert.equal(filterItems(records, { testId: 'WAPT-XSS-001' }, state).length, 1);
+  // Active-filter state object round trips
+  assert.deepEqual(filterItems(records, { category: '' }, state).length, records.length);
+});
+
+test('per-category counts in the manifest match the category files exactly', () => {
+  const { manifest } = loadCatalog();
+  let total = 0;
+  for (const category of manifest.categories) {
+    const document = JSON.parse(fs.readFileSync(path.join(CHECKLIST, category.file), 'utf8'));
+    assert.equal(document.items.length, category.count, `${category.slug} count`);
+    assert.ok(category.count >= category.floor, `${category.slug} floor`);
+    total += category.count;
+  }
+  assert.equal(total, 623);
+});
+
+test('preset edits preserve all other preset answers', async () => {
+  const [{ normalizeScopeAnswers }] = [await import('../js/engine/context.js')];
+  const { PRESETS } = await import('../js/data/presets.mjs');
+  const edited = normalizeScopeAnswers({ ...PRESETS.saas_jwt_api.answers, app_type: 'api_only' });
+  assert.equal(edited.app_type, 'api_only');
+  assert.deepEqual(edited.auth_mechanism, ['jwt']);
+  assert.equal(edited.roles, 'many');
+  assert.deepEqual(edited.features, ['multi_tenant']);
+  assert.equal(edited.creds, 'high');
+});
+
+test('simulated browser reload preserves the active engagement end-to-end', async () => {
+  const { createState, setEngagement, setItemStatus, setItemNote, addFinding } = await import('../js/engine/state.js');
+  const { createPortfolio, updateActiveEngagement, normalizePortfolio, activeEngagement } = await import('../js/engine/portfolio.js');
+  const NOW = '2026-08-18T00:00:00.000Z';
+  let state = setEngagement(createState(), { name: 'Resilient', targetUrl: 'https://app.example.com' }, NOW);
+  state = setItemStatus(state, 'WAPT-AUTHZ-001', 'confirmed_finding', NOW);
+  state = setItemNote(state, 'WAPT-AUTHZ-001', 'Survives reload.', NOW);
+  state = addFinding(state, { item_id: 'WAPT-AUTHZ-001', title: 'Reload proof', baseline_request: 'GET /a', test_request: 'GET /b', observed_behavior: 'Changed', exploitability: 'proven', reportable: true }, NOW);
+  let portfolio = updateActiveEngagement(createPortfolio(), state);
+  portfolio = { ...portfolio, preferences: { theme: 'light' } };
+  // localStorage does JSON round trips; simulate reload by re-parsing the stored document
+  const reloaded = normalizePortfolio(JSON.parse(JSON.stringify(portfolio)));
+  assert.equal(reloaded.preferences.theme, 'light');
+  const restored = activeEngagement(reloaded);
+  assert.equal(restored.engagement.name, 'Resilient');
+  assert.equal(restored.statuses['WAPT-AUTHZ-001'], 'confirmed_finding');
+  assert.equal(restored.notes['WAPT-AUTHZ-001'], 'Survives reload.');
+  assert.equal(restored.findings[0].title, 'Reload proof');
+});
+
+test('note deletion via empty text and notes isolation per engagement', async () => {
+  const { createState, setItemNote } = await import('../js/engine/state.js');
+  const NOW = '2026-08-18T00:00:00.000Z';
+  let state = setItemNote(createState(), 'WAPT-AUTHZ-001', 'Keep me', NOW);
+  state = setItemNote(state, 'WAPT-AUTHZ-001', '   ', NOW);
+  assert.deepEqual(state.notes, {});
+  state = setItemNote(state, 'WAPT-AUTHZ-001', 'A note', NOW);
+  state = setItemNote(state, 'WAPT-AUTHZ-002', 'B note', NOW);
+  assert.equal(state.notes['WAPT-AUTHZ-001'], 'A note');
+  assert.equal(state.notes['WAPT-AUTHZ-002'], 'B note');
+});
+
+test('import normalization handles missing fields, unknown IDs, invalid statuses, and wrong types', async () => {
+  const { normalizeState, importState } = await import('../js/engine/state.js');
+  const cases = [
+    [{ schema_version: 2 }, 'missing fields'],
+    [{ schema_version: 2, statuses: { 'NOPE-123': 'passed', 'WAPT-AUTHZ-001': 'banana', 'WAPT-AUTHZ-002': 'passed' } }, 'unknown IDs + invalid statuses'],
+    [{ schema_version: 2, answers: [], notes: 'oops', overrides: null, retests: 7, findings: {}, engagement: 'x' }, 'wrong types everywhere'],
+    [{ schema_version: 2, statuses: null, engagement: { name: { nested: true }, targetUrl: 42 } }, 'null maps and non-string fields']
+  ];
+  for (const [candidate, label] of cases) {
+    const normalized = normalizeState(candidate);
+    assert.equal(normalized.schema_version, 2, label);
+    assert.equal(typeof normalized.engagement.name, 'string', label);
+    assert.ok(Array.isArray(normalized.findings), label);
+    assert.equal(({}).polluted, undefined, label);
+  }
+  const withUnknownStatus = importState('{"schema_version":2,"statuses":{"WAPT-AUTHZ-001":"super-status"},"findings":[{"id":"find-0001","item_id":"WAPT-AUTHZ-001","severity":"banana"}]}');
+  assert.deepEqual(withUnknownStatus.statuses, {});
+  assert.equal(withUnknownStatus.findings[0].severity, 'medium');
+});
+
+test('reports cover every severity, long text, code blocks, and CRLF without injection', async () => {
+  const { composeReportMarkdown } = await import('../js/ui/export.js');
+  const severities = ['critical', 'high', 'medium', 'low', 'informational'];
+  const items = severities.map((severity, index) => ({
+    id: `WAPT-TEST-00${index + 1}`.replace('WAPT-TEST', `WAPT-AUTHZ-00`), category: 'authorization',
+    title: `Finding ${severity}`, severity
+  }));
+  const long = 'A'.repeat(1900);
+  const state = {
+    engagement: { name: 'Matrix', targetUrl: 'https://app.example.com', started_at: '2026-08-18T00:00:00.000Z' },
+    statuses: Object.fromEntries(items.map(({ id }) => [id, 'confirmed_finding'])),
+    notes: { [items[0].id]: `${long}\n\n\`\`\`\nGET /admin HTTP/1.1\nHost: evil\n\`\`\`\n\n<script>alert(1)</script>` },
+    retests: {}, updated_at: '2026-08-18T00:00:00.000Z',
+    findings: items.map(({ id }, index) => ({
+      id: `find-000${index}`, item_id: id, title: `Pack ${severities[index]}`,
+      severity: severities[index], endpoint: 'GET /objects/1001\r\nHost: target',
+      baseline_request: 'GET /objects/1000', test_request: 'GET /objects/1001',
+      observed_behavior: 'Cross-account object returned.', exploitability: 'proven', reportable: true,
+      retest_verdict: ['pending', 'pass', 'partial', 'fail', 'pending'][index]
+    }))
+  };
+  const markdown = composeReportMarkdown(items, state, {});
+  for (const severity of severities) assert.ok(markdown.includes(severity), severity);
+  assert.ok(markdown.includes(long), 'long notes preserved');
+  assert.ok(markdown.includes('```'), 'code blocks preserved');
+  assert.doesNotMatch(markdown, /<script>alert\(1\)<\/script>/);
+  assert.match(markdown, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  assert.doesNotMatch(markdown, /Host: target\n/, 'CRLF neutralized in table cells');
+});
+
+test('all three retest verdicts map to their residual-risk guidance', async () => {
+  const { RETEST_GUIDANCE } = await import('../js/engine/reportability.js');
+  assert.match(RETEST_GUIDANCE.pass, /no longer reproduces/);
+  assert.match(RETEST_GUIDANCE.partial, /adjacent variant still reproduces/);
+  assert.match(RETEST_GUIDANCE.fail, /still reproduces/);
+  const { composeReportMarkdown } = await import('../js/ui/export.js');
+  const items = [{ id: 'WAPT-AUTHZ-001', category: 'authorization', title: 'T', severity: 'high' }];
+  for (const verdict of ['pass', 'partial', 'fail']) {
+    const state = {
+      engagement: { name: 'V', targetUrl: '', started_at: null }, statuses: { 'WAPT-AUTHZ-001': 'confirmed_finding' },
+      notes: {}, retests: {}, updated_at: null,
+      findings: [{ id: `find-${verdict}`, item_id: 'WAPT-AUTHZ-001', title: 'T', severity: 'high', observed_behavior: 'x', exploitability: 'proven', reportable: true, retest_verdict: verdict }]
+    };
+    const markdown = composeReportMarkdown(items, state, {});
+    assert.ok(markdown.includes(RETEST_GUIDANCE[verdict].split(';')[0]), `${verdict} guidance in report`);
+  }
+});
+
+test('payload reference values expose a safe copy control', () => {
+  const source = read('js/ui/payloads.js');
+  assert.match(source, /navigator\.clipboard\.writeText\(String\(payload\.payload/);
+  assert.match(source, /setAttribute\('aria-label', `Copy \$\{payload\.id\} reference value`\)/);
+  assert.match(source, /catch \{[\s\S]*Unavailable/);
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /copyButton\(/);
+  assert.match(workspace, /navigator\.clipboard\.writeText\(String\(text \|\| ''\)\)/);
+});

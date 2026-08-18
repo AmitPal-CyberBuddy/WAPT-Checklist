@@ -19,7 +19,7 @@
 
 :root[data-theme='light']{
   color-scheme:light;--paper:#f4f7fb;--paper-2:#edf2f7;--surface:rgba(255,255,255,.84);--surface-2:rgba(255,255,255,.94);--surface-3:rgba(234,240,247,.98);
-  --ink:#101828;--ink-2:#344054;--muted:#667085;--brand:#087f6c;--brand-soft:rgba(8,127,108,.09);--accent-2:#344fb3;
+  --ink:#101828;--ink-2:#344054;--muted:#5c6672;--brand:#087f6c;--brand-soft:rgba(8,127,108,.09);--accent-2:#344fb3;
   --high:#c41212;--high-bg:rgba(196,18,18,.08);--high-line:rgba(196,18,18,.25);
   --med:#a03e00;--med-bg:rgba(160,62,0,.08);--med-line:rgba(160,62,0,.24);
   --low:#016a3e;--low-bg:rgba(1,106,62,.08);--low-line:rgba(1,106,62,.24);

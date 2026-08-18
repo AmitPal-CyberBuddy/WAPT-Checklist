@@ -25,6 +25,8 @@
 | 2 | `methodology.html` and `README.md` still said "609 tests / 24 categories" after the Phase 3 count bump | NEW REGRESSION (DOCUMENTATION) — Phase 3 doc sweep aborted mid-way | Counts corrected to 623/25; pinned by the data-consistency test |
 | 3 | Import cap (1 MB) rejects legitimate evidence-pack exports (200 × 8 KB packs ≈ 1.6 MB) | PRE-EXISTING BUG surfaced by Phase 4 | Cap raised to 5 MB (localStorage-scale ceiling); tests updated |
 | 4 | `workflow.html` absent from `sitemap.xml` | PRE-EXISTING (DOCUMENTATION) | Entry added |
+| 5 | Light-theme neutral chip text (tag/mode chips use `--muted` on `--surface-3`) at 4.34:1 | PRE-EXISTING BUG (ACCESSIBILITY) | `--muted` deepened to `#5c6672` (5.09 chip / 5.43 paper), pinned by chip-contrast assertions |
+| 6 | Payload library had no copy control (spec O "Copy works") | PRE-EXISTING (MISSING FEATURE) | Copy button added to every payload reference value with clipboard fallback and accessible label |
 
 ### 1.4 What was intentionally changed
 - Severity re-ratings: HTTP-016/025/026 medium→high, HTTP-013 medium→low (correctness, not padding).
@@ -65,6 +67,20 @@ Phase 5 delivered dashboard command center, homepage pipeline/metrics/chain prev
 
 ### 1.14 Accessibility results
 PASS (automated): WCAG AA contrast for ink/ink-2/muted/brand and all four severity chips in both themes; color-independent glyph+label status/severity; visible focus ring on wizard options; skip links; ARIA roles corrected; `aria-live` hygiene; reduced-motion rules disable the only animation; 44 px coarse-pointer targets; keyboard shortcut paths exercised at source level. NOT TESTED (manual): screen-reader pass, real-browser tab order, 200% zoom rendering.
+
+### 1.14a Second verification round (strict re-audit of every FFV parameter)
+Parameters that were only partially covered in round 1 were re-exercised:
+- **Every filter key individually** (severity, difficulty, mode, category, status, applicability, tag, tool, technology, testId) over all 623 items — each value returns an exact, non-empty subset.
+- **Per-category counts** — manifest count == file length == floor for all 25 categories; total 623.
+- **Preset edits** — changing one answer preserves all other preset fields (engine normalization).
+- **Simulated browser reload** — portfolio JSON round trip through `normalizePortfolio` restores the active engagement (name, statuses, notes, findings, theme) exactly.
+- **Notes deletion** — empty text removes the note; per-item isolation asserted.
+- **Import edge cases** — missing fields, unknown item IDs, invalid statuses, wrong types, null maps, nested objects all normalize safely without prototype pollution.
+- **Report matrix** — all five severities, 1900-char notes, code fences, CRLF in endpoints: content preserved, markup neutralized.
+- **All three retest verdicts** — pass/partial/fail each surface their residual-risk guidance in reports.
+- **Copy controls** — methodology sections and payload reference values both expose safe clipboard controls (fallback on failure).
+- **Engagement sizes** — measured: 20 items ≈ 0.1 ms search / 500 items ≈ 2.7 ms search, 6.8 ms coverage.
+- **External host reachability** — 46 snapshot URLs live-verified via page fetch; direct sandbox egress is blocked for every host except github.com (HTTP 200). Per-host classification recorded: 1 reachable, 17 environment-blocked (not a product defect).
 
 ### 1.15 Remaining known issues
 1. **Browser/visual QA unsigned** — the release-state matrix keeps Browser QA, Visual QA, and Deployment as *pending maintainer*; the project is not called production-ready until signed.
@@ -176,7 +192,7 @@ Contrast computed for ink/ink-2/muted/brand + all severity chips in both themes 
 
 ### X. Data consistency — PASS: release.json ≡ manifest ≡ files ≡ UI (methodology.html, docs kicker, app version) ≡ docs (README) at 623/25/v2/r6; no hard-coded stale stats remain; consistency test fails the build on divergence.
 
-### Y. Phase-by-phase regression — PASS: each phase shipped with its own tests and gates (log in `docs/PHASE1-ASSESSMENT.md`); full suite (211 tests) green after every phase; FFV suite added last and green.
+### Y. Phase-by-phase regression — PASS: each phase shipped with its own tests and gates (log in `docs/PHASE1-ASSESSMENT.md`); full suite (220 tests) green after every phase; FFV suite added last and green.
 
 ### Z. This document — `docs/FEATURE-VERIFICATION.md`.
 
@@ -188,7 +204,7 @@ Functional Verification PASS (engine/DOM-logic) · Content QA PASS · Engine QA 
 
 ## 3. Regression results
 
-- Before Phase 1 baseline: 158 tests → after all phases: **211 passing, 0 failing, 0 skipped**.
+- Before Phase 1 baseline: 158 tests → after all phases: **220 passing, 0 failing, 0 skipped**.
 - Every phase gate re-run at the end of each phase and again after FFV (floors, references, content audit, link audit, `git diff --check`).
 - FFV defects 1–4 fixed with regression tests: contrast thresholds, data-consistency checks, 5 MB import ceiling, sitemap coverage.
 

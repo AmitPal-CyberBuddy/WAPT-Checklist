@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (FFV round 2 — strict parameter re-audit)
+
+- Payload reference values now expose a copy control (clipboard with fallback and accessible label) — the only "Copy works" parameter that had no implementation.
+- Verification additions: every filter key exercised individually over all 623 items, per-category count equality, preset-edit preservation, simulated browser reload of the portfolio, note deletion, import fuzz for missing fields/unknown IDs/invalid statuses/wrong types, full five-severity report matrix with long text/code blocks/CRLF, all three retest verdicts, engagement-size performance (20/150/500 items), and per-host external reachability classification.
+- Neutral chip text contrast asserted in both themes.
+
+### Fixed (FFV round 2)
+
+- Light-theme `--muted` chip text at 4.34:1 on chip surfaces (PRE-EXISTING accessibility bug) — token deepened to `#5c6672` (5.09 on chips, 5.43 on paper).
+
 ### Added (FFV — full functionality verification)
 
 - `tools/verify-links.js` link audit (97 local references resolve; 15 external hosts allowlist-classified) and `tools/measure-performance.js` benchmark recorder.

@@ -78,6 +78,26 @@ async function main() {
   evaluateApplicability(items[0], context);
   report.singleApplicabilityMs = ms(start);
 
+  // Engagement-size simulation: small / medium / large active plans
+  report.engagementSizesMs = {};
+  for (const size of [20, 150, 500]) {
+    const subset = items.slice(0, size);
+    const subsetRecords = subset.map((item) => ({ item, applicability: evaluateApplicability(item, context) }));
+    let sizeStart = process.hrtime.bigint();
+    filterItems(subsetRecords, { query: 'auth' }, createState());
+    const searchMs = ms(sizeStart);
+    sizeStart = process.hrtime.bigint();
+    suggestedNext(subset, context, { limit: 8 });
+    const nextMs = ms(sizeStart);
+    sizeStart = process.hrtime.bigint();
+    composeReportMarkdown(subset, createState(), {});
+    const reportMs = ms(sizeStart);
+    sizeStart = process.hrtime.bigint();
+    computeCoverage(subset, context, {});
+    const coverageMs = ms(sizeStart);
+    report.engagementSizesMs[size] = { searchMs, nextMs, reportMs, coverageMs };
+  }
+
   console.log(JSON.stringify(report, null, 2));
 }
 

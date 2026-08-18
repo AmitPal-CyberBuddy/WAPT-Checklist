@@ -77,6 +77,12 @@ test('dark and light themes meet WCAG AA contrast for body, muted, and brand tex
       const chipRatio = ratio(hexToRgb(tokens[name]), effective);
       assert.ok(chipRatio >= 4.5, `${theme} ${name} chip text on tinted surface (${chipRatio.toFixed(2)})`);
     }
+    // Neutral chips everywhere use muted text on the surface-3 tint
+    const surface3 = tintRgb(tokens['--surface-3']);
+    assert.ok(surface3, `${theme} --surface-3 is a parsed rgba tint`);
+    const chipSurface = mix(surface3.rgb, surface3.alpha, paper);
+    const mutedChip = ratio(hexToRgb(tokens['--muted']), chipSurface);
+    assert.ok(mutedChip >= 4.5, `${theme} muted chip text on surface-3 (${mutedChip.toFixed(2)})`);
   }
 });
 
