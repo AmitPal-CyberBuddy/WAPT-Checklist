@@ -225,6 +225,14 @@ async function run() {
   record('Tester-first card: family headers group the category with counts', doc.querySelectorAll('.family-group').length >= 4 && /\d+\/\d+ tested/.test(doc.querySelector('.family-count')?.textContent || '') ? 'PASS' : 'FAIL', `${doc.querySelectorAll('.family-group').length} groups, first: ${doc.querySelector('.family-header h3')?.textContent}`);
   card.querySelector('.level-details summary').click();
   record('Tester-first card: Don\'t miss list renders at level 2', card.querySelectorAll('.dont-miss-list li').length >= 2 ? 'PASS' : 'FAIL', `${card.querySelectorAll('.dont-miss-list li').length} overlooked variants`);
+  doc.querySelector('[data-checklist-mode="coverage"]').click();
+  await waitFor(() => doc.querySelectorAll('.coverage-family').length >= 4, 5000, 'coverage families');
+  record('Coverage view: family tick lists render with statuses and counts', doc.querySelectorAll('.coverage-row').length >= 20 && /\d+\/\d+/.test(doc.querySelector('.coverage-family .family-count')?.textContent || '') ? 'PASS' : 'FAIL', `${doc.querySelectorAll('.coverage-family').length} families, ${doc.querySelectorAll('.coverage-row').length} rows`);
+  const coverageOverview = doc.querySelector('.coverage-overview')?.textContent || '';
+  record('Coverage view: category summary explains tested, percent, and scoped-out', /executable tests recorded/.test(coverageOverview) && /scoped out/.test(coverageOverview) ? 'PASS' : 'FAIL', coverageOverview.slice(0, 90));
+  doc.querySelector('[data-checklist-mode="testing"]').click();
+  await waitFor(() => doc.querySelectorAll('.test-card').length > 0, 5000, 'testing view restored');
+  record('Coverage view: toggling back to Testing restores cards', 'PASS');
   card.querySelectorAll('.method-details > summary').forEach((summaryNode) => { if (summaryNode.textContent === 'Detailed methodology') summaryNode.click(); });
   const methodText = card.textContent;
   record('Methodology: detailed level keeps the full decision procedure', ['Prerequisites', 'Steps', 'Secure behavior', 'Vulnerable behavior', 'Validation', 'False positives', 'Impact', 'Evidence'].every((s) => methodText.includes(s)) ? 'PASS' : 'FAIL');

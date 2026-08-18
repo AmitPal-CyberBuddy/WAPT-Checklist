@@ -650,6 +650,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let activeView = '';
   let activeCategory = '';
   let checklistFilters = { ...EMPTY_FILTERS };
+  let checklistMode = 'testing';
   let searchFilters = { ...EMPTY_FILTERS };
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
@@ -731,6 +732,80 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }, 0);
   }
 
+  function coverageRow(item, state) {
+    const status = itemStatus(item, state);
+    const row = element('div', `coverage-row status-${status}`);
+    const link = element('a', '', `${STATUS_GLYPHS[status] || '○'} ${item.id}`);
+    link.href = '#checklist';
+    link.dataset.coverageItem = item.id;
+    link.addEventListener('click', (event) => {
+      event.preventDefault();
+      checklistMode = 'testing';
+      renderChecklist();
+      setTimeout(() => {
+        document.querySelector(`[data-item-id="${item.id}"]`)?.scrollIntoView({ block: 'start' });
+        document.querySelector(`[data-item-id="${item.id}"] .status-select`)?.focus();
+      }, 0);
+    });
+    const copy = element('span', 'coverage-title', item.title);
+    const label = element('span', 'coverage-status', STATUS_LABELS[status]);
+    row.append(link, copy, label);
+    return row;
+  }
+
+  function renderCoverageCategory(root, recordsList, category) {
+    const state = getState();
+    const families = familyByCategory.get(category) || [];
+    const byFamily = new Map();
+    const ungrouped = [];
+    for (const record of recordsList) {
+      const family = familyByItem.get(record.item.id);
+      if (family) {
+        const bucket = byFamily.get(family.id) || [];
+        bucket.push(record);
+        byFamily.set(family.id, bucket);
+      } else {
+        ungrouped.push(record);
+      }
+    }
+    const allRecords = recordsList;
+    const executable = allRecords.filter(({ applicability }) => applicability.state !== APPLICABILITY.NA_CONTEXT);
+    const tested = executable.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
+    const scopedOut = allRecords.length - executable.length;
+    const percent = executable.length ? Math.round((tested / executable.length) * 100) : 100;
+    const overview = element('div', 'coverage-overview');
+    overview.append(element('strong', '', `${tested}/${executable.length}`), document.createTextNode(` executable tests recorded · ${percent}% coverage · ${scopedOut} scoped out (context-N/A)`));
+    root.replaceChildren(overview);
+
+    const blocks = [];
+    for (const family of families) {
+      const members = byFamily.get(family.id) || [];
+      const block = element('section', 'coverage-family');
+      const familyTested = members.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
+      const head = element('header', 'coverage-family-head');
+      head.append(element('h3', '', family.title));
+      head.append(element('span', 'family-count', `${familyTested}/${members.length}`));
+      const bar = document.createElement('progress');
+      bar.max = Math.max(1, members.length);
+      bar.value = familyTested;
+      head.append(bar);
+      block.append(head);
+      const list = element('div', 'coverage-list');
+      for (const record of members) list.append(coverageRow(record.item, state));
+      block.append(list);
+      blocks.push(block);
+    }
+    if (ungrouped.length) {
+      const block = element('section', 'coverage-family');
+      block.append(element('h3', '', 'Ungrouped tests'));
+      const list = element('div', 'coverage-list');
+      for (const record of ungrouped) list.append(coverageRow(record.item, state));
+      block.append(list);
+      blocks.push(block);
+    }
+    root.append(...blocks);
+  }
+
   function renderChecklist() {
     const filterRoot = document.querySelector('[data-checklist-filters]');
     const resultRoot = document.querySelector('[data-checklist-results]');
@@ -738,8 +813,18 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const category = activeCategory;
     const fixed = category && manifest.categories.some(({ slug }) => slug === category) ? category : '';
     checklistFilters = { ...checklistFilters, category: fixed };
-    renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed });
-    renderResults(resultRoot, summary, records, checklistFilters, { groupByFamily: fixed ? (familyByCategory.get(fixed) || []) : [] });
+    document.querySelectorAll('[data-checklist-mode]').forEach((button) => {
+      button.setAttribute('aria-pressed', String(button.dataset.checklistMode === checklistMode));
+    });
+    if (checklistMode === 'coverage' && fixed) {
+      document.querySelector('[data-checklist-filters]').hidden = true;
+      summary.textContent = '';
+      renderCoverageCategory(resultRoot, records, fixed);
+    } else {
+      document.querySelector('[data-checklist-filters]').hidden = false;
+      renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed });
+      renderResults(resultRoot, summary, records, checklistFilters, { groupByFamily: fixed ? (familyByCategory.get(fixed) || []) : [] });
+    }
     const title = document.querySelector('#checklist-title');
     title.textContent = fixed ? names()[fixed] : 'All tests';
     const rationale = document.querySelector('[data-category-rationale]');
@@ -911,6 +996,10 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
         event.target.value = '';
       }
     });
+    document.querySelectorAll('[data-checklist-mode]').forEach((button) => button.addEventListener('click', () => {
+      checklistMode = button.dataset.checklistMode;
+      if (activeView === 'checklist') renderChecklist();
+    }));
     document.querySelector('[data-print]').addEventListener('click', () => window.print());
   }
 
