@@ -106,3 +106,72 @@ test('family gaps rank part-finished families before untouched ones', async () =
   const closed = familyGaps(index, new Map([[objects.id, objects.items.map((id) => record(id))]]), { statuses: complete, variants }, { limit: 5 });
   assert.equal(closed.length, 0, 'a fully covered family is not a gap');
 });
+
+const fsx = require('node:fs');
+const manifest = JSON.parse(fsx.readFileSync(path.join(ROOT, 'checklist', 'manifest.json'), 'utf8'));
+const allItems = manifest.categories.flatMap(({ file }) => JSON.parse(fsx.readFileSync(path.join(ROOT, 'checklist', file), 'utf8')).items);
+
+test('family contract is derived from existing content, never authored twice', async () => {
+  const { familyContract, indexFamilies } = await familiesModule;
+  const index = indexFamilies(document);
+  const objects = familyContract(index.byId.get('authorization-object-level'), allItems);
+  // Needs come from the applicability expressions the items already carry.
+  assert.deepEqual(objects.needs.slice(0, 2).map(({ label }) => label), ['an authenticated session', 'test credentials']);
+  assert.equal(objects.needs.find(({ label }) => label === 'asynchronous jobs').all, false, 'partial prerequisites are marked');
+  assert.equal(objects.severity, 'high');
+  assert.equal(objects.mode, 'manual');
+  assert.equal(objects.checks, 14);
+  assert.ok(objects.tools.some(({ workflow }) => workflow === 'repeater'));
+  assert.ok(objects.standards.some(({ source, id }) => source === 'wstg' && id.startsWith('WSTG-')));
+  assert.ok(objects.standards.some(({ source }) => source === 'cwe'));
+
+  const uploads = familyContract(index.byId.get('upload-archives'), allItems);
+  assert.deepEqual(uploads.needs.map(({ label }) => label), ['an upload feature']);
+  assert.equal(uploads.severity, 'critical');
+
+  const headers = familyContract(index.byId.get('hdr-hsts-csp'), allItems);
+  assert.equal(headers.mode, 'mixed');
+  assert.equal(headers.assisted, true, 'a family containing automated checks is flagged tool-assisted');
+
+  // Every family must produce a contract without throwing, and never expose a raw token.
+  for (const family of index.families) {
+    const contract = familyContract(family, allItems);
+    assert.ok(contract.standards.length >= 1, `${family.id} has no standard mapping`);
+    for (const need of contract.needs) assert.doesNotMatch(need.label, /:/, `${family.id} leaked a raw applicability token`);
+  }
+});
+
+test('family boundary names the sibling families that own the rest of the surface', async () => {
+  const { familyBoundary, indexFamilies } = await familiesModule;
+  const index = indexFamilies(document);
+  const boundary = familyBoundary('authorization-object-level', index);
+  assert.equal(boundary.length, 5);
+  assert.ok(boundary.every(({ category }) => category === 'authorization'));
+  assert.ok(boundary.every(({ id }) => id !== 'authorization-object-level'));
+  assert.deepEqual(familyBoundary('nope', index), []);
+});
+
+test('attack-surface suites aggregate coverage and point at the first open family', async () => {
+  const { surfaceSuites, indexFamilies } = await familiesModule;
+  const index = indexFamilies(document);
+  const authorization = index.byCategory.get('authorization');
+  const recordsByFamily = new Map(authorization.map((family) => [family.id, family.items.map((id) => record(id))]));
+  const first = authorization[0];
+  const statuses = Object.fromEntries(first.items.map((id) => [id, 'passed']));
+  const variants = Object.fromEntries(first.dont_miss.map((textEntry) => [`${first.id}#x`, true]));
+  const suites = surfaceSuites(index, recordsByFamily, { statuses, variants: {} }, { categoryNames: { authorization: 'Authorization' } });
+  const suite = suites.find(({ slug }) => slug === 'authorization');
+  assert.equal(suite.name, 'Authorization');
+  assert.equal(suite.families, 6);
+  assert.equal(suite.tested, first.items.length);
+  assert.equal(suite.nextFamily, authorization[1].id, 'points at the first family with unexecuted checks');
+  // When every check is recorded, Continue falls back to the family with open variants.
+  const allTested = Object.fromEntries(authorization.flatMap(({ items: ids }) => ids.map((id) => [id, 'passed'])));
+  const reviewSuite = surfaceSuites(index, recordsByFamily, { statuses: allTested, variants: {} }, {}).find(({ slug }) => slug === 'authorization');
+  assert.equal(reviewSuite.nextFamily, authorization[0].id);
+  assert.equal(reviewSuite.coverage, 100);
+  assert.equal(reviewSuite.complete, false, 'open don\'t-miss variants keep the surface incomplete');
+  assert.equal(suite.complete, false);
+  assert.ok(suite.coverage > 0 && suite.coverage < 100);
+  assert.ok(Object.keys(variants).length >= 1);
+});

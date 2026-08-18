@@ -4,10 +4,10 @@ import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r6';
 import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r6';
 import { clearOverride, importState, setPosition, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
 import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r6';
-import { familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
 import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r6';
 import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r6';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r6';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r6';
 import { createChainStore } from './chains.js?v=1.0.0-r6';
 import { createPayloadStore } from './payloads.js?v=1.0.0-r6';
 import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r6';
@@ -386,6 +386,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let searchFilters = { ...EMPTY_FILTERS };
   let familyIndex = EMPTY_INDEX;
   let familiesLoaded = false;
+  let visitedFamilies = [];
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
 
@@ -651,6 +652,17 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     renderResults(document.querySelector('[data-search-results]'), document.querySelector('[data-search-summary]'), records, searchFilters, { compact: true });
   }
 
+  // Families touched most recently, newest first — the jump list for iterative testing.
+  function recentFamilyIds() {
+    const ids = [];
+    for (const itemId of recentTouched) {
+      const family = familyIndex.byItem.get(itemId);
+      if (family && !ids.includes(family.id)) ids.push(family.id);
+    }
+    for (const id of visitedFamilies) if (!ids.includes(id)) ids.push(id);
+    return ids;
+  }
+
   function resumeTarget() {
     const state = getState();
     const stored = familyIndex.byId.get(state.position?.family || '');
@@ -668,6 +680,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       getState,
       categoryNames: names(),
       boardFilters,
+      itemList: records.map(({ item }) => item),
+      recentFamilies: recentFamilyIds(),
       resumeTarget: resumeTarget(),
       onFilterChange: (next, key) => {
         boardFilters = next;
@@ -694,6 +708,16 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       chains: chainStore.getChains(),
       renderEvidenceForm,
       categoryOf,
+      itemList: records.map(({ item }) => item),
+      payloads: payloadStore.cached(),
+      async onCopyCoverage(family, coverage) {
+        try {
+          await navigator.clipboard.writeText(composeFamilyCoverageBlock(family, coverage, getState(), names()));
+          return true;
+        } catch {
+          return false;
+        }
+      },
       // The next check inside the family is the Continue button; this panel answers
       // "and after this family?" so the two are not the same list twice.
       suggestions: suggestions(24, { familyId: activeFamily, nearFamilies: neighbourIds })
@@ -836,7 +860,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       rememberPosition({ view: 'families' });
     } else if (view === 'family') {
       activeFamily = slug;
-      await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
+      visitedFamilies = [slug, ...visitedFamilies.filter((id) => id !== slug)].slice(0, 6);
+      await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll(), payloadStore.loadAll().catch(() => [])]);
       renderFamily();
       const family = familyIndex.byId.get(slug);
       rememberPosition({ view: 'family', family: slug, category: family?.category || '' });
@@ -865,12 +890,17 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const categoryNames = names();
     if (kind === 'json') downloadText(safeFilename(state.engagement.name, 'state.json'), composeStateJson(state), 'application/json;charset=utf-8');
     if (kind === 'checklist') downloadText(safeFilename(state.engagement.name, 'checklist.md'), composeChecklistMarkdown(all, state, categoryNames), 'text/markdown;charset=utf-8');
+    if (kind === 'coverage-csv') {
+      await loadFamilies();
+      downloadText(safeFilename(state.engagement.name, 'coverage.csv'), composeCoverageCsv(all, state, familyIndex, categoryNames), 'text/csv;charset=utf-8');
+    }
     if (kind === 'report') downloadText(safeFilename(state.engagement.name, 'report.md'), composeReportMarkdown(all, state, categoryNames), 'text/markdown;charset=utf-8');
   }
 
   function bindActions() {
     document.querySelector('[data-export-json]').addEventListener('click', () => exportAll('json'));
     document.querySelector('[data-export-checklist]').addEventListener('click', () => exportAll('checklist'));
+    document.querySelector('[data-export-csv]')?.addEventListener('click', () => exportAll('coverage-csv'));
     document.querySelector('[data-export-report]').addEventListener('click', () => exportAll('report'));
     document.querySelector('[data-import-trigger]').addEventListener('click', () => document.querySelector('[data-import-file]').click());
     document.querySelector('[data-import-file]').addEventListener('change', async (event) => {

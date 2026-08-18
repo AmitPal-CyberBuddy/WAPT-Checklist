@@ -131,3 +131,78 @@ export function downloadText(filename, text, type = 'text/plain;charset=utf-8') 
   link.click();
   setTimeout(() => URL.revokeObjectURL(url), 0);
 }
+
+// CSV escaping that also neutralises spreadsheet formula injection. This project documents
+// that attack (WAPT-INJ export family); its own exports must not commit it.
+function csvCell(value) {
+  const text = String(value ?? '').replace(/\r?\n/g, ' ').trim();
+  const guarded = /^[=+\-@\t\r]/.test(text) ? `'${text}` : text;
+  return `"${guarded.replaceAll('"', '""')}"`;
+}
+
+const COVERAGE_STATE = Object.freeze({
+  not_tested: 'not tested', in_progress: 'testing now', passed: 'tested',
+  potential_finding: 'tested', confirmed_finding: 'tested', na: 'N/A', blocked: 'blocked'
+});
+const FINDING_STATE = Object.freeze({
+  potential_finding: 'potential', confirmed_finding: 'confirmed'
+});
+
+// Coverage sheet for client trackers and retest matrices: one row per check, with the
+// coverage state and the finding verdict kept in separate columns.
+export function composeCoverageCsv(items, state, familyIndex, categoryNames = {}) {
+  const rows = [[
+    'Attack surface', 'Test family', 'Check ID', 'Check', 'Severity',
+    'Coverage state', 'Finding', 'Retest required', 'Notes recorded'
+  ].map(csvCell).join(',')];
+  const ordered = familyIndex?.families?.length
+    ? familyIndex.families.flatMap((family) => (family.items || [])
+      .map((id) => ({ family, item: items.find((candidate) => candidate.id === id) }))
+      .filter(({ item }) => item))
+    : items.map((item) => ({ family: null, item }));
+  const covered = new Set(ordered.map(({ item }) => item.id));
+  for (const item of items) if (!covered.has(item.id)) ordered.push({ family: null, item });
+  for (const { family, item } of ordered) {
+    const status = statusOf(item, state);
+    rows.push([
+      categoryNames[item.category] || item.category,
+      family ? family.title : '—',
+      item.id,
+      item.title,
+      item.severity,
+      COVERAGE_STATE[status] || status,
+      FINDING_STATE[status] || 'none',
+      state.retests?.[item.id] ? 'yes' : 'no',
+      state.notes?.[item.id] ? 'yes' : 'no'
+    ].map(csvCell).join(','));
+  }
+  return `${rows.join('\n')}\n`;
+}
+
+// A paste-ready status block for engagement notes and daily updates: the coverage answer the
+// tester would otherwise retype into a chat or a report.
+export function composeFamilyCoverageBlock(family, coverage, state, categoryNames = {}) {
+  const checks = coverage.checks;
+  const lines = [
+    `### ${family.title} — ${categoryNames[family.category] || family.category}`,
+    '',
+    `- Coverage: ${checks.coverage === null ? '—' : `${checks.coverage}%`} (${checks.tested}/${checks.executable} executable checks tested)`,
+    `- Not tested: ${checks.not_tested + checks.active} · Blocked: ${checks.blocked} · N/A: ${checks.na}`,
+    `- Confirmed findings: ${checks.confirmed} · Potential: ${checks.potential}`,
+    `- Don't-miss variants covered: ${coverage.variants.covered}/${coverage.variants.total}`,
+    ''
+  ];
+  const uncoveredVariants = coverage.variants.entries.filter(({ covered }) => !covered);
+  if (uncoveredVariants.length) {
+    lines.push('Variants still open:');
+    for (const variant of uncoveredVariants) lines.push(`- [ ] ${safe(variant.text)}`);
+    lines.push('');
+  }
+  const remaining = (family.items || []).filter((id) => !TESTED_STATUSES.includes(state.statuses?.[id] || 'not_tested'));
+  if (remaining.length) {
+    lines.push('Checks still open:');
+    for (const id of remaining) lines.push(`- [ ] ${id} — ${STATUS_LABELS[state.statuses?.[id] || 'not_tested']}`);
+    lines.push('');
+  }
+  return lines.join('\n');
+}

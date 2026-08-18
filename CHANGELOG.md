@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Product round — CyberBuddy patterns translated to an engagement workflow)
+
+- **Family operator contract** (derived, no new prose): every family states **Needs** (scope prerequisites read from the items' `applies` expressions — "a second tenant", "an upload feature", "two accounts"), **Mode** (manual / mixed / tool-assisted), **Tools** (linked to the Burp workflow pages), **Maps to** (WSTG · ASVS · OWASP · API · CWE), and its top severity. Rendered from one component on the board, in the family header, and on gap rows.
+- **Attack-surface suites** on the families board: per-surface coverage, families, blocked, N/A, confirmed and don't-miss totals, plus **Continue this suite** — which lands on the first family with unexecuted checks (falling back to one with open variants).
+- **Family boundary line** (`NOT HERE`): the sibling families that own the rest of the surface, derived from the category, so object/function/field/tenant authorization never blur.
+- **Tool band per family**: Burp workflow deep links plus the payload references that match the family, rendered inline instead of linking into a library search.
+- **Deliverable output**: `Copy coverage` (Markdown block with coverage, state breakdown, findings, variants and checks still open) and **Export coverage CSV** (one row per check, coverage state and finding in separate columns, with a spreadsheet-formula-injection guard).
+- **Operator documentation** `docs/OPERATING.md`, rendered at `docs.html?doc=operating` and linked from the workspace sidebar and the home page: quick start, what this is and is not, the coverage vocabulary table, the family contract, keyboard model, outputs, and explicit limits.
+- **Recent families** chip row on the board, and the home page's primary action becomes *Continue \<engagement\>* when this browser already holds progress.
+- `docs/CYBERBUDDY-REFERENCE-REVIEW.md`: audit of both repositories, the proposal, the challenge of each item, and what was rejected (A–F grades, per-family authored `proves` lines, tool-per-page architecture, "run suite" automation).
+
+### Fixed (Product round)
+
+- Homepage statistics counted N/A and blocked checks as tested, contradicting the corrected coverage engine.
+
 ### Added (Tester-first round 2 — families as the working unit)
 
 - **Test families view** (`#families`) and **family workspace** (`#family/<id>`): every attack surface with `tested/executable`, coverage bar, blocked, N/A, confirmed and don't-miss counts; surface/text/"unfinished only" filters; a Continue control that resumes the last family; and per-family quick test, tickable don't-miss list, dense check rows, "after this family", and "what else should I check?".

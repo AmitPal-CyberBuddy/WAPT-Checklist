@@ -83,7 +83,10 @@ A chain boost is granted only when every supplied prerequisite item has status `
 - `variantKey()` / `familyVariants()` — stable `<family-id>#<fnv1a>` keys so a tick stays attached to its reminder;
 - `nextInFamily()` — the next unexecuted check, walking forward from the current one;
 - `relatedFamilies()` — "what else should I check?" derived only from existing relationships: `item.related` links (6), attack-chain successors after this family (4), same-surface siblings (2), and workflow adjacency (3/2/1 by closeness), capped at three families per own surface and two per other surface so the answer stays varied;
-- `familyGaps()` — families with executable work left, part-finished first, which is the dashboard's "what have I missed?" list.
+- `familyGaps()` — families with executable work left, part-finished first, which is the dashboard's "what have I missed?" list;
+- `familyContract()` — the operator contract, **entirely derived** from existing content: **needs** (from each item's `applies` tokens, mapped to plain phrases such as "a second tenant"; marked *(some)* when only part of the family requires it), **mode** (manual / mixed / automated), **tool-assisted** (an automated check or Autorize/Intruder/Turbo/Param Miner/Scanner/Sequencer/Collaborator in the tool list), **tools** (mapped to `workflow.html?tool=…` pages), **standards** (one identifier per WSTG/ASVS/OWASP/API/CWE family), and the family's **top severity**. No authored duplication, so it cannot drift from the checks;
+- `familyBoundary()` — the sibling families that own the rest of the attack surface, which is how the UI answers "what this family does *not* cover" without a second prose field;
+- `surfaceSuites()` — attack-surface planning unit: summed coverage, blocked, N/A, confirmed, variant totals, and the first family with unexecuted checks (falling back to one with open don't-miss variants) for the surface's Continue action.
 
 ## `reportability.js`
 

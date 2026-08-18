@@ -2,6 +2,7 @@ import { initializeTheme } from './theme.js?v=1.0.0-r6';
 import { renderMarkdown } from './markdown.js?v=1.0.0-r6';
 
 const DOCUMENTS = Object.freeze({
+  operating: { title: 'How to run an engagement', kicker: 'OPERATOR GUIDE', summary: 'Quick start, the coverage vocabulary, the family contract, keyboard model, outputs, and the honest limits of this workspace.', file: 'docs/OPERATING.md' },
   security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report project vulnerabilities privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },
   contributing: { title: 'Contributing', kicker: 'BUILD WITH RIGOR', summary: 'Content quality, code architecture, safety, testing, attribution, and pull-request expectations.', file: 'CONTRIBUTING.md' },
   'content-guide': { title: 'Content standard', kicker: 'DECISION-GRADE METHODOLOGY', summary: 'The editorial and safety contract every production checklist item must satisfy.', file: 'docs/CONTENT-GUIDE.md' },

@@ -180,3 +180,38 @@ test('test families are a first-class view with board, workspace, and resume', (
   assert.match(familyView, /setVariantCovered/);
   assert.match(familyView, /relatedFamilies\(/);
 });
+
+test('operator documentation is registered in every place docs are wired', () => {
+  const docsPage = read('js/ui/docs-page.js');
+  const markdown = read('js/ui/markdown.js');
+  const docsHtml = read('docs.html');
+  const appHtml = read('app.html');
+  assert.match(docsPage, /operating: \{ title: 'How to run an engagement'/);
+  assert.match(markdown, /'docs\/OPERATING\.md': 'operating'/);
+  assert.match(docsHtml, /data-doc-link="operating"/);
+  assert.match(appHtml, /docs\.html\?doc=operating/);
+  const operating = read('docs/OPERATING.md');
+  // The document must carry the coverage vocabulary and the honest limits, not marketing.
+  for (const marker of ['Coverage vocabulary', 'Blocked', 'N/A', 'never contacts the target', 'Coverage is not a grade', 'family contract']) {
+    assert.ok(operating.toLowerCase().includes(marker.toLowerCase()), `OPERATING.md missing ${marker}`);
+  }
+});
+
+test('family contract, suites, and deliverable exports are wired into the UI', () => {
+  const dom = read('js/ui/dom.js');
+  const familyView = read('js/ui/family-view.js');
+  const workspace = read('js/ui/workspace.js');
+  const exportSource = read('js/ui/export.js');
+  const appHtml = read('app.html');
+  assert.match(dom, /export function contractRow/);
+  assert.match(familyView, /familyContract\(family, itemList\)/);
+  assert.match(familyView, /dataset\.familyBoundary/);
+  assert.match(familyView, /dataset\.suiteContinue/);
+  assert.match(familyView, /dataset\.toolBand/);
+  assert.match(familyView, /workflow\.html\?tool=/);
+  assert.match(workspace, /composeCoverageCsv/);
+  assert.match(workspace, /composeFamilyCoverageBlock/);
+  assert.match(appHtml, /data-export-csv/);
+  // CSV formula injection is a documented weakness in this catalog; the exporter guards it.
+  assert.match(exportSource, /\^\[=\+\\-@\\t\\r\]/);
+});

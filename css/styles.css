@@ -328,3 +328,33 @@ select:focus-visible,textarea:focus-visible{box-shadow:var(--focus);border-color
 .coverage-row.status-blocked .coverage-glyph{color:var(--med)}
 @media (max-width:900px){.family-columns{grid-template-columns:1fr}.test-head-line{flex-direction:column}.status-controls{width:100%}.status-controls .status-select,.status-controls .finding-select{flex:1;min-width:0}}
 @media (max-width:600px){.check-row{flex-wrap:wrap}.status-controls.compact{width:100%}.family-grid{grid-template-columns:1fr}}
+
+/* ── Family operator contract, surface suites, tool band ──────────────────────────────────── */
+.contract-row{display:flex;flex-wrap:wrap;gap:.3rem .8rem;margin:.35rem 0;color:var(--ink-2);font-size:.66rem;line-height:1.5}
+.contract-row.compact{margin:.15rem 0 0;font-size:.6rem;color:var(--muted)}
+.contract-item{display:inline-flex;flex-wrap:wrap;align-items:baseline;gap:.3rem;min-width:0}
+.contract-key{color:var(--muted);font:500 .55rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase}
+.contract-tool{color:var(--accent-2);font:500 .6rem var(--font-mono)}
+.contract-tool:hover{color:var(--brand);text-decoration:underline}
+.contract-needs span:last-child{color:var(--ink-2)}
+.family-row-badges{display:flex;flex-wrap:wrap;gap:.25rem;margin-top:.15rem}
+.tool-chip{color:var(--accent-2);border-color:rgba(138,164,255,.3)}
+.family-boundary{margin:.4rem 0 0;color:var(--muted);font-size:.66rem;line-height:1.5}
+.family-boundary .contract-key{margin-right:.35rem}
+.family-boundary a{color:var(--accent-2)}
+.family-boundary a:hover{color:var(--brand)}
+.suite-bar{display:grid;gap:.3rem;padding:.45rem .85rem .6rem;border-bottom:1px solid var(--line);background:var(--surface-2)}
+.suite-meta{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;color:var(--muted);font:400 .6rem var(--font-mono)}
+.suite-continue{margin-left:auto;min-height:28px;padding:.2rem .6rem;font-size:.62rem}
+.recent-families{display:flex;flex-wrap:wrap;align-items:center;gap:.35rem;padding:.35rem .1rem}
+.recent-families .recent-chip{color:var(--ink-2);text-transform:none;font-family:var(--font-sans);font-size:.62rem}
+.recent-families .recent-chip:hover{border-color:var(--brand);color:var(--brand)}
+.tool-band{display:flex;flex-wrap:wrap;align-items:center;gap:.5rem;padding:.55rem .85rem}
+.tool-band .micro-label{margin:0}
+.tool-band-links{display:flex;flex-wrap:wrap;gap:.3rem}
+.tool-band-payloads{flex-basis:100%}
+.tool-band-payloads>summary{color:var(--brand);font:500 .62rem var(--font-mono);cursor:pointer}
+.payload-mini-list{margin:.4rem 0 0;padding:0;list-style:none;display:grid;gap:.3rem}
+.payload-mini-list li{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem;font-size:.68rem;color:var(--ink-2)}
+.payload-mini-list code{padding:.1rem .35rem;border:1px solid var(--line);border-radius:5px;background:var(--surface-3);font-family:var(--font-mono);font-size:.62rem;overflow-wrap:anywhere}
+@media (max-width:600px){.suite-continue{margin-left:0}.contract-row{gap:.25rem .5rem}}

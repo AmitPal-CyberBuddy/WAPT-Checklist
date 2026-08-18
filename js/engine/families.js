@@ -207,3 +207,192 @@ export function familyGaps(index, recordsByFamily, state = {}, { limit = 8, cate
     })
     .slice(0, limit));
 }
+
+// ---------------------------------------------------------------------------------------
+// Family operator contract.
+//
+// Borrowed from CyberBuddy's tool registry, which states Input / Mode / Evidence / Standards
+// on every card so an operator can decide "can I run this now, and what will it give my
+// report?" before opening anything. Here the same question is asked of a test family — and
+// every field is DERIVED from content that already exists (applicability expressions, item
+// mode, tools, mappings, severity), so no new prose is introduced and nothing can drift.
+
+const NEED_LABELS = Object.freeze({
+  'has_login:yes': 'an authenticated session',
+  'creds:low|high': 'test credentials',
+  'creds:low': 'a low-privilege account',
+  'creds:high': 'a privileged account',
+  'creds:low|high|none': 'any account state',
+  'roles:many': 'several roles',
+  'roles:two': 'two roles',
+  'roles:many|two': 'more than one role',
+  'registration:yes': 'self-registration',
+  'features:multi_tenant': 'a second tenant',
+  'features:payments': 'a payment flow',
+  'features:file_upload': 'an upload feature',
+  'features:ai_llm': 'an LLM feature',
+  'features:webhooks': 'webhook configuration',
+  'features:search': 'a search feature',
+  'features:export': 'an export feature',
+  'api_style:graphql': 'a GraphQL endpoint',
+  'api_style:websocket': 'a WebSocket channel',
+  'api_style:rest': 'a REST API',
+  'auth_mechanism:jwt': 'JWT tokens',
+  'auth_mechanism:oauth': 'OAuth or SSO',
+  'auth_mechanism:saml': 'SAML federation',
+  'auth_mechanism:cookie': 'cookie sessions',
+  'app_type:api_only': 'an API-only surface',
+  'outbound_fetch:yes': 'server-side URL fetching',
+  'async_jobs:yes': 'asynchronous jobs',
+  'source_access:yes': 'source or configuration access',
+  'intermediary:cdn': 'a CDN hop',
+  'intermediary:proxy': 'a proxy hop',
+  'intermediary:waf': 'a WAF in path',
+  'cloud:aws': 'AWS hosting',
+  'cloud:azure': 'Azure hosting',
+  'cloud:gcp': 'GCP hosting'
+});
+
+const TOOL_WORKFLOWS = Object.freeze({
+  'burp proxy': 'proxy', 'burp repeater': 'repeater', 'burp intruder': 'intruder',
+  'burp scanner': 'scanner', 'burp comparer': 'comparer', 'burp decoder': 'decoder',
+  'burp sequencer': 'sequencer', 'burp logger': 'logger', 'burp collaborator': 'collaborator',
+  'burp autorize': 'autorize', autorize: 'autorize', 'param miner': 'param-miner',
+  'burp param miner': 'param-miner', 'turbo intruder': 'turbo-intruder',
+  'burp turbo intruder': 'turbo-intruder'
+});
+
+// Tooling that means "this family can be driven semi-automatically" — worth flagging, because
+// a manual-only family and a tool-assisted family are planned differently.
+const ASSISTED_TOOLS = new Set(['autorize', 'intruder', 'turbo-intruder', 'param-miner', 'scanner', 'sequencer', 'collaborator']);
+
+const SEVERITY_ORDER = Object.freeze(['critical', 'high', 'medium', 'low', 'informational']);
+
+function needTokens(item) {
+  const applies = item.applies || {};
+  const tokens = [...(applies.requires || [])];
+  for (const [attribute, values] of Object.entries(applies.any_of || {})) {
+    for (const value of values) tokens.push(`${attribute}:${value}`);
+  }
+  return tokens;
+}
+
+export function familyContract(family, items = []) {
+  const members = (family.items || []).map((id) => items.find?.((item) => item.id === id) || (items.get ? items.get(id) : null)).filter(Boolean);
+  const total = members.length || 1;
+
+  const needCounts = new Map();
+  for (const member of members) {
+    for (const token of new Set(needTokens(member))) {
+      const label = NEED_LABELS[token];
+      if (!label) continue;
+      needCounts.set(label, (needCounts.get(label) || 0) + 1);
+    }
+  }
+  const needs = [...needCounts.entries()]
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .slice(0, 4)
+    .map(([label, count]) => Object.freeze({ label, all: count >= total, count }));
+
+  const toolCounts = new Map();
+  for (const member of members) for (const tool of member.tools || []) toolCounts.set(tool, (toolCounts.get(tool) || 0) + 1);
+  const tools = [...toolCounts.entries()]
+    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
+    .map(([label]) => Object.freeze({ label, workflow: TOOL_WORKFLOWS[label.toLowerCase()] || '' }));
+  const workflows = tools.filter(({ workflow }) => workflow).slice(0, 4);
+  const assisted = members.some((member) => member.mode === 'automated') || workflows.some(({ workflow }) => ASSISTED_TOOLS.has(workflow));
+
+  const standardCounts = new Map();
+  for (const member of members) {
+    for (const [source, values] of Object.entries(member.mappings || {})) {
+      if (source === 'portswigger') continue;
+      for (const value of values) {
+        const key = `${source}:${value}`;
+        standardCounts.set(key, (standardCounts.get(key) || 0) + 1);
+      }
+    }
+  }
+  // One identifier per standard family, most-used first: enough to cite the family in a report.
+  const bySource = new Map();
+  for (const [key, count] of [...standardCounts.entries()].sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))) {
+    const [source, ...rest] = key.split(':');
+    if (!bySource.has(source)) bySource.set(source, rest.join(':'));
+  }
+  const standards = ['wstg', 'asvs', 'owasp_top10', 'api_top10', 'cwe']
+    .filter((source) => bySource.has(source))
+    .map((source) => Object.freeze({ source, id: bySource.get(source) }));
+
+  const severity = SEVERITY_ORDER.find((level) => members.some((member) => member.severity === level)) || 'medium';
+  const modes = new Set(members.map((member) => member.mode));
+
+  return Object.freeze({
+    id: family.id,
+    needs: Object.freeze(needs),
+    tools: Object.freeze(workflows),
+    standards: Object.freeze(standards),
+    severity,
+    assisted,
+    mode: modes.size > 1 ? 'mixed' : ([...modes][0] || 'manual'),
+    checks: members.length
+  });
+}
+
+// The boundary question CyberBuddy answers with "what it does not do": the sibling families
+// that own the rest of this attack surface. Derived from the category, so it never drifts.
+export function familyBoundary(familyId, index) {
+  const family = index?.byId?.get(familyId);
+  if (!family) return Object.freeze([]);
+  return Object.freeze((index.byCategory.get(family.category) || []).filter(({ id }) => id !== familyId));
+}
+
+// Attack-surface suites: the planning unit above a family. Coverage is summed from the
+// families a tester can actually execute in this engagement.
+export function surfaceSuites(index, recordsByFamily, state = {}, { categoryNames = {} } = {}) {
+  const suites = [];
+  for (const [slug, families] of index.byCategory) {
+    let tested = 0;
+    let executable = 0;
+    let blocked = 0;
+    let na = 0;
+    let confirmed = 0;
+    let variantsCovered = 0;
+    let variantsTotal = 0;
+    let loaded = 0;
+    let nextFamily = '';
+    let variantOnlyFamily = '';
+    for (const family of families) {
+      const records = recordsByFamily.get(family.id) || [];
+      if (!records.length) continue;
+      loaded += 1;
+      const coverage = familyCoverage(family, records, state);
+      tested += coverage.checks.tested;
+      executable += coverage.checks.executable;
+      blocked += coverage.checks.blocked;
+      na += coverage.checks.na;
+      confirmed += coverage.checks.confirmed;
+      variantsCovered += coverage.variants.covered;
+      variantsTotal += coverage.variants.total;
+      // Continue means "unexecuted work first". A family whose checks are all recorded but
+      // whose don't-miss variants are still open is a review task, so it is the fallback.
+      if (coverage.checks.executable > 0 && !nextFamily && coverage.checks.tested < coverage.checks.executable) nextFamily = family.id;
+      if (coverage.checks.executable > 0 && !variantOnlyFamily && !coverage.complete) variantOnlyFamily = family.id;
+    }
+    if (!loaded) continue;
+    suites.push(Object.freeze({
+      slug,
+      name: categoryNames[slug] || slug,
+      families: families.length,
+      tested,
+      executable,
+      blocked,
+      na,
+      confirmed,
+      variantsCovered,
+      variantsTotal,
+      nextFamily: nextFamily || variantOnlyFamily,
+      coverage: executable ? Math.round((tested / executable) * 100) : null,
+      complete: executable > 0 && tested === executable && variantsCovered === variantsTotal
+    }));
+  }
+  return Object.freeze(suites);
+}

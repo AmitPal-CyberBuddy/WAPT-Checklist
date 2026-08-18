@@ -207,6 +207,50 @@ async function run() {
   record('T14', 'Keyboard: expand and walk checks without the mouse', expanded && movedTo ? 'PASS' : 'PARTIAL',
     `expand=${expanded} next-focus=${movedTo || 'none'}`);
 
+  // ------------------------------------------------------------------ T16 family contract
+  await goto(dom3, 'families');
+  await waitFor(() => doc3.querySelector('[data-family-row]'), 10000, 'board');
+  const contractRows = doc3.querySelectorAll('[data-family-row] [data-family-contract]').length;
+  const boardText = text(doc3.querySelector('[data-suite="authorization"]')).toLowerCase();
+  const contractFacts = ['needs', "don't miss"].filter((token) => boardText.includes(token));
+  record('T16', 'Family contract is readable without opening the family', contractRows > 20 && contractFacts.length === 2 ? 'PASS' : 'FAIL',
+    `${contractRows} contract rows on the board`);
+
+  // ------------------------------------------------------------------ T17 attack-surface suite
+  const suiteContinue = doc3.querySelector('[data-suite="authorization"] [data-suite-continue]');
+  const suiteMeta = text(doc3.querySelector('[data-suite="authorization"] .suite-meta'));
+  suiteContinue?.click();
+  await settle(600);
+  const landedFamily = doc3.querySelector('[data-family-block]')?.dataset.familyBlock || '';
+  record('T17', 'Attack-surface suite continues into the first open family', suiteContinue && landedFamily.startsWith('authorization') ? 'PASS' : 'FAIL',
+    `${suiteMeta.replace(/\s+/g, ' ').slice(0, 80)} → ${landedFamily || 'nowhere'}`);
+
+  // ------------------------------------------------------------------ T18 contract + boundary + tooling in the family
+  await goto(dom3, `family/${AUTHZ_FAMILY}`);
+  await waitFor(() => doc3.querySelector('[data-family-contract]'), 8000, 'family contract');
+  const heroContract = text(doc3.querySelector('.family-hero [data-family-contract]')).toLowerCase();
+  const heroFacts = ['needs', 'mode', 'tools', 'maps to'].filter((token) => heroContract.includes(token));
+  const boundaryLinks = doc3.querySelectorAll('[data-family-boundary] a').length;
+  const toolLinks = doc3.querySelectorAll('[data-tool-band] a[href^="workflow.html"]').length;
+  record('T18', 'Family states needs, mode, tooling, standards, and its boundary', heroFacts.length === 4 && boundaryLinks >= 3 && toolLinks >= 1 ? 'PASS' : 'PARTIAL',
+    `contract: ${heroFacts.join('/')} · ${boundaryLinks} boundary links · ${toolLinks} tool workflows`);
+
+  // ------------------------------------------------------------------ T19 deliverable output
+  const copyButton = doc3.querySelector('[data-copy-coverage]');
+  const clipboardBefore = runtime.state.clipboardWrites;
+  copyButton?.click();
+  await settle(250);
+  await goto(dom3, 'dashboard');
+  await waitFor(() => doc3.querySelector('[data-export-csv]'), 8000, 'csv control');
+  doc3.querySelector('[data-export-csv]').click();
+  await settle(500);
+  const csv = runtime.state.exports.find(({ filename }) => filename.endsWith('coverage.csv'));
+  const csvRows = (csv?.text || '').trim().split('\n');
+  const csvHeader = csvRows[0] || '';
+  record('T19', 'Coverage leaves the tool as a deliverable (copy block + CSV)',
+    runtime.state.clipboardWrites > clipboardBefore && csvHeader.includes('Coverage state') && csvHeader.includes('Finding') && csvRows.length > 500 ? 'PASS' : 'FAIL',
+    `clipboard=${runtime.state.clipboardWrites > clipboardBefore}, csv rows=${csvRows.length}`);
+
   // ------------------------------------------------------------------ T15 runtime health
   record('T15', 'No console errors across the engagement walk', runtime.state.consoleErrors.length === 0 ? 'PASS' : 'FAIL',
     runtime.state.consoleErrors.slice(0, 3).join(' | '));

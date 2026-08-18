@@ -165,3 +165,37 @@ test('blocked is a first-class coverage state distinct from tested and N/A', asy
   assert.equal(blocked.statuses['WAPT-AUTHZ-003'], 'blocked');
   assert.throws(() => setItemStatus(createState(), 'WAPT-AUTHZ-003', 'skipped', NOW), /Invalid item status/);
 });
+
+test('coverage CSV is spreadsheet-safe and separates coverage from finding', async () => {
+  const { composeCoverageCsv, composeFamilyCoverageBlock } = await import('../js/ui/export.js');
+  const { indexFamilies, familyCoverage } = await import('../js/engine/families.js');
+  const items = [
+    { id: 'WAPT-AUTHZ-003', category: 'authorization', title: '=cmd|calc', severity: 'high' },
+    { id: 'WAPT-AUTHZ-004', category: 'authorization', title: 'Update authorization', severity: 'high' },
+    { id: 'WAPT-AUTHZ-005', category: 'authorization', title: 'Delete authorization', severity: 'high' }
+  ];
+  const family = { id: 'authorization-object-level', category: 'authorization', title: 'Object-level authorization', items: items.map(({ id }) => id), dont_miss: ['Every HTTP method against the same object identifier'], quick_test: [], validate: '' };
+  const index = indexFamilies({ families: [family] });
+  const state = {
+    statuses: { 'WAPT-AUTHZ-003': 'confirmed_finding', 'WAPT-AUTHZ-004': 'na', 'WAPT-AUTHZ-005': 'blocked' },
+    retests: { 'WAPT-AUTHZ-003': true },
+    notes: { 'WAPT-AUTHZ-003': 'Cross-account read.' },
+    variants: {}
+  };
+  const csv = composeCoverageCsv(items, state, index, { authorization: 'Authorization' });
+  const lines = csv.trim().split('\n');
+  assert.match(lines[0], /^"Attack surface","Test family","Check ID"/);
+  // Formula injection defused: this project documents the attack, so it must not commit it.
+  assert.match(lines[1], /"'=cmd\|calc"/);
+  assert.match(lines[1], /"tested","confirmed","yes","yes"/);
+  assert.match(lines[2], /"N\/A","none"/);
+  assert.match(lines[3], /"blocked","none"/);
+
+  const records = items.map((item) => ({ item, applicability: { state: 'active', blocked: false } }));
+  const block = composeFamilyCoverageBlock(family, familyCoverage(family, records, state), state, { authorization: 'Authorization' });
+  assert.match(block, /### Object-level authorization — Authorization/);
+  assert.match(block, /1\/2 executable checks tested/);
+  assert.match(block, /Blocked: 1 · N\/A: 1/);
+  assert.match(block, /Variants still open:/);
+  assert.match(block, /- \[ \] WAPT-AUTHZ-005 — Blocked/);
+});

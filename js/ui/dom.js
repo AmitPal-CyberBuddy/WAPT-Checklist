@@ -142,3 +142,47 @@ export function statRow(coverage, { variants } = {}) {
   if (variants) add("don't miss", `${variants.covered}/${variants.total}`, 'stat-variants');
   return row;
 }
+
+const STANDARD_LABELS = Object.freeze({ wstg: 'WSTG', asvs: 'ASVS', owasp_top10: 'OWASP', api_top10: 'API', cwe: 'CWE' });
+
+// The family operator contract, rendered from one component everywhere it appears (board card,
+// family header, dashboard gap row) so the same four facts always read the same way:
+// what you need · how it runs · which tools drive it · what it maps to in the report.
+export function contractRow(contract, { compact = false } = {}) {
+  const row = element('div', compact ? 'contract-row compact' : 'contract-row');
+  row.dataset.familyContract = contract.id;
+  // The board shows the two decisive prerequisites; the family header shows the full set.
+  const shown = compact ? contract.needs.slice(0, 2) : contract.needs;
+  const overflow = contract.needs.length - shown.length;
+  const needs = contract.needs.length
+    ? `${shown.map(({ label, all }) => `${label}${all ? '' : ' (some)'}`).join(' · ')}${overflow > 0 ? ` +${overflow}` : ''}`
+    : 'no scope prerequisites';
+  const needsChip = element('span', 'contract-item contract-needs');
+  needsChip.append(element('span', 'contract-key', 'NEEDS'), element('span', '', needs));
+  row.append(needsChip);
+
+  if (!compact) {
+    const mode = element('span', 'contract-item');
+    mode.append(element('span', 'contract-key', 'MODE'), element('span', '', contract.assisted ? `${contract.mode} · tool-assisted` : contract.mode));
+    row.append(mode);
+    if (contract.tools.length) {
+      const tools = element('span', 'contract-item');
+      tools.append(element('span', 'contract-key', 'TOOLS'));
+      for (const tool of contract.tools) {
+        const link = element('a', 'contract-tool', tool.label.replace(/^Burp /, ''));
+        link.href = `workflow.html?tool=${tool.workflow}`;
+        link.target = '_blank';
+        link.rel = 'noreferrer noopener';
+        tools.append(link);
+      }
+      row.append(tools);
+    }
+    if (contract.standards.length) {
+      const standards = element('span', 'contract-item');
+      standards.append(element('span', 'contract-key', 'MAPS TO'));
+      standards.append(element('span', '', contract.standards.map(({ source, id }) => `${STANDARD_LABELS[source] || source} ${id}`).join(' · ')));
+      row.append(standards);
+    }
+  }
+  return row;
+}

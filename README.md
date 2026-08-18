@@ -2,7 +2,7 @@
 
 A professional, context-aware Web Application Penetration Testing methodology, checklist, knowledge base, and local-first tester workspace for **authorized security assessments only**.
 
-[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
+[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
 
 > **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
@@ -25,6 +25,9 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - **Test families as the working unit:** 196 validated families covering every one of the 623 checks. The families board shows tested/executable, blocked, N/A, confirmed, and don't-miss coverage per surface; a family workspace gives the authored Quick Test, a tickable Don't Miss list, dense check rows, "after this family", and "what else should I check?" without losing context.
 - **Honest coverage states:** tested (executed) · testing now · blocked · N/A (by scope or by tester) · not tested. N/A never counts as tested; blocked work stays in the denominator because it is still owed.
 - **Check ≠ coverage ≠ finding:** every check carries a coverage control and a separate finding verdict, so a completed checklist item never implies a vulnerability.
+- **Family operator contract:** every family states what you need before you can run it (accounts, tenants, features), whether it is manual or tool-assisted, which Burp workflows drive it, and which WSTG/ASVS/OWASP/API/CWE identifiers it maps to — all derived from the checks, plus a boundary line naming the families that cover the rest of that surface.
+- **Attack-surface suites:** per-surface coverage with a single *Continue this suite* action, because engagements are planned by surface, not by 196 families.
+- **Deliverable output:** copy a Markdown coverage block for notes and status updates, or export a coverage CSV (coverage state and finding in separate columns, formula-injection safe) alongside the Markdown checklist, Markdown report, and JSON state.
 - **Adaptive next test:** suggestions prioritise uncovered variants in the family you are working, adjacent families derived from links and attack chains, part-finished families, and related tests — each with a stated reason.
 - Tester-first cards with five disclosure levels — ID/severity/title/objective/VALIDATE always visible, then Procedure & variants, Detailed methodology, References & mappings, and Notes & evidence.
 - Dashboard built around three questions: what have I tested (coverage plus state counts), what have I missed (family gaps and blocked work), and what should I test next (contextual suggestions and Continue) — followed by the retest queue, attack-chain progress, surface progress, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, and print view.

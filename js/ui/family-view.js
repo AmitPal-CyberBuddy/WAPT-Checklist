@@ -5,10 +5,10 @@
 // The board answers "where is work left?", the family workspace answers "what do I do now,
 // what have I covered, what must I not forget, and what comes next?" — without losing context.
 import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r6';
-import { familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
+import { familyBoundary, familyContract, familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies, surfaceSuites } from '../engine/families.js?v=1.0.0-r6';
 import { setVariantCovered } from '../engine/state.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
-import { element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r6';
+import { contractRow, element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r6';
 import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r6';
 
 function familyRecordMap(records, familyIndex) {
@@ -27,7 +27,7 @@ export function buildFamilyRecords(records, familyIndex) {
   return familyRecordMap(records, familyIndex);
 }
 
-function familyLink(family, coverage) {
+function familyLink(family, coverage, contract) {
   const link = element('a', 'family-row');
   link.href = `#family/${family.id}`;
   link.dataset.familyRow = family.id;
@@ -36,6 +36,15 @@ function familyLink(family, coverage) {
   const counts = element('span', 'family-row-counts', `${coverage.checks.tested}/${coverage.checks.executable}`);
   head.append(counts);
   link.append(head);
+  if (contract) {
+    const badges = element('div', 'family-row-badges');
+    badges.append(element('span', `chip severity-chip ${contract.severity}`, contract.severity));
+    if (contract.assisted) badges.append(element('span', 'chip tool-chip', 'tool-assisted'));
+    if (coverage.checks.executable === 0) badges.append(element('span', 'chip blocked-chip', 'out of scope'));
+    else if (coverage.checks.blocked === coverage.checks.executable) badges.append(element('span', 'chip blocked-chip', 'blocked'));
+    link.append(badges);
+    link.append(contractRow(contract, { compact: true }));
+  }
   link.append(coverageBar(coverage.checks.tested, coverage.checks.executable));
   const meta = element('div', 'family-row-meta');
   const bits = [];
@@ -51,9 +60,10 @@ function familyLink(family, coverage) {
 
 // ---------------------------------------------------------------------------- family board
 export function renderFamilyBoard(root, context) {
-  const { familyIndex, records, getState, categoryNames, boardFilters, onFilterChange, resumeTarget } = context;
+  const { familyIndex, records, getState, categoryNames, boardFilters, onFilterChange, resumeTarget, itemList = [], recentFamilies = [] } = context;
   const state = getState();
   const byFamily = familyRecordMap(records, familyIndex);
+  const suites = new Map(surfaceSuites(familyIndex, byFamily, state, { categoryNames }).map((suite) => [suite.slug, suite]));
   root.replaceChildren();
 
   const toolbar = element('div', 'family-toolbar');
@@ -89,6 +99,21 @@ export function renderFamilyBoard(root, context) {
   }
   root.append(toolbar);
 
+  // Recent families: an engagement moves back and forth between surfaces, so the last few
+  // families worked stay one click away.
+  const recent = recentFamilies.map((id) => familyIndex.byId.get(id)).filter(Boolean).slice(0, 5);
+  if (recent.length > 1) {
+    const strip = element('div', 'recent-families');
+    strip.dataset.recentFamilies = String(recent.length);
+    strip.append(element('span', 'contract-key', 'RECENT'));
+    for (const family of recent) {
+      const chip = element('a', 'chip recent-chip', family.title);
+      chip.href = `#family/${family.id}`;
+      strip.append(chip);
+    }
+    root.append(strip);
+  }
+
   const query = boardFilters.query.trim().toLocaleLowerCase('en-US');
   let shown = 0;
   for (const [slug, families] of familyIndex.byCategory) {
@@ -107,17 +132,42 @@ export function renderFamilyBoard(root, context) {
         if (!haystack.includes(query)) continue;
       }
       if (boardFilters.unfinished && coverage.complete) continue;
-      rows.push(familyLink(family, coverage));
+      rows.push(familyLink(family, coverage, familyContract(family, itemList)));
     }
     if (!rows.length) continue;
     shown += rows.length;
+    const suite = suites.get(slug);
     const block = element('section', 'family-category');
+    block.dataset.suite = slug;
     const head = element('header', 'family-category-head');
     const title = element('h3', '', categoryNames[slug] || slug);
     const link = element('a', 'family-category-link', 'open all checks →');
     link.href = `#checklist/${slug}`;
     head.append(title, element('span', 'family-category-count', `${categoryTested}/${categoryExecutable}`), link);
     block.append(head);
+    // Suite line: an engagement is planned per attack surface, so the surface carries its own
+    // coverage and a single action that lands on the first family with work left.
+    if (suite) {
+      const suiteBar = element('div', 'suite-bar');
+      suiteBar.append(coverageBar(suite.tested, suite.executable));
+      const meta = element('div', 'suite-meta');
+      const bits = [`${suite.coverage === null ? '—' : `${suite.coverage}%`} covered`, `${suite.families} families`];
+      if (suite.blocked) bits.push(`${suite.blocked} blocked`);
+      if (suite.na) bits.push(`${suite.na} N/A`);
+      if (suite.confirmed) bits.push(`${suite.confirmed} confirmed`);
+      bits.push(`don't miss ${suite.variantsCovered}/${suite.variantsTotal}`);
+      meta.append(element('span', '', bits.join(' · ')));
+      if (suite.nextFamily) {
+        const action = element('a', 'button button-quiet suite-continue', 'Continue this suite →');
+        action.href = `#family/${suite.nextFamily}`;
+        action.dataset.suiteContinue = slug;
+        meta.append(action);
+      } else {
+        meta.append(element('span', 'family-done', 'surface complete'));
+      }
+      suiteBar.append(meta);
+      block.append(suiteBar);
+    }
     const grid = element('div', 'family-grid');
     grid.append(...rows);
     block.append(grid);
@@ -130,7 +180,7 @@ export function renderFamilyBoard(root, context) {
 export function renderFamilyWorkspace(root, context) {
   const {
     familyId, familyIndex, records, getState, commit, categoryNames, itemsById,
-    chains, renderEvidenceForm, categoryOf, suggestions
+    chains, renderEvidenceForm, categoryOf, suggestions, itemList = [], payloads = [], onCopyCoverage
   } = context;
   const family = familyIndex.byId.get(familyId);
   root.replaceChildren();
@@ -156,7 +206,32 @@ export function renderFamilyWorkspace(root, context) {
   hero.append(crumbs);
   hero.append(element('h2', '', family.title));
   hero.append(element('p', 'family-summary', family.summary));
+  const contract = familyContract(family, itemList);
+  hero.append(contractRow(contract));
   hero.append(statRow(coverage.checks, { variants: coverage.variants }));
+
+  // Boundary: what this family does NOT cover, expressed as the sibling families that own the
+  // rest of the surface. Derived from the category, so scope can never drift out of sync.
+  const siblingFamilies = familyBoundary(family.id, familyIndex);
+  if (siblingFamilies.length) {
+    const boundary = element('p', 'family-boundary');
+    boundary.dataset.familyBoundary = family.id;
+    boundary.append(element('span', 'contract-key', 'NOT HERE'));
+    boundary.append(document.createTextNode(`the rest of ${categoryNames[family.category] || family.category} — `));
+    siblingFamilies.slice(0, 4).forEach((sibling, index) => {
+      if (index) boundary.append(document.createTextNode(' · '));
+      const link = element('a', '', sibling.title);
+      link.href = `#family/${sibling.id}`;
+      boundary.append(link);
+    });
+    if (siblingFamilies.length > 4) {
+      boundary.append(document.createTextNode(' · '));
+      const all = element('a', '', `+${siblingFamilies.length - 4} more`);
+      all.href = '#families';
+      boundary.append(all);
+    }
+    hero.append(boundary);
+  }
 
   const actions = element('div', 'family-actions');
   const nextId = nextInFamily(family, state.statuses, '');
@@ -173,6 +248,18 @@ export function renderFamilyWorkspace(root, context) {
     actions.append(continueButton);
   } else {
     actions.append(element('span', 'family-done', 'Every check in this family is recorded.'));
+  }
+  if (onCopyCoverage) {
+    const copy = element('button', 'button button-quiet', 'Copy coverage');
+    copy.type = 'button';
+    copy.dataset.copyCoverage = family.id;
+    copy.title = 'Copy a Markdown coverage block for notes, status updates, and the report';
+    copy.addEventListener('click', async () => {
+      const done = await onCopyCoverage(family, coverage);
+      copy.textContent = done ? 'Copied' : 'Unavailable';
+      setTimeout(() => { copy.textContent = 'Copy coverage'; }, 1400);
+    });
+    actions.append(copy);
   }
   const siblings = familyIndex.byCategory.get(family.category) || [];
   const position = siblings.findIndex(({ id }) => id === family.id);
@@ -224,6 +311,40 @@ export function renderFamilyWorkspace(root, context) {
   miss.append(element('p', 'panel-footnote', 'Ticks record variant coverage only. They never imply a finding.'));
   columns.append(miss);
   shell.append(columns);
+
+  // Tool band: the Burp workflow pages and payload references that already exist for this
+  // family, one click from the checks instead of a separate library visit.
+  const familyPayloads = payloads.filter(({ related }) => (related || []).some((id) => (family.items || []).includes(id)));
+  if (contract.tools.length || familyPayloads.length) {
+    const band = element('section', 'panel tool-band');
+    band.dataset.toolBand = family.id;
+    band.append(element('span', 'micro-label', 'TOOLING'));
+    const links = element('div', 'tool-band-links');
+    for (const tool of contract.tools) {
+      const link = element('a', 'chip tool-chip', tool.label.replace(/^Burp /, ''));
+      link.href = `workflow.html?tool=${tool.workflow}`;
+      link.target = '_blank';
+      link.rel = 'noreferrer noopener';
+      link.title = `Safe ${tool.label} workflow: when to use it, evidence to keep, and what it does not prove`;
+      links.append(link);
+    }
+    band.append(links);
+    if (familyPayloads.length) {
+      const details = element('details', 'tool-band-payloads');
+      details.append(element('summary', '', `Payload references for this family (${familyPayloads.length})`));
+      const list = element('ul', 'payload-mini-list');
+      for (const payload of familyPayloads) {
+        const row = document.createElement('li');
+        row.append(element('span', 'chip id-chip', payload.id));
+        row.append(element('strong', '', payload.title));
+        row.append(element('code', '', payload.review_only ? 'REVIEW ONLY — open the payload library' : payload.payload));
+        list.append(row);
+      }
+      details.append(list);
+      band.append(details);
+    }
+    shell.append(band);
+  }
 
   // checks: dense rows that expand into the full card
   const checks = element('section', 'panel checks-panel');
