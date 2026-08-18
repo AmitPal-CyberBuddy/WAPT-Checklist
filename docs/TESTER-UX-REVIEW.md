@@ -99,7 +99,20 @@ VALIDATE  Confirmed unauthorized read across controlled accounts; not a same-rol
 
 Deferrals: no new animations, no visual redesign beyond the card hierarchy, no removal of detailed methodology, no change to engine applicability semantics.
 
-## 7. Decisions needed before implementation
+## 7. Implementation status (approved and shipped)
+
+1. ✅ **Card reorganization** — four progressive disclosure levels: Level 1 Quick Check (always visible: condensed steps, one-condition line, validation), Level 2 Don't miss & related (family don't-miss list, context variants, related chips, next-in-family hint), Level 3 Detailed methodology (unchanged knowledge base), Level 4 References & mappings; separate Tester notes & evidence drawer.
+2. ✅ **Related navigation** — related-test chips render and resolve categories from ID prefixes; next-in-family hint keeps the tester inside the family.
+3. ✅ **Families data** — `checklist/families.json` with **196 families covering all 623 items across all 25 categories exactly once** (validator-gated for resolution, uniqueness, specificity, and completeness); `tools/build-families.py` documents the authoring.
+4. ✅ **Coverage view** — Testing/Coverage toggle; coverage mode shows category summary (tested/executable/percent/scoped-out) and family tick lists with statuses and progress bars; rows jump back into Testing mode.
+5. ✅ **Tester-aware Suggested next** — related-proximity and family-continuation signals (bounded, deterministic, with reasons) fed by recent-touched tracking.
+6. ✅ **Status vocabulary + navigation** — Not Started / Active / Not Vulnerable / Potential / Confirmed / N/A (engine values unchanged); `n`/`p` card walk; duplicate quick status control in each card's records drawer.
+7. ✅ **All 25 categories familied** — 196 families total.
+8. ⏸️ **Endpoint ledger** — deferred as a documented stretch (requires a state-schema addition and migration; will be its own reviewed change).
+
+Runtime verification: `tools/functional-workflows.mjs` now runs 51 checks including Quick Test visibility without expansion, family group headers with counts, don't-miss rendering, coverage-view journey, label checks, and the n-key walk — all PASS.
+
+## 8. Decisions needed before implementation (historical)
 
 1. Proceed with steps 1–7 as planned (families data file is the one new data entity)?
 2. Include the endpoint ledger (step 8) in this cycle, or keep it as a documented stretch?

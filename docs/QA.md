@@ -64,6 +64,13 @@ Every automated row in `docs/FEATURE-VERIFICATION.md` is exercised by `tests/ver
 - [ ] Import valid exported JSON plus malformed, wrong-version, and oversized fixtures; only valid v1 state should replace local data.
 - [ ] Print dashboard and a filtered checklist; verify light A4 output and intentionally expanded methodology sections.
 
+### Tester-first workflow
+
+- [ ] Verify each card shows Quick Test and Validate without expansion, and that Don't miss & related, Detailed methodology, References & mappings, and Tester notes & evidence open as separate levels.
+- [ ] Open the Coverage toggle on every category and verify family tick lists, progress bars, and the scoped-out summary; click a row and confirm it lands on the card in Testing mode with the status control focused.
+- [ ] Verify n/p walk through cards and the bottom quick status control in the records drawer.
+- [ ] Confirm Suggested next explains related/family reasons after changing a status.
+
 ### Keyboard and accessibility
 - [ ] Verify `/` focuses search, `g d`, `g c`, `g f` navigate, `?` opens the shortcuts dialog, and `Esc` closes the drawer and the dialog; confirm shortcuts are inert inside inputs, notes, and filters.
 - [ ] Tab through the wizard, dashboard, cards, filters, evidence forms, and dialog; verify a visible focus ring at every stop and correct focus return after dialog close.

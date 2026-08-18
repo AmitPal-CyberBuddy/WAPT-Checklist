@@ -166,3 +166,12 @@ All notable changes to this project are documented here. The format follows [Kee
 - Phase 1 architecture, taxonomy, content guidance, item schema, semantic validator, and 20-item review sample.
 - Stable 24-category ID system with a quality-gated floor of 512 production items.
 - ASVS 5.0.0 and WSTG 4.2 versioning policy.
+
+### Added (Tester-first UX — steps 1–7 of docs/TESTER-UX-REVIEW.md)
+
+- Four-level tester-first cards: always-visible Quick Test + Validate, Don't miss & related (family don't-miss, variants, related chips, next-in-family), unchanged Detailed methodology, References & mappings, and a Tester notes & evidence drawer with a second quick status control.
+- `checklist/families.json`: 196 test families covering all 623 items across all 25 categories exactly once, each with a specific don't-miss coverage list; validator gates resolution, uniqueness, specificity, and per-category completeness (`tools/build-families.py` documents authoring).
+- Category views group cards under family headers with summaries and tested/total counts; Coverage ⇄ Testing view toggle with family tick lists, progress bars, and scoped-out summaries.
+- Tester-aware Suggested next: related-proximity (+18) and family-continuation (+16) signals with reasons, fed by recent-touched status tracking.
+- Status vocabulary relabeled (Not Started / Active / Not Vulnerable / Potential Finding / Confirmed Finding / N/A; engine values unchanged), `n`/`p` card walk, and `Esc`/shortcut coexistence.
+- Runtime harness now 51 checks including the four-level card, family groups, coverage journey, labels, and keyboard walk.

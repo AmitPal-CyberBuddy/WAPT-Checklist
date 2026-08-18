@@ -139,6 +139,12 @@ Identical at both commits: URL-hint results for all 12 probe URLs (deny-list inc
 | Scoping/context detection | PASS | probe parity + vocabulary parity test |
 | Engagement create/persist/resume | PASS | portfolio suite + simulated reload round trip |
 | Checklist categories (25, was 24) | PASS | per-category counts == files == floors |
+| Tester-first card levels (Quick Check / Don't Miss / Detailed / References) | PASS | 51-check runtime harness verifies each level |
+| Test families (196, all 25 categories, exact coverage) | PASS | validator-gated completeness; group headers + family counts |
+| Coverage view ⇄ Testing view | PASS | toggle journey in runtime harness |
+| Tester-aware Suggested next | PASS | related/family signals deterministic in unit tests |
+| Status vocabulary (Not Started / Active / Not Vulnerable / …) | PASS | labels verified in UI; engine values unchanged |
+| n/p card walk + quick status | PASS | runtime harness walk check |
 | Search & combined filters | PASS | every key exercised over 623 items |
 | Applicability & priority engine | PASS | scenario suite + probe parity (one intentional gate delta) |
 | Status/state transitions | PASS | pairwise transition matrix + rejection tests |

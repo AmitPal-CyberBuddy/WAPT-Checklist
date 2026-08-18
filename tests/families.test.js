@@ -16,11 +16,12 @@ for (const category of manifest.categories) {
 }
 const families = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist', 'families.json'), 'utf8')).families;
 
-test('family validation passes for the authored categories with exact membership', () => {
+test('family validation passes for ALL 25 categories with exact membership', () => {
   const result = validateFamilies(allItems);
   assert.deepEqual(result.errors, []);
   assert.equal(result.familyCount, families.length);
-  assert.equal(result.familyMap.size, allItems.filter(({ item }) => families.some((f) => f.category === item.category)).length);
+  assert.equal(result.familyCount, 196);
+  assert.equal(result.familyMap.size, allItems.length, 'every production item belongs to exactly one family');
 });
 
 test('every authored family has a specific dont-miss list and valid metadata', () => {
@@ -33,7 +34,7 @@ test('every authored family has a specific dont-miss list and valid metadata', (
   }
 });
 
-test('authored categories (authorization, authentication, api-security, file-handling) are fully covered exactly once', () => {
+test('every category is fully covered exactly once by its families', () => {
   const categoryItems = new Map();
   for (const { item } of allItems) {
     const set = categoryItems.get(item.category) || new Set();
@@ -47,13 +48,13 @@ test('authored categories (authorization, authentication, api-security, file-han
       membership.set(id, family.id);
     }
   }
-  for (const category of ['authorization', 'authentication', 'api-security', 'file-handling']) {
-    const all = categoryItems.get(category);
+  assert.equal(membership.size, 623, 'all 623 items are assigned exactly once');
+  for (const [category, all] of categoryItems) {
     const assigned = new Set([...membership.keys()].filter((id) => all.has(id)));
     assert.equal(assigned.size, all.size, `${category} must be fully covered`);
+    assert.equal([...new Set(families.filter((f) => f.category === category).map((f) => f.id))].length, families.filter((f) => f.category === category).length, `${category} family ids unique`);
   }
-  // the four initial categories carry 154 items across 32 families
-  assert.equal(membership.size, 154);
+  assert.equal(new Set(families.map((f) => f.category)).size, 25, 'all 25 categories have families');
 });
 
 test('family validator rejects unresolved, duplicated, cross-category, and generic dont-miss data', () => {
