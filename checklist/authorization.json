@@ -1018,7 +1018,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "async_jobs:yes"
         ]
       },
       "variants": [],

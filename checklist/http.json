@@ -1664,7 +1664,13 @@
       "applies": {},
       "variants": [],
       "remediation": "Mark private data non-shared, remove it from edge caching, or use a safe server-controlled partition key while still enforcing origin authorization.",
-      "safety": "Use only designated accounts and synthetic canary data; stop immediately if any unrelated user's content appears."
+      "safety": "Use only designated accounts and synthetic canary data; stop immediately if any unrelated user's content appears.",
+      "priority_when": {
+        "intermediary": [
+          "cdn",
+          "proxy"
+        ]
+      }
     },
     {
       "id": "WAPT-HTTP-022",
@@ -1744,7 +1750,13 @@
       "applies": {},
       "variants": [],
       "remediation": "Define cache keys from canonical request semantics, strip untrusted response-shaping inputs, and never cache responses influenced by unkeyed data.",
-      "safety": "Use an isolated route or cache-buster approved by the owner, an inert marker, one prime/control sequence, and purge immediately if persistence occurs."
+      "safety": "Use an isolated route or cache-buster approved by the owner, an inert marker, one prime/control sequence, and purge immediately if persistence occurs.",
+      "priority_when": {
+        "intermediary": [
+          "cdn",
+          "proxy"
+        ]
+      }
     },
     {
       "id": "WAPT-HTTP-023",
@@ -1821,7 +1833,13 @@
       "attack_chains": [],
       "applies": {},
       "variants": [],
-      "remediation": "Align cache configuration and Vary metadata with actual negotiation, and disable shared caching when safe partitioning cannot be guaranteed."
+      "remediation": "Align cache configuration and Vary metadata with actual negotiation, and disable shared caching when safe partitioning cannot be guaranteed.",
+      "priority_when": {
+        "intermediary": [
+          "cdn",
+          "proxy"
+        ]
+      }
     },
     {
       "id": "WAPT-HTTP-024",

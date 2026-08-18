@@ -81,7 +81,14 @@
         "unkeyed-input"
       ],
       "attack_chains": [],
-      "applies": {},
+      "applies": {
+        "any_of": {
+          "intermediary": [
+            "cdn",
+            "proxy"
+          ]
+        }
+      },
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
       "safety": "Use an isolated route or approved cache-buster, one inert prime/control sequence, and purge immediately if persistence occurs."
@@ -165,7 +172,14 @@
         "path"
       ],
       "attack_chains": [],
-      "applies": {},
+      "applies": {
+        "any_of": {
+          "intermediary": [
+            "cdn",
+            "proxy"
+          ]
+        }
+      },
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
       "safety": "Use only synthetic account data, an isolated route/cache key, and purge/expire the object immediately."
@@ -248,7 +262,14 @@
         "parser-differential"
       ],
       "attack_chains": [],
-      "applies": {},
+      "applies": {
+        "any_of": {
+          "intermediary": [
+            "cdn",
+            "proxy"
+          ]
+        }
+      },
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
       "safety": "Use unique inert markers and synthetic objects on an isolated route; avoid public/high-traffic cache keys."
@@ -329,7 +350,14 @@
         "control-parity"
       ],
       "attack_chains": [],
-      "applies": {},
+      "applies": {
+        "any_of": {
+          "intermediary": [
+            "cdn",
+            "proxy"
+          ]
+        }
+      },
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
       "safety": "Use only owner-confirmed origins/edges and synthetic data; never enumerate guessed infrastructure."
@@ -1363,7 +1391,13 @@
         "replay"
       ],
       "attack_chains": [],
-      "applies": {},
+      "applies": {
+        "any_of": {
+          "outbound_fetch": [
+            "webhooks"
+          ]
+        }
+      },
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path.",
       "safety": "Use only provider sandbox/synthetic events and disposable transactions; never spoof real provider events."
@@ -1522,6 +1556,98 @@
       "applies": {},
       "variants": [],
       "remediation": "Define one canonical representation and trust policy across components, isolate/cache/tenant state correctly, reject untrusted types, propagate caller context, verify signatures/replay atomically, and retest root causes across every adjacent path."
+    },
+    {
+      "id": "WAPT-ADV-019",
+      "title": "Constrain LLM prompt and tool-call authority",
+      "category": "advanced",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether untrusted prompt content can steer an LLM-enabled web feature into unauthorized actions, data exposure, or tool calls beyond the caller’s authority.",
+      "prerequisites": [
+        "Written authorization covering the LLM-enabled feature and its connected tools",
+        "An isolated test account, tenant, and low-impact tool targets with monitoring"
+      ],
+      "steps": [
+        "Inventory every LLM input channel, including direct prompts, file contents, web pages, emails, and other indirect sources",
+        "Document the tools, functions, APIs, and data stores the model can call or read on behalf of users",
+        "Send crafted prompts that request out-of-scope tool calls, other users’ data, or disclosure of the system prompt",
+        "Deliver an indirect prompt inside a summarized document, email, or page and observe whether it changes model behavior",
+        "Confirm any effect against the caller’s real authorization with a harmless canary action only"
+      ],
+      "examples": [
+        {
+          "request": "Summarize this support ticket: …",
+          "note": "Indirect prompt control is tested with inert canary requests only, never with real user data or destructive tool calls."
+        }
+      ],
+      "manipulate": "One input channel, tool, authorization context, or indirect content source at a time",
+      "secure_behavior": "Prompts are treated as untrusted input; model outputs and tool calls are validated, scoped to the caller’s authority, and never expose other users’ data or hidden instructions.",
+      "vulnerable_behavior": "a crafted direct or indirect prompt makes the feature call a tool, read data, or change state outside the caller’s authorization",
+      "validation": "Correlate the model’s action with an observed tool call, log entry, or state change under the isolated canary account; a misleading model reply alone is not a security finding.",
+      "false_positives": [
+        "the model may describe an action in text without executing it",
+        "sandboxed tools or demo accounts may simulate rather than perform real operations"
+      ],
+      "impact": "Confirmed prompt injection can exfiltrate data the model can read, perform unauthorized actions through connected tools, or inject content that reaches other users.",
+      "evidence": [
+        "Authorized scope covering the LLM feature and its connected tools",
+        "Exact prompt, channel, and observed tool call or state change",
+        "Canary-account request/response pairs and server-side logs"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-API-027",
+        "WAPT-SSRF-001",
+        "WAPT-XSS-002",
+        "WAPT-AUTHZ-028"
+      ],
+      "tags": [
+        "llm",
+        "prompt-injection",
+        "excessive-agency",
+        "indirect-prompt-injection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use an isolated canary tool and synthetic data only. Never test prompt injection through real user content, live customer data, or destructive tool calls; stop if model behavior could affect other users.",
+      "remediation": "Treat all prompt content and model output as untrusted; validate tool calls against caller authorization, minimize tool scopes, require confirmation for consequential actions, and never let the model read data the caller cannot read."
     }
   ]
 }

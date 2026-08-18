@@ -2541,7 +2541,10 @@
           "url_hints.api_subdomain": [
             true
           ]
-        }
+        },
+        "requires": [
+          "outbound_fetch:webhooks|import"
+        ]
       },
       "variants": [],
       "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
@@ -2631,7 +2634,10 @@
           "url_hints.api_subdomain": [
             true
           ]
-        }
+        },
+        "requires": [
+          "outbound_fetch:webhooks|import"
+        ]
       },
       "variants": [],
       "remediation": "Define an explicit API contract and enforce identity, authorization, schemas, limits, lifecycle, destination, and upstream validation at trusted service boundaries.",
