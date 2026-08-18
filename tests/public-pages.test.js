@@ -17,8 +17,8 @@ test('all user-facing pages share policy, branding, theme, and responsive viewpo
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
     assert.ok(html.includes('assets/logo.svg'));
     assert.ok(html.includes('css/styles.css?v=1.0.0'));
-    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r5"/);
-    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r5'), `${page} early theme boot`);
+    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r6"/);
+    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r6'), `${page} early theme boot`);
     assert.ok(html.indexOf('theme-boot.js') < html.indexOf('css/styles.css'), `${page} applies theme before CSS`);
   }
 });
@@ -63,4 +63,19 @@ test('Burp workflow links route through the designed workflow page', () => {
   assert.match(payloads, /workflow\.html\?tool=\$\{slug\}/);
   assert.match(workflow, /Object\.hasOwn\(TOOLS, requested\)/);
   assert.match(workflow, /renderMarkdown/);
+});
+
+test('homepage presents the assessment loop, project metrics, and attack-chain preview', () => {
+  const html = read('index.html');
+  const home = read('js/ui/home.js');
+  assert.match(html, /Start a WAPT/);
+  assert.match(html, /Explore methodology/);
+  assert.match(html, /data-project-metric="production_items"/);
+  assert.match(html, /data-project-metric="attack_chains"/);
+  assert.match(html, /class="pipeline"/);
+  assert.match(html, /data-chain-preview/);
+  assert.match(home, /fetch\('release\.json'/);
+  assert.match(home, /fetch\('attack-chains\/manifest\.json'/);
+  assert.match(home, /hasScopedContext/);
+  assert.match(home, /if \(hasScopedContext\(state\)\) \{/);
 });

@@ -43,3 +43,16 @@ test('dense workspace surfaces reflow instead of merely scaling down', () => {
   assert.match(css, /\.findings-table\{display:block;overflow-x:auto\}/);
   assert.match(css, /\.method-section a,\.mapping-line,\.payload-related\{word-break:break-word\}/);
 });
+
+test('Phase 5 operator surfaces: skeletons, filter chips, pipeline, dialog, glyphs, and touch targets', () => {
+  assert.match(css, /@keyframes skeleton-wave/);
+  assert.match(css, /\.filter-chips\{/);
+  assert.match(css, /\.dashboard-metrics\{display:grid/);
+  assert.match(css, /\.pipeline\{display:grid/);
+  assert.match(css, /\.shortcuts-dialog\{/);
+  assert.match(css, /\.chip-glyph\{/);
+  assert.match(css, /@media \(pointer:coarse\)\{\.button,\.icon-button,\.wizard-skip,\.filter-chip button\{min-height:44px\}\}/);
+  assert.match(css, /\.chip\{font-size:\.54rem\}/);
+  assert.match(css, /\.authorization-bar\{font-size:\.62rem\}/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\).*?animation:none!important/s);
+});

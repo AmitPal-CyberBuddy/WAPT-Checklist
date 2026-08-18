@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r5';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r5';
+import { initializeTheme } from './theme.js?v=1.0.0-r6';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r6';
 
 const DOCUMENTS = Object.freeze({
   security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report project vulnerabilities privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },

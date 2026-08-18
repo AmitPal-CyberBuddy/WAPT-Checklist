@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>WAPT Checklist — Context-aware web security methodology</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r5"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r5">
-  <script type="module" src="js/ui/home.js?v=1.0.0-r5"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r6"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r6">
+  <script type="module" src="js/ui/home.js?v=1.0.0-r6"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -38,8 +38,9 @@
         <h1 id="hero-title">Test what matters.<br><em>Prove what is real.</em></h1>
         <p class="hero-lede">A professional WAPT methodology that adapts to the target, keeps assessment state in your browser, and turns security checks into defensible evidence—not scanner noise.</p>
         <div class="hero-actions">
-          <a class="button button-primary" href="app.html#wizard">Start testing <span aria-hidden="true">→</span></a>
-          <a class="button button-secondary" href="app.html#checklist">Browse checklist</a>
+          <a class="button button-primary" href="app.html#wizard">Start a WAPT <span aria-hidden="true">→</span></a>
+          <a class="button button-secondary" href="methodology.html">Explore methodology</a>
+          <a class="button button-secondary" href="app.html#checklist">Browse categories</a>
           <a class="button button-quiet" href="app.html#search">Search <kbd>/</kbd></a>
         </div>
         <p class="privacy-note"><span aria-hidden="true">◆</span> No backend · No telemetry · Your engagement stays on this device</p>
@@ -71,6 +72,42 @@
         <div class="stat"><strong data-stat="tested">—</strong><span>Tested locally</span></div>
         <div class="stat"><strong data-stat="findings">—</strong><span>Findings locally</span></div>
       </div>
+    </section>
+
+    <section class="stats-band" aria-labelledby="project-metrics-title">
+      <h2 class="sr-only" id="project-metrics-title">Project statistics</h2>
+      <div class="project-metrics shell" aria-live="polite">
+        <div class="project-metric"><strong data-project-metric="production_items">—</strong><span>Validated tests</span></div>
+        <div class="project-metric"><strong data-project-metric="categories">—</strong><span>Security domains</span></div>
+        <div class="project-metric"><strong data-project-metric="attack_chains">—</strong><span>Attack chains</span></div>
+        <div class="project-metric"><strong data-project-metric="payload_references">—</strong><span>Payload references</span></div>
+        <div class="project-metric"><strong data-project-metric="burp_workflows">—</strong><span>Burp workflows</span></div>
+      </div>
+    </section>
+
+    <section class="section shell" aria-labelledby="workflow-title">
+      <div class="section-heading">
+        <p class="eyebrow">FROM SCOPE TO RETEST</p>
+        <h2 id="workflow-title">One deliberate assessment loop</h2>
+        <p>The workspace carries each engagement from scoping through evidence, reporting, and retesting.</p>
+      </div>
+      <ol class="pipeline">
+        <li><strong>Scope</strong><span>Authorization, context, accounts, safety.</span></li>
+        <li><strong>Discover</strong><span>Recon, assets, routes, attack surface.</span></li>
+        <li><strong>Prioritize</strong><span>Applicability and deterministic next steps.</span></li>
+        <li><strong>Test &amp; validate</strong><span>Controlled procedure, evidence, false positives.</span></li>
+        <li><strong>Report</strong><span>Reportability gate, redacted evidence packs.</span></li>
+        <li><strong>Retest</strong><span>Verdicts, variant coverage, residual risk.</span></li>
+      </ol>
+    </section>
+
+    <section class="section shell" aria-labelledby="chains-title">
+      <div class="section-heading">
+        <p class="eyebrow">ATTACK PATHS</p>
+        <h2 id="chains-title">Connected attack hypotheses</h2>
+        <p>Directed graphs over stable test IDs, with per-node status and unlock hints inside the workspace.</p>
+      </div>
+      <div class="chain-preview" data-chain-preview aria-live="polite"><span class="sr-only">Loading attack chains…</span><div class="skeleton-stack" aria-hidden="true"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div></div>
     </section>
 
     <section class="section shell" aria-labelledby="product-title">
@@ -119,7 +156,7 @@
   <footer class="site-footer shell">
     <div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div>
     <p>Original methodology mapped to OWASP WSTG 4.2, ASVS 5.0.0, API Security Top 10, CWE, and primary specifications.</p>
-    <nav aria-label="Footer"><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=contributing">Contribute</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
+    <nav aria-label="Footer"><a href="app.html#chains">Attack chains</a><a href="app.html#payloads">Burp workflows</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=contributing">Contribute</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
   </footer>
 </body>
 </html>

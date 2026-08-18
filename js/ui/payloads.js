@@ -103,7 +103,12 @@ export function createPayloadStore() {
           && (!safety.value || (safety.value === 'review' ? item.review_only : !item.review_only));
       });
       summary.textContent = `${filtered.length} of ${payloads.length} references shown`;
-      grid.replaceChildren(...filtered.map(payloadCard));
+      if (!filtered.length) {
+        const empty = node('p', 'empty-copy', 'No payload references match these filters. Clear the search or category filter to browse the library again.');
+        grid.replaceChildren(empty);
+      } else {
+        grid.replaceChildren(...filtered.map(payloadCard));
+      }
     };
     search.addEventListener('input', apply); category.addEventListener('change', apply); safety.addEventListener('change', apply);
     root.append(filters, summary, grid);

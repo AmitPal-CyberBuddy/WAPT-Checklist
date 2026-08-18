@@ -1,17 +1,19 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r5';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r5';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r5';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r5';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag, addFinding, removeFinding, setRetestVerdict, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r5';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r5';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r5';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r5';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r5';
-import { createChainStore } from './chains.js?v=1.0.0-r5';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r5';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r6';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r6';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r6';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r6';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag, addFinding, removeFinding, setRetestVerdict, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r6';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r6';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r6';
+import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r6';
+import { createChainStore } from './chains.js?v=1.0.0-r6';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r6';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };
+const SEVERITY_GLYPHS = Object.freeze({ critical: '▲', high: '◆', medium: '●', low: '■', informational: '○' });
+const STATUS_GLYPHS = Object.freeze({ not_tested: '○', in_progress: '◐', passed: '✓', potential_finding: '△', confirmed_finding: '▲', na: '—' });
 
 function element(tag, className, text) {
   const node = document.createElement(tag);
@@ -124,6 +126,24 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
   reset.type = 'button';
   reset.addEventListener('click', () => onChange({ ...EMPTY_FILTERS, category: options.fixedCategory || '' }));
   grid.append(reset);
+
+  const chips = element('div', 'filter-chips');
+  const activeEntries = Object.entries(filters).filter(([key, value]) => value && value.length && !(options.fixedCategory && key === 'category'));
+  for (const [key, value] of activeEntries) {
+    const chip = element('span', 'filter-chip');
+    chip.append(document.createTextNode(`${key}: ${value}`));
+    const clear = element('button', '', '×');
+    clear.type = 'button';
+    clear.setAttribute('aria-label', `Clear ${key} filter`);
+    clear.addEventListener('click', () => onChange({ ...filters, [key]: '' }));
+    chip.append(clear);
+    chips.append(chip);
+  }
+  if (options.fixedCategory && filters.category) {
+    const chip = element('span', 'filter-chip fixed', `category: ${filters.category} (view)`);
+    chips.append(chip);
+  }
+  root.append(chips);
   root.append(grid);
 }
 
@@ -135,7 +155,11 @@ function renderCard(record, state, categoryNames, onState) {
   const identity = element('div', 'test-identity');
   const chips = element('div', 'chip-row');
   chips.append(element('span', 'chip id-chip', item.id));
-  chips.append(element('span', `chip severity-chip ${item.severity}`, item.severity));
+  const severityChip = element('span', `chip severity-chip ${item.severity}`, item.severity);
+  const severityGlyph = element('span', 'chip-glyph', SEVERITY_GLYPHS[item.severity] || '');
+  severityGlyph.setAttribute('aria-hidden', 'true');
+  severityChip.prepend(severityGlyph);
+  chips.append(severityChip);
   chips.append(element('span', 'chip', item.difficulty));
   chips.append(element('span', 'chip', item.mode));
   const appChip = element('span', `chip applicability-chip ${applicability.state}`, applicability.overridden ? 'Active (override)' : APP_LABELS[applicability.state]);
@@ -472,6 +496,48 @@ function renderEvidencePacks(root, itemList, state, onState) {
   }
 }
 
+function renderRetestQueue(root, queue, itemList) {
+  root.replaceChildren();
+  if (!queue.pending.length) {
+    root.append(element('p', 'empty-copy', 'No evidence packs are waiting on a retest. Confirm findings and record evidence to build the queue.'));
+    return;
+  }
+  const byId = new Map(itemList.map((item) => [item.id, item]));
+  const list = element('ul', 'retest-queue-list');
+  for (const pack of queue.pending.slice(0, 5)) {
+    const link = element('a', '');
+    link.href = `#checklist/${byId.get(pack.item_id)?.category || ''}`;
+    link.append(element('span', `chip verdict-chip verdict-${pack.retest_verdict}`, 'retest pending'));
+    link.append(element('span', 'id-chip chip', pack.item_id));
+    const copy = element('span', 'queue-meta', pack.title || 'Untitled evidence pack');
+    link.append(copy);
+    list.append(element('li', '', link));
+  }
+  if (queue.pending.length > 5) list.append(element('li', 'queue-meta', `+ ${queue.pending.length - 5} more awaiting retest`));
+  root.append(list);
+}
+
+function renderChainOverview(root, itemList, statuses) {
+  root.replaceChildren();
+  const chains = chainStore.getChains();
+  if (!chains.length) {
+    root.append(element('p', 'empty-copy', 'Attack chains are still loading. Open the Attack chains view for the full graph.'));
+    return;
+  }
+  const list = element('ul', 'chain-overview-list');
+  for (const chain of chains) {
+    const ids = (chain.nodes || []).map(({ item_id: id }) => id);
+    const done = ids.filter((id) => ['passed', 'confirmed_finding'].includes(statuses[id] || '')).length;
+    const link = element('a', '');
+    link.href = '#chains';
+    link.append(element('span', 'chip id-chip', chain.id));
+    link.append(element('strong', '', chain.title));
+    link.append(element('span', 'chain-progress', `${done}/${ids.length} complete`));
+    list.append(element('li', '', link));
+  }
+  root.append(list);
+}
+
 export function createWorkspace({ catalog, getState, replaceState, onStateChange }) {
   let manifest = { categories: [] };
   let records = [];
@@ -549,6 +615,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     document.querySelector('[data-dashboard-tested]').textContent = statuses.filter((status) => status !== 'not_tested').length.toLocaleString();
     document.querySelector('[data-dashboard-potential]').textContent = statuses.filter((status) => status === 'potential_finding').length.toLocaleString();
     document.querySelector('[data-dashboard-confirmed]').textContent = statuses.filter((status) => status === 'confirmed_finding').length.toLocaleString();
+    if (records.length) {
+      const coverage = computeCoverage(records.map(({ item }) => item), context(), state.statuses);
+      document.querySelector('[data-dashboard-blocked]').textContent = coverage.overall.blocked.toLocaleString();
+      document.querySelector('[data-dashboard-na]').textContent = coverage.overall.na.toLocaleString();
+    }
     for (const category of manifest.categories) {
       const tested = Object.entries(state.statuses || {}).filter(([id, status]) => id.startsWith(`${category.prefix}-`) && status !== 'not_tested').length;
       const count = document.querySelector(`[data-category-slug="${category.slug}"] em`);
@@ -579,6 +650,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       return row;
     }));
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
+    renderRetestQueue(document.querySelector('[data-retest-queue]'), queue, itemList);
+    renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses);
 
     const suggestedRoot = document.querySelector('[data-suggested-next]');
     const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
@@ -616,7 +689,9 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
         const link = element('a', '', item.id);
         link.href = `#checklist/${item.category}`;
         idCell.append(link);
-        row.append(idCell, element('td', '', item.title), element('td', '', item.severity), element('td', '', STATUS_LABELS[itemStatus(item, state)]), element('td', '', state.retests?.[item.id] ? 'Required' : '—'));
+        const severityCell = element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`);
+        const statusCell = element('td', '', `${STATUS_GLYPHS[itemStatus(item, state)] || ''} ${STATUS_LABELS[itemStatus(item, state)]}`);
+        row.append(idCell, element('td', '', item.title), severityCell, statusCell, element('td', '', state.retests?.[item.id] ? 'Required' : '—'));
         body.append(row);
       }
       table.append(head, body);

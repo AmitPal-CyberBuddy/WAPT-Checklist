@@ -8,10 +8,10 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 ## What is implemented
 
-- Responsive dark/light homepage and app-style workspace with independent CyberBuddy-compatible design tokens.
+- Responsive dark/light homepage and app-style workspace with professional operator tooling: project metrics, an assessment-loop pipeline, an attack-chain preview, skeleton loading, filter chips, and a shortcuts dialog.
 - Optional engagement name and target URL fields plus all 18 adaptive scoping questions, including intermediary, outbound-fetch, and asynchronous-job scope.
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
-- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
+- Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, visible keyboard focus, and safe shortcuts (`/`, `g d`, `g c`, `g f`, `?`, `Esc`).
 - Conservative low-confidence URL suggestions without any target request or transmission.
 - Intermediary (CDN/proxy/WAF), outbound URL-fetching (webhooks/imports), and asynchronous-job scoping with category gates for SSRF and cache-poisoning/deception suites.
 - Multiple resumable engagements in one validated local portfolio under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
@@ -21,10 +21,10 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Strict JSON import/export with automatic schema v1 → v2 state migration, reasoned applicability overrides, per-item notes, evidence-pack records, and Confirmed Finding retest invariants.
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
-- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
+- Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips.
 - Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, explicit reporting boundaries (`do_not_report`), retest guidance, and references.
-- Dashboard metrics, live category progress, coverage confidence (executable work excluding context-N/A), Suggested next, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, retest matrix, and print view.
-- Directed attack-chain graphs with checklist links, per-node test status, unlock hints, and priority boosts.
+- Dashboard command center: catalog/tested/potential/confirmed/blocked/scoped-out metrics, live category progress, coverage confidence (executable work excluding context-N/A), Suggested next with explanations, a retest queue, attack-chain progress, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, retest matrix, and print view.
+- Directed attack-chain graphs with checklist links, per-node test status, unlock hints, and priority boosts; the homepage previews the same chains.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
 - Designed methodology, security, contributing, license, project-documentation, and Burp-workflow pages—no user-facing raw Markdown redirects.

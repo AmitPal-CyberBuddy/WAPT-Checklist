@@ -4,6 +4,18 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Phase 5 — visual and interaction modernization)
+
+- Dashboard command center: six metrics (catalog, tested, potential, confirmed, credential-blocked, scoped-out), coverage-confidence panel, retest queue panel, and attack-chain progress panel — answering "what should I test next" at a glance.
+- Homepage: project metrics driven by `release.json` (validated tests, security domains, attack chains, payload references, Burp workflows), a six-step assessment-loop pipeline (scope → discover → prioritize → test & validate → report → retest), and an attack-chain preview linking into the workspace; CTAs restructured around "Start a WAPT".
+- Removable active-filter chips with clear buttons above checklist/search results; fixed category views shown as context chips.
+- Skeleton loading states replacing bare "Loading…" lines; the only animation is a reduced-motion-safe shimmer.
+- Severity and status glyphs (with text labels, color-independent) across cards, findings, evidence chips, and chain nodes.
+- Keyboard shortcuts dialog (`?`), `g d` / `g c` / `g f` navigation with findings focus, `/` search, `Esc` close — all inert inside inputs, notes, and filters.
+- Accessibility and readability: 44 px minimum touch targets on coarse pointers, chip and authorization-bar typography floors raised at compact widths, hover elevation restrained to pointer devices.
+- Homepage performance: applicability statistics fetch the catalog only when a scoped engagement exists; project metrics come from the small `release.json`.
+- Payload library empty state now tells the user how to recover from an empty result set.
+
 ### Added (Phase 4 — attack paths, evidence, findings, and retesting)
 
 - Engagement state schema v2 with structured evidence packs: finding ID, checklist item, title, severity, endpoint, method, parameter, authentication context, precondition, baseline/test requests, observed behavior, exploitability, reportable flag, cleanup, root cause, retest verdict (`pending`/`pass`/`partial`/`fail`) and retest note. Schema v1 records and exports migrate transparently in `normalizeState`, `importState`, and the portfolio loader.

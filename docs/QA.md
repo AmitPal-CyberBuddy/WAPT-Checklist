@@ -61,6 +61,11 @@ Automated tests use Node's standard library. This checklist covers browser behav
 - [ ] Print dashboard and a filtered checklist; verify light A4 output and intentionally expanded methodology sections.
 
 ### Keyboard and accessibility
+- [ ] Verify `/` focuses search, `g d`, `g c`, `g f` navigate, `?` opens the shortcuts dialog, and `Esc` closes the drawer and the dialog; confirm shortcuts are inert inside inputs, notes, and filters.
+- [ ] Tab through the wizard, dashboard, cards, filters, evidence forms, and dialog; verify a visible focus ring at every stop and correct focus return after dialog close.
+- [ ] Verify skeleton loading appears without animation under prefers-reduced-motion and is replaced by real content.
+- [ ] Verify status and severity indicators remain readable as text labels when color is removed (glyphs + words, not color alone).
+- [ ] Verify the homepage shows project metrics (validated tests, domains, chains, payloads, workflows), the six-step assessment pipeline, and the attack-chain preview linking into the workspace.
 
 - [ ] Use the skip link on both pages.
 - [ ] Complete the wizard without a pointer.

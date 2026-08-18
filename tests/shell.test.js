@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r5']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r6']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -131,4 +131,25 @@ test('report generator includes evidence packs and retest verdicts with residual
   assert.doesNotMatch(markdown, /<script>alert\(1\)<\/script>/);
   assert.doesNotMatch(markdown, /<b>as<\/b>/);
   assert.match(markdown, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});
+
+test('Phase 5 dashboard composition, retest queue, chain overview, and shortcuts', () => {
+  const appHtml = read('app.html');
+  const app = read('js/ui/app.js');
+  const workspace = read('js/ui/workspace.js');
+  const chains = read('js/ui/chains.js');
+  for (const marker of ['data-dashboard-blocked', 'data-dashboard-na', 'data-retest-queue', 'data-chain-overview',
+    'data-coverage-summary', 'id="shortcuts-dialog"', 'data-shortcuts-open', 'id="findings-panel"']) {
+    assert.ok(appHtml.includes(marker), `app.html missing ${marker}`);
+  }
+  assert.match(app, /shortcutsDialog\.showModal\(\)/);
+  assert.match(app, /pendingShortcut/);
+  assert.match(app, /event\.key === '\?'/);
+  assert.match(app, /if \(editable \|\| event\.altKey \|\| event\.ctrlKey \|\| event\.metaKey\)/);
+  assert.match(workspace, /function renderRetestQueue\(/);
+  assert.match(workspace, /function renderChainOverview\(/);
+  assert.match(workspace, /SEVERITY_GLYPHS = Object\.freeze/);
+  assert.match(workspace, /STATUS_GLYPHS = Object\.freeze/);
+  assert.match(workspace, /filter-chips/);
+  assert.match(chains, /STATUS_GLYPHS\[status\]/);
 });

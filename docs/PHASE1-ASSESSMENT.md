@@ -239,6 +239,6 @@ Residual notes for the plan: (a) the export file name embeds the engagement name
 | 2 — Reportability | All gates green | **Complete** | `do_not_report` on 59 boundary-prone items, `retest_guidance` on 17; schema/validator/audit + UI cards + tests |
 | 3 — Modern coverage | All gates green | **Complete** | AI/LLM category (11 items, 25th category), XS-Leaks + bfcache, subdomain-takeover identification, rationale engine; catalog 623 |
 | 4 — Evidence & retesting | All gates green | **Complete** | State schema v2 + v1 migration, evidence packs, reportability classifier, coverage confidence, chain node states, retest verdicts |
-| 5 — UI/UX modernization | — | **Not started** | Queued next (broader redesign per maintainer decision, incremental surfaces) |
+| 5 — UI/UX modernization | All gates green | **Complete** | Dashboard command center, retest queue, chain overview, homepage project metrics + pipeline + chain preview, filter chips, skeletons, glyphs, shortcuts dialog, touch/typography floors |
 | 6 — QA & automation | — | **Not started** | Queued after Phase 5 |
 | 7 — Release hardening | — | **Not started** | Queued last |

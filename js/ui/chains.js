@@ -2,6 +2,10 @@ const STATUS_SHORT = Object.freeze({
   not_tested: 'Pending', in_progress: 'Active', passed: 'Passed',
   potential_finding: 'Potential', confirmed_finding: 'Confirmed', na: 'N/A'
 });
+const STATUS_GLYPHS = Object.freeze({
+  not_tested: '○', in_progress: '◐', passed: '✓',
+  potential_finding: '△', confirmed_finding: '▲', na: '—'
+});
 const STATUS_CLASS = Object.freeze({
   not_tested: 'is-pending', in_progress: 'is-active', passed: 'is-passed',
   potential_finding: 'is-potential', confirmed_finding: 'is-confirmed', na: 'is-na'
@@ -66,7 +70,7 @@ export function createChainStore() {
         const body = node('div');
         const link = node('a', '', entry.item_id);
         link.href = item ? `#checklist/${item.category}` : '#checklist';
-        const statusChip = node('span', `chip status-chip ${STATUS_CLASS[status]}`, STATUS_SHORT[status]);
+        const statusChip = node('span', `chip status-chip ${STATUS_CLASS[status]}`, `${STATUS_GLYPHS[status] || ''} ${STATUS_SHORT[status]}`);
         body.append(link, statusChip, node('strong', '', entry.label));
         const edge = chain.edges.find((candidate) => candidate.from === entry.item_id);
         if (edge) body.append(node('small', '', `Unlock: ${edge.condition}`));

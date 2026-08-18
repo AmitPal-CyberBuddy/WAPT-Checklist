@@ -1,9 +1,9 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r5';
-import { createWizard } from './wizard.js?v=1.0.0-r5';
-import { STATE_KEY, createState } from '../engine/state.js?v=1.0.0-r5';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r5';
-import { createCatalog } from './catalog.js?v=1.0.0-r5';
-import { createWorkspace } from './workspace.js?v=1.0.0-r5';
+import { initializeTheme } from './theme.js?v=1.0.0-r6';
+import { createWizard } from './wizard.js?v=1.0.0-r6';
+import { STATE_KEY, createState } from '../engine/state.js?v=1.0.0-r6';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r6';
+import { createCatalog } from './catalog.js?v=1.0.0-r6';
+import { createWorkspace } from './workspace.js?v=1.0.0-r6';
 
 const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -211,13 +211,49 @@ function initializeShell() {
   sidebarMedia.addEventListener('change', () => setSidebar(false));
   setSidebar(false);
   document.querySelector('[data-go-search]').addEventListener('click', () => { location.hash = 'search'; });
+  const shortcutsDialog = document.querySelector('#shortcuts-dialog');
+  function openShortcuts() {
+    if (shortcutsDialog && !shortcutsDialog.open) shortcutsDialog.showModal();
+  }
+  document.querySelectorAll('[data-shortcuts-open]').forEach((button) => button.addEventListener('click', openShortcuts));
+  document.querySelectorAll('[data-shortcuts-close]').forEach((button) => button.addEventListener('click', () => shortcutsDialog?.close()));
+  let pendingShortcut = null;
   document.addEventListener('keydown', (event) => {
-    if (event.key === '/' && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+    const target = document.activeElement;
+    const editable = ['INPUT', 'TEXTAREA', 'SELECT'].includes(target?.tagName) || target?.isContentEditable;
+    if (editable || event.altKey || event.ctrlKey || event.metaKey) {
+      pendingShortcut = null;
+      return;
+    }
+    if (event.key === '/') {
       event.preventDefault();
       location.hash = 'search';
+      pendingShortcut = null;
+      return;
+    }
+    if (event.key === '?') {
+      event.preventDefault();
+      openShortcuts();
+      pendingShortcut = null;
+      return;
     }
     if (event.key === 'Escape' && document.querySelector('#sidebar').dataset.open === 'true') {
       setSidebar(false, true);
+    }
+    if (event.key === 'g') {
+      pendingShortcut = { at: Date.now() };
+      return;
+    }
+    if (pendingShortcut && Date.now() - pendingShortcut.at < 900) {
+      pendingShortcut = null;
+      if (event.key === 'd') location.hash = 'dashboard';
+      else if (event.key === 'c') location.hash = 'checklist';
+      else if (event.key === 'f') {
+        location.hash = 'dashboard';
+        setTimeout(() => document.querySelector('#findings-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+      }
+    } else {
+      pendingShortcut = null;
     }
   });
   window.addEventListener('hashchange', route);

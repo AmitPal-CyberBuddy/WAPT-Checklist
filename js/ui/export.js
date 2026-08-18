@@ -1,5 +1,5 @@
-import { serializeState } from '../engine/state.js?v=1.0.0-r5';
-import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r5';
+import { serializeState } from '../engine/state.js?v=1.0.0-r6';
+import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r6';
 
 export const STATUS_LABELS = Object.freeze({
   not_tested: 'Not Tested', in_progress: 'In Progress', passed: 'Passed',
