@@ -63,9 +63,7 @@
         "api_top10": [
           "API8:2023"
         ],
-        "cwe": [
-          "CWE-16"
-        ],
+        "cwe": [],
         "portswigger": []
       },
       "related": [],
@@ -1539,7 +1537,7 @@
           "API8:2023"
         ],
         "cwe": [
-          "CWE-16"
+          "CWE-693"
         ],
         "portswigger": []
       },
@@ -1615,9 +1613,7 @@
         "api_top10": [
           "API8:2023"
         ],
-        "cwe": [
-          "CWE-16"
-        ],
+        "cwe": [],
         "portswigger": []
       },
       "related": [],
@@ -1693,7 +1689,7 @@
           "API8:2023"
         ],
         "cwe": [
-          "CWE-16"
+          "CWE-693"
         ],
         "portswigger": []
       },

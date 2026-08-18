@@ -68,9 +68,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -160,9 +158,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -251,9 +247,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -342,9 +336,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -433,9 +425,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -525,9 +515,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -617,9 +605,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -721,9 +707,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -823,9 +807,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -925,9 +907,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1028,9 +1008,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1130,9 +1108,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1232,9 +1208,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1335,9 +1309,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1437,9 +1409,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1541,9 +1511,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1643,9 +1611,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1745,9 +1711,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1847,9 +1811,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -1939,9 +1901,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2031,9 +1991,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2123,9 +2081,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2215,9 +2171,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2307,9 +2261,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2399,9 +2351,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2491,9 +2441,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2583,9 +2531,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2677,9 +2623,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2769,9 +2713,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2871,9 +2813,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -2973,9 +2913,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -3065,9 +3003,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -3167,9 +3103,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -3259,9 +3193,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]
@@ -3351,9 +3283,7 @@
         "api_top10": [
           "API6:2023"
         ],
-        "cwe": [
-          "CWE-840"
-        ],
+        "cwe": [],
         "portswigger": [
           "https://portswigger.net/web-security/logic-flaws"
         ]

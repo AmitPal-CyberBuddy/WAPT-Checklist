@@ -7,6 +7,7 @@ const { referenceUrlAllowed } = require('./validate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, 'reference-catalog.json'), 'utf8'));
+const LIVE_CATALOG = JSON.parse(fs.readFileSync(path.join(__dirname, 'live-source-catalog.json'), 'utf8'));
 
 function productionItems() {
   const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist', 'manifest.json'), 'utf8'));
@@ -30,6 +31,8 @@ function offlineCheck(items) {
   const asvsIds = new Set(CATALOG.asvs_ids);
   const topIds = new Set(CATALOG.owasp_top10_ids);
   const apiIds = new Set(CATALOG.api_top10_ids);
+  const cweIds = new Set(CATALOG.cwe_ids);
+  const liveVerified = new Set(LIVE_CATALOG.verified_urls);
 
   for (const item of items) {
     const seen = new Set();
@@ -39,6 +42,7 @@ function offlineCheck(items) {
       seen.add(reference.url); urls.add(reference.url);
       const pathName = wstgPath(reference.url);
       if (pathName && !wstgPaths.has(pathName)) errors.push(`${item.id}: WSTG v4.2 path absent from verified repository snapshot: ${pathName}`);
+      if (!pathName && !liveVerified.has(reference.url)) errors.push(`${item.id}: non-WSTG reference absent from live verification snapshot: ${reference.url}`);
       if (reference.source === 'OWASP WSTG' && !pathName) errors.push(`${item.id}: OWASP WSTG source does not use a pinned v42 URL`);
       if (/placeholder|example title|owasp reference:/i.test(reference.title)) errors.push(`${item.id}: placeholder reference title ${reference.title}`);
     }
@@ -53,9 +57,20 @@ function offlineCheck(items) {
     }
     for (const id of item.mappings.asvs) if (!asvsIds.has(id)) errors.push(`${item.id}: ASVS ID absent from official 5.0.0 snapshot: ${id}`);
     for (const id of item.mappings.owasp_top10) if (!topIds.has(id)) errors.push(`${item.id}: unsupported OWASP Top 10 edition ID: ${id}`);
+    if (item.mappings.owasp_top10.length) {
+      const pair = item.mappings.owasp_top10.join('|');
+      const allowedPairs = new Set(['A01:2021|A01:2025','A02:2021|A04:2025','A03:2021|A05:2025','A04:2021|A06:2025','A05:2021|A02:2025','A07:2021|A07:2025','A10:2021|A01:2025']);
+      if (!allowedPairs.has(pair)) errors.push(`${item.id}: unreviewed OWASP Top 10 2021/2025 mapping pair: ${pair}`);
+    }
     for (const id of item.mappings.api_top10) if (!apiIds.has(id)) errors.push(`${item.id}: unsupported API Top 10 ID: ${id}`);
-    for (const id of item.mappings.cwe) urls.add(`https://cwe.mitre.org/data/definitions/${id.slice(4)}.html`);
-    for (const url of item.mappings.portswigger) urls.add(url);
+    for (const id of item.mappings.cwe) {
+      if (!cweIds.has(id)) errors.push(`${item.id}: CWE ID absent from verified MITRE weakness snapshot: ${id}`);
+      urls.add(`https://cwe.mitre.org/data/definitions/${id.slice(4)}.html`);
+    }
+    for (const url of item.mappings.portswigger) {
+      if (!liveVerified.has(url)) errors.push(`${item.id}: PortSwigger mapping absent from live verification snapshot: ${url}`);
+      urls.add(url);
+    }
   }
   return { errors, urls };
 }
@@ -104,7 +119,7 @@ async function main() {
     process.exitCode = 1;
     return;
   }
-  console.log(`Offline reference validation passed for ${items.length} items, ${offline.urls.size} unique reference/mapping URLs, ${CATALOG.wstg_paths.length} pinned WSTG paths, and ${new Set(items.flatMap((item) => item.mappings.asvs)).size} used ASVS IDs.`);
+  console.log(`Reference validation passed for ${items.length} items, ${offline.urls.size} unique reference/mapping URLs, ${CATALOG.wstg_paths.length} pinned WSTG paths, ${new Set(items.flatMap((item) => item.mappings.asvs)).size} used ASVS IDs, ${new Set(items.flatMap((item) => item.mappings.cwe)).size} used CWE weaknesses, and ${LIVE_CATALOG.verified_urls.length} live-verified non-WSTG URLs.`);
   if (!live) return;
   const results = await liveCheck(offline.urls);
   const failures = results.filter(({ ok }) => !ok);

@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–7 are implemented and Phase 8 reference QA is underway. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Every independent category floor and the deterministic authoritative-reference checker pass.
+> **Project status:** Phases 1–8 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Every category floor and authoritative reference/mapping gate passes.
 
 ## What is implemented
 
@@ -134,6 +134,6 @@ This repository's original software and content are licensed under the [Apache L
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
 6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
 7. ~~Attack chains, contextual payload library, and Burp workflows~~
-8. Reference and mapping verification — **in progress; deterministic checker green, connected live pass pending**
+8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
 9. Content and safety QA
 10. Public release hardening and deployment review
