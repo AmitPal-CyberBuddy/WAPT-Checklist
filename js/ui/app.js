@@ -13,8 +13,12 @@ function loadPortfolio() {
 }
 
 function savePortfolio() {
-  try { localStorage.setItem(STATE_KEY, JSON.stringify(portfolio)); }
-  catch (error) { console.warn('WAPT engagements could not be persisted locally.', error); }
+  try {
+    const stored = JSON.parse(localStorage.getItem(STATE_KEY));
+    const preferences = stored && typeof stored === 'object' ? stored.preferences : portfolio.preferences;
+    portfolio = { ...portfolio, preferences: { ...portfolio.preferences, ...preferences } };
+    localStorage.setItem(STATE_KEY, JSON.stringify(portfolio));
+  } catch (error) { console.warn('WAPT engagements could not be persisted locally.', error); }
 }
 
 let portfolio = loadPortfolio();

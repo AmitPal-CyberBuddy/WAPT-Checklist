@@ -87,9 +87,14 @@ test('wizard source defines all 15 question keys and the one localStorage key', 
   const wizard = read('js/ui/wizard.js');
   const app = read('js/ui/app.js');
   const engineState = read('js/engine/state.js');
+  const theme = read('js/ui/theme.js');
+  const themeBoot = read('js/ui/theme-boot.js');
   const questionKeys = [...wizard.matchAll(/\{ key: '([a-z_]+)'/g)].map((match) => match[1]);
   assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features']);
   assert.match(engineState, /STATE_KEY = 'wapt\.state\.v1'/);
   assert.match(app, /localStorage\.setItem\(STATE_KEY/);
   assert.equal((app.match(/localStorage\.setItem/g) || []).length, 1);
+  assert.match(theme, /STORAGE_KEY = 'wapt\.state\.v1'/);
+  assert.match(themeBoot, /STORAGE_KEY = 'wapt\.state\.v1'/);
+  assert.doesNotMatch(`${theme}\n${themeBoot}`, /sessionStorage/);
 });

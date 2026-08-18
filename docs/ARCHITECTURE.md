@@ -10,7 +10,7 @@ WAPT Checklist is a static, context-aware assessment workspace for authorized we
 2. **Context is a first-class input:** questionnaire answers and conservative URL hints produce a normalized context. Pure engine functions evaluate content; UI code only renders their results.
 3. **Content is data:** stable IDs, a documented schema, and CI validation let methodology evolve independently of presentation.
 4. **Safe by default:** content assumes explicit authorization. Disruptive techniques require a `safety` note. Destructive or denial-of-service payloads are marked `review_only` and never expanded automatically.
-5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements and identifies the active one. Legacy single-engagement state migrates locally on load. Per-engagement JSON export/import provides user-controlled portability.
+5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements, the active engagement, and the UI theme preference. Legacy single-engagement state migrates locally on load. Per-engagement JSON export/import provides user-controlled portability.
 6. **Progressive loading:** the manifest supplies metadata and counts. Category JSON is fetched on demand with same-origin relative URLs.
 7. **Accessible and dependency-free:** semantic HTML, keyboard operation, visible focus, WCAG AA themes, reduced-motion support, and self-hosted fonts.
 
@@ -35,7 +35,7 @@ Browser
      └─ burp-workflows/*.md
 ```
 
-The engine runs unchanged under `node --test`. It does not import browser globals. Storage access belongs in the thin `js/ui/app.js` adapter; `state.js` receives and returns plain values. A directory-scoped `js/engine/package.json` marks these `.js` files as ES modules without changing the repository's CommonJS validator and test harness.
+The engine runs unchanged under `node --test`. It does not import browser globals. Storage access belongs in the thin UI adapters (`js/ui/app.js`, `js/ui/theme.js`, and the pre-paint `js/ui/theme-boot.js`); `state.js` receives and returns plain values. A directory-scoped `js/engine/package.json` marks these `.js` files as ES modules without changing the repository's CommonJS validator and test harness.
 
 ## Data flow
 
@@ -93,22 +93,31 @@ The homepage's catalog total comes from manifest counts. Engagement values (acti
 
 ## State contract
 
-Exactly one browser key is used:
+Exactly one browser key, `wapt.state.v1`, is used. It contains the portfolio envelope, its theme preference, and each independent engagement state:
 
 ```json
 {
-  "schema_version": 1,
-  "engagement": { "name": "", "targetUrl": "", "started_at": null },
-  "answers": {},
-  "statuses": {},
-  "notes": {},
-  "overrides": {},
-  "retests": {},
-  "updated_at": null
+  "kind": "wapt-engagement-portfolio",
+  "portfolio_version": 1,
+  "preferences": { "theme": "light" },
+  "active_id": "engagement-id",
+  "engagements": [{
+    "id": "engagement-id",
+    "state": {
+      "schema_version": 1,
+      "engagement": { "name": "", "targetUrl": "", "started_at": null },
+      "answers": {},
+      "statuses": {},
+      "notes": {},
+      "overrides": {},
+      "retests": {},
+      "updated_at": null
+    }
+  }]
 }
 ```
 
-Allowed statuses are `not_tested`, `in_progress`, `passed`, `potential_finding`, `confirmed_finding`, and `na`. A retest flag may be true only while the corresponding item is `confirmed_finding`. Re-running scope does not erase status or notes. Import validates shape and schema version before replacing state; export includes no data beyond this document.
+The theme is applied by a small same-origin external script before CSS loads, preventing a dark-to-light flash while retaining the restrictive no-inline-script CSP. Theme updates preserve the portfolio and portfolio updates preserve the theme. Allowed item statuses are `not_tested`, `in_progress`, `passed`, `potential_finding`, `confirmed_finding`, and `na`. A retest flag may be true only while the corresponding item is `confirmed_finding`. Re-running scope does not erase status or notes. Import validates one engagement's shape and schema version before replacing that engagement; per-engagement export excludes the portfolio preference.
 
 ## Security controls
 
