@@ -75,7 +75,7 @@ Key guarantees:
 - status changes away from `confirmed_finding` clear the retest flag;
 - retest cannot be enabled for another status;
 - applicability overrides require a non-empty reason;
-- import rejects malformed JSON, unknown schema versions, and input over 1 MB;
+- import rejects malformed JSON, unknown schema versions, and input over 5 MB (raised from 1 MB when evidence packs joined the state);
 - JSON serialize/import round trips valid state without adding data.
 
 The current functions are `createState`, `normalizeState`, `setEngagement`, `setAnswers`, `setItemStatus`, `setItemNote`, `setOverride`, `clearOverride`, `setRetestFlag`, `serializeState`, and `importState`.

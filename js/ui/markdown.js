@@ -12,7 +12,8 @@ const DESIGNED_DOCS = Object.freeze({
   'docs/QA.md': 'browser-qa', 'docs/RESPONSIVE-QA.md': 'responsive',
   'docs/REFERENCE-QA.md': 'reference-qa', 'docs/CONTENT-QA-REPORT.md': 'content-qa',
   'docs/PHASE7-LIBRARIES.md': 'libraries', 'docs/RELEASE.md': 'release',
-  'docs/EVIDENCE-WORKFLOW.md': 'evidence-workflow'
+  'docs/EVIDENCE-WORKFLOW.md': 'evidence-workflow',
+  'docs/FEATURE-VERIFICATION.md': 'feature-verification'
 });
 
 function designedHref(raw) {

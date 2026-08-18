@@ -77,7 +77,7 @@ test('strict import rejects invalid versions, invalid JSON, and oversized input'
   const { importState } = await stateModule;
   assert.throws(() => importState('{bad'), /not valid JSON/);
   assert.throws(() => importState('{"schema_version":3}'), /schema_version 2/);
-  assert.throws(() => importState(' '.repeat(1_000_001)), /1 MB/);
+  assert.throws(() => importState(' '.repeat(5_000_001)), /5 MB/);
 });
 
 test('normalization removes impossible retest flags and unknown item keys', async () => {

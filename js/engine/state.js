@@ -18,7 +18,7 @@ const EXPLOITABILITY_SET = new Set(EXPLOITABILITY_LEVELS);
 const VERDICT_SET = new Set(RETEST_VERDICTS);
 const ITEM_ID = /^WAPT-[A-Z]+-\d{3}$/;
 const FINDING_ID = /^find-[a-z0-9-]{4,100}$/;
-const MAX_IMPORT_BYTES = 1_000_000;
+const MAX_IMPORT_BYTES = 5_000_000;
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -376,7 +376,7 @@ export function serializeState(state) {
 
 export function importState(json) {
   if (typeof json !== 'string') throw new TypeError('Imported state must be JSON text.');
-  if (new TextEncoder().encode(json).length > MAX_IMPORT_BYTES) throw new RangeError('Imported state exceeds the 1 MB limit.');
+  if (new TextEncoder().encode(json).length > MAX_IMPORT_BYTES) throw new RangeError('Imported state exceeds the 5 MB limit.');
   let candidate;
   try { candidate = JSON.parse(json); }
   catch (error) { throw new SyntaxError(`Imported state is not valid JSON: ${error.message}`); }

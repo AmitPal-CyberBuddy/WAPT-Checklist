@@ -9,7 +9,7 @@
 - local statuses, notes, overrides, evidence packs, retest verdicts, import/export, reports, and print;
 - full-text search and combined filters with removable active-filter chips;
 - five attack chains with per-node status, 40 contextual payload references, and 12 Burp workflows;
-- authoritative source snapshots, live-source catalog, content audit, and 196 Node tests;
+- authoritative source snapshots, live-source catalog, content audit, link audit, and 211 Node tests;
 - Apache-2.0 project license with retained third-party font and OWASP attribution.
 
 `release.json` is the machine-readable release manifest.
@@ -20,10 +20,11 @@
 |---|---|---|
 | Version | 1.0.0 release candidate (cache `1.0.0-r6`, state schema v2) | `release.json` |
 | Content QA | **Green** | 623 items, 25 category floors, zero audit errors/warnings |
-| Automated QA | **Green** | 196 Node tests covering engine, content, UI source, privacy, and end-to-end workflow |
+| Automated QA | **Green** | 211 Node tests covering engine, content, UI source, privacy, verification matrix, and end-to-end workflow |
 | Reference QA | **Green** | 84 pinned WSTG pages, 153 ASVS, 104 CWE, 46 live-verified URLs |
 | Security/Privacy QA | **Green (automated)** | Same-origin fetches, single storage key, restrictive CSP, import validation pinned by `tests/privacy.test.js` |
 | Browser QA | **Pending maintainer** | No headless browser in this session; the manual matrix in `docs/QA.md` must be signed off in Chromium and Firefox |
+| Functional verification | **Green (automated)** | `docs/FEATURE-VERIFICATION.md`: 623-item catalog, 25 categories, search/filter/state/import/report/retest/chains/payloads/workflows verified with executed tests; browser-only rows explicitly NOT TESTED |
 | Visual QA | **Pending maintainer** | No screenshot runner; token-level redesign verified by source assertions only |
 | Deployment | **Pending maintainer merge** | Pages deploys from `main` automatically on merge; CI already green on the review PR |
 

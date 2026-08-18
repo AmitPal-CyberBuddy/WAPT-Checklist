@@ -4,6 +4,20 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (FFV — full functionality verification)
+
+- `tools/verify-links.js` link audit (97 local references resolve; 15 external hosts allowlist-classified) and `tools/measure-performance.js` benchmark recorder.
+- `tests/verification.test.js` (11 scenarios: search/filter correctness over all 623 items, status state machine, retest-evidence immutability, malicious-import fuzzing, export/import equivalence, report injection matrix, chain resolution/boost, payload/Burp completeness, data consistency, no-eval sweep, performance ceilings).
+- `tests/accessibility-contrast.test.js`: computed WCAG contrast for body, muted, brand, and all severity chips in both themes.
+- `docs/FEATURE-VERIFICATION.md`: full verification matrix with the 17-section report, defect classification register, performance measurements, and honest NOT TESTED rows.
+
+### Fixed (FFV)
+
+- Light-theme severity-chip contrast below WCAG AA (high 4.28, medium 4.31, low 4.30) — tokens deepened to #c41212 / #a03e00 / #016a3e; all chip text now ≥ 4.5:1 (PRE-EXISTING BUG).
+- Stale counts in methodology.html and README after the Phase 3 bump (609/24 → 623/25) (NEW REGRESSION, documentation).
+- Import cap raised 1 MB → 5 MB so legitimate evidence-pack exports round-trip (PRE-EXISTING design bug amplified by Phase 4).
+- workflow.html added to sitemap.xml (PRE-EXISTING documentation gap).
+
 ### Added (Phase 6+7 — QA, automation, and release hardening)
 
 - Vocabulary parity test: the validator's context vocabulary and the engine's `ATTRIBUTE_OPTIONS` must stay byte-identical.

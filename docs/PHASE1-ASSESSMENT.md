@@ -242,3 +242,4 @@ Residual notes for the plan: (a) the export file name embeds the engagement name
 | 5 — UI/UX modernization | All gates green | **Complete** | Dashboard command center, retest queue, chain overview, homepage project metrics + pipeline + chain preview, filter chips, skeletons, glyphs, shortcuts dialog, touch/typography floors |
 | 6 — QA & automation | All gates green | **Complete** | Vocabulary parity test, severity-diversity audit rule (+4 honest HTTP re-ratings), end-to-end workflow test (196 tests) |
 | 7 — Release hardening | All gates green | **Complete** | Dashboard hydration split, evidence-workflow doc, honest release-state matrix, roadmap, changelog, PR refreshed |
+| FFV — Full functionality verification | All gates green | **Complete** | 211 tests; link audit (97 refs / 15 allowlisted hosts); contrast audit (1 pre-existing bug fixed); consistency audit (1 regression + 2 pre-existing docs fixed); perf measured; `docs/FEATURE-VERIFICATION.md` |

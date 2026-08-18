@@ -2,6 +2,10 @@
 
 Automated tests use Node's standard library. This checklist covers browser behavior that cannot be fully verified in the sandbox. Run it against both `python3 -m http.server` and the GitHub Pages deployment before a release.
 
+## Feature verification matrix
+
+Every automated row in `docs/FEATURE-VERIFICATION.md` is exercised by `tests/verification.test.js` and the FFV tooling. The manual rows below remain the maintainer sign-off path.
+
 ## Browser smoke test (Phases 2–5)
 
 ### Pages and policy

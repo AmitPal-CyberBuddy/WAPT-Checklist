@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 609 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
+> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
 ## What is implemented
 
@@ -28,7 +28,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
 - Designed methodology, security, contributing, license, project-documentation, and Burp-workflow pages—no user-facing raw Markdown redirects.
-- Manifest-driven navigation for all 24 categories and honest live local/project statistics.
+- Manifest-driven navigation for all 25 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
 - Phase 1 architecture, taxonomy, schema, validator, and 20 complete methodology samples.
@@ -116,6 +116,7 @@ See:
 - [Engagement workspace](docs/PHASE5-WORKSPACE.md)
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
 - [Evidence, reportability, and retest workflow](docs/EVIDENCE-WORKFLOW.md)
+- [Feature verification matrix](docs/FEATURE-VERIFICATION.md)
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
 - [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
 - [Version 1.0.0 release and deployment runbook](docs/RELEASE.md)
