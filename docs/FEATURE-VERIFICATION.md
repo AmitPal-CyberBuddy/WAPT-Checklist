@@ -83,6 +83,7 @@ Parameters that were only partially covered in round 1 were re-exercised:
 - **External host reachability** — 46 snapshot URLs live-verified via page fetch; direct sandbox egress is blocked for every host except github.com (HTTP 200). Per-host classification recorded: 1 reachable, 17 environment-blocked (not a product defect).
 
 ### 1.15 Remaining known issues
+5. **Commit atomicity (process finding, round 3):** two early phase commits (`674992f`, `77e3d25`) shipped behavior changes one commit before their test updates, so those two commits individually measure 154/158 and 148/158 (all failures were stale assertions, resolved by `6a0bc05`; the product was never broken and CI never saw a red state). Recommendation: keep behavior change + its tests in a single commit going forward; history left intact for transparency.
 1. **Browser/visual QA unsigned** — the release-state matrix keeps Browser QA, Visual QA, and Deployment as *pending maintainer*; the project is not called production-ready until signed.
 2. **Homepage "Active tests" stat** shows "—" for visitors without a scoped engagement (intentional honesty; never fabricates a number).
 3. **Evidence-pack form resets after save** (dashboard re-renders); saved data persists — cosmetic.
@@ -93,6 +94,70 @@ Parameters that were only partially covered in round 1 were re-exercised:
 - `check-references.js --live` re-run on unrestricted egress.
 - Optional indexed search worker if the catalog grows past ~2000 items.
 - Engagement-level encryption-at-rest note (documented trade-off today).
+
+## 2a. Baseline comparison & per-phase regression evidence (round 3)
+
+Measured with `tools/regression-history.sh` (baseline = `main` @ `f043197`, the pre-review state) and `tools/baseline-probe.mjs` (behavior probe that runs unchanged at both commits).
+
+### 2a.1 Per-commit suite measurement (mechanical, not claimed)
+
+| Commit | Suite at that commit | Classification |
+|---|---|---|
+| baseline `f043197` | 158/158 pass | PASS — pre-change baseline is green |
+| `674992f` phase 1 (engine) | 158 tests, **4 fail** | PROCESS — commit atomicity: engine change shipped one commit before its test updates (4 failures = stale presets/wizard/cache/SSRF assertions) |
+| `77e3d25` phase 1b (content) | 158 tests, **10 fail** | PROCESS — same cause (10 failures = stale count/mapping/reference assertions) |
+| `6a0bc05` → `16dc2d1` (9 commits) | 172→220, **all pass** | PASS — every commit green from here on |
+
+The 14 failures in the two transient commits are all **stale test assertions vs. shipped behavior** (updated in `6a0bc05`); no product behavior was broken at any commit, and CI never observed a red state (the branch was first pushed after `6a0bc05`). Classified as a process finding, not a product defect — see remaining-known-issues #5.
+
+### 2a.2 Original baseline tests run against current code (regression detection)
+
+`158` baseline tests → **136 pass unchanged**, **22 fail**. All 22 classified **INTENTIONAL CHANGE** (contract deliberately updated, each with migration or count evidence), **0 REGRESSION**:
+
+- Counts/categories: 608→623 items, 24→25 categories, floors 512→520, recon 37→38 (8 tests).
+- State schema v1→v2 with transparent migration (2 tests: v1 shape, version rejection).
+- Cache version r3→r6 (4 tests).
+- Wizard 15→18 questions; presets 15→18 keys (2 tests).
+- Scoping improvements: SSRF category gate + async-job gating now return Confirm where the old contract expected Active (2 tests).
+- New client-side items deliberately excluded from the old static-everything invariant (2 tests).
+- Audit metrics (safety notes, references) grew with content (2 tests).
+
+### 2a.3 Engine behavior probe: baseline vs current
+
+Identical at both commits: URL-hint results for all 12 probe URLs (deny-list included), every applicability result except one, Suggested-next determinism and ordering, state round trip, and malformed-JSON rejection. Intentional deltas, each with evidence:
+
+- +3 context attributes (`intermediary`, `outbound_fetch`, `async_jobs`); static delivery reconciles them.
+- `WAPT-SSRF-*` under unknown scope: baseline Active → current **Confirm** (new category gate; never hidden).
+- Import: schema v2 with legacy-v1 migration message; size cap 1 MB → **5 MB** (valid 5.5 MB payload rejected with "exceeds the 5 MB limit"; 1.1 MB valid v2 state now imports).
+
+### 2a.4 Workflow-area classification (requested vocabulary)
+
+| Area | Classification | Evidence |
+|---|---|---|
+| Homepage/navigation | PASS | links/CTAs/assets resolved; stats manifest-driven |
+| WAPT wizard & all presets | PASS | 18-question branching matrix; 8 presets through the engine; edits preserved |
+| Scoping/context detection | PASS | probe parity + vocabulary parity test |
+| Engagement create/persist/resume | PASS | portfolio suite + simulated reload round trip |
+| Checklist categories (25, was 24) | PASS | per-category counts == files == floors |
+| Search & combined filters | PASS | every key exercised over 623 items |
+| Applicability & priority engine | PASS | scenario suite + probe parity (one intentional gate delta) |
+| Status/state transitions | PASS | pairwise transition matrix + rejection tests |
+| Notes | PASS | add/edit/delete/isolation/round trip |
+| Import/export | PASS | fuzz + equivalence round trip + 5 MB cap |
+| Findings | PASS | CRUD, caps, confirmed-only, no false findings |
+| Reports | PASS | five-severity matrix, injection-safe, verdicts |
+| Retesting | PASS | pass/partial/fail + evidence immutability |
+| Attack chains | PASS | resolve/boost/unlock with real data |
+| Payload library | PASS | 40 items, 14 REVIEW-ONLY collapsed, copy control |
+| Burp workflows | PASS | 12 files complete, all slugs mapped |
+| Dark/light mode | PASS (automated contrast) | both themes ≥ 4.5:1 incl. neutral chips |
+| Responsive/mobile | PASS (source) · visual NOT TESTED | breakpoint assertions; no browser in sandbox |
+| Keyboard/accessibility | PASS (source) · manual NOT TESTED | focus ring, shortcuts, SR hygiene asserted |
+| Browser console/network errors | NOT TESTED | no headless browser; static refs + parse sweep as substitute evidence |
+| Broken links/references | PASS (structural) | 97/97 local, 15 hosts allowlisted, 46 URLs snapshot-verified |
+| Unexpected external requests/telemetry | PASS | all fetches same-origin relative, pinned |
+| Security regressions | PASS | privacy suite + import fuzz + no-eval sweep |
+| Performance regressions | PASS | measured at 20/150/500 items (search ≤ 2.7 ms) |
 
 ## 2. Feature verification matrix
 

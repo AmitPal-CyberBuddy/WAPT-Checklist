@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (FFV round 3 — baseline comparison & per-phase regression proof)
+
+- `tools/regression-history.sh`: mechanically runs the Node suite at the baseline commit and every phase commit (worktree-based, reproducible).
+- `tools/baseline-probe.mjs`: behavior probe that runs unchanged at baseline and current — URL hints, applicability, Suggested-next determinism, state round trip, import rejection.
+- Recorded evidence: baseline `f043197` 158/158 green; two early commits transiently red by commit atomicity (4 + 10 stale assertions, resolved at `6a0bc05`); 9 later commits all green (172→220). Original baseline tests run against current code: 136/158 pass unchanged, 22 intentional contract changes, 0 regressions. Probe parity confirmed for all unchanged engine behavior; intentional deltas documented (3 new attributes, SSRF gate Active→Confirm, state v2 + migration, 1 MB→5 MB import cap).
+
 ### Added (FFV round 2 — strict parameter re-audit)
 
 - Payload reference values now expose a copy control (clipboard with fallback and accessible label) — the only "Copy works" parameter that had no implementation.
