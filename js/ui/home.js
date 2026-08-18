@@ -6,8 +6,12 @@ const STORAGE_KEY = 'wapt.state.v1';
 
 function localState() {
   try {
-    const state = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    return state && typeof state === 'object' ? state : {};
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (!stored || typeof stored !== 'object') return {};
+    if (stored.kind === 'wapt-engagement-portfolio' && Array.isArray(stored.engagements)) {
+      return stored.engagements.find(({ id }) => id === stored.active_id)?.state || stored.engagements[0]?.state || {};
+    }
+    return stored;
   } catch {
     return {};
   }

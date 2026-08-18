@@ -9,9 +9,10 @@ const stateModule = import('../js/engine/state.js');
 test('legacy single-engagement state migrates into a one-record portfolio', async () => {
   const { normalizePortfolio, activeEngagement, PORTFOLIO_KIND } = await portfolioModule;
   const { createState, setEngagement } = await stateModule;
-  const legacy = setEngagement(createState(), { name: 'Legacy portal' }, '2026-08-18T00:00:00.000Z');
+  const legacy = { ...setEngagement(createState(), { name: 'Legacy portal' }, '2026-08-18T00:00:00.000Z'), preferences: { theme: 'light' } };
   const portfolio = normalizePortfolio(legacy);
   assert.equal(portfolio.kind, PORTFOLIO_KIND);
+  assert.equal(portfolio.preferences.theme, 'light');
   assert.equal(portfolio.engagements.length, 1);
   assert.equal(activeEngagement(portfolio).engagement.name, 'Legacy portal');
 });

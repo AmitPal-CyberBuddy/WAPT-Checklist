@@ -14,36 +14,30 @@
 
 `release.json` is the machine-readable release manifest.
 
-## Required maintainer action: install workflows
+## Installed workflows
 
-The Arena GitHub App used for this work cannot push `.github/workflows/**`; GitHub rejected workflow changes because the app lacks the workflows permission. Reviewed templates are stored at:
+A repository maintainer installed the reviewed workflow templates on 2026-08-18 because the Arena GitHub App cannot push `.github/workflows/**` without GitHub's workflows permission. The active files are:
 
-- `docs/workflows/ci.yml`
-- `docs/workflows/deploy.yml`
+- `.github/workflows/ci.yml`
+- `.github/workflows/deploy.yml`
 
-After reviewing and merging the pull request, a maintainer with workflow permission must copy them without modification:
+The byte-matching review and recovery copies remain at `docs/workflows/ci.yml` and `docs/workflows/deploy.yml`. Any future workflow change must update the active file and template together in a maintainer-reviewed pull request.
 
-```bash
-mkdir -p .github/workflows
-cp docs/workflows/ci.yml .github/workflows/ci.yml
-cp docs/workflows/deploy.yml .github/workflows/deploy.yml
-git add .github/workflows
-git commit -m "ci: enable validation and GitHub Pages deployment"
-git push origin main
-```
+## GitHub Pages deployment
 
-Do not remove the source templates; they document the reviewed workflow when `.github` cannot be written by automation.
+GitHub Pages is enabled with **GitHub Actions** as its source and HTTPS enforcement. A successful push to `main` runs every release gate before publishing the static repository root. The public project URL is:
 
-## GitHub Pages setup
+`https://amitpal-cyberbuddy.github.io/WAPT-Checklist/`
 
-1. Merge the pull request into `main`; do not deploy the session branch as the permanent Pages source.
-2. Install and push the workflow files above.
-3. In **Settings → Pages**, choose **GitHub Actions** as the source if it is not selected automatically.
-4. Confirm the `Deploy GitHub Pages` workflow passes its test job before deployment.
-5. Verify `https://amitpal-cyberbuddy.github.io/WAPT-Checklist/` and `/app.html#wizard` return the release.
-6. Set the repository homepage URL to the Pages URL.
+For every deployment:
 
-The GitHub Pages API currently returns 404 because Pages has not been enabled and `main` still contains only the initial commit. This is expected until the PR is reviewed/merged and the maintainer performs the workflow step. The agent must not merge its own PR.
+1. merge a reviewed pull request into `main`; do not deploy a session branch as the permanent Pages source;
+2. confirm both `CI` and `Deploy GitHub Pages` complete successfully;
+3. verify the homepage, `/app.html#wizard`, methodology, documentation, Burp workflows, connected JSON, and static assets;
+4. check both themes, narrow and laptop layouts, project-relative navigation, CSP, and runtime network requests;
+5. set the repository homepage field to the Pages URL if repository-admin permission is available.
+
+The release remains a candidate until the current reviewed `main` deployment completes this verification. The agent must not merge its own pull request.
 
 ## Mandatory release gates
 

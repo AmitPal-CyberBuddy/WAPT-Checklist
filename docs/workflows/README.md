@@ -1,15 +1,17 @@
 # GitHub Actions workflow templates
 
-The Arena GitHub App used for this development session does not have GitHub's `workflows` permission. GitHub therefore rejected a push containing `.github/workflows/**`.
+The active workflows are installed at:
 
-A repository maintainer must copy these reviewed templates after merging:
+- `.github/workflows/ci.yml`
+- `.github/workflows/deploy.yml`
 
-```bash
-mkdir -p .github/workflows
-cp docs/workflows/ci.yml .github/workflows/ci.yml
-cp docs/workflows/deploy.yml .github/workflows/deploy.yml
-```
+The byte-matching source templates remain at:
 
-Commit the copied files to the default branch, then in repository **Settings → Pages**, select **GitHub Actions** as the source. The deployment workflow tests the project before publishing the repository root. The CI workflow runs the Node test suite and Phase 1 content validator on pushes and pull requests.
+- `docs/workflows/ci.yml`
+- `docs/workflows/deploy.yml`
 
-Do not delete the templates immediately after copying them; keeping a reviewable fallback documents the expected workflow when an integration cannot update workflow files.
+A repository maintainer installed the active copies on 2026-08-18 because the Arena GitHub App does not have GitHub's `workflows` permission. Keeping the source templates provides a reviewable recovery copy and documents the approved workflow content.
+
+GitHub Pages uses **GitHub Actions** as its source. The deployment workflow runs the Node tests, schema validation, all 24 production category floors, reference validation, and content audit before publishing the static repository root. The CI workflow runs the same release gates on pushes and pull requests.
+
+When a workflow changes, update both the active file and its source template in the same reviewed pull request. Do not weaken the test gate, Pages permissions, restrictive CSP, static-root architecture, or same-origin deployment model.

@@ -18,6 +18,9 @@ test('responsive layout has deliberate monitor, laptop, tablet, phone, and compa
   assert.match(css, /@media \(max-width:960px\).*?\.sidebar\{position:fixed.*?translateX\(-102%\)/s);
   assert.match(css, /@media \(max-width:520px\).*?\.dashboard-grid\{grid-template-columns:1fr\}/s);
   assert.match(css, /@media \(max-width:380px\).*?\.wizard-footer\{[^}]*flex-direction:column-reverse/s);
+  assert.match(css, /@keyframes rise-in/);
+  assert.match(css, /\.view:not\(\[hidden\]\)\{animation:view-in/);
+  assert.match(css, /@media \(prefers-reduced-motion:reduce\).*?animation:none!important/s);
 });
 
 test('mobile navigation removes off-canvas content from focus order', () => {

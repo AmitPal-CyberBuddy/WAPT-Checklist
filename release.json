@@ -14,7 +14,11 @@
   "burp_workflows": 12,
   "deployment": {
     "source": "GitHub Actions",
+    "workflow": ".github/workflows/deploy.yml",
     "workflow_template": "docs/workflows/deploy.yml",
-    "pending": "Maintainer must install workflow files and merge the pull request."
+    "status": "active",
+    "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
+    "verified_at": "2026-08-18",
+    "note": "GitHub Pages is active; the release remains a candidate until the current reviewed main deployment receives final verification."
   }
 }

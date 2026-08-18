@@ -21,21 +21,27 @@ function cleanRecord(record) {
   return { id: record.id.slice(0, 100), state: normalizeState(record.state) };
 }
 
-export function createPortfolio(initialState = createState()) {
+function cleanPreferences(value) {
+  return { theme: value?.theme === 'light' || value?.theme === 'dark' ? value.theme : null };
+}
+
+export function createPortfolio(initialState = createState(), preferences = {}) {
   const id = makeId();
   return {
     kind: PORTFOLIO_KIND,
     portfolio_version: PORTFOLIO_VERSION,
+    preferences: cleanPreferences(preferences),
     active_id: id,
     engagements: [{ id, state: normalizeState(initialState) }]
   };
 }
 
 export function normalizePortfolio(candidate) {
+  const preferences = cleanPreferences(candidate?.preferences);
   // Seamlessly migrate the original single-engagement document kept under wapt.state.v1.
-  if (isObject(candidate) && candidate.schema_version === STATE_SCHEMA_VERSION) return createPortfolio(candidate);
+  if (isObject(candidate) && candidate.schema_version === STATE_SCHEMA_VERSION) return createPortfolio(candidate, preferences);
   if (!isObject(candidate) || candidate.kind !== PORTFOLIO_KIND || candidate.portfolio_version !== PORTFOLIO_VERSION) {
-    return createPortfolio();
+    return createPortfolio(createState(), preferences);
   }
 
   const seen = new Set();
@@ -46,9 +52,9 @@ export function normalizePortfolio(candidate) {
     seen.add(record.id);
     engagements.push(record);
   }
-  if (!engagements.length) return createPortfolio();
+  if (!engagements.length) return createPortfolio(createState(), preferences);
   const activeId = engagements.some(({ id }) => id === candidate.active_id) ? candidate.active_id : engagements[0].id;
-  return { kind: PORTFOLIO_KIND, portfolio_version: PORTFOLIO_VERSION, active_id: activeId, engagements };
+  return { kind: PORTFOLIO_KIND, portfolio_version: PORTFOLIO_VERSION, preferences, active_id: activeId, engagements };
 }
 
 export function activeEngagement(portfolio) {
@@ -83,7 +89,7 @@ export function removeEngagement(portfolio, id) {
   const current = normalizePortfolio(portfolio);
   const engagements = current.engagements.filter((record) => record.id !== id);
   if (engagements.length === current.engagements.length) throw new TypeError('Unknown engagement ID.');
-  if (!engagements.length) return createPortfolio();
+  if (!engagements.length) return createPortfolio(createState(), current.preferences);
   return {
     ...current,
     active_id: current.active_id === id ? engagements[0].id : current.active_id,
