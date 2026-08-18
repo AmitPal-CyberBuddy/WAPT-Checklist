@@ -230,7 +230,7 @@
       "file": "rate-limiting.json",
       "prefix": "WAPT-RATE",
       "floor": 10,
-      "count": 0,
+      "count": 12,
       "summary": "Evaluate bounded anti-automation controls around sensitive flows."
     },
     {

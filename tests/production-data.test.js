@@ -643,6 +643,30 @@ test('secret, debug, repository, log, and management checks constrain evidence h
   }
 });
 
+test('rate-limiting methodology covers identity, messaging, API, upload, search, and payment abuse contextually', async () => {
+  const [{ deriveContext }, { APPLICABILITY, evaluateApplicability }] = await Promise.all([
+    import('../js/engine/context.js'), import('../js/engine/applicability.js')
+  ]);
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'rate-limiting.json'), 'utf8'));
+  for (const tag of ['login', 'credential-stuffing', 'otp', 'push-fatigue', 'password-reset', 'registration', 'api', 'search', 'file-upload', 'fan-out', 'payments', 'forwarded-header']) {
+    assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
+  }
+  assert.ok(items.every((item) => item.safety.startsWith('REVIEW ONLY.')));
+  assert.ok(items.every((item) => /Never brute-force, flood, spray, spam/.test(item.examples[0].note)));
+  const staticContext = deriveContext({ app_type: 'static', has_login: 'yes', features: ['payments', 'search', 'file_upload'] });
+  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.NA_CONTEXT));
+  const noSearch = deriveContext({ app_type: 'hybrid', features: ['payments'] });
+  assert.equal(evaluateApplicability(items.find(({ id }) => id === 'WAPT-RATE-008'), noSearch).state, APPLICABILITY.NA_CONTEXT);
+});
+
+test('rate tests require measured limits rather than accepted-request extrapolation', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'rate-limiting.json'), 'utf8'));
+  for (const item of items) {
+    assert.match(item.validation, /Do not extrapolate/);
+    assert.ok(item.evidence.some((entry) => /Exact request\/message count/.test(entry)), item.id);
+  }
+});
+
 test('disruptive reconnaissance techniques include safety boundaries', () => {
   const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8'));
   const safetyRequired = new Set([

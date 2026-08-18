@@ -18,10 +18,14 @@ Phase 6 authors production methodology for categories 11–24. Category floors r
 | 20 | Security headers | 20 | 24 | Complete |
 | 21 | Cloud / storage | 15 | 18 | Complete |
 | 22 | Information disclosure | 15 | 18 | Complete |
-| 23 | Rate limiting / abuse | 10 | 0 | Not started |
+| 23 | Rate limiting / abuse | 10 | 12 | Complete |
 | 24 | Advanced topics | 15 | 0 | Not started |
 
-Advanced floor total: **217**. Current Phase 6 production total: **230**. Overall production catalog: **578**.
+Advanced floor total: **217**. Current Phase 6 production total: **242**. Overall production catalog: **590**.
+
+## Rate-limiting / abuse coverage
+
+The abuse catalog adds 12 REVIEW-ONLY tests for password guessing and distributed stuffing, OTP/MFA/recovery codes and push fatigue, reset messages, registration/invitations, API resource budgets, search/scraping/exports, uploads/storage/processing, email/chat fan-out, payment/coupon/reservation fraud, and spoofed source/channel accounting. Every test uses a tiny written ceiling and stops on the first control or operational signal.
 
 ## Information-disclosure coverage
 

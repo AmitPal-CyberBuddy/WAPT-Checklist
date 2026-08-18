@@ -1,0 +1,1232 @@
+{
+  "schema_version": "1.0.0",
+  "category": "rate-limiting",
+  "lastmod": "2026-08-18",
+  "items": [
+    {
+      "id": "WAPT-RATE-001",
+      "title": "Bound password guessing by account and contextual risk",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether repeated login failures are constrained across account, source, device, and time without enabling permanent victim lockout.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a tiny approved sequence shows no meaningful account/context control and supports a practical guessing model",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "adaptive controls can activate above the safe test ceiling",
+        "MFA can contain takeover even when password attempts are accepted"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-6.1.1",
+          "v5.0.0-6.3.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "login",
+        "brute-force",
+        "account"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-002",
+      "title": "Bound credential stuffing across distributed sources",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether reused synthetic credentials can be attempted across source addresses/devices without account-centric detection or step-up.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a bounded owner-controlled distribution bypasses all account/risk controls with realistic scaled takeover potential",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "assessor allowlisting can disable edge controls",
+        "low-volume normal login can intentionally avoid challenge"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-6.1.1",
+          "v5.0.0-6.3.1"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "credential-stuffing",
+        "distributed",
+        "account-takeover"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-003",
+      "title": "Limit OTP, MFA, and recovery-code verification attempts",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether short factors can be guessed within their validity window or across renewed challenges.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "bounded failures do not consume/lock the challenge or meaningfully limit attempts relative to entropy/lifetime",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "high-entropy codes can remain infeasible with several attempts",
+        "new challenges can intentionally reset attempts while invalidating old codes"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-6.6.3"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "otp",
+        "mfa",
+        "recovery-code"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-004",
+      "title": "Prevent MFA push-notification bombing",
+      "category": "rate-limiting",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether attackers can generate repeated ambiguous approval prompts without rate, number matching, context, or user reporting.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a very small sequence produces repeated low-context prompts without effective controls",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "risk systems can block above the safe prompt cap",
+        "detailed transaction prompts can mitigate fatigue without number matching"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [
+          "v5.0.0-6.6.4"
+        ],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "mfa",
+        "push-fatigue",
+        "notification"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-005",
+      "title": "Limit password-reset and account-recovery messages",
+      "category": "rate-limiting",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether unauthenticated users can flood controlled inboxes/phones, create cost, or abuse reset-token issuance.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a bounded sequence creates excessive messages/tokens/cost or lacks account/destination controls",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "only the legitimate destination receives messages, reducing external observability",
+        "provider-level suppression can occur after application acceptance"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "password-reset",
+        "email",
+        "sms"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "requires": [
+          "has_login:yes"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-006",
+      "title": "Limit registration, invitation, and verification abuse",
+      "category": "rate-limiting",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether automated account creation, invitation, resend, or verification workflows can generate spam, fake accounts, or provider cost.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a small synthetic sequence bypasses documented per-account/destination/tenant/global limits with realistic abuse impact",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "open registration intentionally permits normal account creation",
+        "fraud review can delay rather than block initial creation"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "registration",
+        "invitation",
+        "verification"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-007",
+      "title": "Bound API requests by principal, operation, and resource cost",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether cheap request counts or expensive operations evade per-principal and global resource budgets.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "tiny controlled growth shows no operation/cost-aware budget and disproportionate owner-observed resource use",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "high-throughput partner roles can have larger quotas",
+        "edge request limits can be supplemented by backend cost budgets"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "api",
+        "resource-consumption",
+        "quota"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "api_style": [
+            "rest",
+            "graphql",
+            "soap",
+            "grpc",
+            "websocket"
+          ],
+          "features": [
+            "mobile_api"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-008",
+      "title": "Limit search, scraping, pagination, and export abuse",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether search/autocomplete/filter/page/export functions permit large-scale data extraction or computational abuse.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a bounded synthetic sample bypasses result, page, query, export, or identity limits with realistic scaled impact",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "public search indexes can intentionally support broad discovery",
+        "owner-approved data exports can use separate privileged quotas"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "search",
+        "scraping",
+        "pagination",
+        "export"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "search"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-009",
+      "title": "Limit upload count, bytes, processing, and storage",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether users can exceed request/file/count/storage/processing budgets or create repeated expensive conversions.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "small near-limit fixtures show missing early limits or quota accounting and disproportionate work",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "multipart wire size differs from stored file size",
+        "privileged import roles can have larger documented quotas"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "file-upload",
+        "storage",
+        "processing"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "file_upload"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-010",
+      "title": "Limit email, chat, and notification fan-out",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether one account can send excessive invitations, messages, mentions, notifications, or recipient fan-out.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a tiny controlled message set bypasses per-sender/recipient/tenant/global limits with realistic spam/cost impact",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "broadcast roles can intentionally message large groups",
+        "provider queues can deduplicate/suppress after acceptance"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "email",
+        "chat",
+        "fan-out",
+        "spam"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "email",
+            "chat"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-011",
+      "title": "Limit payment, coupon, reservation, and checkout abuse",
+      "category": "rate-limiting",
+      "severity": "critical",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether sensitive commerce flows can be automated for card testing, coupon enumeration, inventory hoarding, or provider cost.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a bounded zero-value/sandbox sequence lacks business-resource and account controls with realistic fraud/availability impact",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "payment sandboxes can intentionally relax production controls",
+        "inventory holds can have a documented per-account limit and short expiry"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "payments",
+        "coupon",
+        "reservation",
+        "fraud"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ],
+        "any_of": {
+          "features": [
+            "payments"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    },
+    {
+      "id": "WAPT-RATE-012",
+      "title": "Prevent client-controlled source identifiers from bypassing limits",
+      "category": "rate-limiting",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether X-Forwarded-For, Forwarded, alternate headers, account aliases, tenant switches, API versions, or channels reset one logical abuse budget.",
+      "prerequisites": [
+        "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
+        "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
+      ],
+      "steps": [
+        "Establish one normal request and authoritative effect/cost control",
+        "Send a tiny sequential sample below the agreed ceiling, changing only one identity/source/resource dimension",
+        "Observe response, challenge/delay/rejection, account/resource state, provider side effects, alerts, and logs",
+        "Stop at the first control or anomaly and assess practical abuse from measured limits plus entropy/cost/business context"
+      ],
+      "examples": [
+        {
+          "note": "Never brute-force, flood, spray, spam, exhaust storage, consume inventory, or create provider charges. Use only a tiny owner-approved sample."
+        }
+      ],
+      "manipulate": "Request/message rate, identity/source distribution, recipient/resource fan-out, or one cost dimension within the written ceiling",
+      "secure_behavior": "Layered per-account, per-resource, per-destination, contextual, and global controls make abuse uneconomic while avoiding permanent victim denial and preserving secure recovery.",
+      "vulnerable_behavior": "a controlled identity/source variant bypasses the same documented logical limit",
+      "validation": "Do not extrapolate from a handful of accepted requests alone; combine measured limits, entropy, lifetime, cost, business value, distributed model, alerts, and owner production configuration.",
+      "false_positives": [
+        "trusted edge headers can be safely normalized before accounting",
+        "limits can intentionally differ by tenant, role, or channel under policy"
+      ],
+      "impact": "A confirmed abuse-control weakness can enable account takeover, MFA fatigue, spam, scraping, fake accounts, storage/compute exhaustion, card testing, inventory denial, provider cost, or service degradation.",
+      "evidence": [
+        "Approved ceiling, interval, source/account/resource scope",
+        "Exact request/message count and all responses",
+        "Authoritative account/resource/provider state, alerts, and logs",
+        "Practical abuse calculation, stop condition, recovery, and cleanup confirmation"
+      ],
+      "tools": [
+        "Burp Repeater with strict manual count",
+        "Owner rate-limit and provider logs",
+        "Single-client script only when explicitly approved"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Testing for Weak Lock Out Mechanism",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/04-Authentication_Testing/03-Testing_for_Weak_Lock_Out_Mechanism"
+        },
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test Number of Times a Function Can Be Used Limits",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/10-Business_Logic_Testing/05-Test_Number_of_Times_a_Function_Can_Be_Used_Limits"
+        },
+        {
+          "source": "OWASP API Security",
+          "title": "API4:2023 Unrestricted Resource Consumption",
+          "url": "https://owasp.org/API-Security/editions/2023/en/0xa4-unrestricted-resource-consumption/"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-ATHN-03",
+          "WSTG-v42-BUSL-05"
+        ],
+        "asvs": [],
+        "owasp_top10": [
+          "A04:2021",
+          "A06:2025"
+        ],
+        "api_top10": [
+          "API4:2023",
+          "API6:2023"
+        ],
+        "cwe": [
+          "CWE-307"
+        ],
+        "portswigger": []
+      },
+      "related": [],
+      "tags": [
+        "rate-limiting",
+        "abuse",
+        "source-ip",
+        "forwarded-header",
+        "alternate-channel"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "variants": [],
+      "safety": "REVIEW ONLY. Agree on a strict low request/message/concurrency ceiling, use only disposable accounts and synthetic destinations/resources, monitor service and provider effects, never distribute through uncontrolled sources, and stop on throttling, lockout, alerts, latency, errors, cost, or unrelated impact.",
+      "remediation": "Use layered principal/resource/destination/global budgets, operation-cost accounting, progressive delays/challenges, idempotency, bounded queues/storage, anomaly detection, user/operator alerts, and secure recovery without indefinite lockout."
+    }
+  ]
+}
