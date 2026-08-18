@@ -153,3 +153,9 @@ test('Phase 5 dashboard composition, retest queue, chain overview, and shortcuts
   assert.match(workspace, /filter-chips/);
   assert.match(chains, /STATUS_GLYPHS\[status\]/);
 });
+
+test('checklist page renders family groups for authored categories', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /groupByFamily/);
+  assert.match(workspace, /familyByCategory\.get\(fixed\)/);
+});

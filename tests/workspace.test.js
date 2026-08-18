@@ -133,3 +133,21 @@ test('renderChainOverview receives the chain store as a parameter (runtime crash
   assert.match(workspace, /renderChainOverview\(document\.querySelector\('\x5bdata-chain-overview\x5d'\), itemList, state\.statuses, chainStore\)/);
   assert.doesNotMatch(workspace, /function renderChainOverview[\s\S]{0,120}const chains = chainStore\.getChains/);
 });
+
+test('tester-first card: four disclosure levels with preserved knowledge base', () => {
+  const workspace = read('js/ui/workspace.js');
+  assert.match(workspace, /quick-check/);
+  assert.match(workspace, /Don't miss & related/);
+  assert.match(workspace, /Detailed methodology/);
+  assert.match(workspace, /References & mappings/);
+  assert.match(workspace, /Tester notes & evidence/);
+  assert.match(workspace, /item\.steps\.slice\(0, 4\)/);
+  assert.match(workspace, /quick-validate/);
+  assert.match(workspace, /related-chip/);
+  assert.match(workspace, /Next in family/);
+  assert.match(workspace, /familyByItem\.get\(item\.id\)/);
+  assert.match(workspace, /section\('Steps', item\.steps, true\)/);
+  assert.match(workspace, /section\('Safety boundary', item\.safety\)/);
+  assert.match(workspace, /fetch\('checklist\/families\.json'/);
+  assert.match(workspace, /familyHeader\(family, members\)/);
+});

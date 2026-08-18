@@ -221,9 +221,15 @@ async function run() {
   doc.querySelector('#sidebar a[href="#checklist/authorization"]').click();
   await waitFor(() => doc.querySelector('[data-checklist-results] .test-card'), 10000, 'checklist category');
   const card = doc.querySelector('[data-checklist-results] .test-card');
-  card.querySelector('.method-details summary').click();
+  record('Tester-first card: Quick Test and Validate visible without expanding', !!card.querySelector('.quick-check') && card.querySelectorAll('.quick-steps li').length >= 3 && !!card.querySelector('.quick-validate') ? 'PASS' : 'FAIL', `${card.querySelectorAll('.quick-steps li').length} quick steps`);
+  record('Tester-first card: family headers group the category with counts', doc.querySelectorAll('.family-group').length >= 4 && /\d+\/\d+ tested/.test(doc.querySelector('.family-count')?.textContent || '') ? 'PASS' : 'FAIL', `${doc.querySelectorAll('.family-group').length} groups, first: ${doc.querySelector('.family-header h3')?.textContent}`);
+  card.querySelector('.level-details summary').click();
+  record('Tester-first card: Don\'t miss list renders at level 2', card.querySelectorAll('.dont-miss-list li').length >= 2 ? 'PASS' : 'FAIL', `${card.querySelectorAll('.dont-miss-list li').length} overlooked variants`);
+  card.querySelectorAll('.method-details > summary').forEach((summaryNode) => { if (summaryNode.textContent === 'Detailed methodology') summaryNode.click(); });
   const methodText = card.textContent;
-  record('Methodology: card expands with full decision procedure', ['Objective', 'Prerequisites', 'Steps', 'Secure behavior', 'Vulnerable behavior', 'Validation', 'False positives', 'Impact', 'Evidence', 'References and mappings'].every((s) => methodText.includes(s)) ? 'PASS' : 'FAIL');
+  record('Methodology: detailed level keeps the full decision procedure', ['Prerequisites', 'Steps', 'Secure behavior', 'Vulnerable behavior', 'Validation', 'False positives', 'Impact', 'Evidence'].every((s) => methodText.includes(s)) ? 'PASS' : 'FAIL');
+  card.querySelectorAll('.method-details > summary').forEach((summaryNode) => { if (summaryNode.textContent === 'References & mappings') summaryNode.click(); });
+  record('Methodology: references and mappings render at level 4', card.textContent.includes('References and mappings') && card.textContent.includes('OWASP') ? 'PASS' : 'FAIL');
   const statusSelect = card.querySelector('.status-select');
   statusSelect.value = 'confirmed_finding';
   statusSelect.dispatchEvent(new dom.window.Event('change', { bubbles: true }));

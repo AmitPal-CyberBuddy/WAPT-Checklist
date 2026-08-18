@@ -147,6 +147,41 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
   root.append(grid);
 }
 
+let familyByItem = new Map();
+let familyByCategory = new Map();
+let familiesLoaded = false;
+let manifestForFamilyLookup = { categories: [] };
+
+async function loadFamilies() {
+  if (familiesLoaded) return;
+  try {
+    const response = await fetch('checklist/families.json', { headers: { Accept: 'application/json' } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (Array.isArray(data.families)) {
+      const byItem = new Map();
+      const byCategory = new Map();
+      for (const family of data.families) {
+        for (const id of family.items) byItem.set(id, family);
+        const list = byCategory.get(family.category) || [];
+        list.push(family);
+        byCategory.set(family.category, list);
+      }
+      familyByItem = byItem;
+      familyByCategory = byCategory;
+    }
+    familiesLoaded = true;
+  } catch (error) {
+    console.error('Test families could not be loaded; family navigation is unavailable.', error);
+    familiesLoaded = true;
+  }
+}
+
+function categoryOfItem(id) {
+  const prefix = id.split('-').slice(0, 2).join('-');
+  return manifestForFamilyLookup.categories.find(({ prefix: candidate }) => candidate === prefix)?.slug || '';
+}
+
 function renderCard(record, getState, categoryNames, onState) {
   const state = getState();
   const { item, applicability } = record;
@@ -186,13 +221,33 @@ function renderCard(record, getState, categoryNames, onState) {
     card.append(reason);
   }
 
-  const details = document.createElement('details');
-  details.className = 'method-details';
-  details.append(element('summary', '', 'Open methodology'));
-  const body = element('div', 'method-body');
-  body.append(section('Objective', item.objective));
-  body.append(section('Prerequisites', item.prerequisites));
-  body.append(section('Steps', item.steps, true));
+  // Level 1 — quick check: always visible, no expansion needed.
+  const quick = element('div', 'quick-check');
+  const quickTest = element('div', 'quick-part');
+  quickTest.append(element('strong', 'quick-label', 'QUICK TEST'));
+  const quickSteps = element('ol', 'quick-steps');
+  for (const step of item.steps.slice(0, 4)) quickSteps.append(element('li', '', step));
+  quickTest.append(quickSteps);
+  quickTest.append(element('p', 'quick-change', `One condition at a time — ${item.manipulate}`));
+  const quickValidate = element('div', 'quick-part');
+  quickValidate.append(element('strong', 'quick-label', 'VALIDATE'));
+  quickValidate.append(element('p', 'quick-validate', item.validation));
+  quick.append(quickTest, quickValidate);
+  card.append(quick);
+
+  // Level 2 — don't miss & related.
+  const level2 = element('details', 'method-details level-details');
+  level2.append(element('summary', '', "Don't miss & related"));
+  const l2 = element('div', 'method-body');
+  const family = familyByItem.get(item.id);
+  if (family?.dont_miss?.length) {
+    const miss = element('section', 'method-section');
+    miss.append(element('h4', '', `Don't miss — ${family.title}`));
+    const missList = element('ul', 'dont-miss-list');
+    for (const entry of family.dont_miss) missList.append(element('li', '', entry));
+    miss.append(missList);
+    l2.append(miss);
+  }
   if (item.variants?.length) {
     const variants = element('section', 'method-section');
     variants.append(element('h4', '', 'Context variants'));
@@ -203,8 +258,42 @@ function renderCard(record, getState, categoryNames, onState) {
       if (variant.notes) variantBox.append(element('p', 'method-note', variant.notes));
       variants.append(variantBox);
     }
-    body.append(variants);
+    l2.append(variants);
   }
+  if (item.related?.length) {
+    const related = element('section', 'method-section');
+    related.append(element('h4', '', 'Related tests'));
+    const relatedRow = element('div', 'related-row');
+    for (const id of item.related) {
+      const link = element('a', 'chip id-chip related-chip', id);
+      link.href = `#checklist/${categoryOfItem(id)}`;
+      relatedRow.append(link);
+    }
+    related.append(relatedRow);
+    l2.append(related);
+  }
+  if (family) {
+    const siblings = family.items || [];
+    const index = siblings.indexOf(item.id);
+    const nextId = siblings.slice(index + 1).concat(siblings.slice(0, index))
+      .find((id) => (getState().statuses?.[id] || 'not_tested') === 'not_tested');
+    if (nextId && nextId !== item.id) {
+      const next = element('p', 'next-in-family');
+      const nextLink = element('a', '', `Next in family → ${nextId}`);
+      nextLink.href = `#checklist/${categoryOfItem(nextId)}`;
+      next.append(element('strong', '', 'Next test: '), nextLink);
+      l2.append(next);
+    }
+  }
+  level2.append(l2);
+  card.append(level2);
+
+  // Level 3 — detailed methodology (existing knowledge base, unchanged).
+  const details = element('details', 'method-details');
+  details.append(element('summary', '', 'Detailed methodology'));
+  const body = element('div', 'method-body');
+  body.append(section('Prerequisites', item.prerequisites));
+  body.append(section('Steps', item.steps, true));
   if (item.examples?.length) {
     const examples = element('section', 'method-section');
     examples.append(element('h4', '', 'Examples'));
@@ -224,7 +313,13 @@ function renderCard(record, getState, categoryNames, onState) {
   if (item.safety) body.append(section('Safety boundary', item.safety));
   body.append(section('Evidence', item.evidence));
   body.append(section('Tools', item.tools));
+  details.append(body);
+  card.append(details);
 
+  // Level 4 — references, mappings, and attack chains.
+  const level4 = element('details', 'method-details level-details');
+  level4.append(element('summary', '', 'References & mappings'));
+  const l4 = element('div', 'method-body');
   const refs = element('section', 'method-section');
   refs.append(element('h4', '', 'References and mappings'));
   const refList = element('ul');
@@ -240,7 +335,7 @@ function renderCard(record, getState, categoryNames, onState) {
   refs.append(refList);
   const mappingText = Object.entries(item.mappings).filter(([, values]) => values.length).map(([key, values]) => `${key}: ${values.join(', ')}`).join(' · ');
   refs.append(element('p', 'mapping-line', mappingText));
-  body.append(refs);
+  l4.append(refs);
   if (item.attack_chains?.length) {
     const chains = element('section', 'method-section');
     chains.append(element('h4', '', 'Attack chains'));
@@ -251,9 +346,15 @@ function renderCard(record, getState, categoryNames, onState) {
       links.append(link);
     }
     chains.append(links);
-    body.append(chains);
+    l4.append(chains);
   }
+  level4.append(l4);
+  card.append(level4);
 
+  // Tester records — notes, retest flag, evidence pack, override.
+  const recordsDetails = element('details', 'method-details level-details');
+  recordsDetails.append(element('summary', '', 'Tester notes & evidence'));
+  const body2 = element('div', 'method-body');
   const notes = element('section', 'method-section notes-section');
   const noteLabel = element('label');
   noteLabel.append(element('span', '', 'Tester notes (stored locally)'));
@@ -287,9 +388,10 @@ function renderCard(record, getState, categoryNames, onState) {
     });
     notes.append(override);
   }
-  body.append(notes);
-  details.append(body);
-  card.append(details);
+  body2.append(notes);
+  recordsDetails.append(body2);
+  card.append(recordsDetails);
+  return card;
   return card;
 }
 
@@ -552,6 +654,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
 
+
   const names = () => categoryMap(manifest);
   const context = () => deriveContext(getState().answers, getState().engagement.targetUrl);
   const makeRecords = (items) => items.map((item) => effectiveRecord(item, getState(), context()));
@@ -565,12 +668,55 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     else renderDashboardMetrics();
   }
 
-  function renderResults(root, summary, sourceRecords, filters) {
+  function familyHeader(family, familyRecords, visibleTotal) {
+    const state = getState();
+    const tested = familyRecords.filter(({ item }) => itemStatus(item, state) !== 'not_tested').length;
+    const headerBlock = element('section', 'family-group');
+    const head = element('header', 'family-header');
+    const copy = element('div');
+    copy.append(element('h3', '', family.title), element('p', '', family.summary));
+    copy.append(element('span', 'family-count', `${tested}/${familyRecords.length} tested`));
+    head.append(copy);
+    const miss = element('details', 'family-miss');
+    miss.append(element('summary', '', `Don't miss (${family.dont_miss.length} overlooked variants)`));
+    const list = element('ul', 'dont-miss-list');
+    for (const entry of family.dont_miss) list.append(element('li', '', entry));
+    miss.append(list);
+    head.append(miss);
+    headerBlock.append(head);
+    headerBlock.append(...familyRecords.map((record) => renderCard(record, getState, names(), commit)));
+    return headerBlock;
+  }
+
+  function renderResults(root, summary, sourceRecords, filters, options = {}) {
     const filtered = filterItems(sourceRecords, filters, getState());
     const visible = filters.applicability ? filtered : filtered.filter(({ applicability }) => applicability.state !== APPLICABILITY.NA_CONTEXT);
     summary.textContent = `${visible.length} of ${sourceRecords.length} tests shown`;
     if (!visible.length) {
       root.replaceChildren(element('div', 'panel empty-panel', 'No tests match the current context and filters.'));
+      return;
+    }
+    const families = options.groupByFamily || [];
+    if (families.length) {
+      const byFamily = new Map();
+      const ungrouped = [];
+      for (const record of visible) {
+        const family = familyByItem.get(record.item.id);
+        if (family) {
+          const bucket = byFamily.get(family.id) || [];
+          bucket.push(record);
+          byFamily.set(family.id, bucket);
+        } else {
+          ungrouped.push(record);
+        }
+      }
+      const groups = [];
+      for (const family of families) {
+        const members = byFamily.get(family.id) || [];
+        if (members.length) groups.push(familyHeader(family, members));
+      }
+      if (ungrouped.length) groups.push(...ungrouped.map((record) => renderCard(record, getState, names(), commit)));
+      root.replaceChildren(...groups);
       return;
     }
     root.replaceChildren(...visible.map((record) => renderCard(record, getState, names(), commit)));
@@ -593,7 +739,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const fixed = category && manifest.categories.some(({ slug }) => slug === category) ? category : '';
     checklistFilters = { ...checklistFilters, category: fixed };
     renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed });
-    renderResults(resultRoot, summary, records, checklistFilters);
+    renderResults(resultRoot, summary, records, checklistFilters, { groupByFamily: fixed ? (familyByCategory.get(fixed) || []) : [] });
     const title = document.querySelector('#checklist-title');
     title.textContent = fixed ? names()[fixed] : 'All tests';
     const rationale = document.querySelector('[data-category-rationale]');
@@ -716,7 +862,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     activeCategory = slug;
     if (view === 'dashboard') {
       renderDashboardMetrics();
-      await ensureAll();
+      await Promise.all([ensureAll(), loadFamilies()]);
       await renderDashboard();
     } else if (view === 'search') {
       await ensureAll();
@@ -724,7 +870,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       restoreFilterFocus(document.querySelector('[data-search-filters]'), 'query');
     } else if (view === 'checklist') {
       const valid = manifest.categories.some((category) => category.slug === slug && category.count > 0);
-      const items = valid ? await catalog.loadCategory(slug) : await catalog.loadAll();
+      const [items] = await Promise.all([valid ? catalog.loadCategory(slug) : catalog.loadAll(), loadFamilies()]);
       records = makeRecords(items);
       renderChecklist();
     } else if (view === 'chains') {
@@ -769,7 +915,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   }
 
   return Object.freeze({
-    setManifest(next) { manifest = next; catalog.setManifest(next); renderDashboardMetrics(); },
+    setManifest(next) { manifest = next; manifestForFamilyLookup = next; catalog.setManifest(next); renderDashboardMetrics(); },
     show,
     bindActions,
     refresh() { if (activeView) return show(activeView, activeCategory); },
