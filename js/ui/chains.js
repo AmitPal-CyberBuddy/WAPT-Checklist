@@ -1,5 +1,5 @@
 const STATUS_SHORT = Object.freeze({
-  not_tested: 'Pending', in_progress: 'Active', passed: 'Passed',
+  not_tested: 'Pending', in_progress: 'Active', passed: 'Secure',
   potential_finding: 'Potential', confirmed_finding: 'Confirmed', na: 'N/A'
 });
 const STATUS_GLYPHS = Object.freeze({

@@ -240,6 +240,22 @@ function initializeShell() {
     if (event.key === 'Escape' && document.querySelector('#sidebar').dataset.open === 'true') {
       setSidebar(false, true);
     }
+    if (event.key === 'n' || event.key === 'p') {
+      const view = currentView();
+      if (!['checklist', 'search'].includes(view)) return;
+      const cards = [...document.querySelectorAll('[data-checklist-results] .test-card, [data-search-results] .test-card')]
+        .filter((card) => !card.closest('[data-view][hidden]'));
+      if (!cards.length) return;
+      const active = document.activeElement;
+      const index = cards.findIndex((card) => card.contains(active));
+      const nextIndex = event.key === 'n'
+        ? (index + 1) % cards.length
+        : (index <= 0 ? cards.length - 1 : index - 1);
+      event.preventDefault();
+      cards[nextIndex].scrollIntoView({ block: 'nearest' });
+      cards[nextIndex].querySelector('.status-select')?.focus();
+      return;
+    }
     if (event.key === 'g') {
       pendingShortcut = { at: Date.now() };
       return;

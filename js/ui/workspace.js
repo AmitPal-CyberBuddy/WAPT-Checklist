@@ -355,6 +355,17 @@ function renderCard(record, getState, categoryNames, onState) {
   const recordsDetails = element('details', 'method-details level-details');
   recordsDetails.append(element('summary', '', 'Tester notes & evidence'));
   const body2 = element('div', 'method-body');
+  const quickStatus = element('div', 'records-status');
+  quickStatus.append(element('span', '', 'Status'));
+  const bottomStatus = document.createElement('select');
+  bottomStatus.className = 'status-select';
+  bottomStatus.setAttribute('aria-label', `Quick status for ${item.id}`);
+  for (const [value, label] of STATUS_OPTIONS) bottomStatus.append(new Option(label, value));
+  bottomStatus.value = itemStatus(item, state);
+  bottomStatus.addEventListener('change', () => onState(setItemStatus(getState(), item.id, bottomStatus.value)));
+  quickStatus.append(bottomStatus);
+  body2.append(quickStatus);
+
   const notes = element('section', 'method-section notes-section');
   const noteLabel = element('label');
   noteLabel.append(element('span', '', 'Tester notes (stored locally)'));

@@ -387,6 +387,24 @@ async function run() {
   dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: 'g', bubbles: true }));
   dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: 'd', bubbles: true }));
   record('Keyboard: g d routes to dashboard', dom4.window.location.hash === '#dashboard' ? 'PASS' : 'FAIL', dom4.window.location.hash);
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  // n/p card walk + tester-first labels + bottom quick status
+  dom4.window.document.querySelector('#sidebar a[href="#checklist"]').click();
+  await new Promise((resolve) => setTimeout(resolve, 300));
+  await waitFor(() => /tests shown/.test(dom4.window.document.querySelector('[data-checklist-summary]')?.textContent || '') && dom4.window.document.querySelectorAll('[data-checklist-results] .test-card').length > 0, 8000, 'cards for walk');
+  dom4.window.document.activeElement?.blur?.();
+  dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: 'n', bubbles: true }));
+  const focusedAfterN = dom4.window.document.activeElement;
+  record('Keyboard: n walks to the next card status control', focusedAfterN?.className?.includes('status-select') ? 'PASS' : 'FAIL', String(focusedAfterN?.className || focusedAfterN?.tagName));
+  const firstStatus = dom4.window.document.querySelector('[data-checklist-results] .test-card .status-select');
+  firstStatus.value = 'passed';
+  firstStatus.dispatchEvent(new dom4.window.Event('change', { bubbles: true }));
+  await waitFor(() => dom4.window.document.querySelector('[data-checklist-results] .coverage-row, [data-checklist-results] .test-card') && JSON.parse(dom4.window.localStorage.getItem('wapt.state.v1')).engagements[0].state.statuses[dom4.window.document.querySelector('[data-checklist-results] .test-card').dataset.itemId] === 'passed', 3000, 'passed status stored');
+  const labelCheck = [...dom4.window.document.querySelectorAll('[data-checklist-results] .test-card .status-select option')].some((option) => option.textContent === 'Not Vulnerable');
+  record('Status vocabulary: passed relabeled Not Vulnerable in the UI', labelCheck ? 'PASS' : 'FAIL');
+  const recordsSummary = dom4.window.document.querySelector('[data-checklist-results] .test-card .level-details:last-of-type summary');
+  if (recordsSummary) recordsSummary.click();
+  record('Quick status: second control available in the records drawer', dom4.window.document.querySelectorAll('[data-checklist-results] .test-card .records-status .status-select').length > 0 ? 'PASS' : 'FAIL');
   dom4.window.document.dispatchEvent(new dom4.window.KeyboardEvent('keydown', { key: '?', bubbles: true }));
   record('Keyboard: "?" opens the shortcuts dialog', dom4.window.document.querySelector('#shortcuts-dialog')?.hasAttribute('open') ? 'PASS' : 'FAIL');
 
