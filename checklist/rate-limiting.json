@@ -306,7 +306,8 @@
           "app_type:static"
         ],
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -408,7 +409,8 @@
           "app_type:static"
         ],
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:mfa"
         ]
       },
       "variants": [],

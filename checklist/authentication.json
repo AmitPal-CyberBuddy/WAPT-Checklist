@@ -672,7 +672,8 @@
       "attack_chains": [],
       "applies": {
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:recovery"
         ]
       },
       "variants": [],
@@ -2034,7 +2035,8 @@
       "attack_chains": [],
       "applies": {
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:recovery"
         ]
       },
       "variants": [],
@@ -2206,7 +2208,8 @@
       "attack_chains": [],
       "applies": {
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:recovery"
         ]
       },
       "variants": [],
@@ -2292,7 +2295,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:recovery"
         ]
       },
       "variants": [],
@@ -2377,7 +2381,8 @@
       "attack_chains": [],
       "applies": {
         "requires": [
-          "has_login:yes"
+          "has_login:yes",
+          "identity_features:recovery"
         ]
       },
       "variants": [],
@@ -2463,7 +2468,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa|passkey"
         ]
       },
       "variants": [],
@@ -2551,7 +2557,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -2637,7 +2644,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -2724,7 +2732,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -2812,7 +2821,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -2900,7 +2910,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa|passkey"
         ]
       },
       "variants": [],
@@ -2986,7 +2997,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:remember_device"
         ]
       },
       "variants": [],
@@ -3072,7 +3084,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:mfa"
         ]
       },
       "variants": [],
@@ -3677,7 +3690,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:passkey"
         ]
       },
       "variants": [],
@@ -3759,7 +3773,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:passkey"
         ]
       },
       "variants": [],
@@ -3845,7 +3860,8 @@
       "applies": {
         "requires": [
           "has_login:yes",
-          "creds:low|high"
+          "creds:low|high",
+          "identity_features:recovery"
         ]
       },
       "variants": [],

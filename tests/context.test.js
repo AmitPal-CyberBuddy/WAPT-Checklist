@@ -21,6 +21,22 @@ test('multi-select unknown never coexists with asserted values', async () => {
   assert.deepEqual(answers.auth_mechanism, ['unknown']);
 });
 
+test('cross-field normalization removes contradictory hidden context', async () => {
+  const { normalizeScopeAnswers } = await contextModule;
+  const answers = normalizeScopeAnswers({
+    mode: 'black_box', source_access: 'full', app_type: 'static', has_login: 'no',
+    creds: 'high', registration: 'yes', roles: 'many', auth_mechanism: ['jwt'],
+    api_style: ['none'], api_docs: 'openapi', backend: ['java'], database: ['sql']
+  });
+  assert.equal(answers.source_access, 'none');
+  assert.deepEqual({ creds: answers.creds, registration: answers.registration, roles: answers.roles }, { creds: 'none', registration: 'no', roles: 'none' });
+  assert.deepEqual(answers.auth_mechanism, ['none']);
+  assert.deepEqual(answers.identity_features, ['none']);
+  assert.equal(answers.api_docs, 'none');
+  assert.deepEqual(answers.backend, ['none']);
+  assert.deepEqual(answers.database, ['none']);
+});
+
 test('URL hints use exact labels and retain low-confidence evidence', async () => {
   const { deriveContext, deriveUrlHints } = await contextModule;
   const derived = deriveUrlHints('http://api.example.com:8443/path');

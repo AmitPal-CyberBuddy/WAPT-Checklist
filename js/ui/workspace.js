@@ -1,11 +1,11 @@
-import { deriveContext } from '../engine/context.js?v=0.7.0';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=0.7.0';
-import { suggestedNext } from '../engine/priorities.js?v=0.7.0';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=0.7.0';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=0.7.0';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=0.7.0';
-import { createChainStore } from './chains.js?v=0.7.0';
-import { createPayloadStore } from './payloads.js?v=0.7.0';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r3';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r3';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r3';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r3';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r3';
+import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r3';
+import { createChainStore } from './chains.js?v=1.0.0-r3';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r3';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };

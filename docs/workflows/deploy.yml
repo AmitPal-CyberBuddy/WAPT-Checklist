@@ -24,6 +24,9 @@ jobs:
           node-version: 22
       - run: node --test
       - run: node tools/validate.js checklist/sample.json
+      - run: node tools/validate.js --floors
+      - run: node tools/check-references.js
+      - run: node tools/audit-content.js
   deploy:
     needs: test
     environment:

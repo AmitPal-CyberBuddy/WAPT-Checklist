@@ -1,4 +1,4 @@
-import { normalizeAnswers } from './context.js';
+import { normalizeScopeAnswers } from './context.js';
 
 export const STATE_KEY = 'wapt.state.v1';
 export const STATE_SCHEMA_VERSION = 1;
@@ -74,7 +74,7 @@ export function createState() {
   return {
     schema_version: STATE_SCHEMA_VERSION,
     engagement: { name: '', targetUrl: '', started_at: null },
-    answers: normalizeAnswers(),
+    answers: normalizeScopeAnswers(),
     statuses: {},
     notes: {},
     overrides: {},
@@ -98,7 +98,7 @@ export function normalizeState(candidate, options = {}) {
       targetUrl: cleanText(engagement.targetUrl, 2048),
       started_at: isoOrNull(engagement.started_at)
     },
-    answers: normalizeAnswers(candidate.answers),
+    answers: normalizeScopeAnswers(candidate.answers),
     statuses,
     notes: cleanNotes(candidate.notes),
     overrides: cleanOverrides(candidate.overrides),
@@ -132,7 +132,7 @@ export function setEngagement(state, patch, now) {
 
 export function setAnswers(state, patch, now) {
   const current = normalizeState(state);
-  return touch(current, { answers: normalizeAnswers({ ...current.answers, ...(isObject(patch) ? patch : {}) }) }, now);
+  return touch(current, { answers: normalizeScopeAnswers({ ...current.answers, ...(isObject(patch) ? patch : {}) }) }, now);
 }
 
 export function setItemStatus(state, id, status, now) {

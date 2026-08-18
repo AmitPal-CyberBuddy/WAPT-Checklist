@@ -16,6 +16,9 @@ The site has no build step or runtime dependencies. Use Node.js 18 or newer for 
 ```bash
 node --test
 node tools/validate.js checklist/sample.json
+node tools/validate.js --floors
+node tools/check-references.js
+node tools/audit-content.js
 python3 -m http.server 8000 --bind 0.0.0.0
 ```
 
@@ -55,6 +58,9 @@ Add Node standard-library tests for policy, state, preset, or schema changes. Ru
 ```bash
 node --test
 node tools/validate.js checklist/sample.json
+node tools/validate.js --floors
+node tools/check-references.js
+node tools/audit-content.js
 git diff --check
 ```
 

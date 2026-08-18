@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css?v=0.7.0">
-  <link rel="stylesheet" href="css/print.css?v=0.7.0" media="print">
-  <script type="module" src="js/ui/app.js?v=0.7.0"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r3">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r3" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r3"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -44,6 +44,8 @@
           <span aria-hidden="true">◆</span>
           <div><strong>Local-only workspace</strong><small>No sync · No telemetry</small></div>
         </div>
+        <a href="methodology.html">Methodology <span aria-hidden="true">→</span></a>
+        <a href="docs.html?doc=security">Security policy <span aria-hidden="true">→</span></a>
         <a href="https://github.com/AmitPal-CyberBuddy/WAPT-Checklist">View on GitHub <span aria-hidden="true">↗</span></a>
       </div>
     </aside>
@@ -56,8 +58,14 @@
         <button class="mobile-menu icon-button" type="button" data-sidebar-open aria-label="Open navigation">☰</button>
         <div class="engagement-identity">
           <span class="context-kicker">ACTIVE ENGAGEMENT</span>
-          <strong data-engagement-name>Unsaved engagement</strong>
+          <strong data-engagement-name>Untitled engagement</strong>
           <small data-engagement-target>No target URL set</small>
+        </div>
+        <div class="engagement-manager" aria-label="Engagement manager">
+          <label class="sr-only" for="engagement-select">Switch engagement</label>
+          <select id="engagement-select" data-engagement-select title="Switch engagement"></select>
+          <button class="button button-quiet" type="button" data-engagement-new title="Create a separate engagement">+ New</button>
+          <button class="icon-button" type="button" data-engagement-delete aria-label="Delete active engagement" title="Delete active engagement">×</button>
         </div>
         <div class="workspace-actions">
           <button class="search-trigger" type="button" data-go-search><span aria-hidden="true">⌕</span> Search <kbd>/</kbd></button>
@@ -70,7 +78,8 @@
           <div><p class="eyebrow">START A WAPT</p><h1 id="wizard-page-title">Build the right test plan</h1></div>
           <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
         </div>
-        <p class="view-intro">Every question is optional. Choose Unknown whenever scope is uncertain—the engine will keep affected tests visible and flag them for confirmation.</p>
+        <p class="view-intro">Questions adapt to earlier answers, so irrelevant scope fields are skipped. Choose “Not confirmed yet” whenever scope is uncertain—the engine will keep affected tests visible for confirmation.</p>
+        <aside class="local-persistence-notice" role="note"><strong>Automatic local save</strong><span>You can close this page and continue later on this browser. Engagements, progress, findings, and notes remain only in this site’s local storage until you delete them or clear browser data. There is no cloud backup or cross-device sync; export JSON regularly and handle exports as sensitive.</span></aside>
         <div id="wizard-root" class="wizard-shell" aria-live="polite"></div>
       </section>
 
@@ -113,7 +122,7 @@
         <div data-payload-browser aria-live="polite"><p class="loading-line">Loading payload references…</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v0.7.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
     </main>
   </div>
 </body>

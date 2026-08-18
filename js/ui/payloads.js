@@ -40,7 +40,7 @@ export function createPayloadStore() {
     const grid = node('div', 'workflow-grid');
     for (const [slug, name] of WORKFLOWS) {
       const link = node('a', 'workflow-link', name);
-      link.href = `burp-workflows/${slug}.md`;
+      link.href = `workflow.html?tool=${slug}`;
       link.target = '_blank';
       link.rel = 'noreferrer noopener';
       grid.append(link);

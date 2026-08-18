@@ -23,6 +23,9 @@ function contextualBoost(item, context) {
   const add = (points, code) => { boost += points; reasons.push(code); };
 
   if (item.category === 'authorization' && contextHas(context, 'roles', ['many'])) add(28, 'many_roles');
+  if (item.category === 'api-security' && contextHas(context, 'app_type', ['api_only'])) add(30, 'api_only');
+  if (item.category === 'graphql' && contextHas(context, 'api_style', ['graphql'])) add(28, 'graphql');
+  if (item.category === 'websocket' && contextHas(context, 'api_style', ['websocket'])) add(28, 'websocket');
   if (['authorization', 'api-security'].includes(item.category) && contextHas(context, 'features', ['multi_tenant'])) add(24, 'multi_tenant');
   if (['business-logic', 'race-conditions'].includes(item.category) && contextHas(context, 'features', ['payments'])) add(28, 'payments');
   if (item.category === 'session-management' && contextHas(context, 'auth_mechanism', ['cookie', 'mixed'])) add(20, 'cookie_session');

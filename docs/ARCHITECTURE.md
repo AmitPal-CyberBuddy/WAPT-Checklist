@@ -1,6 +1,6 @@
 # Architecture
 
-> Phase 1 design baseline; Phase 3 engine implemented — 2026-08-17
+> Version 1.0.0 implemented architecture — 2026-08-18
 
 WAPT Checklist is a static, context-aware assessment workspace for authorized web application penetration tests. It is not a scanner and does not transmit target, engagement, note, or finding data.
 
@@ -10,7 +10,7 @@ WAPT Checklist is a static, context-aware assessment workspace for authorized we
 2. **Context is a first-class input:** questionnaire answers and conservative URL hints produce a normalized context. Pure engine functions evaluate content; UI code only renders their results.
 3. **Content is data:** stable IDs, a documented schema, and CI validation let methodology evolve independently of presentation.
 4. **Safe by default:** content assumes explicit authorization. Disruptive techniques require a `safety` note. Destructive or denial-of-service payloads are marked `review_only` and never expanded automatically.
-5. **Portable private state:** one versioned localStorage document stores one active engagement. JSON export/import provides user-controlled portability.
+5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements and identifies the active one. Legacy single-engagement state migrates locally on load. Per-engagement JSON export/import provides user-controlled portability.
 6. **Progressive loading:** the manifest supplies metadata and counts. Category JSON is fetched on demand with same-origin relative URLs.
 7. **Accessible and dependency-free:** semantic HTML, keyboard operation, visible focus, WCAG AA themes, reduced-motion support, and self-hosted fonts.
 
@@ -26,7 +26,8 @@ Browser
  │   ├─ context: normalize answers and derive conservative URL hints
  │   ├─ applicability: Active | Confirm | N/A (context)
  │   ├─ priorities: deterministic suggested-next scoring
- │   └─ state: validate, migrate, serialize, and update wapt.state.v1
+ │   ├─ state: validate, serialize, and immutably update one engagement
+ │   └─ portfolio: migrate, select, add, and remove engagements under wapt.state.v1
  └─ Same-origin data
      ├─ checklist/manifest.json → checklist/<category>.json
      ├─ attack-chains/*.json
@@ -43,7 +44,7 @@ The engine runs unchanged under `node --test`. It does not import browser global
 3. `applicability.js` evaluates each item's declarative `applies` expression and returns a state plus machine-readable reasons.
 4. Active and Confirm items enter search, workflow, and priority calculations. Context-N/A items are hidden by default but remain discoverable and overrideable with a required reason.
 5. `priorities.js` scores only Active/Confirm, Not Tested items. Workflow order is the primary ordering signal; severity, met prerequisites, `priority_when`, and chain unlocks are bounded boosts. Item ID breaks ties, keeping output deterministic.
-6. UI updates item status and notes through immutable state helpers, then persists the entire versioned state document under `wapt.state.v1`.
+6. UI updates item status and notes through immutable state helpers, replaces that record in the local portfolio, and persists the entire portfolio under `wapt.state.v1` so every engagement can resume independently.
 
 ## Applicability semantics
 
@@ -74,7 +75,7 @@ The deny-list limits misleading or dangerous parsing. A hint is always labeled �
 
 ## Content loading and manifest
 
-The production manifest will contain:
+The production manifest contains:
 
 ```json
 {
@@ -134,7 +135,7 @@ All CSS/JS page URLs carry the same release query value (for example `?v=1.0.0`)
 ## Testing strategy
 
 - Unit-test context normalization, every URL hint, applicability precedence, deterministic priority scoring, state migrations, retest invariants, and import/export round trips.
-- Scenario-test every derivation rule and all four presets.
+- Scenario-test every derivation rule and all eight presets.
 - Validate all content: IDs, category floors, enums, expression vocabulary, references, mappings, links between entities, duplicate titles, and safety requirements.
 - Keep link checking separate from offline domain/format validation so normal CI remains deterministic.
 - Maintain a manual browser matrix for keyboard, focus, both themes, narrow viewport, print, localStorage, import error handling, and GitHub Pages path behavior.

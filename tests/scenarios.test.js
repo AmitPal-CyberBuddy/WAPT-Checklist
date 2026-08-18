@@ -56,6 +56,25 @@ test('scenario: OAuth and SAML activate federation tests', async () => {
   assert.equal(evaluateApplicability(federation, deriveContext({ app_type: 'hybrid', auth_mechanism: ['cookie'] })).state, APPLICABILITY.NA_CONTEXT);
 });
 
+test('scenario: identity capabilities activate only matching MFA, passkey, and recovery work', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability } = await engine();
+  for (const feature of ['mfa', 'passkey', 'recovery']) {
+    const target = item('WAPT-AUTH-900', 'authentication', { requires: [`identity_features:${feature}`] });
+    assert.equal(evaluateApplicability(target, deriveContext({ has_login: 'yes', identity_features: [feature] })).state, APPLICABILITY.ACTIVE);
+    assert.equal(evaluateApplicability(target, deriveContext({ has_login: 'yes', identity_features: ['password'] })).state, APPLICABILITY.NA_CONTEXT);
+    assert.equal(evaluateApplicability(target, deriveContext({ has_login: 'yes' })).state, APPLICABILITY.CONFIRM);
+  }
+});
+
+test('scenario: API-only delivery boosts API work and removes browser-runtime tests', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability, scoreItem } = await engine();
+  const context = deriveContext({ app_type: 'api_only', api_style: ['rest'] });
+  const api = item('WAPT-API-900', 'api-security');
+  const browser = item('WAPT-CLIENT-900', 'client-side', { excludes: ['app_type:api_only'] });
+  assert.ok(scoreItem(api, context).contextReasons.includes('api_only'));
+  assert.equal(evaluateApplicability(browser, context).state, APPLICABILITY.NA_CONTEXT);
+});
+
 test('scenario: GraphQL activates only for GraphQL and remains N/A for SOAP-only scope', async () => {
   const { deriveContext, APPLICABILITY, evaluateApplicability } = await engine();
   const graphql = item('WAPT-GQL-900', 'graphql');
@@ -169,4 +188,23 @@ test('preset scenario: e-commerce activates payment integrity and race work', as
   const applies = { any_of: { features: ['payments'] } };
   assert.equal(evaluateApplicability(item('WAPT-BL-900', 'business-logic', applies), context).state, APPLICABILITY.ACTIVE);
   assert.equal(evaluateApplicability(item('WAPT-RACE-900', 'race-conditions', applies), context).state, APPLICABILITY.ACTIVE);
+});
+
+test('specialized API, GraphQL, document, and realtime presets activate their intended surfaces', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability, scoreItem } = await engine();
+  const { PRESETS } = await presetsModule;
+  const rest = deriveContext(PRESETS.rest_api.answers);
+  assert.ok(scoreItem(item('WAPT-API-900', 'api-security'), rest).contextReasons.includes('api_only'));
+  assert.equal(evaluateApplicability(item('WAPT-CLIENT-900', 'client-side', { excludes: ['app_type:api_only'] }), rest).state, APPLICABILITY.NA_CONTEXT);
+
+  const graphql = deriveContext(PRESETS.graphql_api.answers);
+  assert.equal(evaluateApplicability(item('WAPT-GQL-900', 'graphql'), graphql).state, APPLICABILITY.ACTIVE);
+  assert.ok(scoreItem(item('WAPT-GQL-900', 'graphql'), graphql).contextReasons.includes('graphql'));
+
+  const documents = deriveContext(PRESETS.document_portal.answers);
+  assert.equal(evaluateApplicability(item('WAPT-UPLOAD-900', 'file-handling', { any_of: { features: ['file_upload'] } }), documents).state, APPLICABILITY.ACTIVE);
+
+  const realtime = deriveContext(PRESETS.realtime_chat.answers);
+  assert.equal(evaluateApplicability(item('WAPT-WS-900', 'websocket'), realtime).state, APPLICABILITY.ACTIVE);
+  assert.ok(scoreItem(item('WAPT-WS-900', 'websocket'), realtime).contextReasons.includes('websocket'));
 });

@@ -4,16 +4,16 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–9 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Category floors, references/mappings, duplicate detection, terminology, false-positive depth, and safety gates all pass.
+> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
 ## What is implemented
 
 - Responsive dark/light homepage and app-style workspace with independent CyberBuddy-compatible design tokens.
-- Optional engagement name and target URL fields plus all 14 scoping questions.
+- Optional engagement name and target URL fields plus all 15 adaptive scoping questions.
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
 - Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
 - Conservative low-confidence URL suggestions without any target request or transmission.
-- One validated local state document under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
+- Multiple resumable engagements in one validated local portfolio under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
 - Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components.
@@ -25,6 +25,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Directed attack-chain graphs with checklist links, unlock hints, and priority boosts.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
+- Designed methodology, security, contributing, license, project-documentation, and Burp-workflow pages—no user-facing raw Markdown redirects.
 - Manifest-driven navigation for all 24 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
@@ -90,7 +91,8 @@ burp-workflows/            Tool-specific safe testing workflows
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
 tests/                     Node standard-library tests
-docs/                      Architecture, taxonomy, content rules, and QA
+docs/                      Architecture, taxonomy, content rules, QA, release runbook
+release.json               Machine-readable 1.0.0 release manifest
 ```
 
 The pure context, applicability, priority, and state modules live in `js/engine/`; see the [adaptive engine contract](docs/ENGINE.md). UI modules consume these functions without mixing policy into DOM rendering.
@@ -113,6 +115,8 @@ See:
 - [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
 - [Reference and mapping QA](docs/REFERENCE-QA.md)
 - [Content and safety QA report](docs/CONTENT-QA-REPORT.md)
+- [Version 1.0.0 release and deployment runbook](docs/RELEASE.md)
+- [Responsive layout QA](docs/RESPONSIVE-QA.md)
 - [Taxonomy and stable identifiers](docs/TAXONOMY.md)
 - [Content authoring guide](docs/CONTENT-GUIDE.md)
 - [Manual browser QA](docs/QA.md)
@@ -138,4 +142,4 @@ This repository's original software and content are licensed under the [Apache L
 7. ~~Attack chains, contextual payload library, and Burp workflows~~
 8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
 9. ~~Content and safety QA~~ — **0 errors and 0 unresolved warnings**
-10. Public release hardening and deployment review
+10. ~~Release hardening and deployment review~~ — **deployment pending maintainer workflow installation and merge**

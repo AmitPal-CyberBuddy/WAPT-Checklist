@@ -37,18 +37,19 @@ const CATEGORIES = Object.freeze({
 const OPTIONS = Object.freeze({
   mode: ['black_box', 'grey_box', 'white_box', 'unknown'],
   creds: ['none', 'low', 'high', 'unknown'],
-  app_type: ['server_rendered', 'spa', 'static', 'hybrid', 'unknown'],
+  app_type: ['server_rendered', 'spa', 'static', 'hybrid', 'api_only', 'unknown'],
   has_login: ['yes', 'no', 'unknown'],
   registration: ['yes', 'no', 'unknown'],
-  roles: ['one', 'few', 'many', 'unknown'],
-  auth_mechanism: ['cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', 'unknown'],
+  roles: ['none', 'one', 'few', 'many', 'unknown'],
+  auth_mechanism: ['none', 'cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', 'unknown'],
+  identity_features: ['password', 'mfa', 'passkey', 'recovery', 'passwordless', 'remember_device', 'none', 'unknown'],
   api_docs: ['openapi', 'none', 'unknown'],
   source_access: ['full', 'partial', 'none', 'unknown'],
-  backend: ['node', 'java', 'dotnet', 'python', 'php', 'ruby', 'go', 'unknown'],
+  backend: ['none', 'node', 'java', 'dotnet', 'python', 'php', 'ruby', 'go', 'other', 'unknown'],
   api_style: ['rest', 'graphql', 'soap', 'websocket', 'grpc', 'none', 'unknown'],
-  database: ['sql', 'nosql', 'ldap', 'none', 'unknown'],
-  cloud: ['aws', 'gcp', 'azure', 'self_hosted', 'none', 'unknown'],
-  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'unknown']
+  database: ['sql', 'nosql', 'ldap', 'other', 'none', 'unknown'],
+  cloud: ['aws', 'gcp', 'azure', 'self_hosted', 'none', 'other', 'unknown'],
+  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'other', 'none', 'unknown']
 });
 
 const URL_HINTS = new Set([

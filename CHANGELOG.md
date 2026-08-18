@@ -1,11 +1,21 @@
 # Changelog
 
-All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project intends to use semantic versioning after its first stable release.
+All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project uses semantic versioning.
 
 ## [Unreleased]
 
+## [1.0.0] - 2026-08-18
+
 ### Added
 
+- Adaptive wizard branching that skips identity questions when authentication is absent and runtime/data/API-definition questions when earlier scope answers make them irrelevant.
+- Identity-capability scoping for MFA, passkeys, recovery, passwordless, and trusted devices, plus API-only delivery support that removes browser-runtime work and improves protocol suggestions.
+- Eight analyst presets covering static sites, SaaS, enterprise SSO, commerce, REST/mobile APIs, GraphQL, document portals, and realtime chat.
+- Broader explicit “none,” “mixed / other,” and modern mechanism choices across role, identity, backend, data, hosting, API, and workflow questions.
+- Multiple independently resumable local engagements with switching, creation, deletion, automatic legacy-state migration, and clear local-storage/no-backup disclosure.
+- Version 1.0.0 release manifest, deployment runbook, release consistency tests, final CI/deploy quality gates, and cache-version promotion.
+- Responsive release hardening for monitor width caps, laptop dashboard recomposition, tablet off-canvas navigation, compact-phone action stacks, long-content overflow, and mobile focus isolation.
+- Designed methodology and documentation experiences for security, contributing, licensing, architecture, QA, release guidance, and Burp workflows, replacing user-facing raw text/Markdown navigation.
 - Phase 9 zero-dependency content audit for exact/near duplicates, imperative wording, terminology, placeholders, evidence/false-positive depth, risky-technique safety, payload syntax, and integrated reference/Phase 7 validation.
 - Human and machine content QA reports covering all 608 items, with zero unresolved errors or warnings.
 - Phase 8 authoritative reference catalog and zero-dependency offline/live checker for WSTG paths, ASVS IDs, edition-qualified Top 10 mappings, PortSwigger URLs, CWE links, and source domains.
@@ -27,10 +37,10 @@ All notable changes to this project are documented here. The format follows [Kee
 - Active, Confirm, and context-N/A evaluation with machine-readable reasons, URL-hint uncertainty, visible blocked credential work, and conditional variants.
 - Deterministic Suggested next scoring with bounded workflow, severity, prerequisite, context, and attack-chain components.
 - Strict local-state normalization, immutable item updates, reasoned overrides, JSON import/export, and Confirmed Finding retest rules.
-- Unit and scenario coverage for every derivation rule, all four presets, URL-hint hardening, state round trips, and priority behavior.
+- Unit and scenario coverage for every derivation rule, all eight presets, URL-hint hardening, state round trips, and priority behavior.
 - Phase 2 static homepage and application workspace shell.
-- Four editable quick-start scoping presets.
-- Optional target and engagement fields plus all 14 context questions.
+- Eight editable analyst presets spanning static, SaaS, SSO, commerce, REST, GraphQL, document, and realtime applications.
+- Optional target and engagement fields plus all 15 context questions.
 - Local-only persistence under `wapt.state.v1`, wizard navigation, progress, reset, and keyboard behavior.
 - Manifest-driven 24-category navigation and honest live project/engagement statistics.
 - Independent dark/light design tokens, responsive application layout, print baseline, logo, favicon, and self-hosted Sora and IBM Plex Mono fonts.

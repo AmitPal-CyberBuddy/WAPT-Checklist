@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['0.7.0']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r3']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -83,12 +83,12 @@ test('workspace shell exposes rendered Phase 7 chain and payload browsers', () =
   assert.match(workspace, /payloadStore\.render/);
 });
 
-test('wizard source defines all 14 question keys and the one localStorage key', () => {
+test('wizard source defines all 15 question keys and the one localStorage key', () => {
   const wizard = read('js/ui/wizard.js');
   const app = read('js/ui/app.js');
   const engineState = read('js/engine/state.js');
   const questionKeys = [...wizard.matchAll(/\{ key: '([a-z_]+)'/g)].map((match) => match[1]);
-  assert.deepEqual(questionKeys, ['mode', 'creds', 'app_type', 'has_login', 'registration', 'roles', 'auth_mechanism', 'api_docs', 'source_access', 'backend', 'api_style', 'database', 'cloud', 'features']);
+  assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features']);
   assert.match(engineState, /STATE_KEY = 'wapt\.state\.v1'/);
   assert.match(app, /localStorage\.setItem\(STATE_KEY/);
   assert.equal((app.match(/localStorage\.setItem/g) || []).length, 1);

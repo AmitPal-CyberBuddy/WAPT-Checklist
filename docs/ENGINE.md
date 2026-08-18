@@ -60,7 +60,7 @@ A chain boost is granted only when every supplied prerequisite item has status `
 
 ## `state.js`
 
-`state.js` owns the `wapt.state.v1` shape and immutable update rules. Browser storage remains in `js/ui/app.js`.
+`state.js` owns each engagement's versioned shape and immutable update rules. `portfolio.js` wraps multiple engagement records, preserves one active ID, and migrates the original single-engagement document. Browser storage remains in `js/ui/app.js`, using only `wapt.state.v1`.
 
 Key guarantees:
 
@@ -88,4 +88,4 @@ The Phase 3 suite covers:
 - deterministic workflow scoring, bounded boosts, and chain unlocks;
 - state shape, immutable updates, override reasons, import/export, and retest invariants;
 - each derivation row in the master plan;
-- all four quick-start presets through the engine, not only at the answer layer.
+- all eight quick-start presets through the engine, not only at the answer layer.

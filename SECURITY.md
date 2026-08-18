@@ -2,7 +2,7 @@
 
 ## Supported version
 
-Until the first stable release, security fixes are applied to the latest commit on the default branch. No older development snapshot is supported.
+The latest 1.0.x release and the latest commit on the default branch receive security fixes. Development snapshots and superseded patch releases are not supported.
 
 ## Reporting a vulnerability
 

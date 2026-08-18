@@ -9,17 +9,20 @@ const { OPTIONS } = require('../tools/validate.js');
 const PRESETS_URL = pathToFileURL(path.resolve(__dirname, '../js/data/presets.mjs')).href;
 const EXPECTED_KEYS = [
   'mode', 'creds', 'app_type', 'has_login', 'registration', 'roles', 'auth_mechanism',
-  'api_docs', 'source_access', 'backend', 'api_style', 'database', 'cloud', 'features'
+  'identity_features', 'api_docs', 'source_access', 'backend', 'api_style', 'database', 'cloud', 'features'
 ];
-const MULTI_KEYS = new Set(['auth_mechanism', 'backend', 'api_style', 'database', 'features']);
+const MULTI_KEYS = new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features']);
 
-test('four quick-start presets use the complete controlled context vocabulary', async () => {
+test('eight analyst presets use the complete controlled context vocabulary', async () => {
   const { PRESET_LIST } = await import(PRESETS_URL);
-  assert.equal(PRESET_LIST.length, 4);
-  assert.deepEqual(PRESET_LIST.map(({ id }) => id), ['static_marketing', 'saas_jwt_api', 'corporate_portal', 'ecommerce']);
+  assert.equal(PRESET_LIST.length, 8);
+  assert.deepEqual(PRESET_LIST.map(({ id }) => id), [
+    'static_marketing', 'saas_jwt_api', 'corporate_portal', 'ecommerce',
+    'rest_api', 'graphql_api', 'document_portal', 'realtime_chat'
+  ]);
 
   for (const preset of PRESET_LIST) {
-    assert.deepEqual(Object.keys(preset.answers), EXPECTED_KEYS, `${preset.id} must answer all 14 questions`);
+    assert.deepEqual(Object.keys(preset.answers), EXPECTED_KEYS, `${preset.id} must answer all 15 questions`);
     for (const [key, value] of Object.entries(preset.answers)) {
       const values = Array.isArray(value) ? value : [value];
       assert.equal(Array.isArray(value), MULTI_KEYS.has(key), `${preset.id}.${key} has the wrong cardinality`);
@@ -46,10 +49,13 @@ test('SaaS preset carries JWT, REST, many-role, and tenant context', async () =>
   assert.ok(answers.features.includes('multi_tenant'));
 });
 
-test('corporate and e-commerce presets preserve their distinct identity and workflow contexts', async () => {
+test('specialized presets preserve distinct identity, protocol, and workflow contexts', async () => {
   const { PRESETS } = await import(PRESETS_URL);
   assert.ok(PRESETS.corporate_portal.answers.auth_mechanism.includes('oauth'));
-  assert.ok(PRESETS.corporate_portal.answers.database.includes('ldap'));
+  assert.ok(PRESETS.corporate_portal.answers.identity_features.includes('mfa'));
   assert.ok(PRESETS.ecommerce.answers.features.includes('payments'));
-  assert.equal(PRESETS.ecommerce.answers.auth_mechanism[0], 'cookie');
+  assert.equal(PRESETS.rest_api.answers.app_type, 'api_only');
+  assert.deepEqual(PRESETS.graphql_api.answers.api_style, ['graphql']);
+  assert.ok(PRESETS.document_portal.answers.features.includes('file_upload'));
+  assert.ok(PRESETS.realtime_chat.answers.api_style.includes('websocket'));
 });

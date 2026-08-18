@@ -64,18 +64,19 @@ Severity is the plausible default risk for triage, not a final finding severity.
 |---|---|---|
 | `mode` | single | `black_box`, `grey_box`, `white_box`, `unknown` |
 | `creds` | single | `none`, `low`, `high`, `unknown` |
-| `app_type` | single | `server_rendered`, `spa`, `static`, `hybrid`, `unknown` |
+| `app_type` | single | `server_rendered`, `spa`, `static`, `hybrid`, `api_only`, `unknown` |
 | `has_login` | single | `yes`, `no`, `unknown` |
 | `registration` | single | `yes`, `no`, `unknown` |
-| `roles` | single | `one`, `few`, `many`, `unknown` |
-| `auth_mechanism` | multi | `cookie`, `jwt`, `oauth`, `saml`, `ldap`, `mixed`, `unknown` |
+| `roles` | single | `none`, `one`, `few`, `many`, `unknown` |
+| `auth_mechanism` | multi | `none`, `cookie`, `jwt`, `oauth`, `saml`, `ldap`, `mixed`, `unknown` |
+| `identity_features` | multi | `password`, `mfa`, `passkey`, `recovery`, `passwordless`, `remember_device`, `none`, `unknown` |
 | `api_docs` | single | `openapi`, `none`, `unknown` |
 | `source_access` | single | `full`, `partial`, `none`, `unknown` |
-| `backend` | multi | `node`, `java`, `dotnet`, `python`, `php`, `ruby`, `go`, `unknown` |
+| `backend` | multi | `none`, `node`, `java`, `dotnet`, `python`, `php`, `ruby`, `go`, `other`, `unknown` |
 | `api_style` | multi | `rest`, `graphql`, `soap`, `websocket`, `grpc`, `none`, `unknown` |
-| `database` | multi | `sql`, `nosql`, `ldap`, `none`, `unknown` |
-| `cloud` | single | `aws`, `gcp`, `azure`, `self_hosted`, `none`, `unknown` |
-| `features` | multi | `file_upload`, `payments`, `search`, `email`, `chat`, `multi_tenant`, `mobile_api`, `unknown` |
+| `database` | multi | `sql`, `nosql`, `ldap`, `other`, `none`, `unknown` |
+| `cloud` | single | `aws`, `gcp`, `azure`, `self_hosted`, `none`, `other`, `unknown` |
+| `features` | multi | `file_upload`, `payments`, `search`, `email`, `chat`, `multi_tenant`, `mobile_api`, `other`, `none`, `unknown` |
 
 Confidence values are `answer`, `url_hint`, and `unknown`.
 

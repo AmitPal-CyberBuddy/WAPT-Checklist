@@ -2,4 +2,6 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/</loc><lastmod>2026-08-18</lastmod><changefreq>weekly</changefreq></url>
   <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html</loc><lastmod>2026-08-18</lastmod><changefreq>weekly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/methodology.html</loc><lastmod>2026-08-18</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/docs.html</loc><lastmod>2026-08-18</lastmod><changefreq>monthly</changefreq></url>
 </urlset>

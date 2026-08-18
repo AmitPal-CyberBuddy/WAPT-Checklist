@@ -3,21 +3,22 @@ const UNKNOWN = 'unknown';
 export const ATTRIBUTE_OPTIONS = Object.freeze({
   mode: Object.freeze(['black_box', 'grey_box', 'white_box', UNKNOWN]),
   creds: Object.freeze(['none', 'low', 'high', UNKNOWN]),
-  app_type: Object.freeze(['server_rendered', 'spa', 'static', 'hybrid', UNKNOWN]),
+  app_type: Object.freeze(['server_rendered', 'spa', 'static', 'hybrid', 'api_only', UNKNOWN]),
   has_login: Object.freeze(['yes', 'no', UNKNOWN]),
   registration: Object.freeze(['yes', 'no', UNKNOWN]),
-  roles: Object.freeze(['one', 'few', 'many', UNKNOWN]),
-  auth_mechanism: Object.freeze(['cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', UNKNOWN]),
+  roles: Object.freeze(['none', 'one', 'few', 'many', UNKNOWN]),
+  auth_mechanism: Object.freeze(['none', 'cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', UNKNOWN]),
+  identity_features: Object.freeze(['password', 'mfa', 'passkey', 'recovery', 'passwordless', 'remember_device', 'none', UNKNOWN]),
   api_docs: Object.freeze(['openapi', 'none', UNKNOWN]),
   source_access: Object.freeze(['full', 'partial', 'none', UNKNOWN]),
-  backend: Object.freeze(['node', 'java', 'dotnet', 'python', 'php', 'ruby', 'go', UNKNOWN]),
+  backend: Object.freeze(['none', 'node', 'java', 'dotnet', 'python', 'php', 'ruby', 'go', 'other', UNKNOWN]),
   api_style: Object.freeze(['rest', 'graphql', 'soap', 'websocket', 'grpc', 'none', UNKNOWN]),
-  database: Object.freeze(['sql', 'nosql', 'ldap', 'none', UNKNOWN]),
-  cloud: Object.freeze(['aws', 'gcp', 'azure', 'self_hosted', 'none', UNKNOWN]),
-  features: Object.freeze(['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', UNKNOWN])
+  database: Object.freeze(['sql', 'nosql', 'ldap', 'other', 'none', UNKNOWN]),
+  cloud: Object.freeze(['aws', 'gcp', 'azure', 'self_hosted', 'none', 'other', UNKNOWN]),
+  features: Object.freeze(['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'other', 'none', UNKNOWN])
 });
 
-export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'backend', 'api_style', 'database', 'features']));
+export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features']));
 export const URL_HINT_KEYS = Object.freeze([
   'plain_http', 'unusual_tls_port', 'api_subdomain', 'admin_subdomain',
   'nonproduction_subdomain', 'punycode_hostname'
@@ -34,6 +35,7 @@ function cleanMulti(value, allowed) {
   const candidates = Array.isArray(value) ? value : typeof value === 'string' ? [value] : [];
   const unique = [...new Set(candidates.filter((entry) => allowed.includes(entry)))];
   if (!unique.length || unique.includes(UNKNOWN)) return [UNKNOWN];
+  if (unique.includes('none')) return ['none'];
   return unique;
 }
 
@@ -92,8 +94,23 @@ export function normalizeAnswers(answers = {}) {
   ]));
 }
 
-export function deriveContext(answers = {}, targetUrl = '') {
+// Cross-field reconciliation prevents hidden, stale answers from influencing applicability.
+export function normalizeScopeAnswers(answers = {}) {
   const normalized = normalizeAnswers(answers);
+  if (normalized.mode === 'black_box') normalized.source_access = 'none';
+  if (normalized.has_login === 'no') {
+    Object.assign(normalized, { creds: 'none', registration: 'no', roles: 'none', auth_mechanism: ['none'], identity_features: ['none'] });
+  }
+  if (normalized.api_style.includes('none')) normalized.api_docs = 'none';
+  if (normalized.app_type === 'static' && normalized.api_style.includes('none')) {
+    normalized.backend = ['none'];
+    normalized.database = ['none'];
+  }
+  return normalized;
+}
+
+export function deriveContext(answers = {}, targetUrl = '') {
+  const normalized = normalizeScopeAnswers(answers);
   const context = {};
   for (const [attribute, value] of Object.entries(normalized)) {
     const unknown = Array.isArray(value) ? value.includes(UNKNOWN) : value === UNKNOWN;
