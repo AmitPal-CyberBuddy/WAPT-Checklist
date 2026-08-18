@@ -1,4 +1,4 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r4';
+import { initializeTheme } from './theme.js?v=1.0.0-r5';
 
 async function renderCategories() {
   initializeTheme();

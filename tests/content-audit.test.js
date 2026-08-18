@@ -12,8 +12,8 @@ test('content audit passes without errors or unresolved review warnings', () => 
   const result = audit(readProduction());
   assert.deepEqual(result.errors, []);
   assert.deepEqual(result.warnings, []);
-  assert.equal(result.metrics.items, 609);
-  assert.equal(result.metrics.categories, 24);
+  assert.equal(result.metrics.items, 623);
+  assert.equal(result.metrics.categories, 25);
   assert.equal(result.metrics.attackChains, 5);
   assert.equal(result.metrics.payloadReferences, 40);
   assert.equal(result.metrics.burpWorkflows, 12);
@@ -23,12 +23,12 @@ test('machine-readable content QA report matches the audited catalog', () => {
   const report = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/content-audit-report.json'), 'utf8'));
   assert.deepEqual(report.errors, []);
   assert.deepEqual(report.warnings, []);
-  assert.equal(report.metrics.manual + report.metrics.automated, 609);
-  assert.equal(report.metrics.safetyNotes, 365);
-  assert.equal(report.metrics.references, 809);
-  assert.equal(report.metrics.doNotReport, 51);
-  assert.equal(report.metrics.retestGuidance, 12);
-  assert.equal(Object.keys(report.metrics.categoryCounts).length, 24);
+  assert.equal(report.metrics.manual + report.metrics.automated, 623);
+  assert.equal(report.metrics.safetyNotes, 377);
+  assert.equal(report.metrics.references, 836);
+  assert.equal(report.metrics.doNotReport, 59);
+  assert.equal(report.metrics.retestGuidance, 17);
+  assert.equal(Object.keys(report.metrics.categoryCounts).length, 25);
 });
 
 test('near-duplicate similarity catches equivalent wording', () => {

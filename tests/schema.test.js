@@ -32,8 +32,8 @@ test('the Phase 1 sample contains exactly 20 schema-valid items', () => {
 
 test('taxonomy floors total 512 items', () => {
   const total = Object.values(CATEGORIES).reduce((sum, category) => sum + category.floor, 0);
-  assert.equal(Object.keys(CATEGORIES).length, 24);
-  assert.equal(total, 512);
+  assert.equal(Object.keys(CATEGORIES).length, 25);
+  assert.equal(total, 520);
 });
 
 test('validator rejects a category-prefix mismatch', () => {

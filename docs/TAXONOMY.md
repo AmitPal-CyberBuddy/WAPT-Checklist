@@ -32,6 +32,7 @@ Floors are release gates, not writing targets. An item counts only after schema,
 | 22 | `information-disclosure` | Information disclosure | `WAPT-INFO` | 15 |
 | 23 | `rate-limiting` | Rate limiting / abuse | `WAPT-RATE` | 10 |
 | 24 | `advanced` | Advanced topics | `WAPT-ADV` | 15 |
+| 25 | `ai-llm-security` | AI / LLM security | `WAPT-AI` | 8 |
 | | | **Minimum total** | | **512** |
 
 Category ownership follows the primary security objective, not every technology touched. Cross-cutting discovery items use `related`, tags, mappings, and chains rather than duplicate tests.

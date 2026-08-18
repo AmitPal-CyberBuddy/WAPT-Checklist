@@ -4,7 +4,7 @@
 
 ## Release contents
 
-- 609 production methodology items across 24 categories;
+- 623 production methodology items across 25 categories;
 - context wizard, eight presets, conservative URL hints, and pure adaptive engine;
 - local statuses, notes, overrides, retesting, import/export, reports, and print;
 - full-text search and combined filters;
@@ -53,7 +53,7 @@ python3 -m http.server 8000 --bind 0.0.0.0
 Expected automated results for 1.0.0:
 
 - 158/158 tests pass;
-- 609 production items and all 24 category floors pass;
+- 623 production items and all 25 category floors pass;
 - five attack chains, 40 payload references, and 12 Burp workflows pass;
 - reference QA covers 231 unique reference/mapping URLs, 83 WSTG pages, 153 used ASVS IDs, 104 CWE weaknesses, and 44 live-verified non-WSTG URLs;
 - content audit reports zero errors and zero unresolved warnings.

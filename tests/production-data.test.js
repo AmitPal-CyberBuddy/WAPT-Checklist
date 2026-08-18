@@ -17,8 +17,8 @@ test('all Phase 4 core categories are present and pass their release floors', ()
   const files = productionFiles();
   const result = validateFiles(files, { enforceCoreFloors: true });
   assert.deepEqual(result.errors, []);
-  assert.ok(files.length >= 10);
-  assert.equal(Object.values(result.counts).slice(0, 10).reduce((sum, count) => sum + count, 0), 348);
+  const core = ['reconnaissance', 'http', 'authentication', 'session-management', 'authorization', 'injection', 'xss', 'csrf', 'file-handling', 'api-security'];
+  assert.equal(core.reduce((sum, slug) => sum + result.counts[slug], 0), 349);
 });
 
 test('reconnaissance IDs are contiguous and exceed the quality floor without duplicate objectives', () => {
@@ -535,7 +535,12 @@ test('client-side methodology preserves static-site coverage and spans browser t
     assert.ok(items.some(({ tags }) => tags.includes(tag)), `missing ${tag} coverage`);
   }
   const staticContext = deriveContext({ app_type: 'static' });
-  assert.ok(items.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
+  const xsLeak = items.find(({ id }) => id === 'WAPT-CLIENT-030');
+  const bfcache = items.find(({ id }) => id === 'WAPT-CLIENT-031');
+  assert.equal(evaluateApplicability(xsLeak, staticContext).state, APPLICABILITY.NA_CONTEXT);
+  assert.equal(evaluateApplicability(bfcache, staticContext).state, APPLICABILITY.CONFIRM);
+  const legacy = items.filter(({ id }) => !['WAPT-CLIENT-030', 'WAPT-CLIENT-031'].includes(id));
+  assert.ok(legacy.every((item) => evaluateApplicability(item, staticContext).state === APPLICABILITY.ACTIVE));
 });
 
 test('client-side active proofs use controlled profiles and non-sensitive markers', () => {
@@ -547,7 +552,7 @@ test('client-side active proofs use controlled profiles and non-sensitive marker
   ]) {
     assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
-  assert.ok(items.every((item) => item.examples[0].note.includes('inert local marker')));
+  assert.ok(items.filter(({ id }) => !['WAPT-CLIENT-030', 'WAPT-CLIENT-031'].includes(id)).every((item) => item.examples[0].note.includes('inert local marker')));
 });
 
 test('WebSocket methodology follows protocol context and separates handshake from application authority', async () => {
@@ -676,12 +681,12 @@ test('rate tests require measured limits rather than accepted-request extrapolat
   }
 });
 
-test('all 24 production categories pass their final release floors', () => {
+test('all 25 production categories pass their final release floors', () => {
   const files = productionFiles();
   const result = validateFiles(files, { enforceFloors: true });
   assert.deepEqual(result.errors, []);
-  assert.equal(files.length, 24);
-  assert.equal(Object.values(result.counts).reduce((sum, count) => sum + count, 0), 609);
+  assert.equal(files.length, 25);
+  assert.equal(Object.values(result.counts).reduce((sum, count) => sum + count, 0), 623);
 });
 
 test('advanced methodology covers cache, deserialization, parser, tenant, service, webhook, and chain boundaries', async () => {
@@ -846,4 +851,37 @@ test('Phase 2 reportability: boundary-prone items carry specific do-not-report g
     'WAPT-HTTP-016', 'WAPT-JWT-018', 'WAPT-SESS-019', 'WAPT-RATE-001', 'WAPT-RATE-002', 'WAPT-RATE-012', 'WAPT-INFO-010']) {
     assert.ok(items[id].retest_guidance?.length >= 40, `${id} needs concrete retest guidance`);
   }
+});
+
+test('Phase 3 AI/LLM category is gated, safe, and reference-verified', () => {
+  const { items } = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'ai-llm-security.json'), 'utf8'));
+  assert.ok(items.length >= 8);
+  for (const entry of items) {
+    assert.match(entry.id, /^WAPT-AI-\d{3}$/);
+    assert.deepEqual(entry.applies, { any_of: { features: ['ai_llm'] } }, entry.id);
+    assert.ok(entry.safety?.length > 40, `${entry.id} needs a concrete safety note`);
+    assert.ok(entry.remediation?.length > 40, `${entry.id} needs root-cause remediation`);
+    assert.ok(entry.steps.length >= 4 && entry.evidence.length >= 3 && entry.false_positives.length >= 2, entry.id);
+    assert.ok(entry.references.length >= 1, entry.id);
+    assert.ok(entry.mappings.cwe.length >= 1, entry.id + ' needs a CWE mapping');
+    assert.doesNotMatch(JSON.stringify(entry.examples), /https?:\/\/[^\s"']*(?<!example\.com)/);
+  }
+  const ids = items.map(({ id }) => id).sort();
+  assert.deepEqual(ids, ids.map((id, index) => `WAPT-AI-${String(index + 1).padStart(3, '0')}`));
+});
+
+test('Phase 3 modern surfaces: XS-Leaks, bfcache, and subdomain-takeover identification', () => {
+  const client = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'client-side.json'), 'utf8')).items;
+  const recon = JSON.parse(fs.readFileSync(path.join(CHECKLIST, 'reconnaissance.json'), 'utf8')).items;
+  const xsLeak = client.find(({ id }) => id === 'WAPT-CLIENT-030');
+  assert.ok(xsLeak.tags.includes('xs-leaks'));
+  assert.deepEqual(xsLeak.applies, { any_of: { has_login: ['yes'] }, excludes: ['app_type:static'] });
+  const bfcache = client.find(({ id }) => id === 'WAPT-CLIENT-031');
+  assert.ok(bfcache.tags.includes('bfcache'));
+  assert.ok(bfcache.mappings.cwe.includes('CWE-525'));
+  const takeover = recon.find(({ id }) => id === 'WAPT-RECON-038');
+  assert.ok(takeover.tags.includes('subdomain-takeover'));
+  assert.match(takeover.safety, /Never register, claim, point, or upload/);
+  assert.deepEqual(takeover.mappings.wstg, ['WSTG-v42-CONF-10']);
+  assert.match(takeover.do_not_report[0], /weight the record class/);
 });

@@ -105,7 +105,8 @@
         "injection", "xss", "csrf", "file-handling", "api-security", "graphql", "jwt",
         "oauth-sso-saml", "ssrf", "request-smuggling", "business-logic", "race-conditions",
         "client-side", "websocket", "security-headers", "cloud-storage",
-        "information-disclosure", "rate-limiting", "advanced"
+        "information-disclosure", "rate-limiting", "advanced",
+        "ai-llm-security"
       ]
     },
     "conditionMap": {

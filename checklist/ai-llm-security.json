@@ -1,0 +1,988 @@
+{
+  "schema_version": "1.0.0-draft",
+  "lastmod": "2026-08-18",
+  "category": "ai-llm-security",
+  "items": [
+    {
+      "id": "WAPT-AI-001",
+      "title": "Detect direct prompt injection against LLM-backed features",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether a directly submitted prompt can override the documented instruction boundaries of an LLM-backed web feature and redirect its tools, retrieval, or data access.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its connected tools",
+        "An isolated test account, synthetic data, and a harmless canary tool or read target",
+        "Documentation of the feature's intended instruction boundaries and tool scopes"
+      ],
+      "steps": [
+        "Map every direct prompt input and the tools, functions, and data sources the model can call on behalf of the caller",
+        "Send ordinary baseline prompts and record which tools and data the model legitimately reaches",
+        "Send crafted prompts that request one out-of-scope tool call or protected read at a time, targeting the harmless canary only",
+        "Observe whether the request is refused, described, or actually executed",
+        "Correlate any executed action with tool logs and the isolated canary account before drawing conclusions"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One instruction boundary, connected tool, or data scope at a time",
+      "secure_behavior": "The feature treats every prompt as untrusted input, re-validates tool calls against the caller's authorization, and never lets model output reach sensitive sinks unchecked.",
+      "vulnerable_behavior": "a crafted prompt causes a tool call, retrieval, or state change outside the caller's authorization",
+      "validation": "Correlate the prompt with an observed tool call, log entry, or state change under the isolated canary account; a persuasive model reply without a confirmed action is not a finding.",
+      "false_positives": [
+        "the model may describe an action in text without executing it",
+        "demo or sandboxed integrations may simulate tool calls instead of performing them"
+      ],
+      "impact": "Confirmed prompt injection can perform unauthorized actions through connected tools, read data the model can reach, or inject content that reaches other users.",
+      "evidence": [
+        "Authorized scope covering the LLM feature and connected tools",
+        "Exact prompt, channel, and observed tool call or state change",
+        "Canary-account request/response pairs and server-side tool logs"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-ADV-019",
+        "WAPT-API-027",
+        "WAPT-AUTHZ-028"
+      ],
+      "tags": [
+        "llm",
+        "prompt-injection",
+        "excessive-agency"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use an isolated canary tool and synthetic data only. Never test prompt injection through real user content, live customer data, or destructive tool calls; stop if model behavior could affect other users.",
+      "remediation": "Treat all prompt content as untrusted; validate model-chosen tool calls against caller authorization, minimize tool scopes, require confirmation for consequential actions, and never let the model read data the caller cannot read.",
+      "do_not_report": [
+        "Do not report a model reply that merely describes or invents an action as injection; demonstrate an executed tool call, retrieval, or state change under the isolated canary account before reporting."
+      ]
+    },
+    {
+      "id": "WAPT-AI-002",
+      "title": "Detect indirect prompt injection through retrieved content",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether instructions hidden inside documents, web pages, messages, or other content the model retrieves can steer an LLM-backed feature into unauthorized behavior for the requesting user.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its retrieval sources",
+        "An isolated test account and a document or message the tester controls end to end",
+        "A harmless canary action that proves model steering without real impact"
+      ],
+      "steps": [
+        "Identify which retrieved sources (uploaded files, emails, web pages, tickets) feed the model without user review",
+        "Place a benign instruction inside a tester-controlled document and request the feature summarizes or acts on it",
+        "Observe whether the embedded instruction changes model behavior, tool calls, or output for the requesting user",
+        "Repeat with one instruction and one channel at a time, including markup or fake-response framing only as comparison cases",
+        "Confirm any effect against the caller's real authorization with the canary action"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One indirect input channel, embedded instruction, or connected tool at a time",
+      "secure_behavior": "Retrieved content is marked as untrusted data, instructions from retrieved sources are neutralized or ignored, and all resulting actions stay within the caller's authorization.",
+      "vulnerable_behavior": "an instruction embedded in retrieved content reliably changes model behavior or triggers an action for the requesting user",
+      "validation": "Correlate the embedded instruction with an observed behavior change or tool action under the canary account; a changed wording without security effect is not a finding.",
+      "false_positives": [
+        "the model may summarize the embedded instruction without following it",
+        "retrieval quality filters can drop injected content before the model sees it"
+      ],
+      "impact": "Confirmed indirect injection can turn any user-reachable content into an instruction channel, enabling data exposure, unauthorized tool calls, or persistent manipulation for later users.",
+      "evidence": [
+        "Authorized scope and retrieval-source inventory",
+        "The tester-controlled document and its embedded instruction",
+        "Observed model output, tool call, or state change under the canary account"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-ADV-019",
+        "WAPT-API-027"
+      ],
+      "tags": [
+        "llm",
+        "prompt-injection",
+        "indirect-prompt-injection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Deliver injected instructions only through content you own end to end and only to your isolated test account. Never seed shared corpora, customer documents, or production indexes; stop if other users could encounter the content.",
+      "remediation": "Separate untrusted retrieved content from instructions at the model boundary, neutralize instruction-like text in retrieved data, and authorize every resulting action against the caller rather than the model's interpretation.",
+      "do_not_report": [
+        "Do not report a summarization that echoes an embedded instruction as injection; demonstrate a security-relevant behavior change or action traceable to the injected content."
+      ]
+    },
+    {
+      "id": "WAPT-AI-003",
+      "title": "Prevent disclosure of system prompts and internal instructions",
+      "category": "ai-llm-security",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether an LLM-backed feature reveals its system prompt, retrieval rules, or hidden instructions that disclose business logic, data sources, or bypass guidance.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature",
+        "An isolated test account with the same privilege tier as the intended attacker"
+      ],
+      "steps": [
+        "Send ordinary prompts and record what configuration details the feature volunteers",
+        "Ask the model to restate its instructions, rules, or earlier messages using several phrasings",
+        "Compare disclosures against what the product documentation already publishes",
+        "Record whether non-public instructions, tool schemas, or data-source details appear in responses",
+        "Repeat across channels (chat, API, generated summaries) before concluding"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One disclosure target (instructions, tool schema, retrieval rules) and one channel at a time",
+      "secure_behavior": "The feature discloses only what the product publishes; hidden instructions, internal tool schemas, and retrieval rules stay non-public.",
+      "vulnerable_behavior": "responses reveal non-public system instructions, tool definitions, data-source details, or guardrail descriptions that materially assist further attacks",
+      "validation": "Require non-public content in the response that matches internal configuration and assists an attack step; publicly documented product text is not a finding.",
+      "false_positives": [
+        "the model may restate public product documentation",
+        "guardrail descriptions can be generic and low value without revealing internal structure"
+      ],
+      "impact": "Disclosed instructions and tool schemas give attackers a map of connected tools, validation rules, and bypass paths, compounding other LLM weaknesses.",
+      "evidence": [
+        "Exact prompts and responses",
+        "Comparison against published product documentation",
+        "Assessment of which disclosure assists a subsequent attack step"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-ADV-019",
+        "WAPT-INFO-016"
+      ],
+      "tags": [
+        "llm",
+        "system-prompt",
+        "information-disclosure"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Probe only with your isolated test account and never extract credentials, keys, or real user data as part of the test; record only redacted responses.",
+      "remediation": "Design prompts so hidden instructions cannot be reproduced, avoid embedding secrets or schemas in system prompts, and filter or refuse instruction-recitation requests at the model boundary.",
+      "do_not_report": [
+        "Do not report restatements of public product documentation as a finding; require non-public instructions, tool schemas, or data-source details that materially assist further attacks."
+      ]
+    },
+    {
+      "id": "WAPT-AI-004",
+      "title": "Enforce authorization on retrieved and grounded content",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether retrieval-augmented features return documents or records the caller is not authorized to read, regardless of which prompt triggered the retrieval.",
+      "prerequisites": [
+        "Written authorization and two isolated test accounts with different data access",
+        "A synthetic restricted document owned by one account and not the other"
+      ],
+      "steps": [
+        "Identify the knowledge base, vector index, or document store backing retrieval answers",
+        "Submit questions from the unrestricted account that should only be answerable using the restricted account's document",
+        "Probe with paraphrases and multi-document questions to test retrieval versus answer-level filtering",
+        "Repeat from the restricted account to confirm the document is retrievable when authorized",
+        "Record which prompts returned restricted content to the unauthorized caller"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One restricted document, one requesting account, and one retrieval path at a time",
+      "secure_behavior": "Every retrieved chunk is authorization-checked against the requesting caller before the model can read or cite it.",
+      "vulnerable_behavior": "an unauthorized caller receives content from, or answers derived from, a document they cannot read",
+      "validation": "Require the response to contain content only derivable from the restricted document and attributable to retrieval, not general knowledge; confirm the caller lacks direct access to the document.",
+      "false_positives": [
+        "the model may answer from general knowledge that overlaps the document",
+        "retrieval may return only public metadata while the answer stays harmless"
+      ],
+      "impact": "Unauthorized retrieval turns the model into an oracle for documents the caller cannot open, leaking customer data, secrets, or tenant-restricted records at query speed.",
+      "evidence": [
+        "Account and permission evidence for both test identities",
+        "Prompts and responses containing restricted content",
+        "Retrieval logs or index identifiers showing the source document"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP GenAI LLM Top 10 2026",
+          "url": "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-862"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-003",
+        "WAPT-AUTHZ-032"
+      ],
+      "tags": [
+        "llm",
+        "rag",
+        "retrieval-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only synthetic documents and isolated test accounts; never query the system with real customer data or attempt to retrieve live restricted records.",
+      "remediation": "Apply the caller's access controls to retrieval results before grounding, index per-document ACLs, and audit answers for content only derivable from the caller's authorized set.",
+      "retest_guidance": "After remediation, retest with a new restricted synthetic document across paraphrased and multi-document prompts from both accounts, and confirm retrieval logs show the ACL was applied before the model saw the content."
+    },
+    {
+      "id": "WAPT-AI-005",
+      "title": "Detect retrieval corpus poisoning that steers model behavior",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether attacker-influenced content in the retrieval corpus, such as uploaded documents or public pages, can change model answers or actions for other users.",
+      "prerequisites": [
+        "Written authorization covering the retrieval corpus and its ingestion pipeline",
+        "A synthetic poisoned document the tester controls from creation to indexing"
+      ],
+      "steps": [
+        "Identify which user-influenced content enters the corpus and when it is indexed",
+        "Create a synthetic document containing a harmless steering instruction and unique marker",
+        "Trigger ingestion through the normal user workflow and wait for the documented indexing window",
+        "Query the feature from a second account and observe whether the marker or instruction changes answers",
+        "Remove the document and confirm the effect disappears before ending the test"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One poisoned document, one instruction, and one query pattern at a time",
+      "secure_behavior": "Corpus content is treated as untrusted data, ingestion requires authorization, and answers derive from validated sources without instruction-following from indexed text.",
+      "vulnerable_behavior": "a poisoned document reliably changes answers, citations, or tool behavior for other users",
+      "validation": "Require the marker to appear in responses to a second account, attributable to the poisoned document, and reproducible after re-indexing; confirm removal ends the effect.",
+      "false_positives": [
+        "search or retrieval ranking can surface the document without changing answers",
+        "similar legitimate content may coincidentally produce overlapping answers"
+      ],
+      "impact": "Corpus poisoning provides persistent, cross-user steering: false answers, phishing content, or instruction injection that survives individual prompt defenses.",
+      "evidence": [
+        "The poisoned document and ingestion evidence",
+        "Queries and responses from a second account showing the marker",
+        "Timeline showing effect removal after document deletion"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP GenAI LLM Top 10 2026",
+          "url": "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-20"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-API-037",
+        "WAPT-INFO-013"
+      ],
+      "tags": [
+        "llm",
+        "rag",
+        "poisoning"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Only inject synthetic documents you own and can remove; never poison shared corpora or production indexes, and verify removal restores baseline behavior before finishing.",
+      "remediation": "Validate and neutralize instruction-like content at ingestion, authorize corpus writes, and treat indexed content as untrusted data at answer time.",
+      "do_not_report": [
+        "Do not report a poisoned document that merely surfaces in citations without changing answers or behavior; require a reproducible steering effect on other users."
+      ]
+    },
+    {
+      "id": "WAPT-AI-006",
+      "title": "Neutralize injected payloads in LLM-generated tool arguments",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether arguments the model produces for tools such as SQL queries, shell helpers, or path selectors can carry interpreter payloads that the tool executes.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its connected tools",
+        "An isolated test account and a harmless canary endpoint or query target",
+        "Documentation of which tools accept model-generated arguments"
+      ],
+      "steps": [
+        "Map every tool the model can call and the interpreter each argument feeds",
+        "Request operations that legitimately exercise each tool with a baseline argument",
+        "Embed one inert payload candidate (SQL predicate, path segment, or command separator) in the request and observe the generated argument",
+        "Use paired controls to distinguish model-generation defects from normal argument handling",
+        "Confirm any execution against the harmless canary before concluding"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One tool, one argument position, and one payload family at a time",
+      "secure_behavior": "Model-generated arguments are parameterized, allowlisted, and validated exactly like caller-supplied input before any interpreter executes them.",
+      "vulnerable_behavior": "a payload survives model generation and the tool executes it in a way caller-supplied input would not be allowed to reach",
+      "validation": "Require a confirmed interpreter effect at the harmless canary, such as a paired boolean difference or a marker row, not just a suspicious generated argument.",
+      "false_positives": [
+        "the model may reproduce the payload as literal text without execution",
+        "downstream validators can reject the payload even when the model generated it"
+      ],
+      "impact": "Confirmation means prompt injection becomes arbitrary interpreter access through the tool, potentially reading or modifying data the caller cannot reach directly.",
+      "evidence": [
+        "Tool inventory and the exact prompt used",
+        "The generated argument and the canary response pair",
+        "Logs showing which component executed the argument"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-89"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-INJ-001",
+        "WAPT-INJ-024"
+      ],
+      "tags": [
+        "llm",
+        "tool-call",
+        "sql-injection"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Test only inert payload candidates against an isolated canary target; never execute destructive commands or query production data through model-generated arguments.",
+      "remediation": "Treat model output as untrusted input: parameterize all interpreter calls, allowlist tool schemas, and validate every generated argument at the tool boundary.",
+      "retest_guidance": "After remediation, retest each tool with the original payload family and one adjacent variant, and confirm the tool rejects the argument before the interpreter receives it."
+    },
+    {
+      "id": "WAPT-AI-007",
+      "title": "Constrain LLM tool agency to the caller's authority",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an LLM-backed feature can invoke privileged or consequential tools without explicit user confirmation, reauthentication, or a per-call authorization check.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its tools",
+        "Test accounts at two privilege levels with isolated canary actions"
+      ],
+      "steps": [
+        "Inventory every tool the model can invoke and the authority each requires",
+        "From the low-privilege account, prompt for a canary action that only the high-privilege role may perform",
+        "Test whether the feature asks for confirmation, reauthenticates, or silently forwards the call",
+        "Repeat for consequential categories such as sends, purchases, exports, and settings changes",
+        "Confirm any executed action against tool logs and the isolated canary"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One tool, one privilege boundary, and one confirmation control at a time",
+      "secure_behavior": "Every consequential tool call requires the caller's authorization, user confirmation for irreversible actions, and step-up where policy requires it.",
+      "vulnerable_behavior": "a low-privilege caller triggers a privileged tool action without confirmation, reauthentication, or a failed authorization check",
+      "validation": "Require an executed privileged action observable in logs or canary state, attributable to the low-privilege account; a suggested action that the user declined is not a finding.",
+      "false_positives": [
+        "the feature may present the action for approval without executing it",
+        "administrative tools can be available only to elevated sessions the tester cannot reach"
+      ],
+      "impact": "Excessive agency lets any prompt-wielding user perform privileged actions through the model, bypassing authorization and audit controls that protect the same actions in the normal UI.",
+      "evidence": [
+        "Role and permission evidence for both test accounts",
+        "Prompts, approval prompts, and the executed action",
+        "Tool logs and canary state changes"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-862"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-AUTHZ-013",
+        "WAPT-ADV-019"
+      ],
+      "tags": [
+        "llm",
+        "excessive-agency",
+        "tool-authorization"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Trigger only canary actions on test-owned objects; never send real notifications, purchases, or exports, and stop if an action could affect production users.",
+      "remediation": "Bind each tool to the caller's authorization at invocation time, require confirmation for consequential actions, and keep model-suggested actions out of privileged paths.",
+      "retest_guidance": "After remediation, retest the same privilege boundary with a paraphrased prompt and an adjacent tool in the same category, and confirm authorization and confirmation both hold."
+    },
+    {
+      "id": "WAPT-AI-008",
+      "title": "Validate LLM output before rendering and downstream parsing",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether model-generated output reaches HTML, Markdown, or structured parsers without the same validation applied to user input, enabling stored cross-site scripting or parser injection for other users.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its output consumers",
+        "An isolated test account and a second account to observe stored effects"
+      ],
+      "steps": [
+        "Identify every sink that consumes model output: chat renderers, summaries, emails, exports, and downstream parsers",
+        "Submit prompts that ask the model to reproduce a harmless marker payload for one sink at a time",
+        "Observe whether the output is encoded, sanitized, or executed at the sink",
+        "Use paired prompts and direct user-input controls to compare the pipeline for model output versus ordinary input",
+        "Confirm execution only at a harmless local canary or with the second isolated account"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One output sink, one payload family, and one consumer at a time",
+      "secure_behavior": "Model output is treated as untrusted data: encoded for its rendering context and validated before any parser consumes it.",
+      "vulnerable_behavior": "model-generated content executes at a browser or parser sink that direct user input is prevented from reaching",
+      "validation": "Require an observed execution or parse-level effect at the canary, attributable to model output; a raw payload in the response body that nothing executes is not a finding.",
+      "false_positives": [
+        "the renderer may sanitize model output even when direct input is unsanitized",
+        "the payload may be reproduced in a non-executing context such as code formatting"
+      ],
+      "impact": "Confirmed output handling turns any prompt-wielding user into a stored injection source for every consumer of model text, including privileged reviewers.",
+      "evidence": [
+        "The prompt, the model output, and the sink context",
+        "Canary execution evidence or the second account's observed effect",
+        "Comparison against the same payload submitted as direct user input"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-79"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-XSS-002",
+        "WAPT-XSS-016"
+      ],
+      "tags": [
+        "llm",
+        "insecure-output-handling",
+        "xss"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Execute payloads only at a harmless local canary or inside your isolated second account; never inject into shared review queues or production content.",
+      "remediation": "Route model output through the same context-aware encoding and sanitization as user input, and validate it at every parser boundary before use.",
+      "retest_guidance": "After remediation, retest the original sink and one adjacent consumer (chat, export, notification) with the same payload family, and confirm encoding or sanitization before execution."
+    },
+    {
+      "id": "WAPT-AI-009",
+      "title": "Prevent cross-user and cross-tenant LLM context leakage",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether shared model memory, conversation reuse, caching, or vector-store indexing exposes one user's or tenant's data in another user's responses.",
+      "prerequisites": [
+        "Written authorization and isolated test accounts in two tenants or ownership contexts",
+        "Synthetic marker data visible to only one of the accounts"
+      ],
+      "steps": [
+        "Map where conversation state, memory, and index data persist between requests and accounts",
+        "Seed a unique synthetic marker through one account's normal feature use",
+        "Query the feature from the second account with prompts likely to surface prior context",
+        "Test session reuse, account switching, tenant switching, and shared caches as separate conditions",
+        "Record any response containing the first account's marker and attribute the leak path"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One persistence boundary (memory, cache, index) and one account pair at a time",
+      "secure_behavior": "Conversation state, memory, and retrieval are partitioned per account and tenant, and responses never cite data from outside the caller's context.",
+      "vulnerable_behavior": "one account's synthetic marker appears in another account's responses or retrievals",
+      "validation": "Require the unique marker to appear in the second account's response and attribute it to the shared store; coincidental wording is not a finding.",
+      "false_positives": [
+        "generic phrasing can resemble the marker without data leakage",
+        "a shared public knowledge source can legitimately contain the same information"
+      ],
+      "impact": "Cross-context leakage exposes customer data, secrets, and tenant-confidential content across the boundary the application exists to enforce.",
+      "evidence": [
+        "Account and tenant setup evidence",
+        "The synthetic marker and the leaking prompt/response pair",
+        "Logs or store identifiers showing the shared persistence path"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP GenAI LLM Top 10 2026",
+          "url": "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-200"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-AUTHZ-021",
+        "WAPT-ADV-013"
+      ],
+      "tags": [
+        "llm",
+        "context-leakage",
+        "multi-tenant"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Use only synthetic markers in isolated test accounts; never attempt to surface real customer or tenant data during testing.",
+      "remediation": "Partition model state, memory, and retrieval indexes by account and tenant, purge context on identity changes, and exclude cross-tenant sources from grounding.",
+      "priority_when": {
+        "features": [
+          "multi_tenant"
+        ]
+      }
+    },
+    {
+      "id": "WAPT-AI-010",
+      "title": "Constrain URL-fetching tools behind LLM features",
+      "category": "ai-llm-security",
+      "severity": "high",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether prompts can steer a model-connected URL tool toward internal, metadata, or otherwise prohibited destinations that the application would normally reject.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its URL tool",
+        "A controlled callback destination under the tester's control",
+        "Documentation of the tool's intended destination policy"
+      ],
+      "steps": [
+        "Map the URL tool's reachable protocols, hosts, and ports through normal feature use",
+        "Request a fetch of the controlled callback and record the request fingerprint",
+        "Attempt one prohibited destination class at a time using the same phrasing patterns as the baseline",
+        "Distinguish tool-level requests from browser-side requests made by the tester's own client",
+        "Repeat with redirects or alternate representations only where the owner has approved the probe"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One destination class, one redirect or representation condition, and one tool at a time",
+      "secure_behavior": "URL tools enforce the same allowlists, resolution checks, and egress policy as other fetchers, and prompts cannot widen the destination set.",
+      "vulnerable_behavior": "the model tool requests a destination outside the approved policy and the request originates server-side",
+      "validation": "Require a server-side request observed at the controlled destination with a unique marker and matching timing; client-side requests from the tester's browser are excluded.",
+      "false_positives": [
+        "the tester's own browser may issue requests that look like the tool",
+        "public destination policies can legitimately include the probed host"
+      ],
+      "impact": "A confirmed fetch reaches internal services, cloud metadata, or private hosts through a path ordinary SSRF controls do not inspect.",
+      "evidence": [
+        "The callback log with the unique marker and source address",
+        "The exact prompt and tool invocation",
+        "Evidence the request came from the tool, not the browser"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "PortSwigger",
+          "title": "Web LLM attacks",
+          "url": "https://portswigger.net/web-security/llm-attacks"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-918"
+        ],
+        "portswigger": [
+          "https://portswigger.net/web-security/llm-attacks"
+        ]
+      },
+      "related": [
+        "WAPT-SSRF-001",
+        "WAPT-SSRF-003"
+      ],
+      "tags": [
+        "llm",
+        "ssrf",
+        "tool-call"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Probe only your controlled callback and owner-approved destinations; never target metadata endpoints, internal services, or third parties without explicit authorization.",
+      "remediation": "Apply the application's SSRF allowlists and egress policy to model-invoked URL tools, validate resolved addresses, and revalidate redirects at connection time.",
+      "retest_guidance": "After remediation, retest with a redirect from the allowed destination to a prohibited one and confirm the tool revalidates before connecting."
+    },
+    {
+      "id": "WAPT-AI-011",
+      "title": "Bound LLM generation and tool-loop resource use",
+      "category": "ai-llm-security",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether an unauthenticated or low-privilege caller can trigger unbounded generation, repeated tool invocations, or expensive retrieval that creates disproportionate cost or service degradation.",
+      "prerequisites": [
+        "Written authorization covering the LLM feature and its billing model",
+        "An isolated test account and the documented usage limits"
+      ],
+      "steps": [
+        "Identify the per-call and per-principal limits on generation length, tool calls, and retrieval depth",
+        "Submit requests that request maximum-length output, repeated tool loops, and deep retrieval chains",
+        "Measure tokens, tool invocations, and wall time against the documented limits",
+        "Test whether parallel or repeated requests accumulate beyond per-principal budgets",
+        "Stop at the documented ceiling and record what the system enforces versus allows"
+      ],
+      "examples": [
+        {
+          "note": "Use an isolated canary action (for example a marker write to a test-owned record) instead of real tool calls, user data, or production state."
+        }
+      ],
+      "manipulate": "One resource dimension (output length, tool loops, retrieval depth) at a time",
+      "secure_behavior": "Generation, tool-call counts, and retrieval are bounded per principal and per call, with cost accounting that cannot be exceeded through phrasing alone.",
+      "vulnerable_behavior": "requests beyond documented budgets succeed, or repeated calls accumulate cost far beyond the per-principal allowance",
+      "validation": "Require measured consumption beyond the documented limit with attributable cost or degradation; slow responses within policy are not a finding.",
+      "false_positives": [
+        "longer outputs within the published limit are intended behavior",
+        "provider-side throttling can mask per-application budget gaps on small samples"
+      ],
+      "impact": "Unbounded use converts the feature into a cost or availability primitive for any caller, and can degrade shared capacity for other tenants.",
+      "evidence": [
+        "The documented limits and the measured consumption",
+        "Request/response pairs and tool-call counts",
+        "Cost or degradation evidence attributable to the test account"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools"
+      ],
+      "references": [
+        {
+          "source": "OWASP",
+          "title": "OWASP Top 10 for Large Language Model Applications",
+          "url": "https://owasp.org/www-project-top-10-for-large-language-model-applications/"
+        },
+        {
+          "source": "OWASP",
+          "title": "OWASP GenAI LLM Top 10 2026",
+          "url": "https://genai.owasp.org/resource/owasp-genai-llm-top-10-2026/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-770"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-RATE-007",
+        "WAPT-API-018"
+      ],
+      "tags": [
+        "llm",
+        "resource-abuse",
+        "denial-of-cost"
+      ],
+      "attack_chains": [],
+      "applies": {
+        "any_of": {
+          "features": [
+            "ai_llm"
+          ]
+        }
+      },
+      "variants": [],
+      "safety": "Stay within documented limits and stop before any measurable degradation; never run sustained loops against shared production capacity.",
+      "remediation": "Enforce per-principal and per-call budgets on tokens, tool invocations, and retrieval, and reject requests that cannot be accounted against the caller.",
+      "do_not_report": [
+        "Do not report responses within published limits as abuse; measure consumption beyond the documented budget or demonstrate a path to disproportionate cost before reporting."
+      ]
+    }
+  ]
+}

@@ -2766,6 +2766,85 @@
       "applies": {},
       "variants": [],
       "remediation": "Assign durable ownership, lifecycle, data classification, and assessment constraints to every application asset and update the register as architecture changes."
+    },
+    {
+      "id": "WAPT-RECON-038",
+      "title": "Identify dangling DNS records that enable subdomain takeover",
+      "category": "reconnaissance",
+      "severity": "medium",
+      "difficulty": "medium",
+      "mode": "manual",
+      "objective": "Determine whether in-scope hostnames resolve to expired, unclaimed, or deprovisioned third-party resources that an attacker could claim, without ever claiming them during testing.",
+      "prerequisites": [
+        "Written authorization for DNS and third-party service reconnaissance of in-scope hostnames",
+        "The hostname inventory assembled in earlier enumeration steps"
+      ],
+      "steps": [
+        "Resolve each in-scope hostname and record A, CNAME, NS, and alias targets together with the responsible provider",
+        "Look for NXDOMAIN, SERVFAIL, unclaimed provider endpoints, and deprovisioned-service responses",
+        "Identify the provider claim model (pages, storage, app platforms) and whether the target is currently claimed",
+        "Document the record class, provider, and evidence, then stop before any registration, claim, or content upload",
+        "Deliver an identification report with per-record remediation instead of demonstrating a takeover"
+      ],
+      "examples": [
+        {
+          "note": "Evidence is limited to DNS responses and provider claim-state indicators; no third-party resource is registered or modified."
+        }
+      ],
+      "manipulate": "One hostname and one record class at a time",
+      "secure_behavior": "DNS records reference only active, owner-verified third-party resources, and deprovisioning removes or re-verifies every record.",
+      "vulnerable_behavior": "a record resolves to a resource that is unclaimed or expired and could be taken over under the provider's claim model",
+      "validation": "Pair the DNS resolution with provider-specific unclaimed indicators such as claimable error pages or deprovisioned endpoints; a DNS failure alone is insufficient.",
+      "false_positives": [
+        "service-provider responses can look unclaimed during migrations",
+        "wildcard DNS or parked pages can mimic deprovisioned endpoints"
+      ],
+      "impact": "A takeable record lets an attacker host content on the victim subdomain after claiming it, enabling phishing, cookie capture, and origin-confusion abuse.",
+      "evidence": [
+        "DNS resolution output for each affected hostname",
+        "Provider responses showing the unclaimed or expired state",
+        "Claim-model documentation and the remediation note per record"
+      ],
+      "tools": [
+        "dig",
+        "whois",
+        "Burp Repeater"
+      ],
+      "references": [
+        {
+          "source": "OWASP WSTG",
+          "title": "WSTG v4.2: Test for Subdomain Takeover",
+          "url": "https://owasp.org/www-project-web-security-testing-guide/v42/4-Web_Application_Security_Testing/02-Configuration_and_Deployment_Management_Testing/10-Test_for_Subdomain_Takeover"
+        }
+      ],
+      "mappings": {
+        "wstg": [
+          "WSTG-v42-CONF-10"
+        ],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-RECON-003",
+        "WAPT-RECON-004",
+        "WAPT-RECON-030"
+      ],
+      "tags": [
+        "subdomain-takeover",
+        "dangling-dns",
+        "dns"
+      ],
+      "attack_chains": [],
+      "applies": {},
+      "variants": [],
+      "safety": "Identification and reporting only. Never register, claim, point, or upload to the dangling resource; taking over the hostname changes third-party state and is outside the scope of an authorized assessment.",
+      "remediation": "Remove or re-point dangling records, verify ownership of every third-party resource referenced by DNS, and add deprovisioning checks to offboarding.",
+      "do_not_report": [
+        "Do not report every unclaimed record as critical; weight the record class (NS over CNAME), the provider claim model, and the hostname's criticality, and deliver remediation guidance rather than a claimed takeover."
+      ]
     }
   ]
 }

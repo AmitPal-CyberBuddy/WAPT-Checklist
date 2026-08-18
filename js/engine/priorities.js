@@ -6,7 +6,7 @@ export const WORKFLOW_CATEGORIES = Object.freeze([
   'injection', 'xss', 'csrf', 'file-handling', 'business-logic', 'race-conditions',
   'api-security', 'graphql', 'jwt', 'oauth-sso-saml', 'websocket', 'client-side',
   'security-headers', 'cloud-storage', 'information-disclosure', 'rate-limiting',
-  'ssrf', 'request-smuggling', 'advanced'
+  'ssrf', 'request-smuggling', 'ai-llm-security', 'advanced'
 ]);
 
 const SEVERITY_WEIGHT = Object.freeze({ critical: 50, high: 40, medium: 28, low: 16, informational: 6 });
@@ -31,6 +31,7 @@ function contextualBoost(item, context) {
   if (item.category === 'session-management' && contextHas(context, 'auth_mechanism', ['cookie', 'mixed'])) add(20, 'cookie_session');
   if (item.category === 'api-security' && contextHas(context, 'url_hints.api_subdomain', [true])) add(10, 'api_url_hint');
   if (item.category === 'request-smuggling' && contextHas(context, 'intermediary', ['cdn', 'proxy', 'waf'])) add(24, 'intermediary_hops');
+  if (item.category === 'ai-llm-security' && contextHas(context, 'features', ['ai_llm'])) add(28, 'ai_llm');
 
   if (item.priority_when && Object.keys(item.priority_when).length) {
     const condition = evaluateConditionMap(item.priority_when, context);

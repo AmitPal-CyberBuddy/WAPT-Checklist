@@ -2323,6 +2323,188 @@
       "variants": [],
       "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets.",
       "safety": "Use only synthetic plaintext and test keys; never export, retain, or attempt to recover real user key material."
+    },
+    {
+      "id": "WAPT-CLIENT-030",
+      "title": "Assess cross-site leak channels against authenticated state",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "high",
+      "mode": "manual",
+      "objective": "Determine whether an attacker origin can infer authenticated state or private content through browser side channels such as cache timing, frame counting, scroll, or session-history length oracles.",
+      "prerequisites": [
+        "Written authorization and a designated victim-equivalent test session",
+        "Two browser contexts: an attacker origin under the tester's control and the target session",
+        "A state indicator that responds differently for authenticated versus unauthenticated users"
+      ],
+      "steps": [
+        "Identify state-dependent responses such as search hit counts, private page redirects, or conditional content reachable cross-site",
+        "Build a probe page on the controlled origin that embeds or fetches the target resource without ambient credentials",
+        "Measure one oracle channel at a time: cache timing, frame count, scroll offset, history length, or resource timing",
+        "Compare probes against two known states to confirm the channel reliably distinguishes them",
+        "Record the minimal leak, the affected state, and the browser versions where it reproduces"
+      ],
+      "examples": [
+        {
+          "note": "Probes run from a tester-controlled origin against the tester's own two-state session; no victim traffic is involved."
+        }
+      ],
+      "manipulate": "One state indicator and one measurement channel at a time",
+      "secure_behavior": "Authenticated state is isolated from cross-origin probing: no state-dependent cross-site-readable responses, partitioned caches, correct Vary and Cache-Control, and framing policies that remove the oracle.",
+      "vulnerable_behavior": "a probe reliably distinguishes two known states from the attacker origin",
+      "validation": "Require at least two known states with repeatable measurements and control runs in a supported browser; a single timing difference is not a finding.",
+      "false_positives": [
+        "cache partitioning and COOP can remove the oracle in modern browsers",
+        "network noise can produce timing differences unrelated to application state"
+      ],
+      "impact": "Confirmed cross-site leaks disclose login state, search results, private counts, or token presence to any origin a victim visits.",
+      "evidence": [
+        "Probe page source and target requests",
+        "Baseline versus probe measurements for the two known states",
+        "Browser and version where the channel reproduces"
+      ],
+      "tools": [
+        "Burp Repeater",
+        "Browser developer tools",
+        "A tester-controlled probe origin"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "HTML: session history, navigation, and the back-forward cache",
+          "url": "https://html.spec.whatwg.org/multipage/nav-history-apis.html"
+        },
+        {
+          "source": "WHATWG",
+          "title": "Fetch Standard",
+          "url": "https://fetch.spec.whatwg.org/"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-200",
+          "CWE-1021"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-CLIENT-007",
+        "WAPT-INFO-014",
+        "WAPT-HDR-012"
+      ],
+      "tags": [
+        "xs-leaks",
+        "cross-site-leak",
+        "side-channel"
+      ],
+      "applies": {
+        "any_of": {
+          "has_login": [
+            "yes"
+          ]
+        },
+        "excludes": [
+          "app_type:static"
+        ]
+      },
+      "remediation": "Isolate state-dependent responses from cross-origin probing with cache partitioning, exact Vary and no-store for private representations, frame isolation, and origin checks on state-revealing endpoints.",
+      "do_not_report": [
+        "Do not report a single observed timing difference as a leak; require two known states with repeatable measurements and rule out network noise before reporting a cross-site channel."
+      ],
+      "attack_chains": [],
+      "variants": []
+    },
+    {
+      "id": "WAPT-CLIENT-031",
+      "title": "Prevent sensitive state resurfacing through bfcache and session history",
+      "category": "client-side",
+      "severity": "medium",
+      "difficulty": "low",
+      "mode": "manual",
+      "objective": "Determine whether navigating back to an authenticated page restores sensitive content from the back-forward cache or session history after logout, account switching, or on a shared device.",
+      "prerequisites": [
+        "Written authorization and an isolated test account",
+        "A sensitive page with per-account content and a shared-device test profile"
+      ],
+      "steps": [
+        "Load a sensitive authenticated page and navigate away without closing the tab",
+        "Log out or switch to another account in the same tab",
+        "Navigate back and record whether the prior account's content is restored from the bfcache",
+        "Repeat with Back versus history navigation and with a fresh shared-device profile",
+        "Confirm whether restored pages can be read, interacted with, or resubmitted"
+      ],
+      "examples": [
+        {
+          "note": "The test uses the tester's own two accounts in one isolated browser profile; no third-party session is involved."
+        }
+      ],
+      "manipulate": "One navigation path, one session change, and one sensitive page at a time",
+      "secure_behavior": "Authenticated pages are excluded from the back-forward cache or revalidated on restoration, so a previous identity's content never resurfaces.",
+      "vulnerable_behavior": "back navigation restores readable sensitive content from a prior session or account",
+      "validation": "Require restored content attributable to the prior session with a readable or actionable payload; a blank restore or server revalidation is not a finding.",
+      "false_positives": [
+        "servers may revalidate and redirect the restored page to the current session",
+        "pages restored from cache may be inert without network revalidation"
+      ],
+      "impact": "Restored pages expose the prior user's data on shared devices and can confuse session boundaries after logout or account switching.",
+      "evidence": [
+        "Navigation sequence and session-change steps",
+        "Screenshot or recorded DOM of the restored page",
+        "Browser and version where restoration reproduces"
+      ],
+      "tools": [
+        "Browser developer tools",
+        "Burp Proxy"
+      ],
+      "references": [
+        {
+          "source": "WHATWG",
+          "title": "HTML: session history, navigation, and the back-forward cache",
+          "url": "https://html.spec.whatwg.org/multipage/nav-history-apis.html"
+        },
+        {
+          "source": "IETF",
+          "title": "RFC 9111: HTTP Caching",
+          "url": "https://www.rfc-editor.org/rfc/rfc9111"
+        }
+      ],
+      "mappings": {
+        "wstg": [],
+        "asvs": [],
+        "owasp_top10": [],
+        "api_top10": [],
+        "cwe": [
+          "CWE-525"
+        ],
+        "portswigger": []
+      },
+      "related": [
+        "WAPT-INFO-014",
+        "WAPT-HDR-015",
+        "WAPT-SESS-013"
+      ],
+      "tags": [
+        "bfcache",
+        "session-history",
+        "cache"
+      ],
+      "applies": {
+        "any_of": {
+          "has_login": [
+            "yes"
+          ]
+        }
+      },
+      "remediation": "Mark authenticated pages no-store or exclude them from the back-forward cache, revalidate on pageshow restoration, and clear sensitive DOM state on identity changes.",
+      "do_not_report": [
+        "Do not report cached navigation generally; require restored readable content from a prior session or account that the current session should no longer reach."
+      ],
+      "attack_chains": [],
+      "variants": []
     }
   ]
 }

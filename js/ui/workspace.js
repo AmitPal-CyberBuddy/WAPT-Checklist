@@ -1,11 +1,12 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r4';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r4';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r4';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r4';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r4';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r4';
-import { createChainStore } from './chains.js?v=1.0.0-r4';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r4';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r5';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r5';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r5';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r5';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r5';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r5';
+import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r5';
+import { createChainStore } from './chains.js?v=1.0.0-r5';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r5';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };
@@ -317,6 +318,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     renderResults(resultRoot, summary, records, checklistFilters);
     const title = document.querySelector('#checklist-title');
     title.textContent = fixed ? names()[fixed] : 'All tests';
+    const rationale = document.querySelector('[data-category-rationale]');
+    if (rationale) {
+      const reasons = fixed ? categoryRationale(fixed, context()) : [];
+      rationale.textContent = reasons.join(' · ');
+      rationale.hidden = !reasons.length;
+    }
   }
 
   function renderSearch() {

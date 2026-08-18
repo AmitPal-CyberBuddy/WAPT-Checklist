@@ -19,6 +19,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
 - Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components, and per-recommendation explanations (state, category, severity, reasons, chain unlocks).
 - Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
+- Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
 - Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, explicit reporting boundaries (`do_not_report`), retest guidance, and references.

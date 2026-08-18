@@ -1,9 +1,9 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r4';
-import { createWizard } from './wizard.js?v=1.0.0-r4';
-import { STATE_KEY, createState } from '../engine/state.js?v=1.0.0-r4';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r4';
-import { createCatalog } from './catalog.js?v=1.0.0-r4';
-import { createWorkspace } from './workspace.js?v=1.0.0-r4';
+import { initializeTheme } from './theme.js?v=1.0.0-r5';
+import { createWizard } from './wizard.js?v=1.0.0-r5';
+import { STATE_KEY, createState } from '../engine/state.js?v=1.0.0-r5';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r5';
+import { createCatalog } from './catalog.js?v=1.0.0-r5';
+import { createWorkspace } from './workspace.js?v=1.0.0-r5';
 
 const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 

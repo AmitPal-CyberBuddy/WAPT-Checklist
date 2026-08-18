@@ -97,10 +97,10 @@ test('catalog loader fetches each category once and caches it', async () => {
   global.fetch = async () => ({ ok: true, json: async () => { calls += 1; return document; } });
   try {
     const catalog = createCatalog();
-    catalog.setManifest({ categories: [{ slug: 'reconnaissance', file: 'reconnaissance.json', count: 37 }] });
+    catalog.setManifest({ categories: [{ slug: 'reconnaissance', file: 'reconnaissance.json', count: 38 }] });
     const first = await catalog.loadCategory('reconnaissance');
     const second = await catalog.loadCategory('reconnaissance');
-    assert.equal(first.length, 37);
+    assert.equal(first.length, 38);
     assert.equal(second, first);
     assert.equal(calls, 1);
   } finally {

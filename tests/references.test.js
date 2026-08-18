@@ -13,7 +13,7 @@ const liveCatalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/live-sourc
 test('all production references and versioned mappings pass the authoritative offline catalog', () => {
   const items = productionItems();
   const result = offlineCheck(items);
-  assert.equal(items.length, 609);
+  assert.equal(items.length, 623);
   assert.deepEqual(result.errors, []);
   assert.ok(result.urls.size >= 220);
 });
@@ -23,8 +23,8 @@ test('every pinned WSTG URL exists in the verified v4.2 repository path snapshot
   const references = productionItems().flatMap(({ references }) => references).filter(({ source }) => source === 'OWASP WSTG');
   assert.ok(references.length >= 400);
   for (const reference of references) assert.ok(known.has(wstgPath(reference.url)), reference.url);
-  assert.equal(known.size, 83);
-  assert.equal(catalog.wstg_ids.length, 80);
+  assert.equal(known.size, 84);
+  assert.equal(catalog.wstg_ids.length, 81);
 });
 
 test('all used ASVS mappings exist in official ASVS 5.0.0 data', () => {
@@ -55,7 +55,7 @@ test('Top 10 mappings always name their edition and supported identifier', () =>
 
 test('all non-WSTG source and PortSwigger mapping URLs have a successful live-verification snapshot', () => {
   assert.equal(liveCatalog.verification_channel, 'Arena fetch_page authoritative page retrieval');
-  assert.equal(liveCatalog.verified_urls.length, 44);
+  assert.equal(liveCatalog.verified_urls.length, 46);
   const verified = new Set(liveCatalog.verified_urls);
   for (const item of productionItems()) {
     for (const reference of item.references) {

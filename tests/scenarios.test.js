@@ -239,3 +239,14 @@ test('scenario: asynchronous jobs gate job-specific authorization and business-l
   assert.equal(evaluateApplicability(jobItem, deriveContext({ creds: 'high' })).state, APPLICABILITY.CONFIRM);
   assert.equal(evaluateApplicability(jobItem, deriveContext({ creds: 'high', async_jobs: 'no' })).state, APPLICABILITY.NA_CONTEXT);
 });
+
+test('scenario: AI/LLM features activate and boost the dedicated AI suite', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability, scoreItem } = await engine();
+  const aiItem = item('WAPT-AI-900', 'ai-llm-security', { any_of: { features: ['ai_llm'] } });
+  assert.equal(evaluateApplicability(aiItem, deriveContext({ features: ['ai_llm'] })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(aiItem, deriveContext({})).state, APPLICABILITY.CONFIRM);
+  assert.equal(evaluateApplicability(aiItem, deriveContext({ features: ['none'] })).state, APPLICABILITY.NA_CONTEXT);
+  const withAI = deriveContext({ features: ['ai_llm'] });
+  assert.ok(scoreItem(aiItem, withAI).contextReasons.includes('ai_llm'));
+  assert.ok(scoreItem(aiItem, withAI).score > scoreItem(aiItem, deriveContext({})).score);
+});

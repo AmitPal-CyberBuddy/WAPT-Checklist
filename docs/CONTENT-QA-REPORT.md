@@ -17,12 +17,12 @@ node --test
 
 | Metric | Result |
 |---|---:|
-| Production items | 609 |
-| Categories | 24 |
+| Production items | 623 |
+| Categories | 25 |
 | Manual / automated | 582 / 26 |
 | Items with explicit safety notes | 364 |
 | Conditional methodology variants | 19 |
-| Reference entries / unique URLs | 809 / 124 |
+| Reference entries / unique URLs | 836 / 127 |
 | Related-item links | 28 |
 | Attack-chain memberships | 20 |
 | Attack chains | 5 |

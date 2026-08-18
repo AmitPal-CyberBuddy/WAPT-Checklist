@@ -4,13 +4,26 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added
+### Added (Phase 3 — modern coverage and attack-surface intelligence)
+
+- New gated AI / LLM security category (25th category, `WAPT-AI`, floor 8): eleven original items covering direct and indirect prompt injection, system-prompt disclosure, retrieval authorization and corpus poisoning, tool-call argument injection, excessive agency, insecure output handling, cross-tenant context leakage, model-assisted SSRF, and generation/tool-loop cost abuse — all mapped to PortSwigger Web LLM attacks, the OWASP LLM Top 10, and the OWASP GenAI LLM Top 10 2026 (live-verified), with CWE mappings and per-item safety boundaries.
+- XS-Leaks cross-site-channel assessment and back-forward-cache state-resurfacing tests in the client-side category (WAPT-CLIENT-030/031).
+- Subdomain-takeover identification in reconnaissance (WAPT-RECON-038) with a hard safety boundary: identification and reporting only, never claiming third-party resources; pinned to the newly verified WSTG v4.2 CONF-10 page.
+- Explainable category rationale in the checklist view (`js/engine/rationale.js`): each gated or boosted suite now shows why it is active, boosted, or awaiting confirmation.
+- AI/LLM context boost in the priority engine; the new category sits in the advanced workflow stage.
+- Reference snapshot extended: WSTG v4.2 CONF-10 pinned (84 paths), OWASP GenAI LLM Top 10 2026 and WHATWG HTML session-history pages verified (46 live-verified non-WSTG URLs).
+- Catalog now 623 production items across 25 categories; cache version promoted to `1.0.0-r5`.
+
+### Added (Phase 2 — reportability)
 
 - Phase 2 reportability layer: optional `do_not_report` (minimum 25 characters, verbatim reuse rejected) and `retest_guidance` (minimum 40 characters) fields in the item contract, validator, and content audit.
 - Explicit reporting boundaries authored for all 24 security-header tests, all 12 rate-limiting tests, CORS (HTTP-015–019, API-031), version/source-map/directory/robots disclosure, DNS records, JWT and session token storage, client-code readability, and HTTP method findings — 51 items total, each entry item-specific.
 - Concrete retest guidance for policy deployment, CORS allowlists, throttling, token-storage migration, and version-disclosure remediations (12 items).
 - Methodology cards surface "Reporting boundary" and "Retest guidance" sections.
 - Content-audit rules: boundary-prone items must carry `do_not_report`; duplicated boundary wording fails; audit report metrics track `doNotReport` and `retestGuidance`.
+
+### Added (post-release review)
+
 - Three new adaptive scoping questions: intermediary layers (CDN, reverse proxy/gateway, WAF), server-side outbound URL fetching (webhooks/callbacks, import/preview/rendering), and asynchronous jobs. The wizard now exposes 18 questions; static delivery with no API reconciles outbound-fetch and asynchronous-job answers automatically.
 - Category gate for SSRF on confirmed outbound URL fetching, with unknown scope keeping the whole suite visible as Confirm.
 - `ai_llm` feature option plus a gated LLM prompt/tool-call authority test (WAPT-ADV-019) mapped to PortSwigger Web LLM attacks and the OWASP Top 10 for LLM Applications, with CWE-20; production catalog is now 609 items.

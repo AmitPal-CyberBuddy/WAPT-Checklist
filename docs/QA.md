@@ -26,6 +26,7 @@ Automated tests use Node's standard library. This checklist covers browser behav
 - [ ] Choose no authentication and verify credential, registration, role, and authentication-mechanism questions are skipped and represented as None in review.
 - [ ] Choose black-box mode and verify the contradictory implementation-access question is skipped and normalized to None; verify it remains available for grey-box and white-box scopes.
 - [ ] Choose a static site with no API and verify API-definition, backend, data-layer, outbound-fetch, and asynchronous-job questions are skipped; confirm source access, hosting, feature, and intermediary questions remain.
+- [ ] Open a gated category (JWT, GraphQL, WebSocket, SSRF, AI/LLM) from the sidebar and verify the rationale line explains why it is active, boosted, or awaiting confirmation; select AI/LLM features in the wizard and confirm the AI suite activates.
 - [ ] Verify the intermediary question gates cache-poisoning/deception tests (None removes them, Unknown keeps them as Confirm) and that the SSRF category follows the outbound-fetch answer the same way.
 - [ ] Return to earlier answers, make identity/API/runtime scope relevant again, and verify the conditional questions return without navigation or progress errors.
 - [ ] Apply each of the eight presets and verify every applicable answer is editable afterward.

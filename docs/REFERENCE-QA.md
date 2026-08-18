@@ -6,7 +6,7 @@
 
 `node tools/check-references.js` validates the complete production catalog without network access:
 
-- 609 production items;
+- 623 production items;
 - 229 unique reference and generated mapping URLs;
 - 83 distinct WSTG 4.2 page paths verified against the OWASP WSTG repository tree;
 - 153 used ASVS mappings verified against all 345 requirements in the official ASVS 5.0.0 flat JSON;
@@ -30,7 +30,7 @@ The committed `tools/reference-catalog.json` records the source snapshot date, e
 | CWE | 531 | 104 |
 | PortSwigger Academy | 203 | 14 |
 
-All 609 production items have at least one non-empty mapping family and at least one authoritative reference. The catalog contains 809 item-reference entries over 124 unique reference URLs.
+All 623 production items have at least one non-empty mapping family and at least one authoritative reference. The catalog contains 836 item-reference entries over 127 unique reference URLs.
 
 ## Live link checker
 

@@ -31,7 +31,8 @@ const CATEGORIES = Object.freeze({
   'cloud-storage': { prefix: 'WAPT-CLOUD', floor: 15 },
   'information-disclosure': { prefix: 'WAPT-INFO', floor: 15 },
   'rate-limiting': { prefix: 'WAPT-RATE', floor: 10 },
-  advanced: { prefix: 'WAPT-ADV', floor: 15 }
+  advanced: { prefix: 'WAPT-ADV', floor: 15 },
+  'ai-llm-security': { prefix: 'WAPT-AI', floor: 8 }
 });
 
 const OPTIONS = Object.freeze({
@@ -127,7 +128,7 @@ function referenceUrlAllowed(raw) {
   if (url.protocol !== 'https:' || url.username || url.password || url.hash) return false;
 
   const host = url.hostname.toLowerCase();
-  if (host === 'owasp.org') return true;
+  if (host === 'owasp.org' || host === 'genai.owasp.org') return true;
   if (host === 'portswigger.net') return url.pathname === '/web-security' || url.pathname.startsWith('/web-security/');
   if (host === 'www.rfc-editor.org') return /^\/rfc\/rfc\d+\/?$/.test(url.pathname);
   if (host === 'cwe.mitre.org') return url.pathname.startsWith('/data/definitions/');
@@ -590,7 +591,7 @@ function main() {
     return;
   }
   console.log(`Validated ${result.itemCount} item(s) in ${result.documentCount} file(s).`);
-  if (enforceFloors) console.log('All 24 category floors satisfied.');
+  if (enforceFloors) console.log('All category floors satisfied.');
   else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');

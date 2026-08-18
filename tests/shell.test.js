@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r4']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r5']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -39,9 +39,9 @@ test('font assets are self-hosted WOFF2 files', () => {
 
 test('manifest matches the architecture taxonomy and production files', () => {
   const manifest = JSON.parse(read('checklist/manifest.json'));
-  assert.equal(manifest.categories.length, 24);
+  assert.equal(manifest.categories.length, 25);
   assert.equal(manifest.sample_count, 20);
-  assert.equal(manifest.categories.reduce((sum, category) => sum + category.floor, 0), 512);
+  assert.equal(manifest.categories.reduce((sum, category) => sum + category.floor, 0), 520);
   for (const category of manifest.categories) {
     const file = path.join(ROOT, 'checklist', category.file);
     if (!fs.existsSync(file)) {

@@ -1,12 +1,12 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r4';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r4';
+import { initializeTheme } from './theme.js?v=1.0.0-r5';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r5';
 
 const DOCUMENTS = Object.freeze({
   security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report project vulnerabilities privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },
   contributing: { title: 'Contributing', kicker: 'BUILD WITH RIGOR', summary: 'Content quality, code architecture, safety, testing, attribution, and pull-request expectations.', file: 'CONTRIBUTING.md' },
   'content-guide': { title: 'Content standard', kicker: 'DECISION-GRADE METHODOLOGY', summary: 'The editorial and safety contract every production checklist item must satisfy.', file: 'docs/CONTENT-GUIDE.md' },
   architecture: { title: 'Architecture', kicker: 'STATIC-FIRST SYSTEM', summary: 'Runtime boundaries, data flow, state, applicability, security controls, and delivery decisions.', file: 'docs/ARCHITECTURE.md' },
-  taxonomy: { title: 'Taxonomy and IDs', kicker: '24-CATEGORY MODEL', summary: 'Stable item identifiers, controlled context vocabulary, category ownership, mappings, and workflow order.', file: 'docs/TAXONOMY.md' },
+  taxonomy: { title: 'Taxonomy and IDs', kicker: '25-CATEGORY MODEL', summary: 'Stable item identifiers, controlled context vocabulary, category ownership, mappings, and workflow order.', file: 'docs/TAXONOMY.md' },
   engine: { title: 'Adaptive engine', kicker: 'PURE POLICY MODULES', summary: 'Context normalization, applicability, priority scoring, and immutable local state.', file: 'docs/ENGINE.md' },
   'browser-qa': { title: 'Browser QA', kicker: 'MANUAL RELEASE MATRIX', summary: 'Pages, wizard, workspace, accessibility, responsiveness, persistence, and print smoke checks.', file: 'docs/QA.md' },
   responsive: { title: 'Responsive QA', kicker: 'PHONE TO WIDE MONITOR', summary: 'Intended screen compositions, structural protections, automated assertions, and manual sign-off sizes.', file: 'docs/RESPONSIVE-QA.md' },
