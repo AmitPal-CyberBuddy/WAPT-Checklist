@@ -1,11 +1,11 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r3';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r3';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r3';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r3';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r3';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r3';
-import { createChainStore } from './chains.js?v=1.0.0-r3';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r3';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r4';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r4';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r4';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r4';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r4';
+import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r4';
+import { createChainStore } from './chains.js?v=1.0.0-r4';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r4';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };
@@ -362,12 +362,19 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const suggestedRoot = document.querySelector('[data-suggested-next]');
     const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
     if (!suggestions.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
-    else suggestedRoot.replaceChildren(...suggestions.map(({ item, applicability, contextReasons }) => {
+    else suggestedRoot.replaceChildren(...suggestions.map(({ item, applicability, contextReasons, unlockedBy }) => {
       const link = element('a', 'suggested-row');
       link.href = `#checklist/${item.category}`;
       link.append(element('span', 'chip id-chip', item.id));
+      const explanation = [
+        APP_LABELS[applicability.state],
+        names()[item.category] || item.category,
+        `severity ${item.severity}`,
+        ...contextReasons,
+        ...(unlockedBy || []).map((chainId) => `unlocked by ${chainId}`)
+      ].filter(Boolean).join(' · ');
       const copy = element('div');
-      copy.append(element('strong', '', item.title), element('small', '', `${APP_LABELS[applicability.state]}${contextReasons.length ? ` · ${contextReasons.join(', ')}` : ''}`));
+      copy.append(element('strong', '', item.title), element('small', '', explanation));
       link.append(copy);
       return link;
     }));

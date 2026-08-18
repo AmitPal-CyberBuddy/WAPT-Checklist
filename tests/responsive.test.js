@@ -30,6 +30,11 @@ test('mobile navigation removes off-canvas content from focus order', () => {
   assert.match(app, /setSidebar\(false, true\)/);
 });
 
+test('keyboard focus stays visible on wizard option cards and compact-phone engagement controls remain usable', () => {
+  assert.match(css, /\.option-card:has\(input:focus-visible\)\{border-color:var\(--brand\);box-shadow:var\(--focus\)\}/);
+  assert.doesNotMatch(css, /\.engagement-manager \.icon-button\{display:none\}/);
+});
+
 test('dense workspace surfaces reflow instead of merely scaling down', () => {
   assert.match(css, /@media \(max-width:960px\).*?\.filter-grid\{grid-template-columns:repeat\(2/s);
   assert.match(css, /@media \(max-width:600px\).*?\.filter-grid\{grid-template-columns:1fr\}/s);

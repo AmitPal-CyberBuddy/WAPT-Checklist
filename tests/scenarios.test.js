@@ -208,3 +208,34 @@ test('specialized API, GraphQL, document, and realtime presets activate their in
   assert.equal(evaluateApplicability(item('WAPT-WS-900', 'websocket'), realtime).state, APPLICABILITY.ACTIVE);
   assert.ok(scoreItem(item('WAPT-WS-900', 'websocket'), realtime).contextReasons.includes('websocket'));
 });
+
+test('scenario: intermediary layers gate cache work and boost desynchronization planning', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability, scoreItem } = await engine();
+  const cacheItem = item('WAPT-ADV-900', 'advanced', { any_of: { intermediary: ['cdn', 'proxy'] } });
+  assert.equal(evaluateApplicability(cacheItem, deriveContext({ intermediary: ['cdn'] })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(cacheItem, deriveContext({ intermediary: ['waf'] })).state, APPLICABILITY.NA_CONTEXT);
+  assert.equal(evaluateApplicability(cacheItem, deriveContext({})).state, APPLICABILITY.CONFIRM);
+  const smugglingItem = item('WAPT-SMUG-900', 'request-smuggling');
+  const withProxy = deriveContext({ intermediary: ['proxy'] });
+  assert.ok(scoreItem(smugglingItem, withProxy).contextReasons.includes('intermediary_hops'));
+  assert.ok(scoreItem(smugglingItem, withProxy).score > scoreItem(smugglingItem, deriveContext({})).score);
+});
+
+test('scenario: confirmed outbound URL fetching activates SSRF and webhook-signature work', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability } = await engine();
+  const ssrfItem = item('WAPT-SSRF-900', 'ssrf');
+  assert.equal(evaluateApplicability(ssrfItem, deriveContext({ outbound_fetch: ['webhooks'] })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(ssrfItem, deriveContext({})).state, APPLICABILITY.CONFIRM);
+  assert.equal(evaluateApplicability(ssrfItem, deriveContext({ outbound_fetch: ['none'] })).state, APPLICABILITY.NA_CONTEXT);
+  const webhookSig = item('WAPT-ADV-901', 'advanced', { any_of: { outbound_fetch: ['webhooks'] } });
+  assert.equal(evaluateApplicability(webhookSig, deriveContext({ outbound_fetch: ['import'] })).state, APPLICABILITY.NA_CONTEXT);
+  assert.equal(evaluateApplicability(webhookSig, deriveContext({ outbound_fetch: ['webhooks'] })).state, APPLICABILITY.ACTIVE);
+});
+
+test('scenario: asynchronous jobs gate job-specific authorization and business-logic work', async () => {
+  const { deriveContext, APPLICABILITY, evaluateApplicability } = await engine();
+  const jobItem = item('WAPT-AUTHZ-900', 'authorization', { requires: ['creds:low|high', 'async_jobs:yes'] });
+  assert.equal(evaluateApplicability(jobItem, deriveContext({ creds: 'high', async_jobs: 'yes' })).state, APPLICABILITY.ACTIVE);
+  assert.equal(evaluateApplicability(jobItem, deriveContext({ creds: 'high' })).state, APPLICABILITY.CONFIRM);
+  assert.equal(evaluateApplicability(jobItem, deriveContext({ creds: 'high', async_jobs: 'no' })).state, APPLICABILITY.NA_CONTEXT);
+});

@@ -4,19 +4,20 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
+> **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 609 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployment awaits maintainer merge, workflow installation, and browser smoke.
 
 ## What is implemented
 
 - Responsive dark/light homepage and app-style workspace with independent CyberBuddy-compatible design tokens.
-- Optional engagement name and target URL fields plus all 15 adaptive scoping questions.
+- Optional engagement name and target URL fields plus all 18 adaptive scoping questions, including intermediary, outbound-fetch, and asynchronous-job scope.
 - Quick-start presets for a static site, multi-tenant JWT SaaS, corporate SSO portal, and payment-enabled e-commerce application.
 - Back/next navigation, explicit Unknown choices, editable presets, progress, focus movement, and keyboard interaction.
 - Conservative low-confidence URL suggestions without any target request or transmission.
+- Intermediary (CDN/proxy/WAF), outbound URL-fetching (webhooks/imports), and asynchronous-job scoping with category gates for SSRF and cache-poisoning/deception suites.
 - Multiple resumable engagements in one validated local portfolio under `wapt.state.v1`; no backend, account, synchronization, or telemetry.
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
-- Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components.
+- Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components, and per-recommendation explanations (state, category, severity, reasons, chain unlocks).
 - Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
@@ -138,7 +139,7 @@ This repository's original software and content are licensed under the [Apache L
 3. ~~Pure adaptive engine with derivation and scenario tests~~
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
-6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
+6. ~~Advanced production content, categories 11–24~~ — **261 items; all 24 catalog floors pass**
 7. ~~Attack chains, contextual payload library, and Burp workflows~~
 8. ~~Reference and mapping verification~~ — **source snapshots and live-source catalog green**
 9. ~~Content and safety QA~~ — **0 errors and 0 unresolved warnings**

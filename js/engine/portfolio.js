@@ -1,4 +1,4 @@
-import { createState, normalizeState, STATE_SCHEMA_VERSION } from './state.js?v=1.0.0-r3';
+import { createState, normalizeState, STATE_SCHEMA_VERSION } from './state.js?v=1.0.0-r4';
 
 export const PORTFOLIO_KIND = 'wapt-engagement-portfolio';
 export const PORTFOLIO_VERSION = 1;

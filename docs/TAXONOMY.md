@@ -76,7 +76,12 @@ Severity is the plausible default risk for triage, not a final finding severity.
 | `api_style` | multi | `rest`, `graphql`, `soap`, `websocket`, `grpc`, `none`, `unknown` |
 | `database` | multi | `sql`, `nosql`, `ldap`, `other`, `none`, `unknown` |
 | `cloud` | single | `aws`, `gcp`, `azure`, `self_hosted`, `none`, `other`, `unknown` |
-| `features` | multi | `file_upload`, `payments`, `search`, `email`, `chat`, `multi_tenant`, `mobile_api`, `other`, `none`, `unknown` |
+| `features` | multi | `file_upload`, `payments`, `search`, `email`, `chat`, `multi_tenant`, `mobile_api`, `ai_llm`, `other`, `none`, `unknown` |
+| `intermediary` | multi | `cdn`, `proxy`, `waf`, `none`, `unknown` |
+| `outbound_fetch` | multi | `webhooks`, `import`, `none`, `unknown` |
+| `async_jobs` | single | `yes`, `no`, `unknown` |
+
+`intermediary` scopes cache-poisoning/deception and desynchronization work; `outbound_fetch` gates the SSRF category and webhook-signature tests; `async_jobs` gates job-specific authorization, injection, and business-logic work. Static delivery with no API reconciles `outbound_fetch` to `none` and `async_jobs` to `no`.
 
 Confidence values are `answer`, `url_hint`, and `unknown`.
 

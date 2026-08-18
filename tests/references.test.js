@@ -13,7 +13,7 @@ const liveCatalog = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/live-sourc
 test('all production references and versioned mappings pass the authoritative offline catalog', () => {
   const items = productionItems();
   const result = offlineCheck(items);
-  assert.equal(items.length, 608);
+  assert.equal(items.length, 609);
   assert.deepEqual(result.errors, []);
   assert.ok(result.urls.size >= 220);
 });
@@ -55,7 +55,7 @@ test('Top 10 mappings always name their edition and supported identifier', () =>
 
 test('all non-WSTG source and PortSwigger mapping URLs have a successful live-verification snapshot', () => {
   assert.equal(liveCatalog.verification_channel, 'Arena fetch_page authoritative page retrieval');
-  assert.equal(liveCatalog.verified_urls.length, 42);
+  assert.equal(liveCatalog.verified_urls.length, 44);
   const verified = new Set(liveCatalog.verified_urls);
   for (const item of productionItems()) {
     for (const reference of item.references) {

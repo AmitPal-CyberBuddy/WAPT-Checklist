@@ -2,15 +2,15 @@
   "errors": [],
   "warnings": [],
   "metrics": {
-    "items": 608,
+    "items": 609,
     "categories": 24,
-    "manual": 582,
+    "manual": 583,
     "automated": 26,
-    "safetyNotes": 364,
+    "safetyNotes": 365,
     "variants": 19,
-    "references": 807,
-    "uniqueReferences": 122,
-    "relatedLinks": 28,
+    "references": 809,
+    "uniqueReferences": 124,
+    "relatedLinks": 32,
     "chainMemberships": 20,
     "attackChains": 5,
     "payloadReferences": 40,
@@ -39,7 +39,7 @@
       "cloud-storage": 18,
       "information-disclosure": 18,
       "rate-limiting": 12,
-      "advanced": 18
+      "advanced": 19
     }
   }
 }

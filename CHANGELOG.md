@@ -4,6 +4,27 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added
+
+- Three new adaptive scoping questions: intermediary layers (CDN, reverse proxy/gateway, WAF), server-side outbound URL fetching (webhooks/callbacks, import/preview/rendering), and asynchronous jobs. The wizard now exposes 18 questions; static delivery with no API reconciles outbound-fetch and asynchronous-job answers automatically.
+- Category gate for SSRF on confirmed outbound URL fetching, with unknown scope keeping the whole suite visible as Confirm.
+- `ai_llm` feature option plus a gated LLM prompt/tool-call authority test (WAPT-ADV-019) mapped to PortSwigger Web LLM attacks and the OWASP Top 10 for LLM Applications, with CWE-20; production catalog is now 609 items.
+- Cache-poisoning and cache-deception tests (WAPT-ADV-001–004) now gate on a confirmed CDN/proxy layer; shared-cache HTTP tests and the request-smuggling suite receive intermediary-driven priority boosts.
+- Asynchronous-job-specific authorization, injection, and business-logic tests now require confirmed background processing; URL-fetching API tests require a confirmed fetching surface; webhook-signature verification requires confirmed webhooks.
+- Suggested next rows now explain the recommendation: applicability state, category, severity, context reasons, and chain unlocks.
+- Privacy regression suite pinning same-origin-only fetches, the single `wapt.state.v1` storage key, the identical restrictive CSP, and collapsed REVIEW-ONLY payload content.
+
+### Fixed
+
+- Compact-phone engagement manager no longer hides the delete control; the switcher recomposes to keep new and delete visible at 320–430 px.
+- Removed `aria-live` announcements from large re-rendered test lists (summaries remain live), and corrected `aria-label` usage on decorative homepage/methodology groups.
+- Cache version promoted to `1.0.0-r4` consistently across every HTML entry point and browser module import.
+
+### Changed
+
+- E-commerce preset now asserts realistic payment-callback (`webhooks`) and asynchronous-order context; other presets answer the new questions conservatively as unknown.
+- Reference snapshot extended with live-verified OWASP LLM Top 10 and PortSwigger Web LLM attack URLs (44 verified non-WSTG URLs).
+
 ## [1.0.0] - 2026-08-18
 
 ### Added

@@ -78,3 +78,17 @@ test('URL parser notes non-production and punycode labels conservatively', async
   assert.equal(deriveUrlHints('https://dev.example.com').hints.nonproduction_subdomain, true);
   assert.equal(deriveUrlHints('https://bücher.example').hints.punycode_hostname, true);
 });
+
+test('intermediary, outbound-fetch, and asynchronous-job answers normalize and reconcile with delivery', async () => {
+  const { normalizeScopeAnswers } = await contextModule;
+  const answers = normalizeScopeAnswers({ intermediary: ['cdn', 'invalid'], outbound_fetch: ['webhooks'], async_jobs: 'yes' });
+  assert.deepEqual(answers.intermediary, ['cdn']);
+  assert.deepEqual(answers.outbound_fetch, ['webhooks']);
+  assert.equal(answers.async_jobs, 'yes');
+  const staticSite = normalizeScopeAnswers({ app_type: 'static', api_style: ['none'], outbound_fetch: ['webhooks'], async_jobs: 'yes' });
+  assert.deepEqual(staticSite.outbound_fetch, ['none']);
+  assert.equal(staticSite.async_jobs, 'no');
+  const noApiDynamic = normalizeScopeAnswers({ app_type: 'hybrid', outbound_fetch: ['import'], async_jobs: 'no' });
+  assert.deepEqual(noApiDynamic.outbound_fetch, ['import']);
+  assert.equal(noApiDynamic.async_jobs, 'no');
+});

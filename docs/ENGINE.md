@@ -31,8 +31,7 @@ The adaptive engine is implemented as four pure ES modules in `js/engine/`. A sc
 
 Evaluation order is:
 
-1. hard derivations such as static delivery and protocol-specific category gates;
-2. known `excludes` matches;
+1. hard derivations such as static delivery and protocol-specific category gates (`jwt`, `oauth-sso-saml`, `graphql`, `websocket`, and `ssrf` — the SSRF category gates on confirmed `outbound_fetch` of `webhooks` or `import`);
 3. every `requires` token;
 4. the OR branches in `any_of`;
 5. uncertainty resolution.
@@ -54,7 +53,7 @@ workflow category weight
 - small Confirm uncertainty penalty
 ```
 
-Workflow weights preserve consulting order and context boosts are deliberately bounded. Item ID is the final tie-breaker. Relevant built-in boosts cover many-role authorization, multi-tenant isolation, payment/race workflows, cookie sessions, and API URL suggestions. `priority_when` remains the content-level extension mechanism.
+Workflow weights preserve consulting order and context boosts are deliberately bounded. Item ID is the final tie-breaker. Relevant built-in boosts cover many-role authorization, multi-tenant isolation, payment/race workflows, cookie sessions, API URL suggestions, and intermediary-hop desynchronization planning. `priority_when` remains the content-level extension mechanism.
 
 A chain boost is granted only when every supplied prerequisite item has status `passed` or `confirmed_finding`. Chain data is an input; the priority module does not load files.
 

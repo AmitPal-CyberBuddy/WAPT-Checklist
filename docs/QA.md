@@ -21,11 +21,12 @@ Automated tests use Node's standard library. This checklist covers browser behav
 
 ### Wizard
 
-- [ ] Complete a fully unknown scope with Back, Continue, and Use Not confirmed yet; verify all 15 possible questions remain available.
+- [ ] Complete a fully unknown scope with Back, Continue, and Use Not confirmed yet; verify all 18 possible questions remain available.
 - [ ] Select multiple values and verify selecting Not confirmed yet or None clears specific selections and vice versa.
 - [ ] Choose no authentication and verify credential, registration, role, and authentication-mechanism questions are skipped and represented as None in review.
 - [ ] Choose black-box mode and verify the contradictory implementation-access question is skipped and normalized to None; verify it remains available for grey-box and white-box scopes.
-- [ ] Choose a static site with no API and verify API-definition, backend, and data-layer questions are skipped; confirm source access, hosting, and feature questions remain.
+- [ ] Choose a static site with no API and verify API-definition, backend, data-layer, outbound-fetch, and asynchronous-job questions are skipped; confirm source access, hosting, feature, and intermediary questions remain.
+- [ ] Verify the intermediary question gates cache-poisoning/deception tests (None removes them, Unknown keeps them as Confirm) and that the SSRF category follows the outbound-fetch answer the same way.
 - [ ] Return to earlier answers, make identity/API/runtime scope relevant again, and verify the conditional questions return without navigation or progress errors.
 - [ ] Apply each of the eight presets and verify every applicable answer is editable afterward.
 - [ ] Enter HTTP, `api.`, `admin.`, `dev.`/`staging.`, ports 8443/9443, and punycode target examples; verify hints are low-confidence and no URL is fetched.
@@ -35,6 +36,7 @@ Automated tests use Node's standard library. This checklist covers browser behav
 - [ ] Rerun and reset scope; verify existing statuses and notes are retained.
 - [ ] Create two engagements, give them distinct names/statuses/notes, switch between them, and reload; verify each resumes independently.
 - [ ] Delete one engagement, confirm its destructive warning, and verify the other remains. Verify the final remaining record cannot be deleted from the header.
+- [ ] At 320–430 px verify the engagement switcher keeps the new and delete controls visible and usable rather than hiding them.
 - [ ] Start with an original single-engagement v1 fixture and verify it migrates into the portfolio without data loss.
 - [ ] Verify the automatic-save notice clearly explains same-browser/origin persistence, clearing/private-mode risks, no backup/sync, and JSON export.
 - [ ] Inspect localStorage and confirm the project writes only `wapt.state.v1`.

@@ -92,6 +92,7 @@ export function createPayloadStore() {
     const safety = document.createElement('select'); safety.append(new Option('All references', ''), new Option('Safe controls', 'safe'), new Option('REVIEW ONLY', 'review')); safetyLabel.append(safety);
     filters.append(searchLabel, categoryLabel, safetyLabel);
     const summary = node('p', 'result-summary');
+    summary.setAttribute('role', 'status');
     const grid = node('div', 'payload-grid');
     const apply = () => {
       const query = search.value.toLocaleLowerCase('en-US').trim();

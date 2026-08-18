@@ -52,3 +52,23 @@ test('unknown answers conservatively retain questions for confirmation', async (
   const { applicableQuestions, QUESTIONS } = await wizardModule;
   assert.equal(applicableQuestions({}).length, QUESTIONS.length);
 });
+
+test('new intermediary, outbound-fetch, and asynchronous-job questions appear for dynamic scopes', async () => {
+  const { applicableQuestions } = await wizardModule;
+  const keys = applicableQuestions({ app_type: 'hybrid', has_login: 'unknown', api_style: ['rest'] }).map(({ key }) => key);
+  for (const expected of ['intermediary', 'outbound_fetch', 'async_jobs']) assert.ok(keys.includes(expected), expected);
+});
+
+test('static delivery with no API hides outbound-fetch and asynchronous-job questions', async () => {
+  const { applicableQuestions } = await wizardModule;
+  const keys = applicableQuestions({ app_type: 'static', has_login: 'no', api_style: ['none'] }).map(({ key }) => key);
+  assert.ok(!keys.includes('outbound_fetch'));
+  assert.ok(!keys.includes('async_jobs'));
+  assert.ok(keys.includes('intermediary'));
+});
+
+test('all-unknown scope exposes all 18 adaptive questions for confirmation', async () => {
+  const { applicableQuestions, QUESTIONS } = await wizardModule;
+  assert.equal(QUESTIONS.length, 18);
+  assert.equal(applicableQuestions({}).length, 18);
+});

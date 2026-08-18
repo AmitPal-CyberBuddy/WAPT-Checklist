@@ -9,9 +9,10 @@ const { OPTIONS } = require('../tools/validate.js');
 const PRESETS_URL = pathToFileURL(path.resolve(__dirname, '../js/data/presets.mjs')).href;
 const EXPECTED_KEYS = [
   'mode', 'creds', 'app_type', 'has_login', 'registration', 'roles', 'auth_mechanism',
-  'identity_features', 'api_docs', 'source_access', 'backend', 'api_style', 'database', 'cloud', 'features'
+  'identity_features', 'api_docs', 'source_access', 'backend', 'api_style', 'database', 'cloud', 'features',
+  'intermediary', 'outbound_fetch', 'async_jobs'
 ];
-const MULTI_KEYS = new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features']);
+const MULTI_KEYS = new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch']);
 
 test('eight analyst presets use the complete controlled context vocabulary', async () => {
   const { PRESET_LIST } = await import(PRESETS_URL);
@@ -22,7 +23,7 @@ test('eight analyst presets use the complete controlled context vocabulary', asy
   ]);
 
   for (const preset of PRESET_LIST) {
-    assert.deepEqual(Object.keys(preset.answers), EXPECTED_KEYS, `${preset.id} must answer all 15 questions`);
+    assert.deepEqual(Object.keys(preset.answers), EXPECTED_KEYS, `${preset.id} must answer all 18 questions`);
     for (const [key, value] of Object.entries(preset.answers)) {
       const values = Array.isArray(value) ? value : [value];
       assert.equal(Array.isArray(value), MULTI_KEYS.has(key), `${preset.id}.${key} has the wrong cardinality`);
@@ -58,4 +59,14 @@ test('specialized presets preserve distinct identity, protocol, and workflow con
   assert.deepEqual(PRESETS.graphql_api.answers.api_style, ['graphql']);
   assert.ok(PRESETS.document_portal.answers.features.includes('file_upload'));
   assert.ok(PRESETS.realtime_chat.answers.api_style.includes('websocket'));
+});
+
+test('commerce preset asserts realistic payment-callback and asynchronous-order context', async () => {
+  const { PRESETS } = await import(PRESETS_URL);
+  const answers = PRESETS.ecommerce.answers;
+  assert.deepEqual(answers.outbound_fetch, ['webhooks']);
+  assert.equal(answers.async_jobs, 'yes');
+  assert.deepEqual(answers.intermediary, ['unknown']);
+  assert.deepEqual(PRESETS.static_marketing.answers.outbound_fetch, ['none']);
+  assert.equal(PRESETS.static_marketing.answers.async_jobs, 'no');
 });

@@ -8,10 +8,10 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r3"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r3">
-  <link rel="stylesheet" href="css/print.css?v=1.0.0-r3" media="print">
-  <script type="module" src="js/ui/app.js?v=1.0.0-r3"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r4"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r4">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r4" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r4"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -103,24 +103,24 @@
         <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div>
         <div class="panel filter-panel" data-checklist-filters></div>
         <div class="result-summary" data-checklist-summary aria-live="polite"></div>
-        <div class="test-list" data-checklist-results aria-live="polite"></div>
+        <div class="test-list" data-checklist-results></div>
       </section>
 
       <section class="view" data-view="search" aria-labelledby="search-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1><p>Search titles, objectives, steps, tags, IDs, tools, technologies, and mappings.</p></div></div>
         <div class="panel filter-panel" data-search-filters></div>
         <div class="result-summary" data-search-summary aria-live="polite"></div>
-        <div class="test-list" data-search-results aria-live="polite"></div>
+        <div class="test-list" data-search-results></div>
       </section>
 
       <section class="view" data-view="chains" aria-labelledby="chains-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">CONNECTED TESTING</p><h1 id="chains-title">Attack chains</h1><p>Directed hypotheses over stable test IDs. A chain never substitutes for validating every prerequisite and safety boundary.</p></div></div>
-        <div class="chain-browser" data-chain-browser aria-live="polite"><p class="loading-line">Loading attack chains…</p></div>
+        <div class="chain-browser" data-chain-browser><p class="loading-line">Loading attack chains…</p></div>
       </section>
 
       <section class="view" data-view="payloads" aria-labelledby="payloads-title" hidden>
         <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1><p>Every value includes intended context, caveats, related tests, and a safety boundary. REVIEW-ONLY entries never auto-expand.</p></div></div>
-        <div data-payload-browser aria-live="polite"><p class="loading-line">Loading payload references…</p></div>
+        <div data-payload-browser><p class="loading-line">Loading payload references…</p></div>
       </section>
 
       <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>

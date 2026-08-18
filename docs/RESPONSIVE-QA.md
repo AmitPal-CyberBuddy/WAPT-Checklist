@@ -13,7 +13,7 @@ Responsiveness is implemented as layout recomposition, not global scaling. Typog
 | 1024 px small laptop | Persistent sidebar remains usable; dashboard changes to two metrics per row and one dashboard content column; homepage hero intentionally becomes one column; filters use four/two logical columns rather than shrinking controls. |
 | 960–768 px tablet | Sidebar becomes an off-canvas drawer with scrim, focus transfer, Escape close, `inert`, and `aria-hidden` while closed; workspace receives the full screen width; filters become two columns; dashboard panels stack. |
 | 600–390 px phone | One-column cards, filters, option/preset grids, chains, and payloads; compact search button; action groups wrap; tables scroll horizontally; methodology behavior columns stack; no desktop sidebar footprint. |
-| 380–320 px compact phone | Wizard footer becomes a vertical action stack; dashboard metrics become one compact row-card each; panel actions and workflow links become one column; smaller page gutters while preserving touch targets. |
+| 380–320 px compact phone | Wizard footer becomes a vertical action stack; dashboard metrics become one compact row-card each; panel actions and workflow links become one column; the engagement manager compresses to an icon-labelled New control plus a retained, visible delete button (the 1.0.0-r3 build hid delete here); smaller page gutters while preserving touch targets. |
 
 ## Structural protections
 
@@ -28,7 +28,7 @@ Responsiveness is implemented as layout recomposition, not global scaling. Typog
 
 ## Automated assertions
 
-`tests/responsive.test.js` verifies breakpoint presence and the expected structural changes for dashboard columns, sidebar drawer, filters, wizard actions, chains/payloads, tables, and long text. These checks prevent accidental removal during CSS refactoring.
+`tests/responsive.test.js` verifies breakpoint presence and the expected structural changes for dashboard columns, sidebar drawer, filters, wizard actions, chains/payloads, tables, and long text. These checks prevent accidental removal during CSS refactoring. `tests/privacy.test.js` additionally pins the same-origin fetch, single-storage-key, and CSP invariants.
 
 ## Manual visual sign-off still required
 
