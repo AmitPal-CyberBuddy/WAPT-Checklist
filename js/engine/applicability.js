@@ -15,7 +15,8 @@ const CONTEXTUAL_CATEGORY_GATES = Object.freeze({
   jwt: { key: 'auth_mechanism', values: ['jwt', 'mixed'], code: 'jwt_not_selected' },
   'oauth-sso-saml': { key: 'auth_mechanism', values: ['oauth', 'saml', 'mixed'], code: 'federation_not_selected' },
   graphql: { key: 'api_style', values: ['graphql'], code: 'graphql_not_selected' },
-  websocket: { key: 'api_style', values: ['websocket'], code: 'websocket_not_selected' }
+  websocket: { key: 'api_style', values: ['websocket'], code: 'websocket_not_selected' },
+  ssrf: { key: 'outbound_fetch', values: ['webhooks', 'import'], code: 'outbound_fetch_not_selected' }
 });
 
 function result(kind, details = {}) {

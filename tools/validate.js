@@ -49,7 +49,10 @@ const OPTIONS = Object.freeze({
   api_style: ['rest', 'graphql', 'soap', 'websocket', 'grpc', 'none', 'unknown'],
   database: ['sql', 'nosql', 'ldap', 'other', 'none', 'unknown'],
   cloud: ['aws', 'gcp', 'azure', 'self_hosted', 'none', 'other', 'unknown'],
-  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'other', 'none', 'unknown']
+  features: ['file_upload', 'payments', 'search', 'email', 'chat', 'multi_tenant', 'mobile_api', 'ai_llm', 'other', 'none', 'unknown'],
+  intermediary: ['cdn', 'proxy', 'waf', 'none', 'unknown'],
+  outbound_fetch: ['webhooks', 'import', 'none', 'unknown'],
+  async_jobs: ['yes', 'no', 'unknown']
 });
 
 const URL_HINTS = new Set([
