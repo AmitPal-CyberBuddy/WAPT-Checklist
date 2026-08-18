@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "category": "reconnaissance",
+  "items": [
+    {
+      "id": "PAYLOAD-R-001",
+      "title": "Passive domain query",
+      "category": "reconnaissance",
+      "context": "An approved domain and search provider terms",
+      "intended_use": "Discover already indexed in-scope URLs without active probing",
+      "payload": "site:example.com",
+      "caveats": [
+        "Search results can be stale or unrelated; confirm ownership"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "reconnaissance",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-RECON-001"
+      ]
+    }
+  ]
+}

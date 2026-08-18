@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "category": "authentication",
+  "items": [
+    {
+      "id": "PAYLOAD-AUTH-001",
+      "title": "Synthetic nonexistent account",
+      "category": "authentication",
+      "context": "Paired account-enumeration controls",
+      "intended_use": "Compare a designated account with a format-valid nonexistent identity",
+      "payload": "wapt-nonexistent-UNIQUE@example.test",
+      "caveats": [
+        "Never submit real-user identifiers or password lists"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "authentication",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-AUTH-005"
+      ]
+    }
+  ]
+}

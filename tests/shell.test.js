@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['0.5.0']));
+  assert.deepEqual(new Set(versions), new Set(['0.7.0']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -71,6 +71,16 @@ test('workspace shell exposes Phase 5 search, reporting, import, export, and not
   assert.match(workspace, /Tester notes \(stored locally\)/);
   assert.match(workspace, /Override context N\/A/);
   assert.doesNotMatch(html, /id="shell-search"[^>]*disabled/);
+});
+
+test('workspace shell exposes rendered Phase 7 chain and payload browsers', () => {
+  const html = read('app.html');
+  const workspace = read('js/ui/workspace.js');
+  assert.ok(html.includes('data-chain-browser'));
+  assert.ok(html.includes('data-payload-browser'));
+  assert.doesNotMatch(html, /Attack chains <small>Soon|Payloads <small>Soon/);
+  assert.match(workspace, /chainStore\.priorityEdges\(\)/);
+  assert.match(workspace, /payloadStore\.render/);
 });
 
 test('wizard source defines all 14 question keys and the one localStorage key', () => {

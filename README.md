@@ -4,7 +4,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 
 [Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [Review the architecture](docs/ARCHITECTURE.md)
 
-> **Project status:** Phases 1–6 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, and every independent category floor passes. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
+> **Project status:** Phases 1–7 are implemented. The local-first adaptive workspace contains 608 validated production items across all 24 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Every independent category floor passes. The 20 Phase 1 items remain schema review samples and do not count toward production totals.
 
 ## What is implemented
 
@@ -22,6 +22,9 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
 - Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, and references.
 - Dashboard metrics, live category progress, Suggested next, findings table, Markdown checklist/report generation, retest matrix, and print view.
+- Directed attack-chain graphs with checklist links, unlock hints, and priority boosts.
+- Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
+- Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
 - Manifest-driven navigation for all 24 categories and honest live local/project statistics.
 - Restrictive CSP, authorized-use messaging, self-hosted Sora and IBM Plex Mono fonts, reduced-motion support, visible focus, and print foundations.
 - Ready-to-apply GitHub Pages deployment and zero-dependency CI workflow templates.
@@ -77,6 +80,9 @@ checklist/information-disclosure.json Phase 6 disclosure methodology
 checklist/rate-limiting.json Phase 6 anti-automation and abuse methodology
 checklist/advanced.json      Phase 6 cross-component advanced methodology
 checklist/sample.json      20 Phase 1 review items (not production counts)
+attack-chains/             Directed graphs over stable checklist IDs
+payloads/                  Contextual, safety-labeled reference values
+burp-workflows/            Tool-specific safe testing workflows
 schema/item.schema.json    Checklist item contract
 tools/validate.js          Zero-dependency content validator
 tests/                     Node standard-library tests
@@ -100,6 +106,7 @@ See:
 - [Architecture](docs/ARCHITECTURE.md)
 - [Adaptive engine contract](docs/ENGINE.md)
 - [Engagement workspace](docs/PHASE5-WORKSPACE.md)
+- [Connected testing libraries](docs/PHASE7-LIBRARIES.md)
 - [Taxonomy and stable identifiers](docs/TAXONOMY.md)
 - [Content authoring guide](docs/CONTENT-GUIDE.md)
 - [Manual browser QA](docs/QA.md)
@@ -122,7 +129,7 @@ This repository's original software and content are licensed under the [Apache L
 4. ~~Core production content, categories 01–10~~ — **348 items; every category floor passes**
 5. ~~Search, filters, statuses, notes, import/export, reporting, retesting, and print workspace~~
 6. ~~Advanced production content, categories 11–24~~ — **260 items; all 24 catalog floors pass**
-7. Attack chains, contextual payload library, and Burp workflows
+7. ~~Attack chains, contextual payload library, and Burp workflows~~
 8. Reference and mapping verification
 9. Content and safety QA
 10. Public release hardening and deployment review

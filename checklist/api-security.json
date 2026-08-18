@@ -76,7 +76,9 @@
         "idor",
         "object-read"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "IDOR-01"
+      ],
       "applies": {
         "any_of": {
           "api_style": [

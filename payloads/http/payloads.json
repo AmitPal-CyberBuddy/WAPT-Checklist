@@ -1,0 +1,26 @@
+{
+  "schema_version": "1.0.0",
+  "category": "http",
+  "items": [
+    {
+      "id": "PAYLOAD-H-001",
+      "title": "Unsupported-method control",
+      "category": "http",
+      "context": "A representative route before one owner-approved alternate method",
+      "intended_use": "Record declared support without assuming Allow is complete",
+      "payload": "OPTIONS / HTTP/1.1",
+      "caveats": [
+        "OPTIONS is commonly required for CORS and is not a vulnerability"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "http",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-HTTP-001"
+      ]
+    }
+  ]
+}

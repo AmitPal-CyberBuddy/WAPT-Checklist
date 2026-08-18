@@ -848,7 +848,9 @@
         "sensitive-data",
         "persistence"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "XSS-01"
+      ],
       "applies": {},
       "variants": [],
       "remediation": "Use safe DOM and URL APIs, strict message/storage schemas, server-side authorization, minimal third-party/resource trust, isolated offline caches/workers, maintained dependencies, and no client-distributed secrets."

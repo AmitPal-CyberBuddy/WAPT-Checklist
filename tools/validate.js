@@ -383,6 +383,92 @@ function validateDocument(document, file, errors) {
   return true;
 }
 
+function validatePhase7(itemIds = new Set()) {
+  const errors = [];
+  const chainRoot = path.join(ROOT, 'attack-chains');
+  const chainManifest = parseJson(path.join(chainRoot, 'manifest.json'), errors);
+  const memberships = new Map();
+  const chainIds = new Set();
+  if (chainManifest && Array.isArray(chainManifest.chains)) {
+    for (const entry of chainManifest.chains) {
+      const at = `attack-chains/manifest.json.${entry?.id || 'unknown'}`;
+      if (!/^[A-Z][A-Z0-9]*-\d{2}$/.test(entry?.id || '')) errors.push(`${at}: invalid chain ID`);
+      if (chainIds.has(entry.id)) errors.push(`${at}: duplicate chain ID`);
+      chainIds.add(entry.id);
+      const document = parseJson(path.join(chainRoot, entry.file || ''), errors);
+      if (!document) continue;
+      if (document.id !== entry.id) errors.push(`${at}: document ID does not match manifest`);
+      if (!hasText(document.title) || !hasText(document.summary) || !hasText(document.safety)) errors.push(`${at}: title, summary, and safety are required`);
+      if (!Array.isArray(document.nodes) || document.nodes.length < 2) errors.push(`${at}.nodes: at least two nodes required`);
+      if (!Array.isArray(document.edges) || document.edges.length < 1) errors.push(`${at}.edges: at least one edge required`);
+      const nodes = new Set();
+      for (const [index, node] of (document.nodes || []).entries()) {
+        if (!itemIds.has(node?.item_id)) errors.push(`${at}.nodes[${index}]: unresolved item ${node?.item_id}`);
+        if (!hasText(node?.label)) errors.push(`${at}.nodes[${index}].label: required`);
+        if (nodes.has(node?.item_id)) errors.push(`${at}.nodes[${index}]: duplicate item`);
+        nodes.add(node?.item_id);
+        if (node?.item_id) {
+          const set = memberships.get(node.item_id) || new Set();
+          set.add(entry.id);
+          memberships.set(node.item_id, set);
+        }
+      }
+      const adjacency = new Map([...nodes].map((id) => [id, []]));
+      for (const [index, edge] of (document.edges || []).entries()) {
+        if (!nodes.has(edge?.from) || !nodes.has(edge?.to)) errors.push(`${at}.edges[${index}]: endpoints must be chain nodes`);
+        if (!hasText(edge?.condition)) errors.push(`${at}.edges[${index}].condition: required`);
+        if (nodes.has(edge?.from) && nodes.has(edge?.to)) adjacency.get(edge.from).push(edge.to);
+      }
+      const visiting = new Set(); const visited = new Set();
+      const cyclic = (id) => {
+        if (visiting.has(id)) return true;
+        if (visited.has(id)) return false;
+        visiting.add(id);
+        for (const next of adjacency.get(id) || []) if (cyclic(next)) return true;
+        visiting.delete(id); visited.add(id); return false;
+      };
+      if ([...nodes].some(cyclic)) errors.push(`${at}: chain graph must be acyclic`);
+    }
+  } else if (chainManifest) errors.push('attack-chains/manifest.json.chains: must be an array');
+
+  const payloadRoot = path.join(ROOT, 'payloads');
+  const payloadManifest = parseJson(path.join(payloadRoot, 'manifest.json'), errors);
+  const payloadIds = new Set();
+  if (payloadManifest && Array.isArray(payloadManifest.categories)) {
+    for (const entry of payloadManifest.categories) {
+      const document = parseJson(path.join(payloadRoot, entry.file || ''), errors);
+      const at = `payloads/${entry.file || 'unknown'}`;
+      if (!document || !Array.isArray(document.items)) { if (document) errors.push(`${at}.items: must be an array`); continue; }
+      if (document.category !== entry.slug) errors.push(`${at}.category: must match manifest slug`);
+      if (document.items.length !== entry.count) errors.push(`${at}: manifest count differs`);
+      for (const [index, payload] of document.items.entries()) {
+        const where = `${at}.items[${index}]`;
+        if (!/^PAYLOAD-[A-Z0-9]+-\d{3}$/.test(payload?.id || '')) errors.push(`${where}.id: invalid payload ID`);
+        if (payloadIds.has(payload?.id)) errors.push(`${where}.id: duplicate payload ID`);
+        payloadIds.add(payload?.id);
+        for (const field of ['title', 'context', 'intended_use', 'payload', 'safety']) if (!hasText(payload?.[field])) errors.push(`${where}.${field}: required`);
+        if (!Array.isArray(payload?.caveats) || payload.caveats.length === 0) errors.push(`${where}.caveats: required`);
+        if (typeof payload?.review_only !== 'boolean') errors.push(`${where}.review_only: must be boolean`);
+        if (!Array.isArray(payload?.related) || payload.related.some((id) => !itemIds.has(id))) errors.push(`${where}.related: contains unresolved item`);
+        if (payload?.review_only && !(payload.tags || []).includes('review-only')) errors.push(`${where}.tags: REVIEW-ONLY entry needs review-only tag`);
+      }
+    }
+  } else if (payloadManifest) errors.push('payloads/manifest.json.categories: must be an array');
+
+  const requiredWorkflows = ['proxy','repeater','intruder','scanner','comparer','decoder','sequencer','logger','param-miner','autorize','turbo-intruder','collaborator'];
+  for (const slug of requiredWorkflows) {
+    const file = path.join(ROOT, 'burp-workflows', `${slug}.md`);
+    if (!fs.existsSync(file)) errors.push(`burp-workflows/${slug}.md: missing`);
+    else {
+      const text = fs.readFileSync(file, 'utf8');
+      for (const heading of ['## When and why', '## Safe workflow', '## Evidence to retain', '## Boundaries', '## What this tool does not prove']) {
+        if (!text.includes(heading)) errors.push(`burp-workflows/${slug}.md: missing ${heading}`);
+      }
+    }
+  }
+  return { errors, chainIds, memberships, payloadCount: payloadIds.size };
+}
+
 function validateFiles(files, options = {}) {
   const errors = [];
   const schema = parseJson(SCHEMA_PATH, errors);
@@ -436,6 +522,20 @@ function validateFiles(files, options = {}) {
     }
   }
 
+  let phase7 = null;
+  if (options.validateAuxiliary) {
+    phase7 = validatePhase7(new Set(idOwners.keys()));
+    errors.push(...phase7.errors);
+    for (const { item, at, sample } of allItems) {
+      if (sample) continue;
+      const declared = new Set(item.attack_chains || []);
+      const actual = phase7.memberships.get(item.id) || new Set();
+      for (const id of declared) if (!phase7.chainIds.has(id)) errors.push(`${at}.attack_chains: unresolved chain ${id}`);
+      for (const id of actual) if (!declared.has(id)) errors.push(`${at}.attack_chains: missing membership ${id}`);
+      for (const id of declared) if (!actual.has(id)) errors.push(`${at}.attack_chains: item is not a node in ${id}`);
+    }
+  }
+
   const productionDocuments = documents.filter(({ document }) => document.sample !== true);
   const counts = Object.fromEntries(Object.keys(CATEGORIES).map((category) => [category, 0]));
   for (const { item, sample } of allItems) {
@@ -453,7 +553,7 @@ function validateFiles(files, options = {}) {
     }
   }
 
-  return { errors, itemCount: allItems.length, documentCount: documents.length, counts };
+  return { errors, itemCount: allItems.length, documentCount: documents.length, counts, phase7 };
 }
 
 function main() {
@@ -468,7 +568,7 @@ function main() {
   }
   const paths = args.filter((arg) => !['--floors', '--core-floors', '--floors-present'].includes(arg));
   const files = discoverFiles(paths);
-  const result = validateFiles(files, { enforceFloors, enforceCoreFloors, enforcePresentFloors });
+  const result = validateFiles(files, { enforceFloors, enforceCoreFloors, enforcePresentFloors, validateAuxiliary: paths.length === 0 });
 
   if (result.errors.length) {
     console.error(`Validation failed with ${result.errors.length} error(s):`);
@@ -481,8 +581,9 @@ function main() {
   else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');
+  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), and 12 Burp workflow(s).`);
 }
 
 if (require.main === module) main();
 
-module.exports = { CATEGORIES, OPTIONS, validateFiles, referenceUrlAllowed };
+module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, referenceUrlAllowed };

@@ -1,0 +1,150 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-18",
+  "categories": [
+    {
+      "slug": "reconnaissance",
+      "name": "Reconnaissance",
+      "file": "reconnaissance/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "http",
+      "name": "Http",
+      "file": "http/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "authentication",
+      "name": "Authentication",
+      "file": "authentication/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "session-management",
+      "name": "Session Management",
+      "file": "session-management/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "authorization",
+      "name": "Authorization",
+      "file": "authorization/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "injection",
+      "name": "Injection",
+      "file": "injection/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "xss",
+      "name": "Xss",
+      "file": "xss/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "csrf",
+      "name": "Csrf",
+      "file": "csrf/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "file-handling",
+      "name": "File Handling",
+      "file": "file-handling/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "api-security",
+      "name": "Api Security",
+      "file": "api-security/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "graphql",
+      "name": "Graphql",
+      "file": "graphql/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "jwt",
+      "name": "Jwt",
+      "file": "jwt/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "oauth-sso-saml",
+      "name": "Oauth Sso Saml",
+      "file": "oauth-sso-saml/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "ssrf",
+      "name": "Ssrf",
+      "file": "ssrf/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "request-smuggling",
+      "name": "Request Smuggling",
+      "file": "request-smuggling/payloads.json",
+      "count": 3
+    },
+    {
+      "slug": "business-logic",
+      "name": "Business Logic",
+      "file": "business-logic/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "race-conditions",
+      "name": "Race Conditions",
+      "file": "race-conditions/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "client-side",
+      "name": "Client Side",
+      "file": "client-side/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "websocket",
+      "name": "Websocket",
+      "file": "websocket/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "security-headers",
+      "name": "Security Headers",
+      "file": "security-headers/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "cloud-storage",
+      "name": "Cloud Storage",
+      "file": "cloud-storage/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "information-disclosure",
+      "name": "Information Disclosure",
+      "file": "information-disclosure/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "rate-limiting",
+      "name": "Rate Limiting",
+      "file": "rate-limiting/payloads.json",
+      "count": 1
+    },
+    {
+      "slug": "advanced",
+      "name": "Advanced",
+      "file": "advanced/payloads.json",
+      "count": 1
+    }
+  ]
+}

@@ -67,6 +67,28 @@ test('report generator includes findings summary and confirmed-finding retest ma
   assert.match(output, /Do not report scanner output without manual confirmation/);
 });
 
+test('chain and payload stores load static manifests and expose priority/search data', async () => {
+  const [{ createChainStore }, { createPayloadStore }] = await Promise.all([
+    import('../js/ui/chains.js'), import('../js/ui/payloads.js')
+  ]);
+  const originalFetch = global.fetch;
+  global.fetch = async (url) => {
+    const file = path.join(ROOT, String(url));
+    return { ok: true, json: async () => JSON.parse(fs.readFileSync(file, 'utf8')) };
+  };
+  try {
+    const chains = createChainStore();
+    const payloads = createPayloadStore();
+    assert.equal((await chains.loadAll()).length, 5);
+    assert.ok(chains.priorityEdges().length >= 15);
+    const loadedPayloads = await payloads.loadAll();
+    assert.equal(loadedPayloads.length, 40);
+    assert.ok(loadedPayloads.some(({ review_only }) => review_only));
+  } finally {
+    global.fetch = originalFetch;
+  }
+});
+
 test('catalog loader fetches each category once and caches it', async () => {
   const { createCatalog } = await import('../js/ui/catalog.js');
   const document = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist/reconnaissance.json'), 'utf8'));

@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "category": "request-smuggling",
+  "items": [
+    {
+      "id": "PAYLOAD-RS-001",
+      "title": "Well-formed Content-Length control",
+      "category": "request-smuggling",
+      "context": "An isolated route before any desync probe",
+      "intended_use": "Measure normal framing, timing, keep-alive, and follow-up behavior",
+      "payload": "POST /isolated-canary HTTP/1.1\r\nHost: app.example.test\r\nContent-Length: 4\r\n\r\nq=1",
+      "caveats": [
+        "This is a normal control, not a smuggling payload"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "request",
+        "safe-control",
+        "smuggling"
+      ],
+      "related": [
+        "WAPT-SMUG-002"
+      ]
+    },
+    {
+      "id": "PAYLOAD-RS-002",
+      "title": "Ambiguous framing review gate",
+      "category": "request-smuggling",
+      "context": "Explicitly approved isolated desync test window",
+      "intended_use": "Require topology, controls, monitoring, and stop conditions before payload construction",
+      "payload": "REVIEW-ONLY: owner-designed canary pair for the confirmed hop topology",
+      "caveats": [
+        "No ready-to-run CL.TE, TE.CL, TE.TE, H2.CL, or H2.TE payload is provided"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "request",
+        "review-only",
+        "smuggling"
+      ],
+      "related": [
+        "WAPT-SMUG-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-RS-003",
+      "title": "Queue confirmation marker",
+      "category": "request-smuggling",
+      "context": "A dedicated route/client after an anomaly is observed",
+      "intended_use": "Distinguish an assessor-only queue effect from retries/cache/load balancing",
+      "payload": "X-WAPT-Canary: unique-assessor-only-value",
+      "caveats": [
+        "Never place the marker into shared-user requests or cache keys"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "request",
+        "review-only",
+        "smuggling"
+      ],
+      "related": [
+        "WAPT-SMUG-009"
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { serializeState } from '../engine/state.js?v=0.5.0';
+import { serializeState } from '../engine/state.js?v=0.7.0';
 
 export const STATUS_LABELS = Object.freeze({
   not_tested: 'Not Tested', in_progress: 'In Progress', passed: 'Passed',

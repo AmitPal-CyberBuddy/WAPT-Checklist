@@ -8,9 +8,9 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Assessment workspace — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="css/styles.css?v=0.5.0">
-  <link rel="stylesheet" href="css/print.css?v=0.5.0" media="print">
-  <script type="module" src="js/ui/app.js?v=0.5.0"></script>
+  <link rel="stylesheet" href="css/styles.css?v=0.7.0">
+  <link rel="stylesheet" href="css/print.css?v=0.7.0" media="print">
+  <script type="module" src="js/ui/app.js?v=0.7.0"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -30,8 +30,8 @@
         <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Scope wizard</a>
         <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> All tests</a>
         <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search</a>
-        <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains <small>Soon</small></a>
-        <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Payloads <small>Soon</small></a>
+        <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
+        <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Payloads & workflows</a>
       </nav>
 
       <nav class="category-nav" aria-label="Checklist categories">
@@ -104,16 +104,16 @@
       </section>
 
       <section class="view" data-view="chains" aria-labelledby="chains-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">CONNECTED TESTING</p><h1 id="chains-title">Attack chains</h1></div></div>
-        <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">⌁</span><h2>Chain graphs arrive in Phase 7</h2><p>Directed graphs will connect stable item IDs and boost the next unlocked test without turning methodology into automatic exploitation.</p></div>
+        <div class="view-heading"><div><p class="eyebrow">CONNECTED TESTING</p><h1 id="chains-title">Attack chains</h1><p>Directed hypotheses over stable test IDs. A chain never substitutes for validating every prerequisite and safety boundary.</p></div></div>
+        <div class="chain-browser" data-chain-browser aria-live="polite"><p class="loading-line">Loading attack chains…</p></div>
       </section>
 
       <section class="view" data-view="payloads" aria-labelledby="payloads-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1></div></div>
-        <div class="panel empty-panel"><span class="empty-icon" aria-hidden="true">›_</span><h2>Safety-reviewed payloads arrive in Phase 7</h2><p>Every entry will explain intended context and caveats. Destructive or denial-of-service material remains review-only and collapsed.</p></div>
+        <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1><p>Every value includes intended context, caveats, related tests, and a safety boundary. REVIEW-ONLY entries never auto-expand.</p></div></div>
+        <div data-payload-browser aria-live="polite"><p class="loading-line">Loading payload references…</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v0.5.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v0.7.0</span><span>Local state key: <code>wapt.state.v1</code></span></footer>
     </main>
   </div>
 </body>

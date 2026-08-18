@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "csrf",
+  "items": [
+    {
+      "id": "PAYLOAD-C-001",
+      "title": "Cross-site form skeleton",
+      "category": "csrf",
+      "context": "A cookie-authenticated reversible form action using controlled domains",
+      "intended_use": "Model a browser-emittable request before adding synthetic fields",
+      "payload": "<form method=\"post\" action=\"https://app.example.test/reversible-action\"></form>",
+      "caveats": [
+        "Replace the reserved target only with an authorized test origin; never auto-submit sensitive actions"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "csrf",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-CSRF-002"
+      ]
+    },
+    {
+      "id": "PAYLOAD-C-002",
+      "title": "Origin control value",
+      "category": "csrf",
+      "context": "A raw comparison request plus a real controlled browser origin",
+      "intended_use": "Check exact Origin validation using a reserved test origin",
+      "payload": "Origin: https://untrusted.example.test",
+      "caveats": [
+        "Repeater can spoof Origin but cannot prove browser exploitability"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "csrf",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-CSRF-007"
+      ]
+    },
+    {
+      "id": "PAYLOAD-C-003",
+      "title": "Simple media-type control",
+      "category": "csrf",
+      "context": "An endpoint normally expecting JSON",
+      "intended_use": "Check whether a browser-safelisted request shape reaches the same parser/action",
+      "payload": "Content-Type: text/plain",
+      "caveats": [
+        "Use a reversible synthetic action and confirm committed state"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "csrf",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-CSRF-010"
+      ]
+    }
+  ]
+}

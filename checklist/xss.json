@@ -183,7 +183,9 @@
         "stored-xss",
         "user-content"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "XSS-01"
+      ],
       "applies": {
         "excludes": [
           "app_type:static"
@@ -2429,7 +2431,9 @@
         "evidence",
         "safe-testing"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "XSS-01"
+      ],
       "applies": {},
       "variants": [],
       "remediation": "Fix the root sink with contextual encoding/safe APIs or sanitization and retain CSP/Trusted Types as defense in depth.",

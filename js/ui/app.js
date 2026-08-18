@@ -1,8 +1,8 @@
-import { initializeTheme } from './theme.js?v=0.5.0';
-import { createWizard } from './wizard.js?v=0.5.0';
-import { STATE_KEY, createState, normalizeState } from '../engine/state.js?v=0.5.0';
-import { createCatalog } from './catalog.js?v=0.5.0';
-import { createWorkspace } from './workspace.js?v=0.5.0';
+import { initializeTheme } from './theme.js?v=0.7.0';
+import { createWizard } from './wizard.js?v=0.7.0';
+import { STATE_KEY, createState, normalizeState } from '../engine/state.js?v=0.7.0';
+import { createCatalog } from './catalog.js?v=0.7.0';
+import { createWorkspace } from './workspace.js?v=0.7.0';
 
 const VIEWS = new Set(['dashboard', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -87,7 +87,7 @@ function route() {
   document.querySelector('[data-sidebar-close]')?.click();
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
-  if (manifest.categories.length && ['dashboard', 'checklist', 'search'].includes(view)) {
+  if (manifest.categories.length && ['dashboard', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
     workspace.show(view, slug).catch((error) => {
       const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
       if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;

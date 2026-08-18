@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "graphql",
+  "items": [
+    {
+      "id": "PAYLOAD-G-001",
+      "title": "Minimal endpoint confirmation",
+      "category": "graphql",
+      "context": "A suspected GraphQL endpoint",
+      "intended_use": "Confirm GraphQL parsing with a constant low-cost field",
+      "payload": "query WaptScope { __typename }",
+      "caveats": [
+        "This does not enumerate schema or prove introspection exposure"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "graphql",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-GQL-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-G-002",
+      "title": "Alias amount control",
+      "category": "graphql",
+      "context": "A confirmed endpoint with an owner-approved tiny alias count",
+      "intended_use": "Verify aliases enter amount/cost accounting using cheap fields",
+      "payload": "query WaptAlias { a: __typename b: __typename }",
+      "caveats": [
+        "Never create large alias sets or expensive resolver fan-out"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "graphql",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-GQL-010"
+      ]
+    },
+    {
+      "id": "PAYLOAD-G-003",
+      "title": "Invalid-field suggestion control",
+      "category": "graphql",
+      "context": "A confirmed GraphQL endpoint",
+      "intended_use": "Observe safe validation behavior and schema suggestions",
+      "payload": "query WaptSuggestion { waptDefinitelyMissing }",
+      "caveats": [
+        "Field suggestions and HTTP 200 are not vulnerabilities by themselves"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "graphql",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-GQL-003"
+      ]
+    }
+  ]
+}

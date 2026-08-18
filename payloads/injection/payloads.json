@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "injection",
+  "items": [
+    {
+      "id": "PAYLOAD-I-001",
+      "title": "Syntax canary for SQL-like inputs",
+      "category": "injection",
+      "context": "A scalar input suspected of reaching a SQL/ORM query",
+      "intended_use": "Trigger a parser/validation differential only; pair with an unchanged and type-valid control",
+      "payload": "'",
+      "caveats": [
+        "A quote error is not SQL injection; WAF and input validation must be excluded"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "injection",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-INJ-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-I-002",
+      "title": "Harmless template arithmetic marker",
+      "category": "injection",
+      "context": "A confirmed server-rendered template candidate; delimiter must match the identified engine",
+      "intended_use": "Determine whether constant arithmetic is evaluated rather than rendered literally",
+      "payload": "{{ 7 * 7 }}",
+      "caveats": [
+        "Never access objects, globals, files, environment, network, or process APIs"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "injection",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-INJ-030"
+      ]
+    },
+    {
+      "id": "PAYLOAD-I-003",
+      "title": "CRLF inert response-header marker",
+      "category": "injection",
+      "context": "A response-header value on an isolated request",
+      "intended_use": "Check whether one inert synthetic header is created after decoding",
+      "payload": "%0d%0aX-WAPT-Test:%20canary",
+      "caveats": [
+        "Do not inject cookies, redirects, cache directives, or split response bodies"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "injection",
+        "review-only"
+      ],
+      "related": [
+        "WAPT-INJ-039"
+      ]
+    }
+  ]
+}

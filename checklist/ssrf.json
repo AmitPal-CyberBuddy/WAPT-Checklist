@@ -86,7 +86,9 @@
         "callback",
         "url-fetcher"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "SSRF-01"
+      ],
       "applies": {
         "excludes": [
           "app_type:static"
@@ -737,7 +739,9 @@
         "egress",
         "credential"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "SSRF-01"
+      ],
       "applies": {
         "excludes": [
           "app_type:static"

@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "jwt",
+  "items": [
+    {
+      "id": "PAYLOAD-J-001",
+      "title": "Signature-invalidity control",
+      "category": "jwt",
+      "context": "A JWT for a disposable test identity",
+      "intended_use": "Confirm the service rejects a tampered token before trusting claims",
+      "payload": "Change one harmless payload claim without changing the signature",
+      "caveats": [
+        "Do not impersonate users or place full compact tokens in evidence"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "jwt",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-JWT-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-J-002",
+      "title": "Unsecured-token review marker",
+      "category": "jwt",
+      "context": "A designated test token and harmless identity endpoint",
+      "intended_use": "Confirm explicit rejection of unsecured JWTs",
+      "payload": "REVIEW-ONLY: alg none with a synthetic test identity",
+      "caveats": [
+        "Never use real-user claims or tokens"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "jwt",
+        "review-only"
+      ],
+      "related": [
+        "WAPT-JWT-003"
+      ]
+    },
+    {
+      "id": "PAYLOAD-J-003",
+      "title": "Wrong-audience control",
+      "category": "jwt",
+      "context": "Two owner-approved test audiences and synthetic keys/tokens",
+      "intended_use": "Verify the target service rejects a valid token intended elsewhere",
+      "payload": "Set aud to a different owner-controlled test service, then sign with its valid test issuer",
+      "caveats": [
+        "Do not forge production signatures or retain signing material"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "jwt",
+        "review-only"
+      ],
+      "related": [
+        "WAPT-JWT-007"
+      ]
+    }
+  ]
+}

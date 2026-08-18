@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 
-const { CATEGORIES, validateFiles } = require('../tools/validate.js');
+const { CATEGORIES, validateFiles, validatePhase7 } = require('../tools/validate.js');
 
 const ROOT = path.resolve(__dirname, '..');
 const CHECKLIST = path.join(ROOT, 'checklist');
@@ -700,6 +700,37 @@ test('advanced high-risk probes use isolated synthetic boundaries', () => {
   ]) {
     assert.ok(items.find((item) => item.id === id)?.safety?.length > 40, `${id} needs a concrete safety note`);
   }
+});
+
+test('Phase 7 attack chains, payload references, and Burp workflows validate together', () => {
+  const ids = new Set(productionFiles().flatMap((file) => JSON.parse(fs.readFileSync(file, 'utf8')).items.map(({ id }) => id)));
+  const result = validatePhase7(ids);
+  assert.deepEqual(result.errors, []);
+  assert.equal(result.chainIds.size, 5);
+  assert.equal(result.payloadCount, 40);
+  const payloadManifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'payloads/manifest.json'), 'utf8'));
+  assert.equal(payloadManifest.categories.length, 24);
+});
+
+test('attack-chain memberships are bidirectional and every chain carries safety guidance', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'attack-chains/manifest.json'), 'utf8'));
+  const itemMap = new Map(productionFiles().flatMap((file) => JSON.parse(fs.readFileSync(file, 'utf8')).items).map((item) => [item.id, item]));
+  for (const entry of manifest.chains) {
+    const chain = JSON.parse(fs.readFileSync(path.join(ROOT, 'attack-chains', entry.file), 'utf8'));
+    assert.ok(chain.safety.length > 80);
+    for (const { item_id: id } of chain.nodes) assert.ok(itemMap.get(id).attack_chains.includes(chain.id), `${id} missing ${chain.id}`);
+  }
+});
+
+test('REVIEW-ONLY payloads stay explicitly marked and omit ready smuggling payloads', () => {
+  const manifest = JSON.parse(fs.readFileSync(path.join(ROOT, 'payloads/manifest.json'), 'utf8'));
+  const payloads = manifest.categories.flatMap(({ file }) => JSON.parse(fs.readFileSync(path.join(ROOT, 'payloads', file), 'utf8')).items);
+  const review = payloads.filter(({ review_only }) => review_only);
+  assert.ok(review.length >= 7);
+  assert.ok(review.every(({ tags }) => tags.includes('review-only')));
+  const smuggling = payloads.filter(({ category }) => category === 'request-smuggling');
+  assert.ok(smuggling.some(({ payload }) => payload.includes('No ready-to-run') || payload.includes('REVIEW-ONLY')));
+  assert.ok(payloads.every(({ related }) => related.length > 0));
 });
 
 test('disruptive reconnaissance techniques include safety boundaries', () => {

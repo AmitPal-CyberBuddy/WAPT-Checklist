@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "category": "oauth-sso-saml",
+  "items": [
+    {
+      "id": "PAYLOAD-OSS-001",
+      "title": "Reserved redirect URI control",
+      "category": "oauth-sso-saml",
+      "context": "A designated OAuth client and registered callback baseline",
+      "intended_use": "Compare exact URI handling using only controlled reserved domains",
+      "payload": "https://client.example.test/callback",
+      "caveats": [
+        "Never capture real authorization responses"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "oauth",
+        "review-only",
+        "saml",
+        "sso"
+      ],
+      "related": [
+        "WAPT-OAUTH-001"
+      ]
+    }
+  ]
+}

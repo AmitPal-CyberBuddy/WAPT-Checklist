@@ -93,7 +93,9 @@
         "brute-force",
         "account"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "ATO-01"
+      ],
       "applies": {
         "excludes": [
           "app_type:static"

@@ -1,9 +1,11 @@
-import { deriveContext } from '../engine/context.js?v=0.5.0';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=0.5.0';
-import { suggestedNext } from '../engine/priorities.js?v=0.5.0';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=0.5.0';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=0.5.0';
-import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=0.5.0';
+import { deriveContext } from '../engine/context.js?v=0.7.0';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=0.7.0';
+import { suggestedNext } from '../engine/priorities.js?v=0.7.0';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=0.7.0';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=0.7.0';
+import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=0.7.0';
+import { createChainStore } from './chains.js?v=0.7.0';
+import { createPayloadStore } from './payloads.js?v=0.7.0';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const APP_LABELS = { active: 'Active', confirm: 'Confirm applicability', na_context: 'N/A (context)' };
@@ -209,6 +211,18 @@ function renderCard(record, state, categoryNames, onState) {
   const mappingText = Object.entries(item.mappings).filter(([, values]) => values.length).map(([key, values]) => `${key}: ${values.join(', ')}`).join(' · ');
   refs.append(element('p', 'mapping-line', mappingText));
   body.append(refs);
+  if (item.attack_chains?.length) {
+    const chains = element('section', 'method-section');
+    chains.append(element('h4', '', 'Attack chains'));
+    const links = element('div', 'chain-link-row');
+    for (const id of item.attack_chains) {
+      const link = element('a', 'chip id-chip', id);
+      link.href = '#chains';
+      links.append(link);
+    }
+    chains.append(links);
+    body.append(chains);
+  }
 
   const notes = element('section', 'method-section notes-section');
   const noteLabel = element('label');
@@ -255,6 +269,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let activeCategory = '';
   let checklistFilters = { ...EMPTY_FILTERS };
   let searchFilters = { ...EMPTY_FILTERS };
+  const chainStore = createChainStore();
+  const payloadStore = createPayloadStore();
 
   const names = () => categoryMap(manifest);
   const context = () => deriveContext(getState().answers, getState().engagement.targetUrl);
@@ -323,8 +339,9 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }
   }
 
-  function renderDashboard() {
+  async function renderDashboard() {
     renderDashboardMetrics();
+    await chainStore.loadAll();
     const state = getState();
     const itemList = records.map(({ item }) => item);
     const progress = document.querySelector('[data-category-progress]');
@@ -343,7 +360,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }));
 
     const suggestedRoot = document.querySelector('[data-suggested-next]');
-    const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, limit: 8 });
+    const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
     if (!suggestions.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
     else suggestedRoot.replaceChildren(...suggestions.map(({ item, applicability, contextReasons }) => {
       const link = element('a', 'suggested-row');
@@ -390,7 +407,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     activeCategory = slug;
     if (view === 'dashboard') {
       await ensureAll();
-      renderDashboard();
+      await renderDashboard();
     } else if (view === 'search') {
       await ensureAll();
       renderSearch();
@@ -400,6 +417,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       const items = valid ? await catalog.loadCategory(slug) : await catalog.loadAll();
       records = makeRecords(items);
       renderChecklist();
+    } else if (view === 'chains') {
+      const items = await catalog.loadAll();
+      await chainStore.render(document.querySelector('[data-chain-browser]'), new Map(items.map((item) => [item.id, item])));
+    } else if (view === 'payloads') {
+      await payloadStore.render(document.querySelector('[data-payload-browser]'));
     }
   }
 

@@ -1,0 +1,17 @@
+{
+  "id": "PAY-01",
+  "title": "Payment logic to duplicate value",
+  "summary": "Connect trusted-price validation, payment binding, idempotency, and bounded concurrency into a zero-value transaction integrity assessment.",
+  "safety": "Use only sandbox or zero-value transactions, disposable objects, and a few synchronized requests. Never charge cards, consume inventory, or trigger fulfillment.",
+  "nodes": [
+    {"item_id": "WAPT-BL-007", "label": "Verify server-calculated trusted price"},
+    {"item_id": "WAPT-BL-015", "label": "Bind provider event to order, amount, and currency"},
+    {"item_id": "WAPT-BL-027", "label": "Verify idempotency across ordinary retries"},
+    {"item_id": "WAPT-RACE-002", "label": "Perform a bounded duplicate-transaction race"}
+  ],
+  "edges": [
+    {"from": "WAPT-BL-007", "to": "WAPT-BL-015", "condition": "A sandbox checkout and authoritative order record are available."},
+    {"from": "WAPT-BL-015", "to": "WAPT-BL-027", "condition": "Transaction binding is understood and one safe replay is approved."},
+    {"from": "WAPT-BL-027", "to": "WAPT-RACE-002", "condition": "Sequential idempotency controls are established and bounded concurrency is explicitly approved."}
+  ]
+}

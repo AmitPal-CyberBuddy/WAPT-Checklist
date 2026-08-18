@@ -6,6 +6,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Added
 
+- Phase 7 directed attack-chain library with five validated DAGs, bidirectional checklist memberships, linked UI cards, and Suggested next unlock boosts.
+- Contextual payload/reference library with 24 safety-labeled entries, searchable browser UI, related test IDs, and collapsed REVIEW-ONLY content.
+- Safe Burp workflows for Proxy, Repeater, Intruder, Scanner, Comparer, Decoder, Sequencer, Logger, Param Miner, Autorize, Turbo Intruder, and Collaborator.
+- Extended semantic validation for chain resolution/acyclicity, payload schema/count/safety, and Burp workflow completeness.
 - Completed Phase 6 with 260 advanced production items and 608 total items across all 24 categories; every independent floor passes.
 - Phase 5 lazy category workspace, complete methodology cards, adaptive applicability presentation, reasoned overrides, status/retest controls, and local tester notes.
 - Full-text methodology search and combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and test-ID filters.

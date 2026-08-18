@@ -1,0 +1,27 @@
+{
+  "schema_version": "1.0.0",
+  "category": "information-disclosure",
+  "items": [
+    {
+      "id": "PAYLOAD-ID-001",
+      "title": "Synthetic secret canary",
+      "category": "information-disclosure",
+      "context": "Owner-created fixtures used to verify redaction and exposure paths",
+      "intended_use": "Prove disclosure handling without placing a real secret in evidence",
+      "payload": "WAPT_SECRET_CANARY_NOT_A_CREDENTIAL",
+      "caveats": [
+        "Never use a value that grants authority"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "disclosure",
+        "information",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-INFO-003"
+      ]
+    }
+  ]
+}

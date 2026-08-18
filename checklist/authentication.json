@@ -414,7 +414,9 @@
         "login",
         "response-differential"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "ATO-01"
+      ],
       "applies": {
         "requires": [
           "has_login:yes"
@@ -2543,7 +2545,9 @@
         "authentication-bypass",
         "challenge"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "ATO-01"
+      ],
       "applies": {
         "requires": [
           "has_login:yes",

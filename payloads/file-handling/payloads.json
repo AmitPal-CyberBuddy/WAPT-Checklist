@@ -1,0 +1,69 @@
+{
+  "schema_version": "1.0.0",
+  "category": "file-handling",
+  "items": [
+    {
+      "id": "PAYLOAD-FH-001",
+      "title": "Inert upload canary",
+      "category": "file-handling",
+      "context": "Any owner-approved file upload using a plain-text fixture",
+      "intended_use": "Trace storage, processing, retrieval, authorization, and cleanup",
+      "payload": "WAPT_FILE_CANARY_2026",
+      "caveats": [
+        "This file contains no active content, malware, macro, script, or parser exploit"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "file",
+        "handling",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-UPLOAD-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-FH-002",
+      "title": "Archive traversal review fixture",
+      "category": "file-handling",
+      "context": "An isolated owner-provided extraction sandbox",
+      "intended_use": "Confirm ZIP Slip handling without touching real paths",
+      "payload": "REVIEW-ONLY: tiny archive with one inert sandbox traversal entry",
+      "caveats": [
+        "Never target system/application/shared files or use a decompression bomb"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "file",
+        "handling",
+        "review-only"
+      ],
+      "related": [
+        "WAPT-UPLOAD-008"
+      ]
+    },
+    {
+      "id": "PAYLOAD-FH-003",
+      "title": "SVG local visual canary",
+      "category": "file-handling",
+      "context": "An SVG upload/preview flow",
+      "intended_use": "Verify type, sanitization, rasterization, origin, and disposition with no active behavior",
+      "payload": "<svg xmlns=\"http://www.w3.org/2000/svg\"><text>WAPT CANARY</text></svg>",
+      "caveats": [
+        "No script, event, external resource, animation exhaustion, or data access"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "file",
+        "handling",
+        "safe-control"
+      ],
+      "related": [
+        "WAPT-UPLOAD-014"
+      ]
+    }
+  ]
+}

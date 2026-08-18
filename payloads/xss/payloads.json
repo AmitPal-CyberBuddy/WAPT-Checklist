@@ -1,0 +1,66 @@
+{
+  "schema_version": "1.0.0",
+  "category": "xss",
+  "items": [
+    {
+      "id": "PAYLOAD-X-001",
+      "title": "HTML text-context marker",
+      "category": "xss",
+      "context": "A confirmed HTML text reflection in a designated test page",
+      "intended_use": "Test only whether a new inert element boundary can be created",
+      "payload": "<wapt-canary>",
+      "caveats": [
+        "Literal reflection or DOM presence is not script execution"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "safe-control",
+        "xss"
+      ],
+      "related": [
+        "WAPT-XSS-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-X-002",
+      "title": "Attribute-boundary marker",
+      "category": "xss",
+      "context": "A confirmed quoted HTML attribute reflection",
+      "intended_use": "Test whether contextual encoding prevents leaving the current attribute value",
+      "payload": "\" data-wapt-canary=\"1",
+      "caveats": [
+        "Do not add event handlers, external resources, or credential forms"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": false,
+      "tags": [
+        "safe-control",
+        "xss"
+      ],
+      "related": [
+        "WAPT-XSS-001"
+      ]
+    },
+    {
+      "id": "PAYLOAD-X-003",
+      "title": "Local execution proof",
+      "category": "xss",
+      "context": "Only after an executable sink is confirmed in a designated browser",
+      "intended_use": "Create a local DOM-visible proof without reading or transmitting data",
+      "payload": "document.body.dataset.waptProof=\"confirmed\"",
+      "caveats": [
+        "Never access cookies, tokens, storage, personal data, or network endpoints"
+      ],
+      "safety": "Authorized testing only. Use designated identities, synthetic data, the least-impacting proof, and stop on unexpected effects.",
+      "review_only": true,
+      "tags": [
+        "review-only",
+        "xss"
+      ],
+      "related": [
+        "WAPT-XSS-030"
+      ]
+    }
+  ]
+}

@@ -252,7 +252,9 @@
         "bola",
         "horizontal-access"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "IDOR-01"
+      ],
       "applies": {
         "requires": [
           "has_login:yes",
@@ -335,7 +337,9 @@
         "bola",
         "object-update"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "IDOR-01"
+      ],
       "applies": {
         "requires": [
           "has_login:yes",

@@ -194,7 +194,9 @@
         "duplicate-transaction",
         "idempotency"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "PAY-01"
+      ],
       "applies": {
         "requires": [
           "creds:low|high"

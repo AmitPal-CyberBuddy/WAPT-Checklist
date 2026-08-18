@@ -631,7 +631,9 @@
         "checkout",
         "integrity"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "PAY-01"
+      ],
       "applies": {
         "requires": [
           "creds:low|high"
@@ -1449,7 +1451,9 @@
         "transaction-binding",
         "webhook"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "PAY-01"
+      ],
       "applies": {
         "requires": [
           "creds:low|high"
@@ -2593,7 +2597,9 @@
         "retry",
         "duplicate-action"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "PAY-01"
+      ],
       "applies": {
         "requires": [
           "creds:low|high"

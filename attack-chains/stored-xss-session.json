@@ -1,0 +1,17 @@
+{
+  "id": "XSS-01",
+  "title": "Stored XSS to authenticated victim impact",
+  "summary": "Validate a cross-user stored rendering path, browser execution, exposed client authority, and safe victim-context impact without collecting secrets.",
+  "safety": "Use designated author and viewer accounts, a local DOM marker, and disposable content. Never read or transmit cookies, tokens, credentials, or personal data.",
+  "nodes": [
+    {"item_id": "WAPT-XSS-002", "label": "Confirm cross-user stored browser execution"},
+    {"item_id": "WAPT-SESS-003", "label": "Assess whether session cookies are script-readable"},
+    {"item_id": "WAPT-CLIENT-011", "label": "Review sensitive browser storage exposed to script"},
+    {"item_id": "WAPT-XSS-030", "label": "Demonstrate harmless victim-context impact"}
+  ],
+  "edges": [
+    {"from": "WAPT-XSS-002", "to": "WAPT-SESS-003", "condition": "Stored execution reproduces for a designated second account."},
+    {"from": "WAPT-XSS-002", "to": "WAPT-CLIENT-011", "condition": "Application authority may exist outside HttpOnly cookies."},
+    {"from": "WAPT-CLIENT-011", "to": "WAPT-XSS-030", "condition": "A realistic client-held authority or victim action is identified."}
+  ]
+}

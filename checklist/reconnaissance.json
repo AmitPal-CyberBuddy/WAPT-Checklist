@@ -1217,7 +1217,9 @@
         "input-mapping",
         "request"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "IDOR-01"
+      ],
       "applies": {},
       "variants": [],
       "remediation": "Maintain explicit input contracts, reject unknown fields where appropriate, and keep security decisions on trusted server state."

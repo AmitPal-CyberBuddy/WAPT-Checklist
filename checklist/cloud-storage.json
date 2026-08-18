@@ -1070,7 +1070,9 @@
         "service-account",
         "secret"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "SSRF-01"
+      ],
       "applies": {
         "any_of": {
           "cloud": [
@@ -1174,7 +1176,9 @@
         "least-privilege",
         "workload-identity"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "SSRF-01"
+      ],
       "applies": {
         "any_of": {
           "cloud": [

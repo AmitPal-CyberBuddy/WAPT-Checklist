@@ -252,7 +252,9 @@
         "httponly",
         "xss-defense"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "XSS-01"
+      ],
       "applies": {
         "any_of": {
           "auth_mechanism": [
@@ -1846,7 +1848,9 @@
         "session-revocation",
         "account-recovery"
       ],
-      "attack_chains": [],
+      "attack_chains": [
+        "ATO-01"
+      ],
       "applies": {
         "requires": [
           "has_login:yes",
