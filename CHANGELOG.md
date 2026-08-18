@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Phase 4 — attack paths, evidence, findings, and retesting)
+
+- Engagement state schema v2 with structured evidence packs: finding ID, checklist item, title, severity, endpoint, method, parameter, authentication context, precondition, baseline/test requests, observed behavior, exploitability, reportable flag, cleanup, root cause, retest verdict (`pending`/`pass`/`partial`/`fail`) and retest note. Schema v1 records and exports migrate transparently in `normalizeState`, `importState`, and the portfolio loader.
+- Evidence packs can only be recorded for Confirmed Findings; 200-pack cap, per-field length caps, strict import of unknown schema versions.
+- Pure finding-decision engine (`reportability.js`): observation → weakness → exploitability demonstrated → reportable, driven by recorded evidence and surfacing the item's do-not-report boundary; residual-risk guidance per retest verdict plus retest variant suggestions.
+- Pure coverage-confidence engine (`coverage.js`): recorded work over executable work, with context-N/A scoped out of the denominator and credential-blocked work counted separately; dashboard coverage panel and executable-based category progress.
+- Evidence-pack workflow in the dashboard: inline record form on confirmed cards with live decision-stage feedback, evidence pack cards with verdict controls, and a retest queue count.
+- Attack-chain nodes now render per-node status chips and unlock-ready state from engagement progress.
+- Report generator gains an Evidence packs table and a retest matrix with verdicts and residual-risk guidance, all HTML-safe.
+
 ### Added (Phase 3 — modern coverage and attack-surface intelligence)
 
 - New gated AI / LLM security category (25th category, `WAPT-AI`, floor 8): eleven original items covering direct and indirect prompt injection, system-prompt disclosure, retrieval authorization and corpus poisoning, tool-call argument injection, excessive agency, insecure output handling, cross-tenant context leakage, model-assisted SSRF, and generation/tool-loop cost abuse — all mapped to PortSwigger Web LLM attacks, the OWASP LLM Top 10, and the OWASP GenAI LLM Top 10 2026 (live-verified), with CWE mappings and per-item safety boundaries.

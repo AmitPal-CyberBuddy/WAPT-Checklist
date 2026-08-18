@@ -36,13 +36,18 @@ Automated tests use Node's standard library. This checklist covers browser behav
 - [ ] Finish scope and verify the dashboard opens and `started_at` is set once.
 - [ ] Rerun and reset scope; verify existing statuses and notes are retained.
 - [ ] Create two engagements, give them distinct names/statuses/notes, switch between them, and reload; verify each resumes independently.
+- [ ] Mark an item Confirmed Finding, open Record evidence pack, and verify the decision stage moves observation → weakness → demonstrated → reportable as evidence, exploitability, and the reportable flag change.
+- [ ] Save an evidence pack, verify it appears under Evidence packs with severity/exploitability/reportable/retest chips, then set pass, partial, and fail verdicts and confirm the residual-risk guidance updates.
+- [ ] Generate the report and verify the Evidence packs table, retest verdicts, residual-risk column, and HTML-safe escaping of notes and engagement names.
+- [ ] Open an attack chain and verify each node shows its status chip (pending/active/passed/potential/confirmed/N/A) and that completing prerequisites marks the next node unlocked.
+- [ ] Import a schema v1 state export and verify it migrates with all statuses, notes, and names intact; verify a v2 export with evidence packs round-trips.
 - [ ] Delete one engagement, confirm its destructive warning, and verify the other remains. Verify the final remaining record cannot be deleted from the header.
 - [ ] At 320–430 px verify the engagement switcher keeps the new and delete controls visible and usable rather than hiding them.
 - [ ] Start with an original single-engagement v1 fixture and verify it migrates into the portfolio without data loss.
 - [ ] Verify the automatic-save notice clearly explains same-browser/origin persistence, clearing/private-mode risks, no backup/sync, and JSON export.
 - [ ] Inspect localStorage and confirm the project writes only `wapt.state.v1`.
 
-### Phase 5 workspace
+### Phase 5 workspace (incl. Phase 4 evidence and retest workflow)
 
 - [ ] Open one category and confirm its JSON is loaded lazily; global dashboard/search may then load all published categories.
 - [ ] Verify homepage Active tests changes with static, API, and unknown saved scope.

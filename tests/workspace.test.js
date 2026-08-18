@@ -6,6 +6,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
+const read = (file) => fs.readFileSync(path.join(ROOT, file), 'utf8');
 const filtersModule = import('../js/ui/filters.js');
 const exportModule = import('../js/ui/export.js');
 const contextModule = import('../js/engine/context.js');
@@ -106,4 +107,22 @@ test('catalog loader fetches each category once and caches it', async () => {
   } finally {
     global.fetch = originalFetch;
   }
+});
+
+test('workspace surfaces coverage, evidence packs, retest verdicts, and chain node states', () => {
+  const workspace = read('js/ui/workspace.js');
+  const chains = read('js/ui/chains.js');
+  const appHtml = read('app.html');
+  assert.match(workspace, /computeCoverage\(itemList, context\(\)/);
+  assert.match(workspace, /renderCoverageSummary\(/);
+  assert.match(workspace, /renderEvidencePacks\(/);
+  assert.match(workspace, /classifyReportability\(collect\(\)/);
+  assert.match(workspace, /setRetestVerdict\(state, pack\.id/);
+  assert.match(workspace, /removeFinding\(state, pack\.id\)/);
+  assert.match(workspace, /addFinding\(state, collect\(\)\)/);
+  assert.match(appHtml, /data-coverage-summary/);
+  assert.match(appHtml, /data-evidence-packs/);
+  assert.match(chains, /status-chip/);
+  assert.match(chains, /unlocked\.add\(edge\.to\)/);
+  assert.match(workspace, /statuses: getState\(\)\.statuses/);
 });

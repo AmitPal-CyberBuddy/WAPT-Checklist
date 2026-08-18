@@ -2,7 +2,9 @@ import { deriveContext } from '../engine/context.js?v=1.0.0-r5';
 import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r5';
 import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r5';
 import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r5';
-import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r5';
+import { clearOverride, importState, setItemNote, setItemStatus, setOverride, setRetestFlag, addFinding, removeFinding, setRetestVerdict, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r5';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r5';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r5';
 import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r5';
 import { STATUS_LABELS, composeChecklistMarkdown, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r5';
 import { createChainStore } from './chains.js?v=1.0.0-r5';
@@ -246,6 +248,7 @@ function renderCard(record, state, categoryNames, onState) {
     box.addEventListener('change', () => onState(setRetestFlag(state, item.id, box.checked)));
     retest.append(box, document.createTextNode(' Include in retest matrix'));
     notes.append(retest);
+    notes.append(renderEvidenceForm(item, state, onState));
   }
   if (record.rawApplicability.state === APPLICABILITY.NA_CONTEXT) {
     const override = element('button', 'button button-quiet', applicability.overridden ? 'Clear applicability override' : 'Override context N/A');
@@ -263,6 +266,210 @@ function renderCard(record, state, categoryNames, onState) {
   details.append(body);
   card.append(details);
   return card;
+}
+
+function renderEvidenceForm(item, state, onState) {
+  const recorded = (state.findings || []).filter(({ item_id: id }) => id === item.id);
+  const details = element('details', 'evidence-form');
+  details.append(element('summary', '', recorded.length ? `Evidence packs (${recorded.length})` : 'Record evidence pack'));
+  const body = element('div', 'evidence-form-body');
+  body.append(element('p', 'evidence-redaction', 'Redact credentials, tokens, personal data, and tenant identifiers before recording evidence.'));
+
+  const grid = element('div', 'evidence-grid');
+  const fields = [
+    ['title', 'Title', 'text', item.title, 120],
+    ['severity', 'Severity', 'select', item.severity, null],
+    ['endpoint', 'Endpoint', 'text', '', 300],
+    ['method', 'HTTP method', 'text', '', 20],
+    ['parameter', 'Parameter', 'text', '', 200],
+    ['auth_context', 'Authentication context', 'text', '', 200]
+  ];
+  const controls = {};
+  for (const [key, label, type, value, max] of fields) {
+    const group = element('label', 'evidence-field');
+    group.append(element('span', '', label));
+    let input;
+    if (type === 'select') {
+      input = document.createElement('select');
+      for (const severity of FINDING_SEVERITIES) input.append(new Option(severity, severity));
+    } else {
+      input = document.createElement('input');
+      input.type = type;
+      if (max) input.maxLength = max;
+    }
+    input.name = key;
+    input.value = value;
+    group.append(input);
+    grid.append(group);
+    controls[key] = input;
+  }
+  const areas = [
+    ['precondition', 'Precondition', 2000], ['baseline_request', 'Baseline request', 8000],
+    ['test_request', 'Test request', 8000], ['observed_behavior', 'Observed behavior', 2000],
+    ['cleanup_performed', 'Cleanup performed', 2000], ['root_cause', 'Root cause', 2000]
+  ];
+  for (const [key, label, max] of areas) {
+    const group = element('label', 'evidence-field evidence-wide');
+    group.append(element('span', '', label));
+    const input = document.createElement('textarea');
+    input.rows = 3;
+    input.maxLength = max;
+    input.name = key;
+    group.append(input);
+    grid.append(group);
+    controls[key] = input;
+  }
+  const exploitLabel = element('label', 'evidence-field');
+  exploitLabel.append(element('span', '', 'Exploitability'));
+  const exploit = document.createElement('select');
+  exploit.name = 'exploitability';
+  for (const level of EXPLOITABILITY_LEVELS) exploit.append(new Option(level, level));
+  exploitLabel.append(exploit);
+  const reportableLabel = element('label', 'evidence-field evidence-check');
+  const reportable = document.createElement('input');
+  reportable.type = 'checkbox';
+  reportable.name = 'reportable';
+  reportableLabel.append(reportable, document.createTextNode(' Reportable finding'));
+  grid.append(exploitLabel, reportableLabel);
+  body.append(grid);
+
+  const stage = element('p', 'evidence-stage');
+  const stageDetail = element('small', '', '');
+  stage.append(element('strong', '', 'Decision: observation → weakness → demonstrated → reportable'), stageDetail);
+  body.append(stage);
+
+  function collect() {
+    return {
+      item_id: item.id,
+      title: controls.title.value,
+      severity: controls.severity.value,
+      endpoint: controls.endpoint.value,
+      method: controls.method.value,
+      parameter: controls.parameter.value,
+      auth_context: controls.auth_context.value,
+      precondition: controls.precondition.value,
+      baseline_request: controls.baseline_request.value,
+      test_request: controls.test_request.value,
+      observed_behavior: controls.observed_behavior.value,
+      exploitability: exploit.value,
+      reportable: reportable.checked,
+      cleanup_performed: controls.cleanup_performed.value,
+      root_cause: controls.root_cause.value
+    };
+  }
+  function refreshStage() {
+    const classification = classifyReportability(collect(), { item });
+    stageDetail.textContent = `${STAGE_LABELS[classification.stage]} · ${classification.reasons.join(' · ')}`;
+  }
+  grid.addEventListener('input', refreshStage);
+  refreshStage();
+
+  const actions = element('div', 'evidence-actions');
+  const save = element('button', 'button button-primary', 'Save evidence pack');
+  save.type = 'button';
+  save.addEventListener('click', () => {
+    onState(addFinding(state, collect()));
+    details.open = false;
+  });
+  actions.append(save);
+  body.append(actions);
+  details.append(body);
+  return details;
+}
+
+function renderCoverageSummary(root, coverage, queue) {
+  root.replaceChildren();
+  const overall = coverage.overall;
+  const value = overall.coverage === null ? '—' : `${overall.coverage}%`;
+  const big = element('div', 'coverage-big');
+  big.append(element('strong', '', value), element('span', '', 'coverage confidence'));
+  const detail = element('p', 'coverage-detail', `${overall.tested} of ${overall.executable} executable tests recorded · ${overall.blocked} credential-blocked · ${overall.na} scoped out (N/A) · ${queue.pending.length} evidence packs awaiting retest`);
+  root.append(big, detail);
+}
+
+function renderEvidencePacks(root, itemList, state, onState) {
+  const packs = state.findings || [];
+  root.replaceChildren();
+  if (!packs.length) {
+    root.append(element('p', 'empty-copy', 'No structured evidence packs recorded. Confirm a finding and use “Record evidence pack” on its methodology card.'));
+    return;
+  }
+  const byId = new Map(itemList.map((item) => [item.id, item]));
+  for (const pack of packs) {
+    const item = byId.get(pack.item_id);
+    const card = element('article', 'evidence-pack');
+    const head = element('div', 'evidence-pack-head');
+    const chips = element('div', 'chip-row');
+    chips.append(element('span', 'chip id-chip', pack.id));
+    chips.append(element('span', `chip severity-chip ${pack.severity}`, pack.severity));
+    chips.append(element('span', 'chip', pack.exploitability.replaceAll('_', ' ')));
+    chips.append(element('span', `chip ${pack.reportable ? '' : 'blocked-chip'}`, pack.reportable ? 'Reportable' : 'Not reportable'));
+    chips.append(element('span', `chip verdict-chip verdict-${pack.retest_verdict}`, `retest ${pack.retest_verdict}`));
+    head.append(chips);
+    const title = element('div', 'evidence-pack-title');
+    const link = element('a', '', pack.item_id);
+    link.href = `#checklist/${item?.category || ''}`;
+    title.append(link, element('strong', '', pack.title || 'Untitled evidence pack'));
+    head.append(title);
+    card.append(head);
+
+    const classification = classifyReportability(pack, { item });
+    const stageLine = element('p', 'evidence-stage');
+    stageLine.append(element('strong', '', STAGE_LABELS[classification.stage]), document.createTextNode(` — ${classification.reasons.join(' · ')}`));
+    card.append(stageLine);
+
+    const details = document.createElement('details');
+    details.className = 'evidence-pack-details';
+    details.append(element('summary', '', 'Evidence details'));
+    const body = element('div', 'evidence-pack-body');
+    for (const [label, value] of [
+      ['Endpoint', pack.endpoint], ['Method', pack.method], ['Parameter', pack.parameter],
+      ['Authentication context', pack.auth_context], ['Precondition', pack.precondition],
+      ['Baseline request', pack.baseline_request], ['Test request', pack.test_request],
+      ['Observed behavior', pack.observed_behavior], ['Cleanup performed', pack.cleanup_performed],
+      ['Root cause', pack.root_cause]
+    ]) {
+      if (value) {
+        body.append(element('strong', 'evidence-label', label));
+        body.append(element('pre', 'evidence-value', value));
+      }
+    }
+    const targets = element('ul', 'evidence-targets');
+    for (const target of suggestedRetestTargets(item || {})) targets.append(element('li', '', target));
+    body.append(element('strong', 'evidence-label', 'Retest variant suggestions'), targets);
+    body.append(element('p', 'evidence-redaction', 'Redact credentials, tokens, personal data, and tenant identifiers before exporting.'));
+    details.append(body);
+    card.append(details);
+
+    const controls = element('div', 'evidence-controls');
+    const verdictLabel = element('label', 'evidence-field');
+    verdictLabel.append(element('span', '', 'Retest verdict'));
+    const verdict = document.createElement('select');
+    for (const option of RETEST_VERDICTS) verdict.append(new Option(option, option));
+    verdict.value = pack.retest_verdict;
+    verdict.setAttribute('aria-label', `Retest verdict for ${pack.id}`);
+    verdict.addEventListener('change', () => onState(setRetestVerdict(state, pack.id, verdict.value, pack.retest_note)));
+    verdictLabel.append(verdict);
+    controls.append(verdictLabel);
+    if (pack.retest_verdict !== 'pending') controls.append(element('p', 'evidence-verdict-guide', RETEST_GUIDANCE[pack.retest_verdict]));
+    const noteLabel = element('label', 'evidence-field evidence-wide');
+    noteLabel.append(element('span', '', 'Retest note'));
+    const note = document.createElement('textarea');
+    note.rows = 2;
+    note.maxLength = 2000;
+    note.value = pack.retest_note;
+    note.addEventListener('change', () => onState(setRetestVerdict(state, pack.id, pack.retest_verdict, note.value)));
+    noteLabel.append(note);
+    controls.append(noteLabel);
+    const remove = element('button', 'button button-quiet evidence-remove', 'Delete evidence pack');
+    remove.type = 'button';
+    remove.addEventListener('click', () => {
+      if (window.confirm(`Delete evidence pack ${pack.id}? This cannot be undone.`)) onState(removeFinding(state, pack.id));
+    });
+    controls.append(remove);
+    card.append(controls);
+    root.append(card);
+  }
 }
 
 export function createWorkspace({ catalog, getState, replaceState, onStateChange }) {
@@ -284,7 +491,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     records = makeRecords(records.map(({ item }) => item));
     if (activeView === 'checklist') renderChecklist();
     if (activeView === 'search') renderSearch();
-    renderDashboardMetrics();
+    if (activeView === 'dashboard') renderDashboard();
+    else renderDashboardMetrics();
   }
 
   function renderResults(root, summary, sourceRecords, filters) {
@@ -353,20 +561,24 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     await chainStore.loadAll();
     const state = getState();
     const itemList = records.map(({ item }) => item);
+    const coverage = computeCoverage(itemList, context(), state.statuses);
+    const queue = retestQueue(state);
+    const coverageByCategory = new Map(coverage.perCategory.map((entry) => [entry.slug, entry]));
     const progress = document.querySelector('[data-category-progress]');
     progress.replaceChildren(...manifest.categories.filter(({ count }) => count > 0).map((category) => {
-      const categoryItems = itemList.filter((item) => item.category === category.slug);
-      const tested = categoryItems.filter((item) => itemStatus(item, state) !== 'not_tested').length;
+      const entry = coverageByCategory.get(category.slug) || { executable: category.count, tested: 0, na: 0 };
       const row = element('a', 'progress-row');
       row.href = `#checklist/${category.slug}`;
       const label = element('div', 'progress-label');
-      label.append(element('strong', '', category.name), element('span', '', `${tested}/${categoryItems.length}`));
+      label.append(element('strong', '', category.name), element('span', '', `${entry.tested}/${entry.executable}`));
       const bar = document.createElement('progress');
-      bar.max = Math.max(1, categoryItems.length);
-      bar.value = tested;
+      bar.max = Math.max(1, entry.executable);
+      bar.value = entry.tested;
       row.append(label, bar);
+      if (entry.na) row.title = `${entry.na} tests scoped out as context-N/A`;
       return row;
     }));
+    renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
 
     const suggestedRoot = document.querySelector('[data-suggested-next]');
     const suggestions = suggestedNext(itemList, context(), { statuses: state.statuses, chains: chainStore.priorityEdges(), limit: 8 });
@@ -410,6 +622,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       table.append(head, body);
       findingsRoot.replaceChildren(table);
     }
+
+    renderEvidencePacks(document.querySelector('[data-evidence-packs]'), itemList, state, commit);
   }
 
   async function ensureAll() {
@@ -435,7 +649,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       renderChecklist();
     } else if (view === 'chains') {
       const items = await catalog.loadAll();
-      await chainStore.render(document.querySelector('[data-chain-browser]'), new Map(items.map((item) => [item.id, item])));
+      await chainStore.render(document.querySelector('[data-chain-browser]'), new Map(items.map((item) => [item.id, item])), { statuses: getState().statuses });
     } else if (view === 'payloads') {
       await payloadStore.render(document.querySelector('[data-payload-browser]'));
     }

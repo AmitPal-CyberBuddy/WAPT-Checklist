@@ -57,9 +57,17 @@ Workflow weights preserve consulting order and context boosts are deliberately b
 
 A chain boost is granted only when every supplied prerequisite item has status `passed` or `confirmed_finding`. Chain data is an input; the priority module does not load files.
 
+## `rationale.js` and `coverage.js`
+
+`rationale.js` explains why a gated or boosted category is relevant: active signals confirm applicability, unknown signals produce a confirmation prompt, and boost signals explain priority. `coverage.js` computes assessment confidence as recorded work over executable work — context-N/A items are scoped out of the denominator and credential-blocked items are counted separately, so coverage never inflates from inapplicable or untestable work.
+
+## `reportability.js`
+
+`reportability.js` implements the finding-decision gate: **observation → weakness → exploitability demonstrated → reportable**. It classifies what the tester recorded (test request, observed behavior, exploitability, reportable flag), never the target itself, and surfaces the item's `do_not_report` boundary before a finding is finalized. Retest verdicts (`pending`, `pass`, `partial`, `fail`) carry residual-risk guidance and variant suggestions for re-verification.
+
 ## `state.js`
 
-`state.js` owns each engagement's versioned shape and immutable update rules. `portfolio.js` wraps multiple engagement records, preserves one active ID, and migrates the original single-engagement document. Browser storage remains in `js/ui/app.js`, using only `wapt.state.v1`.
+`state.js` owns each engagement's versioned shape and immutable update rules. State is schema version 2: structured evidence packs (`findings`) join statuses, notes, overrides, and retest flags. Schema version 1 records migrate transparently on load and on strict import, preserving engagement data and adding an empty finding list. `portfolio.js` wraps multiple engagement records, preserves one active ID, and migrates the original single-engagement document. Browser storage remains in `js/ui/app.js`, using only `wapt.state.v1`.
 
 Key guarantees:
 
@@ -80,11 +88,12 @@ Run:
 node --test
 ```
 
-The Phase 3 suite covers:
+The test suite covers:
 
 - context normalization, confidence, every URL hint class, and deny-list behavior;
 - applicability precedence, Active/Confirm/N/A, blocked credentials, `any_of`, and variants;
 - deterministic workflow scoring, bounded boosts, and chain unlocks;
 - state shape, immutable updates, override reasons, import/export, and retest invariants;
 - each derivation row in the master plan;
-- all eight quick-start presets through the engine, not only at the answer layer.
+- all eight quick-start presets through the engine, not only at the answer layer;
+- evidence-pack invariants, schema v1 → v2 migration, reportability stages, coverage math, and retest verdicts.

@@ -104,3 +104,31 @@ test('methodology cards surface reportability and retest boundaries', () => {
   assert.match(workspace, /section\('Reporting boundary', item\.do_not_report\)/);
   assert.match(workspace, /section\('Retest guidance', item\.retest_guidance\)/);
 });
+
+test('report generator includes evidence packs and retest verdicts with residual guidance', async () => {
+  const { composeReportMarkdown } = await import('../js/ui/export.js');
+  const items = [{ id: 'WAPT-AUTHZ-003', category: 'authorization', title: 'Enforce horizontal read authorization', severity: 'high' }];
+  const state = {
+    engagement: { name: 'Review <script>alert(1)</script>', targetUrl: 'https://app.example.com', started_at: '2026-08-18T00:00:00.000Z' },
+    statuses: { 'WAPT-AUTHZ-003': 'confirmed_finding' },
+    notes: { 'WAPT-AUTHZ-003': 'Account B object readable <b>as</b> account A.' },
+    retests: { 'WAPT-AUTHZ-003': true },
+    findings: [{
+      id: 'find-0001', item_id: 'WAPT-AUTHZ-003', title: 'Cross-account read', severity: 'high',
+      endpoint: 'GET /api/objects/1001', method: 'GET', parameter: 'id', auth_context: 'account A',
+      precondition: 'Two accounts.', baseline_request: 'GET /api/objects/1000', test_request: 'GET /api/objects/1001',
+      observed_behavior: 'Response contains account B object.', exploitability: 'proven', reportable: true,
+      cleanup_performed: 'Synthetic data removed.', root_cause: 'No per-object check.',
+      retest_verdict: 'partial', retest_note: 'Bulk endpoint still reproduces.', created_at: '2026-08-18T00:00:00.000Z', updated_at: '2026-08-18T00:00:00.000Z'
+    }],
+    updated_at: '2026-08-18T00:00:00.000Z'
+  };
+  const markdown = composeReportMarkdown(items, state, { authorization: 'Authorization' });
+  assert.match(markdown, /## Evidence packs/);
+  assert.match(markdown, /find-0001/);
+  assert.match(markdown, /partial/);
+  assert.match(markdown, /adjacent variant still reproduces/);
+  assert.doesNotMatch(markdown, /<script>alert\(1\)<\/script>/);
+  assert.doesNotMatch(markdown, /<b>as<\/b>/);
+  assert.match(markdown, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+});

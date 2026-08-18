@@ -6,7 +6,7 @@
   "status": "release-candidate",
   "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
   "item_schema_version": "1.0.0",
-  "state_schema_version": 1,
+  "state_schema_version": 2,
   "production_items": 623,
   "categories": 25,
   "attack_chains": 5,

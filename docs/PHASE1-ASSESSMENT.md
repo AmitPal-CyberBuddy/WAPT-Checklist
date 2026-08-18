@@ -231,3 +231,14 @@ Residual notes for the plan: (a) the export file name embeds the engagement name
 - **Workflow files** must be installed by a maintainer; templates in `docs/workflows/` stay the source of truth.
 - **Rule 10 (backward compatibility)** is enforced by the migration design in §8-B; existing v1 exports keep importing after v2 ships.
 - **Rule 2 (no count inflation)** is respected: target catalog after Phase 2–3 is ~620–625 items, each added against a verified gap, with the audit running at every phase.
+
+## Phase status log
+
+| Phase | Gate | Status | Evidence |
+|---|---|---|---|
+| 2 — Reportability | All gates green | **Complete** | `do_not_report` on 59 boundary-prone items, `retest_guidance` on 17; schema/validator/audit + UI cards + tests |
+| 3 — Modern coverage | All gates green | **Complete** | AI/LLM category (11 items, 25th category), XS-Leaks + bfcache, subdomain-takeover identification, rationale engine; catalog 623 |
+| 4 — Evidence & retesting | All gates green | **Complete** | State schema v2 + v1 migration, evidence packs, reportability classifier, coverage confidence, chain node states, retest verdicts |
+| 5 — UI/UX modernization | — | **Not started** | Queued next (broader redesign per maintainer decision, incremental surfaces) |
+| 6 — QA & automation | — | **Not started** | Queued after Phase 5 |
+| 7 — Release hardening | — | **Not started** | Queued last |

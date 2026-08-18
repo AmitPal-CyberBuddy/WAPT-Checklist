@@ -10,7 +10,7 @@ WAPT Checklist is a static, context-aware assessment workspace for authorized we
 2. **Context is a first-class input:** questionnaire answers and conservative URL hints produce a normalized context. Pure engine functions evaluate content; UI code only renders their results.
 3. **Content is data:** stable IDs, a documented schema, and CI validation let methodology evolve independently of presentation.
 4. **Safe by default:** content assumes explicit authorization. Disruptive techniques require a `safety` note. Destructive or denial-of-service payloads are marked `review_only` and never expanded automatically.
-5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements, the active engagement, and the UI theme preference. Legacy single-engagement state migrates locally on load. Per-engagement JSON export/import provides user-controlled portability.
+5. **Portable private state:** one versioned localStorage portfolio stores multiple independent engagements, the active engagement, and the UI theme preference. Engagement state is schema version 2 with structured evidence packs; schema version 1 states migrate transparently on load. Per-engagement JSON export/import provides user-controlled portability.
 6. **Progressive loading:** the manifest supplies metadata and counts. Category JSON is fetched on demand with same-origin relative URLs.
 7. **Accessible and dependency-free:** semantic HTML, keyboard operation, visible focus, WCAG AA themes, reduced-motion support, and self-hosted fonts.
 
@@ -26,7 +26,10 @@ Browser
  │   ├─ context: normalize answers and derive conservative URL hints
  │   ├─ applicability: Active | Confirm | N/A (context)
  │   ├─ priorities: deterministic suggested-next scoring
- │   ├─ state: validate, serialize, and immutably update one engagement
+ │   ├─ rationale: explainable category relevance
+ │   ├─ coverage: executable-work confidence excluding context-N/A
+ │   ├─ reportability: observation → weakness → demonstrated → reportable gate
+ │   ├─ state: validate, serialize, findings, retest verdicts, and immutable updates
  │   └─ portfolio: migrate, select, add, and remove engagements under wapt.state.v1
  └─ Same-origin data
      ├─ checklist/manifest.json → checklist/<category>.json

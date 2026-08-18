@@ -18,13 +18,13 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Pure DOM-free context, applicability, priority, and state engines shared by browser code and Node tests.
 - Three-state Active / Confirm / N/A evaluation, visible credential-blocked roadmap work, conditional methodology variants, and reason codes.
 - Deterministic Suggested next scoring with workflow, severity, context, prerequisite, and attack-chain components, and per-recommendation explanations (state, category, severity, reasons, chain unlocks).
-- Strict JSON import/export, reasoned applicability overrides, per-item notes, and Confirmed Finding retest invariants.
+- Strict JSON import/export with automatic schema v1 → v2 state migration, reasoned applicability overrides, per-item notes, evidence-pack records, and Confirmed Finding retest invariants.
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters.
 - Complete expandable methodology cards with status controls, local notes, copy controls, context variants, safety guidance, explicit reporting boundaries (`do_not_report`), retest guidance, and references.
-- Dashboard metrics, live category progress, Suggested next, findings table, Markdown checklist/report generation, retest matrix, and print view.
-- Directed attack-chain graphs with checklist links, unlock hints, and priority boosts.
+- Dashboard metrics, live category progress, coverage confidence (executable work excluding context-N/A), Suggested next, findings table, structured evidence packs with exploitability and retest verdicts, Markdown checklist/report generation, retest matrix, and print view.
+- Directed attack-chain graphs with checklist links, per-node test status, unlock hints, and priority boosts.
 - Searchable contextual payload/reference library with collapsed REVIEW-ONLY content and related tests.
 - Safe when/why/evidence/boundary workflows for 12 Burp Suite tools and extensions.
 - Designed methodology, security, contributing, license, project-documentation, and Burp-workflow pages—no user-facing raw Markdown redirects.
