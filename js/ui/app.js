@@ -15,9 +15,7 @@ function initialHash(current) {
   if (position.view === 'playbook' && position.family) return `playbook/${position.family}`;
   if (position.view === 'checklist' && position.category) return `checklist/${position.category}`;
   if (position.view) return position.view;
-  const hasProgress = Object.keys(current.statuses || {}).length > 0;
-  const scoped = Boolean(current.engagement?.name?.trim() || current.engagement?.targetUrl?.trim());
-  return hasProgress || scoped ? 'dashboard' : 'wizard';
+  return 'playbooks';
 }
 
 function loadPortfolio() {
@@ -156,7 +154,13 @@ function route() {
   setSidebar(false);
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
-  if (manifest.categories.length && ['dashboard', 'playbooks', 'playbook', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
+  if (['playbooks', 'playbook'].includes(view)) {
+    workspace.show(view, slug).catch((error) => {
+      const target = document.querySelector('[data-playbook-board], [data-playbook-root]');
+      if (target) target.textContent = `Playbooks could not be loaded: ${error.message}`;
+      console.error(error);
+    });
+  } else if (manifest.categories.length && ['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
     workspace.show(view, slug).catch((error) => {
       const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
       if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;

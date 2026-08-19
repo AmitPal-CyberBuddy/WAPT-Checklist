@@ -929,14 +929,18 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       await renderDashboard();
       rememberPosition({ view: 'dashboard' });
     } else if (view === 'playbooks') {
-      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks()]);
+      await loadPlaybooks();
       renderPlaybooks();
       rememberPosition({ view: 'playbooks' });
+      await Promise.all([ensureAll().catch(() => []), loadFamilies()]);
+      if (activeView === 'playbooks') renderPlaybooks();
     } else if (view === 'playbook') {
       activePlaybook = slug;
-      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks()]);
+      await loadPlaybooks();
       renderPlaybook();
       rememberPosition({ view: 'playbook', family: slug });
+      await Promise.all([ensureAll().catch(() => []), loadFamilies()]);
+      if (activeView === 'playbook') renderPlaybook();
     } else if (view === 'families') {
       await Promise.all([ensureAll(), loadFamilies()]);
       renderBoard();
