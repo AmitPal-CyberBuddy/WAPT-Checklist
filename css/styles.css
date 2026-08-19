@@ -420,6 +420,7 @@ select:focus-visible,textarea:focus-visible{box-shadow:var(--focus);border-color
 .playbook-toc{display:flex;flex-wrap:wrap;gap:.35rem .55rem;margin-top:.7rem;align-items:center}
 .playbook-toc-group{color:var(--muted);font:500 .55rem var(--font-mono);letter-spacing:.08em;text-transform:uppercase;margin-right:.15rem}
 .playbook-toc a{padding:.15rem .45rem;border:1px solid var(--line);border-radius:100px;background:var(--surface-3);color:var(--ink-2);font-size:.62rem}
+.playbook-toc a.is-muted{opacity:.85}
 .playbook-toc a:hover{border-color:var(--brand);color:var(--brand)}
 .playbook-group{display:grid;gap:.7rem}
 .playbook-group-head h3{margin:0 0 .2rem;font-size:1rem}

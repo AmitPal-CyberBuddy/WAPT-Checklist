@@ -712,7 +712,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       matched: matchPlaybooks(playbookIndex, derived),
       primary: suggestedPlaybook(playbookIndex, derived),
       contextLabel: playbookContextLabel(),
-      derived
+      derived,
+      items: records.map(({ item }) => item)
     });
   }
 

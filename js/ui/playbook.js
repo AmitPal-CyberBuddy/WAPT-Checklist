@@ -1,7 +1,7 @@
 // Surface playbooks: the tester-facing working layer.
 // A playbook is every applicable check for a page type, with named variants
 // and copyable payloads sitting in the open — not behind methodology prose.
-import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook } from '../engine/playbooks.js?v=1.0.0-r6';
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedCheckCount } from '../engine/playbooks.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
 import { copyButton, element, SEVERITY_GLYPHS, statusControls } from './dom.js?v=1.0.0-r6';
 
@@ -20,7 +20,7 @@ function recordFor(check, recordsById) {
   return null;
 }
 
-function playbookCard(playbook, kind, isPrimary) {
+function playbookCard(playbook, kind, isPrimary, items) {
   const card = element('a', `playbook-card${isPrimary ? ' is-primary' : ''}`);
   card.href = `#playbook/${playbook.id}`;
   card.dataset.playbookCard = playbook.id;
@@ -32,23 +32,26 @@ function playbookCard(playbook, kind, isPrimary) {
   card.append(element('h2', '', playbook.title));
   card.append(element('p', '', playbook.summary));
   const meta = element('p', 'playbook-card-meta');
-  meta.textContent = `${checkCount(playbook)} checks · ${variantCount(playbook)} variants & payloads`;
+  const checks = items?.length ? expandedCheckCount(playbook, items) : checkCount(playbook);
+  meta.textContent = items?.length
+    ? `${checks} applicable checks · named variants & payloads`
+    : `${checks} checks · ${variantCount(playbook)} variants & payloads`;
   card.append(meta);
   return card;
 }
 
-function appendBoardSection(root, title, playbooks, primary) {
+function appendBoardSection(root, title, playbooks, primary, items) {
   if (!playbooks.length) return;
   const section = element('section', 'playbook-board-section');
   section.append(element('h2', 'playbook-board-heading', title));
   const grid = element('div', 'playbook-grid');
-  for (const { playbook, kind } of playbooks) grid.append(playbookCard(playbook, kind, primary?.id === playbook.id));
+  for (const { playbook, kind } of playbooks) grid.append(playbookCard(playbook, kind, primary?.id === playbook.id, items));
   section.append(grid);
   root.append(section);
 }
 
 export function renderPlaybookBoard(root, context) {
-  const { index, matched, primary, contextLabel, derived } = context;
+  const { index, matched, primary, contextLabel, derived, items = [] } = context;
   root.replaceChildren();
   if (!index?.playbooks?.length) {
     root.append(element('p', 'empty-copy', 'Playbooks could not be loaded. Serve the repository over HTTP.'));
@@ -142,13 +145,15 @@ function renderCheck(check, context) {
 
 export function renderPlaybookWorkspace(root, context) {
   const { playbookId, index, records = [], getState, commit, familyIndex, categoryNames = {} } = context;
-  const playbook = index?.byId?.get(playbookId);
+  const raw = index?.byId?.get(playbookId);
   root.replaceChildren();
-  if (!playbook) {
+  if (!raw) {
     root.append(element('p', 'empty-copy', 'Unknown playbook. Open the playbook list to pick one.'));
     return;
   }
 
+  const items = records.map((record) => record.item);
+  const playbook = items.length ? expandPlaybook(raw, items, familyIndex) : raw;
   const recordsById = new Map(records.map((record) => [record.item.id, record]));
   const shell = element('div', 'playbook-shell');
   shell.dataset.playbook = playbook.id;
@@ -162,19 +167,16 @@ export function renderPlaybookWorkspace(root, context) {
   hero.append(element('h2', '', playbook.title));
   hero.append(element('p', 'family-summary', playbook.summary));
   const meta = element('p', 'playbook-hero-meta');
-  meta.textContent = `${checkCount(playbook)} checks · ${variantCount(playbook)} variants & payloads · copy any block into Repeater`;
+  const authored = playbookChecks(raw).length;
+  meta.textContent = `${checkCount(playbook)} applicable checks · ${variantCount(playbook)} variants & payloads · ${authored} named start-here probes · copy any block into Repeater`;
   hero.append(meta);
 
   const toc = element('nav', 'playbook-toc');
-  toc.setAttribute('aria-label', 'Checks in this playbook');
+  toc.setAttribute('aria-label', 'Groups in this playbook');
   for (const group of playbook.groups || []) {
-    const heading = element('span', 'playbook-toc-group', group.title);
-    toc.append(heading);
-    for (const check of group.checks || []) {
-      const link = element('a', '', check.title);
-      link.href = `#playbook/${playbook.id}/${check.id}`;
-      toc.append(link);
-    }
+    const link = element('a', group.authored ? '' : 'is-muted', `${group.title} (${(group.checks || []).length})`);
+    link.href = `#playbook/${playbook.id}/${group.id}`;
+    toc.append(link);
   }
   hero.append(toc);
   shell.append(hero);
@@ -182,7 +184,9 @@ export function renderPlaybookWorkspace(root, context) {
   for (const group of playbook.groups || []) {
     const section = element('section', 'playbook-group');
     section.dataset.playbookGroup = group.id;
+    section.id = `probe-${group.id}`;
     const head = element('header', 'playbook-group-head');
+    head.append(element('p', 'micro-label', group.authored ? 'START HERE' : 'ALL APPLICABLE'));
     head.append(element('h3', '', group.title));
     if (group.summary) head.append(element('p', '', group.summary));
     section.append(head);
@@ -213,9 +217,9 @@ export function renderPlaybookBanner(root, context) {
   const banner = element('aside', 'playbook-banner');
   banner.dataset.playbookBanner = primary.id;
   const copy = element('div');
-  copy.append(element('p', 'micro-label', 'PAGE-TYPE PLAYBOOK'));
+  copy.append(element('p', 'micro-label', 'PAGE-TYPE PLAYBOOKS'));
   copy.append(element('strong', '', primary.title));
-  copy.append(element('p', '', `${checkCount(primary)} checks with ${variantCount(primary)} copyable variants — the payloads, not the story.`));
+  copy.append(element('p', '', 'Every applicable check for the page in front of you — named variants and copyable payloads, not a shortlist and not methodology prose.'));
   const action = element('a', 'button button-primary', `Open ${primary.title} →`);
   action.href = `#playbook/${primary.id}`;
   banner.append(copy, action);

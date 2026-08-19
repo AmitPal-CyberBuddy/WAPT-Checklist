@@ -128,6 +128,48 @@ test('playbook engine matches each preset to the surfaces a tester would open', 
   assert.ok(probes.some(({ check }) => check.id === 'clickjacking'));
 });
 
+test('expanded playbook lists every applicable check, not a shortlist', async () => {
+  const [{ expandPlaybook, indexPlaybooks, playbookChecks }, { indexFamilies }] = await Promise.all([
+    import('../js/engine/playbooks.js'),
+    import('../js/engine/families.js')
+  ]);
+  const items = [...productionIds()].map((id) => {
+    // load real items once
+    return id;
+  });
+  const skip = new Set(['manifest.json', 'sample.json', 'families.json']);
+  const catalog = fs.readdirSync(path.join(ROOT, 'checklist'))
+    .filter((name) => name.endsWith('.json') && !skip.has(name))
+    .flatMap((name) => JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist', name), 'utf8')).items);
+  const families = indexFamilies(JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist/families.json'), 'utf8')));
+  const { manifest, documents } = loadPlaybooks();
+  const index = indexPlaybooks(manifest, documents);
+
+  const staticExpanded = expandPlaybook(index.byId.get('static-page'), catalog, families);
+  const staticChecks = playbookChecks(staticExpanded);
+  assert.ok(staticChecks.length >= 150, `static should list all applicable checks, got ${staticChecks.length}`);
+  const staticTitles = staticChecks.map(({ title }) => title.toLowerCase());
+  for (const needle of ['clickjacking', 'hsts', 'csp', 'host header', 'path traversal', 'directory enumeration']) {
+    assert.ok(staticTitles.some((title) => title.includes(needle)), `static missing ${needle}`);
+  }
+  assert.ok(staticChecks.some(({ item }) => item === 'WAPT-HTTP-015'), 'static must include CORS');
+  assert.ok(staticChecks.some(({ item }) => item === 'WAPT-SMUG-003'), 'static must include request smuggling');
+  assert.ok(staticChecks.some(({ item }) => item === 'WAPT-HDR-011'), 'static must include Permissions-Policy');
+  assert.ok(staticChecks.every((check) => (check.variants || []).length >= 2));
+  assert.ok(staticChecks.every((check) => check.variants.every(({ payload }) => payload && payload.length > 4)));
+
+  const loginExpanded = expandPlaybook(index.byId.get('login-page'), catalog, families);
+  const loginChecks = playbookChecks(loginExpanded);
+  assert.ok(loginChecks.length >= 200, `login should list all applicable checks, got ${loginChecks.length}`);
+  const loginHay = loginChecks.map(({ title, item }) => `${title} ${item}`).join(' ').toLowerCase();
+  for (const needle of ['clickjacking', 'hsts', 'sql', 'host', 'csrf', 'enumerat']) {
+    assert.ok(loginHay.includes(needle), `login missing ${needle}`);
+  }
+  assert.ok(loginChecks.some(({ item }) => item === 'WAPT-HDR-006'), 'login page still gets clickjacking');
+  assert.ok(loginChecks.some(({ item }) => item === 'WAPT-INJ-001'), 'login page still gets SQLi');
+  void items;
+});
+
 test('workspace and app shell expose playbooks as a first-class view', () => {
   const appHtml = fs.readFileSync(path.join(ROOT, 'app.html'), 'utf8');
   const app = fs.readFileSync(path.join(ROOT, 'js/ui/app.js'), 'utf8');
