@@ -5,13 +5,14 @@ import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, 
 import { createCatalog } from './catalog.js?v=1.0.0-r6';
 import { createWorkspace } from './workspace.js?v=1.0.0-r6';
 
-const VIEWS = new Set(['dashboard', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
+const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
 // Where should the tester land? A real engagement is resumed, not restarted: if this browser
 // already holds progress, return to the last position instead of the scope wizard.
 function initialHash(current) {
   const position = current.position || {};
   if (position.view === 'family' && position.family) return `family/${position.family}`;
+  if (position.view === 'playbook' && position.family) return `playbook/${position.family}`;
   if (position.view === 'checklist' && position.category) return `checklist/${position.category}`;
   if (position.view) return position.view;
   const hasProgress = Object.keys(current.statuses || {}).length > 0;
@@ -155,7 +156,7 @@ function route() {
   setSidebar(false);
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
-  if (manifest.categories.length && ['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
+  if (manifest.categories.length && ['dashboard', 'playbooks', 'playbook', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
     workspace.show(view, slug).catch((error) => {
       const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
       if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;
@@ -199,7 +200,7 @@ function initializeShell() {
     },
     onComplete(nextState) {
       setActiveState(nextState);
-      location.hash = 'dashboard';
+      location.hash = nextState.answers?.app_type === 'static' ? 'playbook/static-page' : 'dashboard';
     }
   });
 
@@ -261,7 +262,7 @@ function initializeShell() {
         return;
       }
     }
-    if (event.key === 'n' || event.key === 'p') {
+    if ((event.key === 'n' || event.key === 'p') && !pendingShortcut) {
       const view = currentView();
       if (!['checklist', 'search', 'family'].includes(view)) return;
       const cards = [...document.querySelectorAll('[data-family-root] .check-holder, [data-checklist-results] .check-holder, [data-search-results] .check-holder, [data-checklist-results] > .test-card, [data-checklist-results] .family-group > .test-card, [data-search-results] .test-card')]
@@ -284,6 +285,7 @@ function initializeShell() {
     if (pendingShortcut && Date.now() - pendingShortcut.at < 900) {
       pendingShortcut = null;
       if (event.key === 'd') location.hash = 'dashboard';
+      else if (event.key === 'p') location.hash = 'playbooks';
       else if (event.key === 't') location.hash = 'families';
       else if (event.key === 'c') location.hash = 'checklist';
       else if (event.key === 'f') {

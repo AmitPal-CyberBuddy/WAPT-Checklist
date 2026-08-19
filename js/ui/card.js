@@ -12,6 +12,7 @@ import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r6';
 import { clearOverride, setItemNote, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
 import { APP_LABELS, SEVERITY_GLYPHS, element, section, statusControls } from './dom.js?v=1.0.0-r6';
+import { renderItemProbes } from './playbook.js?v=1.0.0-r6';
 
 export function renderCard(record, context) {
   const { getState, commit, familyIndex, categoryOf, renderEvidenceForm } = context;
@@ -67,6 +68,7 @@ export function renderCard(record, context) {
   const behavior = element('div', 'behavior-grid');
   behavior.append(section('Secure behavior', item.secure_behavior), section('Vulnerable behavior', item.vulnerable_behavior));
   procedureBody.append(behavior);
+  if (context.playbookIndex) renderItemProbes(procedureBody, context.playbookIndex, item.id);
   if (item.examples?.length) {
     const examples = element('section', 'method-section');
     examples.append(element('h4', '', 'Examples'));

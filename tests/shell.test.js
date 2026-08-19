@@ -173,7 +173,7 @@ test('test families are a first-class view with board, workspace, and resume', (
     'data-family-gaps', 'data-blocked-list', 'data-resume', 'data-view-link="families"']) {
     assert.ok(appHtml.includes(marker), `app.html missing ${marker}`);
   }
-  assert.match(app, /VIEWS = new Set\(\['dashboard', 'families', 'family'/);
+  assert.match(app, /VIEWS = new Set\(\['dashboard', 'playbooks', 'playbook', 'families', 'family'/);
   assert.match(app, /function initialHash/);
   assert.match(workspace, /rememberPosition\(\{ view: 'family'/);
   assert.match(familyView, /data-dont-miss|dontMiss/);

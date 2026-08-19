@@ -365,7 +365,7 @@ export function renderFamilyWorkspace(root, context) {
       open.setAttribute('aria-expanded', String(!expanded));
       detail.hidden = expanded;
       if (!expanded && !detail.childElementCount) {
-        detail.append(renderCard(record, { getState, commit, familyIndex, categoryOf, renderEvidenceForm, embedded: true, inFamilyView: true }));
+        detail.append(renderCard(record, { getState, commit, familyIndex, categoryOf, renderEvidenceForm, playbookIndex: context.playbookIndex, embedded: true, inFamilyView: true }));
       }
     });
     list.append(holder);

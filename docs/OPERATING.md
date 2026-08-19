@@ -6,10 +6,11 @@ Operator documentation: what this tool is for, the working vocabulary, the loop 
 
 1. **Start a WAPT** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
 2. **Scope it** — answer the adaptive questions or pick a preset. `Not confirmed yet` is a real answer: affected checks stay visible as *Confirm*, never silently dropped.
-3. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
-4. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
-5. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
-6. **Report** — export the Markdown report, the checklist, or the coverage CSV; keep evidence packs with their retest verdicts.
+3. **Open the page playbook** — if you scoped a static site, a login page, or an API, the matching playbook lists every applicable check with named variants and copyable payloads (Host header, CSP, path traversal, BOLA…). This is the working layer; the methodology is one click behind it. Browse every pack from **Page playbooks** even without a scope.
+4. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
+5. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
+6. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
+7. **Report** — export the Markdown report, the checklist, or the coverage CSV; keep evidence packs with their retest verdicts.
 
 The engagement is saved continuously in this browser only. Closing the tab is safe; the workspace reopens on the family you were last working.
 

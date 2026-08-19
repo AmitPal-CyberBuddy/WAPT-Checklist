@@ -22,6 +22,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings — results arrive as family-grouped one-line rows you can status directly, expanding into the full card in place.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips and a Testing/Coverage view toggle.
+- **Page playbooks:** static/published page, login page, and API endpoint packs that list every applicable check with named variants and copyable payloads (Host header, CSP, HSTS, testssl, clickjacking, directory enum, path traversal, BOLA). Scoping a static site opens that playbook first.
 - **Test families as the working unit:** 196 validated families covering every one of the 623 checks. The families board shows tested/executable, blocked, N/A, confirmed, and don't-miss coverage per surface; a family workspace gives the authored Quick Test, a tickable Don't Miss list, dense check rows, "after this family", and "what else should I check?" without losing context.
 - **Honest coverage states:** tested (executed) · testing now · blocked · N/A (by scope or by tester) · not tested. N/A never counts as tested; blocked work stays in the denominator because it is still owed.
 - **Check ≠ coverage ≠ finding:** every check carries a coverage control and a separate finding verdict, so a completed checklist item never implies a vulnerability.
@@ -69,6 +70,7 @@ css/                       Independent design tokens, responsive UI, print
 js/ui/                     Browser rendering, wizard, storage adapter
 js/engine/                 Pure context, applicability, priority, state policy
 js/data/presets.mjs        Plain context mappings for quick starts
+playbooks/                 Page-type packs with named variants and copyable payloads
 checklist/manifest.json    Category metadata and honest production counts
 checklist/reconnaissance.json  Phase 4 production reconnaissance methodology
 checklist/http.json          Phase 4 HTTP and browser protocol methodology

@@ -1,0 +1,28 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-19",
+  "note": "Surface playbooks are the tester-facing working layer: every applicable check for a page type, with named variants and copyable payloads. They reference methodology items; they do not replace them.",
+  "playbooks": [
+    {
+      "id": "static-page",
+      "title": "Static / published page",
+      "file": "static-page.json",
+      "summary": "No login, no first-party API. TLS, headers, host, paths, disclosure, and client framing.",
+      "count": 16
+    },
+    {
+      "id": "login-page",
+      "title": "Login / identity page",
+      "file": "login-page.json",
+      "summary": "Credential transport, enumeration, lockout, Host-poisoned reset links, and session fixation.",
+      "count": 9
+    },
+    {
+      "id": "api-endpoint",
+      "title": "API endpoint",
+      "file": "api-endpoint.json",
+      "summary": "Auth, object/function authorization, verb/content-type swaps, mass assignment, and SSRF-shaped URL fields.",
+      "count": 8
+    }
+  ]
+}

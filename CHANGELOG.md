@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Page playbooks — reported: static-page tests were methodology prose, not variants and payloads)
+
+- **Page playbooks** (`#playbooks`, `#playbook/<id>`): tester-facing packs for a static/published page, a login/identity page, and an API endpoint. Each check lists named variants with copyable HTTP requests, commands, or HTML — Host header (arbitrary, duplicate, X-Forwarded-Host, Forwarded, absolute-form), CSP, HSTS, testssl, clickjacking, directory enum/listing, path traversal, absolute URL injection, BOLA, and the rest.
+- Scoping a **static marketing site** lands on the static-page playbook instead of the dashboard. `g p` opens the board. A dashboard banner points at the matching pack.
+- Methodology cards that a playbook covers now surface the same variants under *Procedure & variants*.
+- `playbooks/*.json` is validated: IDs resolve, every check has at least two named variants, manifest counts match.
+
 ### Fixed (Layout density — reported: every scope question needed scrolling on a laptop)
 
 - **Scope wizard fits one screen.** The wizard spent 697 px of vertical chrome before the first option, so a 4-option question rendered a 974 px page against a ~650 px laptop viewport. Now 330 px of chrome and a 534 px page: compact heading, one-line intro (hidden below 720 px tall), the local-storage explanation collapsed into a `<details>` summary instead of a permanent block, the step counter merged into the question heading, denser option cards, and the removal of the fixed `min-height` on `.wizard-body` (including a 500 px phone rule).
