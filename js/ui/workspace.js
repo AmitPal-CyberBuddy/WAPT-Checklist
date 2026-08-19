@@ -476,6 +476,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     if (activeView === 'families') renderBoard();
     if (activeView === 'family') renderFamily();
     if (activeView === 'dashboard') renderDashboard();
+    else if (activeView === 'playbooks') renderPlaybooks();
+    else if (activeView === 'playbook') renderPlaybook();
     else renderDashboardMetrics();
   }
 
@@ -709,7 +711,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       index: playbookIndex,
       matched: matchPlaybooks(playbookIndex, derived),
       primary: suggestedPlaybook(playbookIndex, derived),
-      contextLabel: playbookContextLabel()
+      contextLabel: playbookContextLabel(),
+      derived
     });
   }
 
@@ -924,6 +927,15 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks(), chainStore.loadAll()]);
       await renderDashboard();
       rememberPosition({ view: 'dashboard' });
+    } else if (view === 'playbooks') {
+      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks()]);
+      renderPlaybooks();
+      rememberPosition({ view: 'playbooks' });
+    } else if (view === 'playbook') {
+      activePlaybook = slug;
+      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks()]);
+      renderPlaybook();
+      rememberPosition({ view: 'playbook', family: slug });
     } else if (view === 'families') {
       await Promise.all([ensureAll(), loadFamilies()]);
       renderBoard();
@@ -999,14 +1011,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     setManifest(next) { manifest = next; catalog.setManifest(next); renderDashboardMetrics(); },
     show,
     bindActions,
-    refresh() { if (activeView) return show(activeView, activeView === 'family' ? activeFamily : activeCategory); },
+    refresh() {
+      if (!activeView) return;
+      if (activeView === 'playbook') return show('playbook', activePlaybook);
+      if (activeView === 'family') return show('family', activeFamily);
+      return show(activeView, activeCategory);
+    },
     renderDashboardMetrics
-  });
-}
-turn show(activeView, activeView === 'family' ? activeFamily : activeCategory); },
-    renderDashboardMetrics
-  });
-}
-dMetrics
   });
 }

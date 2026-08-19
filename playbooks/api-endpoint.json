@@ -3,7 +3,7 @@
   "id": "api-endpoint",
   "title": "API endpoint",
   "summary": "Auth on every verb, object and function authorization, mass assignment, content-type swaps, and URL-fetching fields. Two accounts minimum.",
-  "when": { "api_style": ["rest", "graphql", "soap", "grpc"] },
+  "when": { "api_style": ["rest"] },
   "also_when": { "app_type": ["api_only"] },
   "default_for": ["api_only"],
   "groups": [

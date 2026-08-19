@@ -1,0 +1,218 @@
+{
+  "schema_version": "1.0.0",
+  "id": "oauth-sso",
+  "title": "OAuth / SSO / SAML",
+  "summary": "redirect_uri, state, PKCE, code reuse, token leakage, SAML signatures, and RelayState.",
+  "when": {
+    "auth_mechanism": [
+      "oauth",
+      "saml"
+    ]
+  },
+  "also_when": {
+    "auth_mechanism": [
+      "mixed"
+    ]
+  },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "oauth",
+      "title": "OAuth / OIDC",
+      "summary": "The redirect is the boundary.",
+      "checks": [
+        {
+          "id": "redirect-uri",
+          "title": "redirect_uri exact match",
+          "item": "WAPT-OAUTH-001",
+          "related": [
+            "WAPT-OAUTH-014",
+            "WAPT-HTTP-013"
+          ],
+          "severity": "critical",
+          "why": "The authorization server accepts a prefix, subdomain, or parameter on redirect_uri and delivers the code off-origin.",
+          "validate": "A code or token lands on an origin you control.",
+          "variants": [
+            {
+              "name": "Prefix / path suffix",
+              "kind": "request",
+              "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com.evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
+              "expect": "Must reject. Also try https://app.example.com/callback/../off and https://app.example.com%40evil.example/."
+            },
+            {
+              "name": "Parameter pollution",
+              "kind": "request",
+              "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com/cb&redirect_uri=https://evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
+              "expect": "Duplicate redirect_uri must not pick the attacker value."
+            },
+            {
+              "name": "Open redirect on the client",
+              "kind": "request",
+              "payload": "GET /login?next=https://evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Post-login next= is a second hop. Must not land off-origin after a good redirect_uri."
+            }
+          ]
+        },
+        {
+          "id": "state-nonce",
+          "title": "state and nonce binding",
+          "item": "WAPT-OAUTH-002",
+          "related": [
+            "WAPT-OAUTH-003"
+          ],
+          "severity": "high",
+          "why": "The callback accepts a missing, reused, or attacker-chosen state, so login CSRF or code injection works.",
+          "validate": "A callback without the initiating state's value still establishes a session.",
+          "variants": [
+            {
+              "name": "Drop state",
+              "kind": "request",
+              "payload": "GET /callback?code=<code>&state= HTTP/1.1\nHost: www.example.com\nCookie: session=<pre-login>",
+              "expect": "Must fail. Also try omitting state entirely."
+            },
+            {
+              "name": "Replay someone else's state",
+              "kind": "note",
+              "payload": "Start login as A, capture state. Complete B's login with A's state (or a random string).",
+              "expect": "Must fail. nonce on the id_token must match the initiating session too."
+            }
+          ]
+        },
+        {
+          "id": "pkce",
+          "title": "PKCE on public clients",
+          "item": "WAPT-OAUTH-004",
+          "related": [
+            "WAPT-OAUTH-005"
+          ],
+          "severity": "critical",
+          "why": "A public / SPA / mobile client can skip PKCE, or the server accepts any verifier.",
+          "validate": "An authorization code is exchanged without the matching code_verifier.",
+          "variants": [
+            {
+              "name": "Omit PKCE on authorize",
+              "kind": "request",
+              "payload": "GET /authorize?client_id=<spa-id>&redirect_uri=https://app.example.com/cb&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
+              "expect": "A public client must be rejected without code_challenge=S256."
+            },
+            {
+              "name": "Wrong verifier",
+              "kind": "request",
+              "payload": "POST /token HTTP/1.1\nHost: idp.example.com\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=authorization_code&code=<code>&redirect_uri=https://app.example.com/cb&client_id=<spa-id>&code_verifier=wrong",
+              "expect": "Must fail. A success means PKCE is not enforced."
+            }
+          ]
+        },
+        {
+          "id": "code-reuse",
+          "title": "Authorization code reuse",
+          "item": "WAPT-OAUTH-005",
+          "related": [
+            "WAPT-OAUTH-008"
+          ],
+          "severity": "critical",
+          "why": "The same code is exchanged twice, or the code leaks into Referer / logs via a query redirect.",
+          "validate": "A second exchange issues tokens, or the code is visible on a third-party request.",
+          "variants": [
+            {
+              "name": "Replay the code",
+              "kind": "note",
+              "payload": "Exchange the code once, then replay the same /token POST.",
+              "expect": "Second use must fail and should revoke the first grant."
+            },
+            {
+              "name": "Code in Referer",
+              "kind": "note",
+              "payload": "Land on the redirect_uri that still has ?code= in the query, then load a third-party script/image.",
+              "expect": "The code must not appear in Referer. Prefer a form_post response mode or an immediate 302 that strips it."
+            }
+          ]
+        },
+        {
+          "id": "token-leak",
+          "title": "Tokens out of the URL",
+          "item": "WAPT-OAUTH-008",
+          "related": [
+            "WAPT-JWT-017",
+            "WAPT-OAUTH-010"
+          ],
+          "severity": "high",
+          "why": "implicit / hybrid fragments, access_token in a query, or tokens in logs.",
+          "validate": "A token is observable in a URL, Referer, or a client log you are allowed to read.",
+          "variants": [
+            {
+              "name": "Reject implicit",
+              "kind": "request",
+              "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com/cb&response_type=token&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
+              "expect": "Must refuse response_type=token / id_token for a confidential app. implicit is deprecated."
+            },
+            {
+              "name": "Token in query",
+              "kind": "note",
+              "payload": "After login, inspect the browser URL, any next= redirect, and the network log for access_token=.",
+              "expect": "Tokens belong in a POST body or a cookie, not a query string."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saml",
+      "title": "SAML",
+      "summary": "Signature, wrapping, and RelayState.",
+      "checks": [
+        {
+          "id": "saml-sig",
+          "title": "SAML signature required",
+          "item": "WAPT-OAUTH-015",
+          "related": [
+            "WAPT-OAUTH-016",
+            "WAPT-OAUTH-017"
+          ],
+          "severity": "critical",
+          "why": "The ACS accepts an unsigned or wrapped assertion.",
+          "validate": "A modified assertion (changed NameID or attribute) is accepted. Use a test IdP / your own assertion, never a real user's.",
+          "variants": [
+            {
+              "name": "Drop the signature",
+              "kind": "note",
+              "payload": "Capture a test-IdP SAMLResponse, remove ds:Signature, and POST it to the ACS.",
+              "expect": "Must reject. Do this only with a test account and a test IdP."
+            },
+            {
+              "name": "Change NameID with signature left intact",
+              "kind": "note",
+              "payload": "Alter the NameID of a test assertion without recomputing the signature.",
+              "expect": "Must reject. Signature wrapping (signed wrapper, unsigned inner assertion) is the same class."
+            }
+          ]
+        },
+        {
+          "id": "relaystate",
+          "title": "RelayState / post-SSO navigation",
+          "item": "WAPT-OAUTH-020",
+          "related": [
+            "WAPT-HTTP-013"
+          ],
+          "severity": "high",
+          "why": "RelayState is an open redirect after a successful SSO.",
+          "validate": "The browser ends on an origin you control after a valid SSO.",
+          "variants": [
+            {
+              "name": "Absolute RelayState",
+              "kind": "request",
+              "payload": "POST /sso/acs HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nSAMLResponse=<valid-test>&RelayState=https%3A%2F%2Fevil.example%2F",
+              "expect": "Must stay on-origin. Repeat for //evil.example/ and /\\evil.example/."
+            },
+            {
+              "name": "Protocol-relative",
+              "kind": "note",
+              "payload": "RelayState=//evil.example/ and RelayState=////evil.example/",
+              "expect": "Same check as any other open redirect. Confirm the final Location."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

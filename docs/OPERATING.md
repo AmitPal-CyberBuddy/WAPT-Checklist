@@ -6,7 +6,7 @@ Operator documentation: what this tool is for, the working vocabulary, the loop 
 
 1. **Start a WAPT** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
 2. **Scope it** — answer the adaptive questions or pick a preset. `Not confirmed yet` is a real answer: affected checks stay visible as *Confirm*, never silently dropped.
-3. **Open the page playbook** — if you scoped a static site, a login page, or an API, the matching playbook lists every applicable check with named variants and copyable payloads (Host header, CSP, path traversal, BOLA…). This is the working layer; the methodology is one click behind it. Browse every pack from **Page playbooks** even without a scope.
+3. **Open the page playbook** — pick the surface you are looking at (static page, login, registration, reset, profile, upload, search, checkout, admin, REST, GraphQL, WebSocket, OAuth, JWT, SPA). The pack lists every applicable check with named variants and copyable payloads (Host header, CSP, path traversal, BOLA, alg=none…). This is the working layer; the methodology is one click behind it. The board highlights every pack that matches the current scope.
 4. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
 5. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
 6. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
@@ -60,6 +60,7 @@ Plus a boundary line: **NOT HERE** names the sibling families that own the rest 
 | --- | --- |
 | `/` | Search the methodology |
 | `g` `d` | Dashboard |
+| `g` `p` | Page playbooks |
 | `g` `t` | Test families |
 | `g` `c` | All tests |
 | `g` `f` | Findings |

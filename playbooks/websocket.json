@@ -1,0 +1,160 @@
+{
+  "schema_version": "1.0.0",
+  "id": "websocket",
+  "title": "WebSocket / realtime",
+  "summary": "WSS, Origin allowlist, socket auth, tokens in URLs, per-message authorization, and subscription IDOR.",
+  "when": {
+    "api_style": [
+      "websocket"
+    ]
+  },
+  "also_when": {
+    "features": [
+      "chat"
+    ]
+  },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "handshake",
+      "title": "Handshake",
+      "summary": "How the socket is opened.",
+      "checks": [
+        {
+          "id": "wss",
+          "title": "Authenticated sockets over WSS",
+          "item": "WAPT-WS-001",
+          "related": [
+            "WAPT-AUTH-001"
+          ],
+          "severity": "high",
+          "why": "A ws:// socket carries a session or the page mixed-content-falls back to plaintext.",
+          "validate": "An authenticated message is observable on a plaintext WebSocket.",
+          "variants": [
+            {
+              "name": "ws:// upgrade",
+              "kind": "request",
+              "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
+              "expect": "Must 4xx or redirect to wss. A 101 on port 80 is the finding if the socket is authenticated."
+            },
+            {
+              "name": "Page socket URL",
+              "kind": "note",
+              "payload": "In DevTools, look at the page's new WebSocket(...) argument.",
+              "expect": "Must be wss:// on an HTTPS page. A ws:// URL is mixed content and often blocked — still record it."
+            }
+          ]
+        },
+        {
+          "id": "origin",
+          "title": "Origin allowlist",
+          "item": "WAPT-WS-002",
+          "related": [
+            "WAPT-HTTP-015"
+          ],
+          "severity": "high",
+          "why": "The upgrade ignores Origin or reflects any origin, so a malicious page can open the victim's socket.",
+          "validate": "A handshake from https://evil.example is accepted on an authenticated socket.",
+          "variants": [
+            {
+              "name": "Arbitrary Origin",
+              "kind": "request",
+              "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://evil.example\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nCookie: session=<account-A>",
+              "expect": "Must reject. A 101 is the finding if the cookie is enough to authorize."
+            },
+            {
+              "name": "null / subdomain",
+              "kind": "request",
+              "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: null\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nCookie: session=<account-A>",
+              "expect": "null and https://evil.example.com.example must not match a substring allowlist."
+            }
+          ]
+        },
+        {
+          "id": "auth",
+          "title": "Socket authentication",
+          "item": "WAPT-WS-003",
+          "related": [
+            "WAPT-WS-004",
+            "WAPT-AUTH-017"
+          ],
+          "severity": "critical",
+          "why": "The socket is open to anyone, or the token is in the query string.",
+          "validate": "A message that should be authenticated succeeds without a current credential.",
+          "variants": [
+            {
+              "name": "No cookie / no token",
+              "kind": "request",
+              "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
+              "expect": "Must 401. If 101, send a privileged subscribe next — an open handshake plus authorized data is the finding."
+            },
+            {
+              "name": "Token in the query string",
+              "kind": "request",
+              "payload": "GET /chat?access_token=<token> HTTP/1.1\nHost: www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
+              "expect": "If it works, the token is now in logs and Referer. Prefer a header or a post-open auth message."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "messages",
+      "title": "Messages and subscriptions",
+      "summary": "Every message is a request. Authorize it.",
+      "checks": [
+        {
+          "id": "msg-authz",
+          "title": "Per-message authorization",
+          "item": "WAPT-WS-005",
+          "related": [
+            "WAPT-AUTHZ-035"
+          ],
+          "severity": "high",
+          "why": "A member can send an admin action, or A can act as B, over an already-open socket.",
+          "validate": "A privileged or cross-account action executes.",
+          "variants": [
+            {
+              "name": "Cross-account send",
+              "kind": "note",
+              "payload": "{\"action\":\"message.send\",\"channel\":\"user:1002\",\"body\":\"wapt-marker\"}",
+              "expect": "A's socket must not deliver to B's inbox. Also try user_id, to, room."
+            },
+            {
+              "name": "Admin action on member socket",
+              "kind": "note",
+              "payload": "{\"action\":\"user.delete\",\"id\":42}\\n{\"type\":\"admin.broadcast\",\"body\":\"x\"}",
+              "expect": "Must be unauthorized. Confirm the side effect did not happen."
+            }
+          ]
+        },
+        {
+          "id": "subscribe-idor",
+          "title": "Subscription / channel IDOR",
+          "item": "WAPT-WS-006",
+          "related": [
+            "WAPT-AUTHZ-035",
+            "WAPT-GQL-014"
+          ],
+          "severity": "high",
+          "why": "SUBSCRIBE room:1002 returns B's events to A's socket.",
+          "validate": "An event about B arrives on A's connection.",
+          "variants": [
+            {
+              "name": "Subscribe to B's channel",
+              "kind": "note",
+              "payload": "{\"action\":\"subscribe\",\"channel\":\"orders:1002\"}\\n{\"type\":\"subscribe\",\"topic\":\"user/1002\"}",
+              "expect": "Must refuse or stay silent. An order-updated event for B is the finding."
+            },
+            {
+              "name": "Wildcard / broadcast",
+              "kind": "note",
+              "payload": "{\"action\":\"subscribe\",\"channel\":\"*\"}\\n{\"action\":\"subscribe\",\"channel\":\"orders:#\"}",
+              "expect": "Wildcards must not expand past the caller's objects."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

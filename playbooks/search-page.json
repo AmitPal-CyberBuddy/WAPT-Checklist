@@ -1,0 +1,234 @@
+{
+  "schema_version": "1.0.0",
+  "id": "search-page",
+  "title": "Search / listing",
+  "summary": "Reflected and stored XSS, SQL / NoSQL / SSTI in q=, authorization on results, and scrape limits.",
+  "when": {
+    "features": [
+      "search"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "xss",
+      "title": "Cross-site scripting",
+      "summary": "q= lands in HTML, JS, or an attribute.",
+      "checks": [
+        {
+          "id": "reflected-xss",
+          "title": "Reflected XSS in search",
+          "item": "WAPT-XSS-001",
+          "related": [
+            "WAPT-XSS-011",
+            "WAPT-XSS-021"
+          ],
+          "severity": "high",
+          "why": "The query is echoed into the results page without encoding for that context.",
+          "validate": "A marker in q= executes in a realistic navigation (not a raw JSON dump).",
+          "variants": [
+            {
+              "name": "HTML context",
+              "kind": "request",
+              "payload": "GET /search?q=%3Cimg%20src=x%20onerror=alert(1)%3E HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "If the raw markup appears in the HTML body, refine until it executes. Also try the same in POST."
+            },
+            {
+              "name": "Attribute context",
+              "kind": "request",
+              "payload": "GET /search?q=%22%20onmouseover%3Dalert(1)%20x%3D%22 HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "If q= lands in value=\"…\", a quote breakout executes."
+            },
+            {
+              "name": "JS string context",
+              "kind": "request",
+              "payload": "GET /search?q=%27-alert(1)-%27 HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "If the page does var q = '…', a quote plus a call executes. Confirm in the browser."
+            },
+            {
+              "name": "javascript: and data:",
+              "kind": "request",
+              "payload": "GET /search?next=javascript:alert(1) HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Must not become a navigable href or Location. Repeat for q, query, s, term, filter."
+            }
+          ]
+        },
+        {
+          "id": "stored-search",
+          "title": "Stored XSS via saved search / name",
+          "item": "WAPT-XSS-002",
+          "related": [
+            "WAPT-XSS-003"
+          ],
+          "severity": "high",
+          "why": "A saved search name, filter, or alert is later rendered for another user or an admin.",
+          "validate": "A marker you stored executes in a realistic viewer context.",
+          "variants": [
+            {
+              "name": "Saved-search name",
+              "kind": "request",
+              "payload": "POST /searches HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"name\":\"<img src=x onerror=alert(1)>\",\"q\":\"widget\"}",
+              "expect": "Open the saved list as B and in any admin view."
+            },
+            {
+              "name": "Highlight / snippet",
+              "kind": "note",
+              "payload": "Store a document whose body is <img src=x onerror=alert(1)> then search for a word inside it.",
+              "expect": "Highlighter XSS is stored XSS. Confirm the snippet is encoded."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "injection",
+      "title": "Interpreter injection",
+      "summary": "SQL, NoSQL, and template evaluation through the same q=.",
+      "checks": [
+        {
+          "id": "sqli-search",
+          "title": "SQL injection in search",
+          "item": "WAPT-INJ-001",
+          "related": [
+            "WAPT-INJ-002",
+            "WAPT-INJ-004"
+          ],
+          "severity": "critical",
+          "why": "q= is concatenated into a SQL string.",
+          "validate": "Paired payloads produce a consistent boolean or error differential. Do not dump tables.",
+          "variants": [
+            {
+              "name": "Error / syntax",
+              "kind": "request",
+              "payload": "GET /search?q=%27 HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A SQL error, stack, or a different 500 vs the baseline is a lead. Follow with a boolean pair."
+            },
+            {
+              "name": "Boolean pair",
+              "kind": "request",
+              "payload": "GET /search?q=widget%27+AND+1%3D1-- HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Compare with AND+1%3D2. Same pair as q=widget' AND '1'='1. A stable differential is the finding."
+            },
+            {
+              "name": "ORDER BY / sort",
+              "kind": "request",
+              "payload": "GET /search?q=widget&sort=id;select+1 HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "sort, order, field, and column identifiers are a different injection point. Also try sort=1 / sort=99."
+            }
+          ]
+        },
+        {
+          "id": "nosql-search",
+          "title": "NoSQL operator injection",
+          "item": "WAPT-INJ-009",
+          "related": [
+            "WAPT-INJ-010",
+            "WAPT-INJ-011"
+          ],
+          "severity": "high",
+          "why": "JSON search filters accept $gt / $ne / $where the client never meant to send.",
+          "validate": "A filter returns objects the baseline query did not, without a matching keyword.",
+          "variants": [
+            {
+              "name": "Mongo operator in JSON",
+              "kind": "request",
+              "payload": "POST /api/v1/search HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\nAuthorization: Bearer <token>\n\n{\"q\":{\"$ne\":null},\"filter\":{\"status\":{\"$ne\":\"\"}}}",
+              "expect": "Must be rejected or treated as a literal string. Extra rows vs q=\"widget\" is the finding."
+            },
+            {
+              "name": "Bracket operators",
+              "kind": "request",
+              "payload": "GET /search?q[$ne]=&status[$gt]= HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "qs parsers turn this into operators. Same comparison against a normal q=."
+            }
+          ]
+        },
+        {
+          "id": "ssti-search",
+          "title": "Server-side template injection",
+          "item": "WAPT-INJ-030",
+          "related": [
+            "WAPT-INJ-031",
+            "WAPT-INJ-035"
+          ],
+          "severity": "critical",
+          "why": "q= is interpolated into a server template and evaluated.",
+          "validate": "A harmless arithmetic payload is evaluated (7*7 → 49). Do not escalate to a shell on a shared host.",
+          "variants": [
+            {
+              "name": "Twig / Jinja arithmetic",
+              "kind": "request",
+              "payload": "GET /search?q={{7*7}} HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Look for 49 in the page where the query is echoed. Also try ${7*7} and <%= 7*7 %>."
+            },
+            {
+              "name": "Freemarker / Velocity",
+              "kind": "request",
+              "payload": "GET /search?q=%24%7B7*7%7D HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Same 49 check. Blind SSTI uses a unique Collaborator callback, not a reverse shell."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "authz-abuse",
+      "title": "Authorization and abuse",
+      "summary": "Search must not be an IDOR oracle, and scrape must be bounded.",
+      "checks": [
+        {
+          "id": "authz-search",
+          "title": "Authorization on search hits",
+          "item": "WAPT-AUTHZ-032",
+          "related": [
+            "WAPT-AUTHZ-006",
+            "WAPT-API-017"
+          ],
+          "severity": "high",
+          "why": "A search or export returns objects the caller cannot open directly.",
+          "validate": "A hit for B's private object appears in A's results or export.",
+          "variants": [
+            {
+              "name": "Search for B's unique marker",
+              "kind": "request",
+              "payload": "GET /search?q=wapt-private-marker-B HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "A's session must not see B's private document. Also try the same query on /export."
+            },
+            {
+              "name": "Filter by owner_id",
+              "kind": "request",
+              "payload": "GET /api/v1/items?owner_id=1002 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
+              "expect": "A filter is not an authorization bypass. Empty or 403, not B's list."
+            }
+          ]
+        },
+        {
+          "id": "rate-scrape",
+          "title": "Search / export scrape limits",
+          "item": "WAPT-RATE-008",
+          "related": [
+            "WAPT-API-015"
+          ],
+          "severity": "medium",
+          "why": "Unbounded pagination or export dumps the corpus.",
+          "validate": "A bounded burst is throttled or windowed. Do not dump the dataset.",
+          "variants": [
+            {
+              "name": "Page walk",
+              "kind": "request",
+              "payload": "GET /search?q=a&page=1 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "Walk a few pages only. page=99999, page_size=10000, and offset=-1 are the interesting variants."
+            },
+            {
+              "name": "Export",
+              "kind": "request",
+              "payload": "GET /search/export?q= HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "A full-corpus CSV without a limit is the finding. Stop after you see the size."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

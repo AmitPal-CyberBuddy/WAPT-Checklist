@@ -4,10 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
-### Added (Page playbooks — reported: static-page tests were methodology prose, not variants and payloads)
+### Added (Page playbooks — reported: looking at a page type should show every applicable test with variants and payloads, not methodology prose)
 
-- **Page playbooks** (`#playbooks`, `#playbook/<id>`): tester-facing packs for a static/published page, a login/identity page, and an API endpoint. Each check lists named variants with copyable HTTP requests, commands, or HTML — Host header (arbitrary, duplicate, X-Forwarded-Host, Forwarded, absolute-form), CSP, HSTS, testssl, clickjacking, directory enum/listing, path traversal, absolute URL injection, BOLA, and the rest.
-- Scoping a **static marketing site** lands on the static-page playbook instead of the dashboard. `g p` opens the board. A dashboard banner points at the matching pack.
+- **Page playbooks** (`#playbooks`, `#playbook/<id>`): tester-facing packs for the surface in front of you. Sixteen packs: static/published page, login, registration, password reset, account/profile, session/cookies, file upload, search, checkout, admin, REST API, GraphQL, WebSocket, OAuth/SSO/SAML, JWT, and SPA/client-side. Each check lists named variants with copyable HTTP requests, commands, or HTML — Host header (arbitrary, duplicate, X-Forwarded-Host, Forwarded, absolute-form), CSP, HSTS, testssl, clickjacking, directory enum/listing, path traversal, BOLA, alg=none, redirect_uri, SVG upload, price tamper, and the rest.
+- The playbook board groups packs as **Matches this scope** / **Also relevant** / **Other surfaces**. A SaaS scope lights up login + SPA + API + JWT + profile together; an e-commerce scope lights up checkout + upload + search + login.
+- Scoping a **static marketing site** lands on the static-page playbook. Every other finished wizard lands on the playbook board, not the dashboard. `g p` opens the board. The dashboard banner lists every matching surface.
 - Methodology cards that a playbook covers now surface the same variants under *Procedure & variants*.
 - `playbooks/*.json` is validated: IDs resolve, every check has at least two named variants, manifest counts match.
 

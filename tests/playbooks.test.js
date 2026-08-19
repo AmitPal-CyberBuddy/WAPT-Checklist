@@ -8,6 +8,12 @@ const path = require('node:path');
 const ROOT = path.resolve(__dirname, '..');
 const { validatePhase7, validatePlaybooks } = require('../tools/validate.js');
 
+const EXPECTED_PLAYBOOKS = [
+  'static-page', 'login-page', 'registration', 'password-reset', 'account-profile',
+  'session', 'file-upload', 'search-page', 'checkout', 'admin-panel',
+  'api-endpoint', 'graphql', 'websocket', 'oauth-sso', 'jwt-token', 'spa-client'
+];
+
 function productionIds() {
   const checklist = path.join(ROOT, 'checklist');
   return new Set(fs.readdirSync(checklist)
@@ -25,10 +31,24 @@ test('playbooks validate and resolve every referenced checklist item', () => {
   const ids = productionIds();
   const result = validatePlaybooks(ids);
   assert.deepEqual(result.errors, []);
-  assert.equal(result.playbookCount, 3);
+  assert.equal(result.playbookCount, EXPECTED_PLAYBOOKS.length);
   const phase7 = validatePhase7(ids);
   assert.deepEqual(phase7.errors, []);
-  assert.equal(phase7.playbookCount, 3);
+  assert.equal(phase7.playbookCount, EXPECTED_PLAYBOOKS.length);
+});
+
+test('catalog covers every tester surface with named variants and real payloads', () => {
+  const { manifest, documents } = loadPlaybooks();
+  assert.deepEqual(manifest.playbooks.map(({ id }) => id), EXPECTED_PLAYBOOKS);
+  for (const playbook of documents) {
+    const checks = playbook.groups.flatMap((group) => group.checks);
+    assert.ok(checks.length >= 5, `${playbook.id} is too thin`);
+    for (const check of checks) {
+      assert.ok(check.variants.length >= 2, `${playbook.id}/${check.id} needs variants`);
+      assert.ok(check.variants.every(({ name, payload, expect }) => name && payload && expect));
+      assert.ok(check.variants.some(({ kind }) => ['request', 'command', 'html', 'note'].includes(kind)));
+    }
+  }
 });
 
 test('static-page playbook lists the tester-named checks with real payloads', () => {
@@ -54,22 +74,58 @@ test('static-page playbook lists the tester-named checks with real payloads', ()
   assert.ok(traversal.variants.some(({ payload }) => payload.includes('..%2f') || payload.includes('../')));
 });
 
-test('playbook engine matches static scope to the static-page pack', async () => {
-  const [{ deriveContext }, { indexPlaybooks, suggestedPlaybook, matchPlaybooks, probesForItem }] = await Promise.all([
+test('login, upload, jwt, and graphql packs carry concrete request variants', () => {
+  const { documents } = loadPlaybooks();
+  const byId = Object.fromEntries(documents.map((doc) => [doc.id, doc]));
+  const loginTitles = byId['login-page'].groups.flatMap((group) => group.checks.map(({ title }) => title.toLowerCase()));
+  for (const needle of ['sql injection', 'nosql', 'host-poisoned', 'account enumeration']) {
+    assert.ok(loginTitles.some((title) => title.includes(needle)), `login missing ${needle}`);
+  }
+  const upload = byId['file-upload'].groups.flatMap((group) => group.checks);
+  assert.ok(upload.some((check) => check.variants.some(({ payload }) => /svg|onerror|GIF89a|\.\.\//i.test(payload))));
+  const jwt = byId['jwt-token'].groups.flatMap((group) => group.checks);
+  assert.ok(jwt.some((check) => /alg=none|none/.test(check.title) || check.variants.some(({ payload }) => /none/i.test(payload))));
+  const gql = byId.graphql.groups.flatMap((group) => group.checks);
+  assert.ok(gql.some((check) => check.variants.some(({ payload }) => payload.includes('__schema') || payload.includes('node(id'))));
+});
+
+test('playbook engine matches each preset to the surfaces a tester would open', async () => {
+  const [{ deriveContext }, engine] = await Promise.all([
     import('../js/engine/context.js'),
     import('../js/engine/playbooks.js')
   ]);
+  const { indexPlaybooks, suggestedPlaybook, matchPlaybooks, classifyPlaybook, probesForItem } = engine;
   const { PRESETS } = await import('../js/data/presets.mjs');
   const { manifest, documents } = loadPlaybooks();
   const index = indexPlaybooks(manifest, documents);
+
   const staticContext = deriveContext(PRESETS.static_marketing.answers);
-  const suggested = suggestedPlaybook(index, staticContext);
-  assert.equal(suggested.id, 'static-page');
-  assert.ok(matchPlaybooks(index, staticContext).some(({ id }) => id === 'static-page'));
-  const probes = probesForItem(index, 'WAPT-HDR-006');
-  assert.ok(probes.some(({ check }) => check.id === 'clickjacking'));
+  assert.equal(suggestedPlaybook(index, staticContext).id, 'static-page');
+  assert.equal(classifyPlaybook(index.byId.get('static-page'), staticContext), 'match');
+  assert.ok(!matchPlaybooks(index, staticContext).some(({ id }) => id === 'login-page'));
+
   const apiContext = deriveContext(PRESETS.rest_api.answers);
   assert.equal(suggestedPlaybook(index, apiContext).id, 'api-endpoint');
+  assert.equal(classifyPlaybook(index.byId.get('api-endpoint'), apiContext), 'match');
+
+  const gqlContext = deriveContext(PRESETS.graphql_api.answers);
+  assert.equal(classifyPlaybook(index.byId.get('graphql'), gqlContext), 'match');
+  assert.notEqual(classifyPlaybook(index.byId.get('api-endpoint'), gqlContext), 'match');
+
+  const saasContext = deriveContext(PRESETS.saas_jwt_api.answers);
+  const saasIds = matchPlaybooks(index, saasContext).map(({ id }) => id);
+  for (const id of ['login-page', 'spa-client', 'api-endpoint', 'jwt-token', 'account-profile']) {
+    assert.ok(saasIds.includes(id), `SaaS should match ${id}, got ${saasIds.join(',')}`);
+  }
+
+  const shopContext = deriveContext(PRESETS.ecommerce.answers);
+  const shopIds = matchPlaybooks(index, shopContext).map(({ id }) => id);
+  for (const id of ['checkout', 'file-upload', 'search-page', 'login-page']) {
+    assert.ok(shopIds.includes(id), `e-commerce should match ${id}`);
+  }
+
+  const probes = probesForItem(index, 'WAPT-HDR-006');
+  assert.ok(probes.some(({ check }) => check.id === 'clickjacking'));
 });
 
 test('workspace and app shell expose playbooks as a first-class view', () => {
@@ -82,8 +138,12 @@ test('workspace and app shell expose playbooks as a first-class view', () => {
   }
   assert.match(app, /playbooks', 'playbook'/);
   assert.match(app, /app_type === 'static' \? 'playbook\/static-page'/);
+  assert.match(app, /: 'playbooks'/);
   assert.match(app, /event\.key === 'p'\) location\.hash = 'playbooks'/);
   assert.match(workspace, /loadPlaybooks/);
+  assert.match(workspace, /view === 'playbooks'/);
+  assert.match(workspace, /view === 'playbook'/);
   assert.match(playbookUi, /LOOK FOR/);
   assert.match(playbookUi, /probe-payload/);
+  assert.match(playbookUi, /Matches this scope/);
 });

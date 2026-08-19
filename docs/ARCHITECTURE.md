@@ -35,6 +35,7 @@ Browser
  │   └─ portfolio: migrate, select, add, and remove engagements under wapt.state.v1
  └─ Same-origin data
      ├─ checklist/manifest.json → checklist/<category>.json
+     ├─ playbooks/manifest.json → playbooks/<surface>.json
      ├─ attack-chains/*.json
      ├─ payloads/**
      └─ burp-workflows/*.md

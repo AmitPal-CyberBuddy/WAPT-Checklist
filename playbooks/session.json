@@ -1,0 +1,184 @@
+{
+  "schema_version": "1.0.0",
+  "id": "session",
+  "title": "Session / cookies",
+  "summary": "Secure, HttpOnly, SameSite, fixation, logout, and session identifiers in URLs.",
+  "when": {
+    "auth_mechanism": [
+      "cookie"
+    ]
+  },
+  "also_when": {
+    "has_login": [
+      "yes"
+    ]
+  },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "flags",
+      "title": "Cookie flags",
+      "summary": "How the session cookie is issued.",
+      "checks": [
+        {
+          "id": "cookie-secure",
+          "title": "Secure on session cookies",
+          "item": "WAPT-SESS-002",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "medium",
+          "why": "A session cookie without Secure can be stolen on a plaintext request.",
+          "validate": "Set-Cookie for the session name lacks Secure on the real login response.",
+          "variants": [
+            {
+              "name": "Read Set-Cookie on login",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
+              "expect": "Every cookie that carries authority must include Secure. Repeat on the first 302."
+            },
+            {
+              "name": "HTTP Set-Cookie",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A session cookie issued on HTTP is worse. Confirm on port 80 only if HTTP is in scope."
+            }
+          ]
+        },
+        {
+          "id": "httponly",
+          "title": "HttpOnly on session cookies",
+          "item": "WAPT-SESS-003",
+          "related": [
+            "WAPT-CLIENT-011"
+          ],
+          "severity": "medium",
+          "why": "A session cookie readable by JavaScript becomes XSS→session theft.",
+          "validate": "document.cookie contains the session name, or Set-Cookie lacks HttpOnly.",
+          "variants": [
+            {
+              "name": "Read Set-Cookie",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
+              "expect": "Session cookies must include HttpOnly. CSRF tokens may be readable; session ids must not."
+            },
+            {
+              "name": "document.cookie",
+              "kind": "note",
+              "payload": "In the logged-in origin console: document.cookie",
+              "expect": "The session name must be absent. Any other privileged cookie you can read is the same class."
+            }
+          ]
+        },
+        {
+          "id": "samesite",
+          "title": "SameSite matches the real flow",
+          "item": "WAPT-SESS-004",
+          "related": [
+            "WAPT-CSRF-009"
+          ],
+          "severity": "medium",
+          "why": "SameSite=None without Secure, or Lax when a cross-site POST is the login/CSRF surface.",
+          "validate": "The issued cookie's SameSite does not match how the app actually authenticates.",
+          "variants": [
+            {
+              "name": "Read SameSite",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
+              "expect": "None requires Secure. Strict breaks top-level OAuth returns. Lax is the usual default — still need a CSRF token on POST."
+            },
+            {
+              "name": "Cross-site POST with Lax",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/account/email\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Lax should not send the cookie on this POST in modern browsers. A change still happening means the cookie is None or not SameSite."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "title": "Lifecycle",
+      "summary": "Fixation, logout, and identifiers in URLs.",
+      "checks": [
+        {
+          "id": "fixation",
+          "title": "Session fixation / rotation",
+          "item": "WAPT-SESS-009",
+          "related": [
+            "WAPT-SESS-010"
+          ],
+          "severity": "high",
+          "why": "A pre-login cookie that survives authentication lets an attacker plant the session.",
+          "validate": "The session identifier issued before login is still accepted after login.",
+          "variants": [
+            {
+              "name": "Compare pre- and post-login cookies",
+              "kind": "note",
+              "payload": "Note Set-Cookie on GET /login, submit credentials, compare the cookie name and value.",
+              "expect": "Value must change. A new name with the old value still counting is the same bug."
+            },
+            {
+              "name": "Planted cookie",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nCookie: session=wapt-planted-value\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
+              "expect": "The planted value must not become the authenticated session."
+            }
+          ]
+        },
+        {
+          "id": "logout",
+          "title": "Logout invalidates the server session",
+          "item": "WAPT-SESS-013",
+          "related": [
+            "WAPT-SESS-014",
+            "WAPT-SESS-020"
+          ],
+          "severity": "high",
+          "why": "Logout only deletes the cookie. The old value still works.",
+          "validate": "A replayed session cookie after logout still returns /me.",
+          "variants": [
+            {
+              "name": "Replay after logout",
+              "kind": "note",
+              "payload": "Copy the session cookie, log out, send GET /api/v1/me with the old cookie.",
+              "expect": "Must 401. A 200 is the finding."
+            },
+            {
+              "name": "Logout CSRF / missing logout",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/logout\" method=\"POST\"></form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Forced logout is a finding if there is no CSRF token. Missing logout entirely is a finding too."
+            }
+          ]
+        },
+        {
+          "id": "session-url",
+          "title": "Session id in the URL",
+          "item": "WAPT-SESS-018",
+          "related": [
+            "WAPT-AUTH-002"
+          ],
+          "severity": "high",
+          "why": "jsessionid=, PHPSESSID=, or a token in the path/query lands in logs and Referer.",
+          "validate": "A live session identifier is observable in a URL or Referer.",
+          "variants": [
+            {
+              "name": "Path / query session",
+              "kind": "request",
+              "payload": "GET /app;jsessionid=<value> HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Rewriting session ids into the URL must be off. Also try ?PHPSESSID= and ?session=."
+            },
+            {
+              "name": "Referer leak",
+              "kind": "note",
+              "payload": "If any URL contains the session id, load a third-party image and inspect Referer.",
+              "expect": "The identifier must not leave the origin."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

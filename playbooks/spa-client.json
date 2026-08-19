@@ -1,0 +1,222 @@
+{
+  "schema_version": "1.0.0",
+  "id": "spa-client",
+  "title": "SPA / client-side",
+  "summary": "DOM XSS from the URL, postMessage, browser storage, client-only authorization, secrets in the bundle, CORS, and client redirects.",
+  "when": {
+    "app_type": [
+      "spa"
+    ]
+  },
+  "also_when": {
+    "app_type": [
+      "hybrid"
+    ]
+  },
+  "default_for": [
+    "spa"
+  ],
+  "groups": [
+    {
+      "id": "dom",
+      "title": "DOM sinks",
+      "summary": "location, postMessage, and storage into HTML / eval / navigation.",
+      "checks": [
+        {
+          "id": "dom-xss",
+          "title": "DOM XSS from the URL",
+          "item": "WAPT-XSS-004",
+          "related": [
+            "WAPT-CLIENT-001",
+            "WAPT-XSS-010"
+          ],
+          "severity": "high",
+          "why": "hash, search, or a path segment is written into innerHTML, eval, or a javascript: URL.",
+          "validate": "A marker in the URL executes in the real app shell.",
+          "variants": [
+            {
+              "name": "Hash to HTML",
+              "kind": "note",
+              "payload": "https://www.example.com/#<img src=x onerror=alert(1)>\\nhttps://www.example.com/?q=<img src=x onerror=alert(1)>",
+              "expect": "Grep the bundle for location.hash, location.search, document.write, innerHTML, insertAdjacentHTML."
+            },
+            {
+              "name": "javascript: navigation",
+              "kind": "note",
+              "payload": "https://www.example.com/#javascript:alert(1)\\nhttps://www.example.com/?next=javascript:alert(1)",
+              "expect": "Must not become location.href / window.open. data:text/html,… is the same class."
+            },
+            {
+              "name": "Template sink",
+              "kind": "note",
+              "payload": "https://www.example.com/#{{constructor.constructor('alert(1)')()}}",
+              "expect": "Client-side template injection (Angular/Vue/Mavo gadgets) after you confirm the sink."
+            }
+          ]
+        },
+        {
+          "id": "postmessage",
+          "title": "postMessage origin checks",
+          "item": "WAPT-CLIENT-009",
+          "related": [
+            "WAPT-CLIENT-010",
+            "WAPT-XSS-005"
+          ],
+          "severity": "high",
+          "why": "The app listens for message and trusts event.data without checking event.origin.",
+          "validate": "A page you control can drive a sink or an authenticated action.",
+          "variants": [
+            {
+              "name": "Listener inventory",
+              "kind": "note",
+              "payload": "addEventListener('message', …)\\nonmessage = …",
+              "expect": "For each listener, record whether origin is compared to an exact allowlist (===, not indexOf)."
+            },
+            {
+              "name": "Drive from a child window",
+              "kind": "html",
+              "payload": "<script>const w = window.open('https://www.example.com/app');\\nsetTimeout(() => w.postMessage({type:'setToken', token:'wapt'}, '*'), 1500);</script>",
+              "expect": "Must be ignored. A token or HTML sink accepting this is the finding. Use a test account."
+            }
+          ]
+        },
+        {
+          "id": "storage",
+          "title": "Browser storage as input and secret store",
+          "item": "WAPT-CLIENT-011",
+          "related": [
+            "WAPT-CLIENT-012",
+            "WAPT-SESS-019"
+          ],
+          "severity": "high",
+          "why": "A JWT or role in localStorage is writable, and a stored value later hits a sink.",
+          "validate": "Writing a marker into storage and reloading either escalates privilege or executes script.",
+          "variants": [
+            {
+              "name": "Token / role in localStorage",
+              "kind": "note",
+              "payload": "localStorage.setItem('role','admin')\\nlocalStorage.setItem('token','<edited-jwt>')",
+              "expect": "Reload. Client-only role changes are presentational if the API refuses; a working admin view against a member API is still a finding if it discloses data."
+            },
+            {
+              "name": "Storage → sink",
+              "kind": "note",
+              "payload": "localStorage.setItem('name','<img src=x onerror=alert(1)>') then reload / navigate.",
+              "expect": "If name is dropped into innerHTML, that is DOM XSS. Treat storage as untrusted input."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "trust",
+      "title": "Trust and origin",
+      "summary": "The bundle is public. The API is the control.",
+      "checks": [
+        {
+          "id": "client-authz",
+          "title": "Client-only authorization",
+          "item": "WAPT-CLIENT-028",
+          "related": [
+            "WAPT-AUTHZ-015"
+          ],
+          "severity": "high",
+          "why": "Routes and buttons are hidden in the SPA but the API still answers.",
+          "validate": "A member token on an admin API route succeeds. The hidden button is not the finding.",
+          "variants": [
+            {
+              "name": "Call the hidden route",
+              "kind": "request",
+              "payload": "GET /api/v1/admin/users HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>",
+              "expect": "403/404. Repeat any path you grepped from the bundle (admin, internal, debug, impersonate)."
+            },
+            {
+              "name": "Feature-flag in localStorage",
+              "kind": "note",
+              "payload": "localStorage.setItem('flags','{\"admin\":true}') or ?ff=admin",
+              "expect": "If the UI appears but the API refuses, record as informational. If the API obeys the flag, that is the finding."
+            }
+          ]
+        },
+        {
+          "id": "secrets-bundle",
+          "title": "Secrets in the JavaScript bundle",
+          "item": "WAPT-CLIENT-027",
+          "related": [
+            "WAPT-INFO-003",
+            "WAPT-RECON-014"
+          ],
+          "severity": "critical",
+          "why": "The published bundle contains a live privileged secret, not a public site key.",
+          "validate": "A retrieved value authenticates as a privileged identity or signs a privileged request.",
+          "variants": [
+            {
+              "name": "Grep the bundle",
+              "kind": "note",
+              "payload": "api[_-]?key|secret|password|token|AKIA[0-9A-Z]{16}|sk_live_|ghp_|xox[baprs]-|Bearer [A-Za-z0-9._-]+",
+              "expect": "Confirm any hit is a live credential, not a public Stripe pk_ or a Mapbox token."
+            },
+            {
+              "name": "Source map",
+              "kind": "request",
+              "payload": "GET /assets/index-*.js.map HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A map with sourcesContent is a lead. Embedded secrets or internal URLs are the finding."
+            }
+          ]
+        },
+        {
+          "id": "cors",
+          "title": "CORS on the API origin",
+          "item": "WAPT-HTTP-015",
+          "related": [
+            "WAPT-HTTP-016",
+            "WAPT-API-031"
+          ],
+          "severity": "high",
+          "why": "A reflected ACAO plus credentials lets another origin read the API with the victim's cookies.",
+          "validate": "A controlled origin can read a non-public body with credentials.",
+          "variants": [
+            {
+              "name": "Reflected Origin with cookies",
+              "kind": "request",
+              "payload": "GET /api/v1/me HTTP/1.1\nHost: api.example.com\nOrigin: https://evil.example\nCookie: session=<account-A>",
+              "expect": "ACAO: https://evil.example and ACAC: true together are the finding if the body is the user."
+            },
+            {
+              "name": "null / regex mistakes",
+              "kind": "request",
+              "payload": "GET /api/v1/me HTTP/1.1\nHost: api.example.com\nOrigin: https://www.example.com.evil.example\nCookie: session=<account-A>",
+              "expect": "Substring and endsWith('example.com') allowlists fail this way. Also try Origin: null."
+            }
+          ]
+        },
+        {
+          "id": "client-redirect",
+          "title": "Client-side open redirect",
+          "item": "WAPT-CLIENT-004",
+          "related": [
+            "WAPT-HTTP-013",
+            "WAPT-XSS-011"
+          ],
+          "severity": "medium",
+          "why": "next=, return=, or a router push accepts an absolute or javascript: URL.",
+          "validate": "The SPA navigates off-origin or into a javascript: URL.",
+          "variants": [
+            {
+              "name": "Absolute next",
+              "kind": "note",
+              "payload": "https://www.example.com/login?next=https://evil.example/\\nhttps://www.example.com/login?next=//evil.example/",
+              "expect": "After login the shell must stay on-origin. Watch location.assign / href / router.push."
+            },
+            {
+              "name": "javascript: next",
+              "kind": "note",
+              "payload": "https://www.example.com/login?next=javascript:alert(1)",
+              "expect": "Must be rejected. This is XSS, not just a redirect."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

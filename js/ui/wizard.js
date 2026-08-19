@@ -205,7 +205,7 @@ export function createWizard(root, initialState, callbacks = {}) {
       <div class="wizard-progress" aria-hidden="true"><progress max="100" value="${Math.round((index / (keys.length - 1)) * 100)}"></progress></div>
       <div class="wizard-meta"><span>STEP ${String(index + 1).padStart(2, '0')} OF ${String(keys.length).padStart(2, '0')}</span><span>${Math.round((index / (keys.length - 1)) * 100)}% scoped</span></div>
       <div class="wizard-body">${content}</div>
-      <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Save scope & open dashboard →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
+      <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Save scope & open playbooks →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
     attachEvents();
     if (manageFocus) {
       // Land on the question, not wherever the previous (possibly longer) step was scrolled to.

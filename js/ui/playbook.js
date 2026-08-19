@@ -1,7 +1,7 @@
 // Surface playbooks: the tester-facing working layer.
 // A playbook is every applicable check for a page type, with named variants
 // and copyable payloads sitting in the open — not behind methodology prose.
-import { suggestedPlaybook, playbookChecks, checkItemIds } from '../engine/playbooks.js?v=1.0.0-r6';
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook } from '../engine/playbooks.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
 import { copyButton, element, SEVERITY_GLYPHS, statusControls } from './dom.js?v=1.0.0-r6';
 
@@ -20,21 +20,52 @@ function recordFor(check, recordsById) {
   return null;
 }
 
+function playbookCard(playbook, kind, isPrimary) {
+  const card = element('a', `playbook-card${isPrimary ? ' is-primary' : ''}`);
+  card.href = `#playbook/${playbook.id}`;
+  card.dataset.playbookCard = playbook.id;
+  card.dataset.playbookKind = kind;
+  if (isPrimary) card.append(element('em', 'playbook-kicker', 'START HERE'));
+  else if (kind === 'match') card.append(element('em', 'playbook-kicker', 'MATCHES THIS SCOPE'));
+  else if (kind === 'relevant') card.append(element('em', 'playbook-kicker muted', 'ALSO RELEVANT'));
+  else card.append(element('em', 'playbook-kicker muted', 'BROWSE'));
+  card.append(element('h2', '', playbook.title));
+  card.append(element('p', '', playbook.summary));
+  const meta = element('p', 'playbook-card-meta');
+  meta.textContent = `${checkCount(playbook)} checks · ${variantCount(playbook)} variants & payloads`;
+  card.append(meta);
+  return card;
+}
+
+function appendBoardSection(root, title, playbooks, primary) {
+  if (!playbooks.length) return;
+  const section = element('section', 'playbook-board-section');
+  section.append(element('h2', 'playbook-board-heading', title));
+  const grid = element('div', 'playbook-grid');
+  for (const { playbook, kind } of playbooks) grid.append(playbookCard(playbook, kind, primary?.id === playbook.id));
+  section.append(grid);
+  root.append(section);
+}
+
 export function renderPlaybookBoard(root, context) {
-  const { index, matched, primary, contextLabel } = context;
+  const { index, matched, primary, contextLabel, derived } = context;
   root.replaceChildren();
   if (!index?.playbooks?.length) {
     root.append(element('p', 'empty-copy', 'Playbooks could not be loaded. Serve the repository over HTTP.'));
     return;
   }
 
+  const classified = index.playbooks.map((playbook) => ({
+    playbook,
+    kind: derived ? classifyPlaybook(playbook, derived) : 'browse'
+  }));
+  const matches = classified.filter(({ kind }) => kind === 'match');
+  const relevant = classified.filter(({ kind }) => kind === 'relevant');
+  const browse = classified.filter(({ kind }) => kind === 'browse' || kind === 'none');
+
   const intro = element('p', 'playbook-board-intro');
-  if (primary) {
-    intro.append(document.createTextNode('This scope matches '));
-    const link = element('a', '', primary.title);
-    link.href = `#playbook/${primary.id}`;
-    intro.append(link);
-    intro.append(document.createTextNode(` — ${primary.summary}`));
+  if (matches.length) {
+    intro.textContent = `This scope matches ${matches.length} surface${matches.length === 1 ? '' : 's'}. Open the one you are looking at — every check has named variants and copyable payloads.`;
   } else if (contextLabel) {
     intro.textContent = `${contextLabel} does not pin a single page type. Open any pack, or finish the scope wizard.`;
   } else {
@@ -42,22 +73,15 @@ export function renderPlaybookBoard(root, context) {
   }
   root.append(intro);
 
-  const grid = element('div', 'playbook-grid');
-  for (const playbook of index.playbooks) {
-    const card = element('a', `playbook-card${primary?.id === playbook.id ? ' is-primary' : ''}`);
-    card.href = `#playbook/${playbook.id}`;
-    card.dataset.playbookCard = playbook.id;
-    if (primary?.id === playbook.id) card.append(element('em', 'playbook-kicker', 'MATCHES THIS SCOPE'));
-    else if (matched.some(({ id }) => id === playbook.id)) card.append(element('em', 'playbook-kicker muted', 'ALSO RELEVANT'));
-    else card.append(element('em', 'playbook-kicker muted', 'BROWSE'));
-    card.append(element('h2', '', playbook.title));
-    card.append(element('p', '', playbook.summary));
-    const meta = element('p', 'playbook-card-meta');
-    meta.textContent = `${checkCount(playbook)} checks · ${variantCount(playbook)} variants & payloads`;
-    card.append(meta);
-    grid.append(card);
+  appendBoardSection(root, 'Matches this scope', matches, primary);
+  appendBoardSection(root, 'Also relevant', relevant, primary);
+  appendBoardSection(root, matches.length || relevant.length ? 'Other surfaces' : 'All surfaces', browse, primary);
+  if (!matches.length && !relevant.length && !browse.length) {
+    const grid = element('div', 'playbook-grid');
+    for (const playbook of index.playbooks) grid.append(playbookCard(playbook, 'browse', primary?.id === playbook.id));
+    root.append(grid);
   }
-  root.append(grid);
+  void matched;
 }
 
 function renderVariant(variant) {

@@ -1,0 +1,197 @@
+{
+  "schema_version": "1.0.0",
+  "id": "checkout",
+  "title": "Checkout / payments",
+  "summary": "Price and quantity tamper, currency, coupons, payment binding, checkout races, and CSRF on place-order.",
+  "when": {
+    "features": [
+      "payments"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "amounts",
+      "title": "Amounts and coupons",
+      "summary": "The server, not the client, owns the price.",
+      "checks": [
+        {
+          "id": "price-tamper",
+          "title": "Client-supplied price",
+          "item": "WAPT-BL-007",
+          "related": [
+            "WAPT-BL-010",
+            "WAPT-BL-024"
+          ],
+          "severity": "critical",
+          "why": "The checkout POST accepts price, total, or unit_amount from the client.",
+          "validate": "The charged or recorded amount is the tampered value, not the catalog price.",
+          "variants": [
+            {
+              "name": "Lower the unit price",
+              "kind": "request",
+              "payload": "POST /cart/items HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"sku\":\"SKU-1\",\"qty\":1,\"price\":0.01,\"unit_amount\":1}",
+              "expect": "Read the cart and the payment intent. Price must be recomputed from SKU-1."
+            },
+            {
+              "name": "Negative / zero total",
+              "kind": "request",
+              "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"total\":0,\"amount\":-1}",
+              "expect": "Must refuse. A fulfilled order at 0 is the finding."
+            },
+            {
+              "name": "Hidden integrity field",
+              "kind": "request",
+              "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"total\":1,\"checksum\":\"deadbeef\",\"hash\":\"00\"}",
+              "expect": "A client hash is not a control. Tamper it; the server must ignore it."
+            }
+          ]
+        },
+        {
+          "id": "qty-currency",
+          "title": "Quantity, currency, extras",
+          "item": "WAPT-BL-008",
+          "related": [
+            "WAPT-BL-009",
+            "WAPT-BL-010"
+          ],
+          "severity": "high",
+          "why": "Negative qty, a cheaper currency, or a skipped tax line changes what is settled.",
+          "validate": "The settled amount or stock movement does not match the catalog rules.",
+          "variants": [
+            {
+              "name": "Negative quantity",
+              "kind": "request",
+              "payload": "POST /cart/items HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"sku\":\"SKU-1\",\"qty\":-1}",
+              "expect": "Must refuse. A credit or stock increase is the finding."
+            },
+            {
+              "name": "Currency swap",
+              "kind": "request",
+              "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"currency\":\"IDR\",\"total\":10}",
+              "expect": "Currency must be bound to the catalog/settlement context, not the client string."
+            },
+            {
+              "name": "Drop tax / shipping",
+              "kind": "request",
+              "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"skip_tax\":true,\"shipping\":0,\"discount\":999}",
+              "expect": "Tax, shipping, and discount must be recomputed server-side."
+            }
+          ]
+        },
+        {
+          "id": "coupon",
+          "title": "Coupon eligibility and stacking",
+          "item": "WAPT-BL-011",
+          "related": [
+            "WAPT-BL-012",
+            "WAPT-BL-013"
+          ],
+          "severity": "high",
+          "why": "A one-use or new-customer coupon applies twice, on the wrong cart, or stacks past the limit.",
+          "validate": "The discount that lands is one the account was not eligible for.",
+          "variants": [
+            {
+              "name": "Apply another user's code",
+              "kind": "request",
+              "payload": "POST /cart/coupon HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"code\":\"B-UNIQUE-CODE\"}",
+              "expect": "A personal or single-use code for B must fail for A."
+            },
+            {
+              "name": "Stack and reuse",
+              "kind": "request",
+              "payload": "POST /cart/coupon HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"codes\":[\"SAVE10\",\"SAVE10\",\"WELCOME\"]}",
+              "expect": "Same code twice, plus a new-customer code on an old account, must not stack past the rule."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "pay",
+      "title": "Payment bind, race, CSRF",
+      "summary": "The paid amount is the order; two clicks are one order; checkout is not CSRF-simple.",
+      "checks": [
+        {
+          "id": "pay-bind",
+          "title": "Payment amount and order binding",
+          "item": "WAPT-BL-015",
+          "related": [
+            "WAPT-BL-014",
+            "WAPT-ADV-016"
+          ],
+          "severity": "critical",
+          "why": "The webhook or confirm step trusts a client amount, or applies a payment to the wrong order.",
+          "validate": "A cheaper payment fulfills a dearer order, or order 1001 is marked paid by 1002's intent.",
+          "variants": [
+            {
+              "name": "Swap order id on confirm",
+              "kind": "request",
+              "payload": "POST /checkout/confirm HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"order_id\":1002,\"payment_intent\":\"pi_A\"}",
+              "expect": "pi_A was created for 1001. Must not fulfill 1002."
+            },
+            {
+              "name": "Webhook amount mismatch",
+              "kind": "note",
+              "payload": "If you control a test webhook, replay a succeeded event with amount=1 against a larger order.",
+              "expect": "Must refuse. Do not replay live provider events against production money."
+            }
+          ]
+        },
+        {
+          "id": "race-pay",
+          "title": "Double checkout / double spend",
+          "item": "WAPT-RACE-002",
+          "related": [
+            "WAPT-RACE-001",
+            "WAPT-RACE-003"
+          ],
+          "severity": "critical",
+          "why": "Two parallel place-order requests both succeed on a single-use cart, coupon, or wallet.",
+          "validate": "Two orders or two deductions from one intended payment. Use your test wallet only.",
+          "variants": [
+            {
+              "name": "Parallel place-order",
+              "kind": "note",
+              "payload": "Capture one POST /checkout. Fire it twice at the same moment (Turbo Intruder / two Repeater tabs).",
+              "expect": "One success, one fail. Two fulfilled orders is the finding. Keep amounts tiny."
+            },
+            {
+              "name": "Coupon double redeem",
+              "kind": "note",
+              "payload": "Apply a single-use code, then parallel-confirm two checkouts that both carry it.",
+              "expect": "The code must be consumed atomically."
+            }
+          ]
+        },
+        {
+          "id": "csrf-checkout",
+          "title": "CSRF on place-order",
+          "item": "WAPT-CSRF-002",
+          "related": [
+            "WAPT-CSRF-018",
+            "WAPT-RATE-011"
+          ],
+          "severity": "high",
+          "why": "A cross-site POST places an order on the victim's saved instrument.",
+          "validate": "A cross-origin form creates a real order. Use a test catalog item.",
+          "variants": [
+            {
+              "name": "Cross-site place-order",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/checkout\" method=\"POST\">\n  <input name=\"sku\" value=\"SKU-1\">\n  <input name=\"qty\" value=\"1\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a valid CSRF token / step-up. Impact is a created order, not a 200."
+            },
+            {
+              "name": "JSON as text/plain",
+              "kind": "request",
+              "payload": "POST /api/v1/checkout HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<victim>\n\n{\"sku\":\"SKU-1\",\"qty\":1}",
+              "expect": "Must not create an order."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
