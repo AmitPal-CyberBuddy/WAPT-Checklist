@@ -181,7 +181,7 @@ test('workspace starts from the profile, not the category catalog', () => {
   assert.match(plan, /export function featureChips/);
   assert.match(plan, /authored playbooks/);
   assert.match(plan, /methodology-only/);
-  assert.match(profile, /Generate test plan/);
+  assert.match(profile, /Update testing plan/);
   assert.match(home, /app\.html#dashboard/);
   assert.match(home, /Start testing/);
   assert.match(playbookUi, /CHECK FOR/);

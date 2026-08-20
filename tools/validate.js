@@ -42,6 +42,7 @@ const OPTIONS = Object.freeze({
   has_login: ['yes', 'no', 'unknown'],
   registration: ['yes', 'no', 'unknown'],
   roles: ['none', 'one', 'few', 'many', 'unknown'],
+  role_types: ['none', 'standard', 'privileged', 'admin', 'support', 'custom', 'unknown'],
   auth_mechanism: ['none', 'cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', 'unknown'],
   identity_features: ['password', 'mfa', 'passkey', 'recovery', 'passwordless', 'remember_device', 'none', 'unknown'],
   api_docs: ['openapi', 'none', 'unknown'],

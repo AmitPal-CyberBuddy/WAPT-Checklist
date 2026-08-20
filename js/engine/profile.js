@@ -1,6 +1,6 @@
 // Compact application profile — the tester-facing scope.
 // Maps onto the existing 18-answer engine so applicability, families, and playbooks stay valid.
-import { normalizeScopeAnswers } from './context.js?v=1.0.0-r9';
+import { normalizeScopeAnswers } from './context.js?v=1.0.0-r10';
 
 export const APP_TYPES = Object.freeze([
   ['static', 'Static website', 'Published files. No first-party runtime backend.'],
@@ -151,4 +151,17 @@ export function profileToAnswers(profile = {}, current = {}) {
 
 export function profileIsScoped(profile = {}) {
   return Boolean(profile.app_type && profile.app_type !== 'unknown');
+}
+
+// A context "carries" an assessment once the tester has committed to anything
+// meaningful about it — delivery, authentication, access, or accounts. Assessment
+// presets always qualify (they answer mode/creds/has_login up front) even when
+// delivery is deliberately left open as a follow-up.
+export function answersCarryContext(answers = {}) {
+  if (profileIsScoped(answersToProfile(answers))) return true;
+  for (const key of ['mode', 'creds', 'has_login', 'registration', 'roles', 'app_type']) {
+    const value = answers[key];
+    if (value && value !== 'unknown') return true;
+  }
+  return false;
 }

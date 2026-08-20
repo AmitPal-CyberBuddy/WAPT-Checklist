@@ -1,22 +1,23 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r9';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r9';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r9';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r9';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r9';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r9';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r9';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r9';
-import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r9';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r9';
-import { createChainStore } from './chains.js?v=1.0.0-r9';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r9';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r9';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r9';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r9';
-import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r9';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r9';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r9';
-import { renderProfile } from './profile.js?v=1.0.0-r9';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r10';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r10';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r10';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r10';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r10';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r10';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r10';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r10';
+import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r10';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r10';
+import { createChainStore } from './chains.js?v=1.0.0-r10';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r10';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r10';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r10';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r10';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r10';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r10';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r10';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r10';
+import { renderProfile } from './profile.js?v=1.0.0-r10';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -535,7 +536,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     if (activeView === 'families') renderBoard();
     if (activeView === 'family') renderFamily();
     if (activeView === 'dashboard') {
-      const scoped = getState().answers?.app_type && getState().answers.app_type !== 'unknown';
+      const scoped = answersCarryContext(getState().answers);
       if (!records.length && scoped) void show('dashboard');
       else renderDashboard();
     } else if (activeView === 'playbooks') renderPlaybooks();
@@ -952,18 +953,21 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       for (const item of findings) {
         const row = document.createElement('tr');
         const idCell = document.createElement('td');
+        idCell.dataset.label = 'ID';
         const family = familyIndex.byItem.get(item.id);
         const link = element('a', '', item.id);
         link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
         idCell.append(link);
         const status = itemStatus(item, state);
-        row.append(
-          idCell,
-          element('td', '', item.title),
-          element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`),
-          element('td', '', `${STATUS_GLYPHS[status] || ''} ${STATUS_LABELS[status]}`),
-          element('td', '', state.retests?.[item.id] ? 'Required' : '—')
-        );
+        const titleCell = element('td', '', item.title);
+        titleCell.dataset.label = 'Finding';
+        const severityCell = element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`);
+        severityCell.dataset.label = 'Severity';
+        const statusCell = element('td', '', `${STATUS_GLYPHS[status] || ''} ${STATUS_LABELS[status]}`);
+        statusCell.dataset.label = 'Status';
+        const retestCell = element('td', '', state.retests?.[item.id] ? 'Required' : '—');
+        retestCell.dataset.label = 'Retest';
+        row.append(idCell, titleCell, severityCell, statusCell, retestCell);
         body.append(row);
       }
       table.append(head, body);
@@ -1076,8 +1080,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       renderDashboardMetrics();
       await loadPlaybooks();
       const state = getState();
-      const hasSurface = playbookIndex.byId.has(state.position?.family || '')
-        || (state.answers?.app_type && state.answers.app_type !== 'unknown');
+      const hasSurface = playbookIndex.byId.has(state.position?.family || '') || answersCarryContext(state.answers);
       if (hasSurface) await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
       else records = [];
       await renderDashboard();

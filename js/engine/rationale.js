@@ -13,6 +13,8 @@ const ACTIVE_SIGNALS = Object.freeze([
 
 const BOOST_SIGNALS = Object.freeze([
   { slug: 'authorization', key: 'roles', values: ['many'], label: 'Many-role model boosts this suite' },
+  { slug: 'authorization', key: 'role_types', values: ['privileged', 'admin'], label: 'Privileged tiers selected — vertical escalation matrix enabled' },
+  { slug: 'authorization', key: 'role_types', values: ['support', 'custom'], label: 'Support or custom roles selected — cross-user access testing enabled' },
   { slug: 'authorization', key: 'features', values: ['multi_tenant'], label: 'Multi-tenant scope boosts tenant-boundary tests' },
   { slug: 'api-security', key: 'features', values: ['multi_tenant'], label: 'Multi-tenant scope boosts API isolation tests' },
   { slug: 'api-security', key: 'app_type', values: ['api_only'], label: 'API-only delivery boosts this suite' },

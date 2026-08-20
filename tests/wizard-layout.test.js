@@ -97,5 +97,5 @@ test('navigation lands on the question instead of the previous scroll position',
   assert.match(wizard, /window\.scrollTo\(\{ top: Math\.max\(0, window\.scrollY \+ anchor - 12\)/);
   // The step counter is stated once (shell meta plus an inline pill), not as a separate block.
   assert.doesNotMatch(wizard, /<span class="wizard-step-id">SCOPE QUESTION/);
-  assert.match(wizard, /<h2 tabindex="-1"><span class="wizard-step-id">SCOPE /);
+  assert.match(wizard, /<h2 tabindex="-1"><span class="wizard-step-id">FOLLOW-UP /);
 });

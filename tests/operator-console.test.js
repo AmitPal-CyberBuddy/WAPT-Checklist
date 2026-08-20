@@ -50,7 +50,7 @@ test('static operator plan is exhaustive underneath a usable 30-test core pass',
   }
 });
 
-test('operator UI is page/function first and keeps architecture behind disclosures', () => {
+test('operator UI is assessment-first and keeps architecture behind disclosures', () => {
   const html = fs.readFileSync(path.join(ROOT, 'app.html'), 'utf8');
   const plan = fs.readFileSync(path.join(ROOT, 'js/ui/plan.js'), 'utf8');
   const profile = fs.readFileSync(path.join(ROOT, 'js/ui/profile.js'), 'utf8');
@@ -60,8 +60,9 @@ test('operator UI is page/function first and keeps architecture behind disclosur
   assert.match(html, /> Testing plan</);
   assert.match(html, /> Search tests</);
   assert.match(html, /Reference &amp; coverage/);
-  assert.match(profile, /WHAT ARE YOU LOOKING AT\?/);
-  assert.match(profile, /dataset\.surfacePicker/);
+  assert.match(html, /What are you assessing\?/);
+  assert.match(profile, /EDIT ASSESSMENT CONTEXT/);
+  assert.match(profile, /dataset\.contextEditor/);
   assert.match(plan, /COVERAGE DEPTH/);
   assert.match(plan, /FILTER THIS PLAN/);
   assert.match(plan, /Find a test, tool, variant, or ID/);
@@ -69,6 +70,7 @@ test('operator UI is page/function first and keeps architecture behind disclosur
   assert.match(plan, /Any severity/);
   assert.match(plan, /Step-by-step/);
   assert.match(plan, /Start core tests/);
+  assert.match(plan, /Included because/);
   assert.match(playbook, /BECAUSE OF THIS TEST, ALSO CHECK/);
   assert.match(playbook, /TOOLS & WORKFLOWS/);
   assert.match(playbook, /renderOperatorCheck/);

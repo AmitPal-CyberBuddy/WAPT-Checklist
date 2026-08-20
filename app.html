@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Page-first VAPT operator console with prioritized testing plans, practical variants, evidence, and local-only progress.">
+  <meta name="description" content="Assessment-driven VAPT operator console: pick the engagement scenario, answer only the relevant follow-ups, and work a context-generated testing plan with variants, payloads, tools, evidence, and local-only progress.">
   <meta name="theme-color" content="#090d13">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>VAPT operator console — WAPT Checklist</title>
@@ -11,12 +11,12 @@
   <link rel="preload" href="assets/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="preload" href="assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
-  <script src="js/ui/theme-boot.js?v=1.0.0-r9"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r9">
-  <link rel="stylesheet" href="css/operator-console.css?v=1.0.0-r9">
-  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r9">
-  <link rel="stylesheet" href="css/print.css?v=1.0.0-r9" media="print">
-  <script type="module" src="js/ui/app.js?v=1.0.0-r9"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r10"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r10">
+  <link rel="stylesheet" href="css/operator-console.css?v=1.0.0-r10">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r10">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r10" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r10"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -40,12 +40,12 @@
       <details class="nav-reference">
         <summary>Reference &amp; coverage</summary>
         <nav class="app-nav reference-nav" aria-label="Reference and coverage">
-          <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">＋</span> Choose page / function</a>
+          <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">＋</span> Focus: page / function</a>
           <a href="#families" data-view-link="families"><span aria-hidden="true">▦</span> Coverage by family</a>
           <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> Full test library</a>
           <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
           <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Tools &amp; payloads</a>
-          <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Advanced scope</a>
+          <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Assessment setup</a>
         </nav>
       </details>
 
@@ -93,7 +93,7 @@
 
       <section class="view wizard-view" data-view="wizard" aria-labelledby="wizard-page-title" hidden>
         <div class="view-heading compact-heading wizard-heading">
-          <div><p class="eyebrow">START A WAPT</p><h1 id="wizard-page-title">Build the right test plan</h1></div>
+          <div><p class="eyebrow">SET UP THE ASSESSMENT</p><h1 id="wizard-page-title">What are you assessing?</h1></div>
           <div class="wizard-heading-actions">
             <details class="local-persistence-notice compact" data-persistence-note>
               <summary>Saved locally on this device</summary>
@@ -103,12 +103,12 @@
             <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
           </div>
         </div>
-        <p class="view-intro wizard-intro">Questions adapt to earlier answers. Start testing then lists every matching surface for this application, and you can share that plan as a link. Choose &ldquo;Not confirmed yet&rdquo; when scope is uncertain.</p>
+        <p class="view-intro wizard-intro">Pick the assessment scenario, confirm the follow-up questions it asks, and start testing. Anything still unknown widens the plan instead of hiding work, and you can add discoveries — a login endpoint, WebSocket, file upload, another auth mechanism — at any time with <strong>Edit context</strong>.</p>
         <div id="wizard-root" class="wizard-shell" aria-live="polite"></div>
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">VAPT OPERATOR CONSOLE</p><h1 id="dashboard-title">Testing plan</h1><p>Choose what is in front of you, work the core tests, open practical variants inline, and follow the next trust boundary without leaving this console.</p></div><div class="heading-actions"><a class="button button-quiet" href="#playbooks">Change page / function</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div class="view-heading"><div><p class="eyebrow">VAPT OPERATOR CONSOLE</p><h1 id="dashboard-title">Testing plan</h1><p>Generated from your assessment context. Work the core tests, open practical variants inline, and edit the context as you learn the target — the plan expands without losing progress.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Assessment setup</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
         <div data-app-profile></div>
         <div data-assessment-plan></div>
         <div data-playbook-banner></div>
@@ -154,7 +154,7 @@
       </section>
 
       <section class="view" data-view="playbooks" aria-labelledby="playbooks-title" hidden>
-        <div class="view-heading compact-heading"><div><p class="eyebrow">CHOOSE YOUR CURRENT SURFACE</p><h1 id="playbooks-title">What are you looking at?</h1><p>Pick the page or function in front of you. It becomes one testing plan with core, extended, and specialist coverage.</p></div></div>
+        <div class="view-heading compact-heading"><div><p class="eyebrow">FOCUS ON ONE SURFACE</p><h1 id="playbooks-title">Focus: page or function</h1><p>Optionally narrow the working set to the page or function in front of you. The assessment context stays the source of truth for what applies.</p></div></div>
         <div data-playbook-board class="playbook-board"><p class="loading-line">Loading page and function types…</p></div>
       </section>
 
@@ -215,7 +215,7 @@
     <ul class="shortcuts-grid">
       <li><kbd>/</kbd><span>Search tests</span></li>
       <li><kbd>g</kbd> <kbd>d</kbd><span>Testing plan</span></li>
-      <li><kbd>g</kbd> <kbd>p</kbd><span>Choose page / function</span></li>
+      <li><kbd>g</kbd> <kbd>p</kbd><span>Focus: page / function</span></li>
       <li><kbd>g</kbd> <kbd>t</kbd><span>Coverage by family</span></li>
       <li><kbd>g</kbd> <kbd>c</kbd><span>All tests</span></li>
       <li><kbd>g</kbd> <kbd>f</kbd><span>Findings</span></li>

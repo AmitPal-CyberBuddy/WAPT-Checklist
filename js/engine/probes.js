@@ -9,7 +9,7 @@
 // CATALOG-ONLY: methodology available, practical variants pending. There is no fake
 // Repeater block.
 
-import { checkMaturity } from './maturity.js?v=1.0.0-r9';
+import { checkMaturity } from './maturity.js?v=1.0.0-r10';
 
 export function variantsForItem(item, overlay, path = '/') {
   void item;

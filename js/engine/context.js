@@ -7,6 +7,7 @@ export const ATTRIBUTE_OPTIONS = Object.freeze({
   has_login: Object.freeze(['yes', 'no', UNKNOWN]),
   registration: Object.freeze(['yes', 'no', UNKNOWN]),
   roles: Object.freeze(['none', 'one', 'few', 'many', UNKNOWN]),
+  role_types: Object.freeze(['none', 'standard', 'privileged', 'admin', 'support', 'custom', UNKNOWN]),
   auth_mechanism: Object.freeze(['none', 'cookie', 'jwt', 'oauth', 'saml', 'ldap', 'mixed', UNKNOWN]),
   identity_features: Object.freeze(['password', 'mfa', 'passkey', 'recovery', 'passwordless', 'remember_device', 'none', UNKNOWN]),
   api_docs: Object.freeze(['openapi', 'none', UNKNOWN]),
@@ -21,7 +22,9 @@ export const ATTRIBUTE_OPTIONS = Object.freeze({
   async_jobs: Object.freeze(['yes', 'no', UNKNOWN])
 });
 
-export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch']));
+// Which role tiers exist across the authenticated surface. Feeds the cross-role /
+// privilege-hierarchy parts of the plan; only meaningful with more than one role.
+export const MULTI_ATTRIBUTES = Object.freeze(new Set(['auth_mechanism', 'identity_features', 'role_types', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch']));
 export const URL_HINT_KEYS = Object.freeze([
   'plain_http', 'unusual_tls_port', 'api_subdomain', 'admin_subdomain',
   'nonproduction_subdomain', 'punycode_hostname'
@@ -102,8 +105,9 @@ export function normalizeScopeAnswers(answers = {}) {
   const normalized = normalizeAnswers(answers);
   if (normalized.mode === 'black_box') normalized.source_access = 'none';
   if (normalized.has_login === 'no') {
-    Object.assign(normalized, { creds: 'none', registration: 'no', roles: 'none', auth_mechanism: ['none'], identity_features: ['none'] });
+    Object.assign(normalized, { creds: 'none', registration: 'no', roles: 'none', role_types: ['none'], auth_mechanism: ['none'], identity_features: ['none'] });
   }
+  if (normalized.roles === 'none') normalized.role_types = ['none'];
   if (normalized.api_style.includes('none')) normalized.api_docs = 'none';
   if (normalized.app_type === 'static' && normalized.api_style.includes('none')) {
     normalized.backend = ['none'];

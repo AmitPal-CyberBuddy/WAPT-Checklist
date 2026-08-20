@@ -23,6 +23,8 @@ function contextualBoost(item, context) {
   const add = (points, code) => { boost += points; reasons.push(code); };
 
   if (item.category === 'authorization' && contextHas(context, 'roles', ['many'])) add(28, 'many_roles');
+  if (item.category === 'authorization' && contextHas(context, 'role_types', ['privileged', 'admin'])) add(22, 'role_hierarchy');
+  if (item.category === 'authorization' && contextHas(context, 'role_types', ['support', 'custom'])) add(14, 'cross_role');
   if (item.category === 'api-security' && contextHas(context, 'app_type', ['api_only'])) add(30, 'api_only');
   if (item.category === 'graphql' && contextHas(context, 'api_style', ['graphql'])) add(28, 'graphql');
   if (item.category === 'websocket' && contextHas(context, 'api_style', ['websocket'])) add(28, 'websocket');
