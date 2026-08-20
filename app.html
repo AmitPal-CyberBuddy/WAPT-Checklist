@@ -3,15 +3,17 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Local-first WAPT assessment workspace and context-aware scoping wizard.">
+  <meta name="description" content="Page-first VAPT operator console with prioritized testing plans, practical variants, evidence, and local-only progress.">
   <meta name="theme-color" content="#07090d">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <title>Assessment workspace — WAPT Checklist</title>
+  <title>VAPT operator console — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r7"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r7">
-  <link rel="stylesheet" href="css/print.css?v=1.0.0-r7" media="print">
-  <script type="module" src="js/ui/app.js?v=1.0.0-r7"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r8"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r8">
+  <link rel="stylesheet" href="css/operator-console.css?v=1.0.0-r8">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r8">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r8" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r8"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -25,22 +27,29 @@
         <button class="sidebar-close icon-button" type="button" data-sidebar-close aria-label="Close navigation">×</button>
       </div>
 
-      <nav class="app-nav" aria-label="Workspace">
-        <p class="nav-label">Workspace</p>
-        <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">⌂</span> Assessment</a>
-        <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">▣</span> Page playbooks</a>
-        <a href="#families" data-view-link="families"><span aria-hidden="true">▦</span> Test families</a>
-        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Advanced scope</a>
-        <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> All tests</a>
-        <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search</a>
-        <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
-        <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Payloads & workflows</a>
+      <nav class="app-nav" aria-label="Operator console">
+        <p class="nav-label">Operator console</p>
+        <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">▣</span> Testing plan</a>
+        <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search tests</a>
+        <a href="#dashboard/findings"><span aria-hidden="true">◆</span> Findings</a>
       </nav>
 
-      <nav class="category-nav" aria-label="Checklist categories">
-        <div class="nav-label-row"><p class="nav-label">Categories</p><span data-category-total>—</span></div>
+      <details class="nav-reference">
+        <summary>Reference &amp; coverage</summary>
+        <nav class="app-nav reference-nav" aria-label="Reference and coverage">
+          <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">＋</span> Choose page / function</a>
+          <a href="#families" data-view-link="families"><span aria-hidden="true">▦</span> Coverage by family</a>
+          <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> Full test library</a>
+          <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
+          <a href="#payloads" data-view-link="payloads"><span aria-hidden="true">›_</span> Tools &amp; payloads</a>
+          <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Advanced scope</a>
+        </nav>
+      </details>
+
+      <details class="category-nav" aria-label="Test categories">
+        <summary><span>Test categories</span><span data-category-total>—</span></summary>
         <div data-category-nav class="category-list" aria-live="polite"><p class="loading-line">Loading catalog…</p></div>
-      </nav>
+      </details>
 
       <div class="sidebar-foot">
         <div class="local-card">
@@ -76,6 +85,8 @@
           <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">◐</button>
         </div>
       </header>
+      <div class="route-progress" data-route-progress hidden aria-hidden="true"><span></span></div>
+      <p class="sr-only" data-route-status role="status" aria-live="polite"></p>
 
       <section class="view wizard-view" data-view="wizard" aria-labelledby="wizard-page-title">
         <div class="view-heading compact-heading wizard-heading">
@@ -94,19 +105,19 @@
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">CURRENT ASSESSMENT</p><h1 id="dashboard-title">Testing workspace</h1><p>Define the application. The plan lists every realistic test for that profile, grouped by attack surface. Click a test for variants and payloads.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Advanced scope</a><a class="button button-quiet" href="#playbooks">Page playbooks</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div class="view-heading"><div><p class="eyebrow">VAPT OPERATOR CONSOLE</p><h1 id="dashboard-title">Testing plan</h1><p>Choose what is in front of you, work the core tests, open practical variants inline, and follow the next trust boundary without leaving this console.</p></div><div class="heading-actions"><a class="button button-quiet" href="#playbooks">Change page / function</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
         <div data-app-profile></div>
         <div data-assessment-plan></div>
         <div data-playbook-banner></div>
 
-        <details class="assessment-more">
-          <summary>Coverage, gaps, and methodology catalog</summary>
+        <details class="assessment-more" data-reporting-drawer>
+          <summary>Coverage, findings &amp; reporting</summary>
 
         <section class="panel dashboard-panel coverage-panel" aria-labelledby="coverage-title">
           <div class="panel-heading"><div><p class="eyebrow">QUESTION 1</p><h2 id="coverage-title">What have I tested?</h2></div></div>
           <div data-coverage-summary></div>
           <div class="dashboard-metrics">
-            <article class="metric-card"><span>Catalog</span><strong data-dashboard-items>0</strong><small>production checks</small></article>
+            <article class="metric-card"><span>Available</span><strong data-dashboard-items>0</strong><small>tests in the library</small></article>
             <article class="metric-card"><span>Tested</span><strong data-dashboard-tested>0</strong><small>executed checks</small></article>
             <article class="metric-card"><span>Potential</span><strong data-dashboard-potential>0</strong><small>to validate</small></article>
             <article class="metric-card"><span>Confirmed</span><strong data-dashboard-confirmed>0</strong><small>findings</small></article>
@@ -124,7 +135,7 @@
           </section>
           <section class="panel dashboard-panel" aria-labelledby="suggested-title">
             <div class="panel-heading"><div><p class="eyebrow">QUESTION 3</p><h2 id="suggested-title">What should I test next?</h2></div></div>
-            <div data-suggested-next><span class="sr-only">Loading methodology…</span><div class="skeleton-stack" aria-hidden="true"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div></div>
+            <div data-suggested-next><span class="sr-only">Loading next tests…</span><div class="skeleton-stack" aria-hidden="true"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div></div>
           </section>
         </div>
 
@@ -134,23 +145,23 @@
         </div>
 
         <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">SURFACE COVERAGE</p><h2 id="progress-title">Attack surfaces</h2></div></div><div data-category-progress class="progress-list"></div></section>
-        </details>
 
         <section class="panel dashboard-panel findings-panel" id="findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-csv>Export coverage CSV</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="evidence-packs-kicker">EVIDENCE PACKS · RETEST VERDICTS</p><div data-evidence-packs></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
+        </details>
       </section>
 
       <section class="view" data-view="playbooks" aria-labelledby="playbooks-title" hidden>
-        <div class="view-heading compact-heading"><div><p class="eyebrow">PAGE-TYPE PACKS</p><h1 id="playbooks-title">Page playbooks</h1><p>Pick the page you are looking at. The pack is every applicable check for that surface — not a shortlist — each with named variants and copyable payloads.</p></div></div>
-        <div data-playbook-board class="playbook-board"><p class="loading-line">Loading playbooks…</p></div>
+        <div class="view-heading compact-heading"><div><p class="eyebrow">CHOOSE YOUR CURRENT SURFACE</p><h1 id="playbooks-title">What are you looking at?</h1><p>Pick the page or function in front of you. It becomes one testing plan with core, extended, and specialist coverage.</p></div></div>
+        <div data-playbook-board class="playbook-board"><p class="loading-line">Loading page and function types…</p></div>
       </section>
 
       <section class="view" data-view="playbook" aria-labelledby="playbook-title" hidden>
-        <div class="view-heading compact-heading"><div><p class="eyebrow" data-playbook-eyebrow>PAGE PLAYBOOK</p><h1 id="playbook-title">Playbook</h1></div><div class="heading-actions"><a class="button button-quiet" href="#playbooks">All playbooks</a></div></div>
-        <div data-playbook-root><p class="loading-line">Loading playbook…</p></div>
+        <div class="view-heading compact-heading"><div><p class="eyebrow" data-playbook-eyebrow>TESTING PLAN</p><h1 id="playbook-title">Testing plan</h1></div><div class="heading-actions"><a class="button button-quiet" href="#playbooks">Change page / function</a></div></div>
+        <div data-playbook-root><p class="loading-line">Loading testing plan…</p></div>
       </section>
 
       <section class="view" data-view="families" aria-labelledby="families-title" hidden>
-        <div class="view-heading compact-heading"><div><p class="eyebrow">PRIMARY WORKING UNIT</p><h1 id="families-title">Test families</h1><p>Every attack surface, its coverage, and where work is still open. Pick a family and work it end to end.</p></div></div>
+        <div class="view-heading compact-heading"><div><p class="eyebrow">COVERAGE &amp; REFERENCE</p><h1 id="families-title">Coverage by family</h1><p>Review gaps and methodology families without leaving the primary page/function plan.</p></div></div>
         <div data-family-board class="family-board"><p class="loading-line">Loading test families…</p></div>
       </section>
 
@@ -160,14 +171,14 @@
       </section>
 
       <section class="view" data-view="checklist" aria-labelledby="checklist-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">METHODOLOGY CATALOG</p><h1 id="checklist-title">Checklist</h1><p>Context-N/A tests are hidden by default but remain reviewable and overrideable with a reason.</p><p class="category-rationale" data-category-rationale hidden></p></div><div class="heading-actions"><div class="view-mode-toggle" role="group" aria-label="Checklist view mode"><button type="button" data-checklist-mode="testing" aria-pressed="true">Testing</button><button type="button" data-checklist-mode="coverage" aria-pressed="false">Coverage</button></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div></div>
+        <div class="view-heading"><div><p class="eyebrow">COMPLETE TEST LIBRARY</p><h1 id="checklist-title">All tests</h1><p>Tests outside the current scope stay hidden by default. You can review or include them when the engagement requires it.</p><p class="category-rationale" data-category-rationale hidden></p></div><div class="heading-actions"><div class="view-mode-toggle" role="group" aria-label="Checklist view mode"><button type="button" data-checklist-mode="testing" aria-pressed="true">Testing</button><button type="button" data-checklist-mode="coverage" aria-pressed="false">Coverage</button></div><button class="button button-quiet" type="button" data-print>Print engagement sheet</button></div></div>
         <div class="panel filter-panel" data-checklist-filters></div>
         <div class="result-summary" data-checklist-summary aria-live="polite"></div>
         <div class="test-list" data-checklist-results></div>
       </section>
 
       <section class="view" data-view="search" aria-labelledby="search-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">FULL-TEXT DISCOVERY</p><h1 id="search-title">Search the methodology</h1><p>Search titles, objectives, steps, tags, IDs, tools, technologies, and mappings.</p></div></div>
+        <div class="view-heading"><div><p class="eyebrow">FIND ANY TEST FAST</p><h1 id="search-title">Search tests</h1><p>Search by vulnerability, behavior, tool, technology, test ID, or standard mapping.</p></div></div>
         <div class="panel filter-panel" data-search-filters></div>
         <div class="result-summary" data-search-summary aria-live="polite"></div>
         <div class="test-list" data-search-results></div>
@@ -183,17 +194,17 @@
         <div data-payload-browser><p class="loading-line">Loading payload references…</p></div>
       </section>
 
-      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Local state key: <code>wapt.state.v1</code></span><button class="shortcut-hint" type="button" data-shortcuts-open>Shortcuts <kbd>?</kbd></button></footer>
+      <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Progress stays in this browser unless you export it.</span><button class="shortcut-hint" type="button" data-shortcuts-open>Shortcuts <kbd>?</kbd></button></footer>
     </main>
   </div>
   <dialog class="shortcuts-dialog" id="shortcuts-dialog" aria-labelledby="shortcuts-title">
     <h2 id="shortcuts-title">Keyboard shortcuts</h2>
     <p>Shortcuts are disabled while typing in inputs, notes, and filters.</p>
     <ul class="shortcuts-grid">
-      <li><kbd>/</kbd><span>Search the methodology</span></li>
-      <li><kbd>g</kbd> <kbd>d</kbd><span>Dashboard</span></li>
-      <li><kbd>g</kbd> <kbd>p</kbd><span>Page playbooks</span></li>
-      <li><kbd>g</kbd> <kbd>t</kbd><span>Test families</span></li>
+      <li><kbd>/</kbd><span>Search tests</span></li>
+      <li><kbd>g</kbd> <kbd>d</kbd><span>Testing plan</span></li>
+      <li><kbd>g</kbd> <kbd>p</kbd><span>Choose page / function</span></li>
+      <li><kbd>g</kbd> <kbd>t</kbd><span>Coverage by family</span></li>
       <li><kbd>g</kbd> <kbd>c</kbd><span>All tests</span></li>
       <li><kbd>g</kbd> <kbd>f</kbd><span>Findings</span></li>
       <li><kbd>n</kbd> / <kbd>p</kbd><span>Next / previous check</span></li>

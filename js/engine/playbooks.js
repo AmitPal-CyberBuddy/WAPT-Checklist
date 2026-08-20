@@ -3,10 +3,10 @@
 // Expansion adds EVERY applicable checklist item for that page type — authored
 // overlays first, then the catalog-only remainder (methodology available, practical
 // variants pending). Nothing is synthesized from a title.
-import { contextHas, deriveContext } from './context.js?v=1.0.0-r7';
-import { APPLICABILITY, evaluateApplicability, evaluateConditionMap } from './applicability.js?v=1.0.0-r7';
-import { checkFromItem } from './probes.js?v=1.0.0-r7';
-import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r7';
+import { contextHas, deriveContext } from './context.js?v=1.0.0-r8';
+import { APPLICABILITY, evaluateApplicability, evaluateConditionMap } from './applicability.js?v=1.0.0-r8';
+import { checkFromItem } from './probes.js?v=1.0.0-r8';
+import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r8';
 
 const PAGE = Object.freeze([
   'reconnaissance', 'http', 'security-headers', 'information-disclosure',

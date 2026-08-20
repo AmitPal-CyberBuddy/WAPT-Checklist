@@ -170,11 +170,11 @@ async function run() {
   await waitFor(() => doc.querySelector('[data-category-nav] a'), 8000, 'catalog manifest');
   record('Boot: app.html renders workspace with manifest-driven category nav', 'PASS', `${doc.querySelectorAll('[data-category-nav] a').length} categories in sidebar`);
   record('Boot: no console errors', consoleErrors.length === 0 ? 'PASS' : 'FAIL', consoleErrors.slice(0, 3).join(' | '));
-  record('Boot: wizard opens by default', doc.querySelector('[data-view="wizard"]') && !doc.querySelector('[data-view="wizard"]').hidden ? 'PASS' : 'FAIL');
+  record('Boot: operator console opens by default', doc.querySelector('[data-view="dashboard"]') && !doc.querySelector('[data-view="dashboard"]').hidden ? 'PASS' : 'FAIL');
   const lazyBefore = [...fetchLog];
   if (!lazyBefore.some((url) => url.includes('/checklist/') && url.endsWith('.json') && !url.endsWith('manifest.json'))) {
-    record('Lazy loading: no category data fetched while on the wizard', 'PASS', `${fetchLog.length} requests: ${fetchLog.filter((u) => u.includes('manifest')).length} manifest only`);
-  } else record('Lazy loading: no category data fetched while on the wizard', 'FAIL', fetchLog.join(', '));
+    record('Lazy loading: no category data fetched before a surface is selected', 'PASS', `${fetchLog.length} requests: ${fetchLog.filter((u) => u.includes('manifest')).length} manifest only`);
+  } else record('Lazy loading: no category data fetched before a surface is selected', 'FAIL', fetchLog.join(', '));
 
   // ------------------------------------------------------------------ WORKFLOW 1: Normal WAPT
   const name = doc.querySelector('#engagement-name');

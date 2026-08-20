@@ -1,9 +1,9 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r7';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r7';
+import { initializeTheme } from './theme.js?v=1.0.0-r8';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r8';
 
 const DOCUMENTS = Object.freeze({
   operating: { title: 'How to run an engagement', kicker: 'OPERATOR GUIDE', summary: 'Quick start, the coverage vocabulary, the family contract, keyboard model, outputs, and the honest limits of this workspace.', file: 'docs/OPERATING.md' },
-  security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report project vulnerabilities privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },
+  security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report a vulnerability in WAPT Checklist privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },
   contributing: { title: 'Contributing', kicker: 'BUILD WITH RIGOR', summary: 'Content quality, code architecture, safety, testing, attribution, and pull-request expectations.', file: 'CONTRIBUTING.md' },
   'content-guide': { title: 'Content standard', kicker: 'DECISION-GRADE METHODOLOGY', summary: 'The editorial and safety contract every production checklist item must satisfy.', file: 'docs/CONTENT-GUIDE.md' },
   architecture: { title: 'Architecture', kicker: 'STATIC-FIRST SYSTEM', summary: 'Runtime boundaries, data flow, state, applicability, security controls, and delivery decisions.', file: 'docs/ARCHITECTURE.md' },
@@ -42,7 +42,7 @@ async function loadDocument() {
     root.replaceChildren();
     const message = document.createElement('p');
     message.className = 'document-error';
-    message.textContent = `The document could not be loaded: ${error.message}. Serve the repository over HTTP rather than opening this page directly.`;
+    message.textContent = 'This document could not be loaded. Refresh the page and try again.';
     root.append(message);
   }
 }

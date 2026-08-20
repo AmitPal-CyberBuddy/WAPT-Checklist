@@ -1,4 +1,4 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r7';
+import { initializeTheme } from './theme.js?v=1.0.0-r8';
 
 async function renderCategories() {
   initializeTheme();
@@ -21,7 +21,7 @@ async function renderCategories() {
       return card;
     }));
   } catch (error) {
-    root.textContent = `Taxonomy could not be loaded: ${error.message}`;
+    root.textContent = 'Security areas could not be loaded. Refresh the page and try again.';
   }
 }
 

@@ -17,8 +17,9 @@ test('all user-facing pages share policy, branding, theme, and responsive viewpo
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
     assert.ok(html.includes('assets/logo.svg'));
     assert.ok(html.includes('css/styles.css?v=1.0.0'));
-    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r7"/);
-    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r7'), `${page} early theme boot`);
+    assert.ok(html.includes('css/polish.css?v=1.0.0-r8'), `${page} shared product polish`);
+    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r8"/);
+    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r8'), `${page} early theme boot`);
     assert.ok(html.indexOf('theme-boot.js') < html.indexOf('css/styles.css'), `${page} applies theme before CSS`);
   }
 });
@@ -27,7 +28,7 @@ test('public navigation never sends users directly to raw Markdown or license te
   const html = ['index.html', 'app.html', 'methodology.html', 'docs.html', 'workflow.html'].map(read).join('\n');
   assert.doesNotMatch(html, /href="[^"]+\.md(?:[?#][^"]*)?"/);
   assert.doesNotMatch(html, /href="(?:SECURITY\.md|CONTRIBUTING\.md|LICENSE)"/);
-  for (const link of ['methodology.html', 'docs.html?doc=security', 'docs.html?doc=contributing', 'docs.html?doc=license']) assert.ok(html.includes(link), link);
+  for (const link of ['methodology.html', 'docs.html?doc=operating', 'docs.html?doc=security', 'docs.html?doc=license']) assert.ok(html.includes(link), link);
 });
 
 test('documentation renderer uses a controlled document map and text-safe rendering', () => {
@@ -65,17 +66,18 @@ test('Burp workflow links route through the designed workflow page', () => {
   assert.match(workflow, /renderMarkdown/);
 });
 
-test('homepage presents the assessment loop, project metrics, and attack-chain preview', () => {
+test('homepage presents the practical testing loop without loading the full catalog', () => {
   const html = read('index.html');
   const home = read('js/ui/home.js');
   assert.match(html, /Start testing/);
-  assert.match(html, /Explore methodology/);
+  assert.match(html, /See how it works/);
+  assert.match(html, /CURRENT TESTING PLAN/);
   assert.match(html, /data-project-metric="production_items"/);
   assert.match(html, /data-project-metric="attack_chains"/);
   assert.match(html, /class="pipeline"/);
   assert.match(html, /data-chain-preview/);
   assert.match(home, /fetch\('release\.json'/);
   assert.match(home, /fetch\('attack-chains\/manifest\.json'/);
-  assert.match(home, /hasScopedContext/);
-  assert.match(home, /if \(hasScopedContext\(state\)\) \{/);
+  assert.match(home, /IntersectionObserver/);
+  assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });

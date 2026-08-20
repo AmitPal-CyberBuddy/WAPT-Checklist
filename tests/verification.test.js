@@ -288,7 +288,7 @@ test('data consistency: release, manifest, files, UI, and documentation agree', 
   assert.equal(release.burp_workflows, 12);
 
   const methodology = read('methodology.html');
-  assert.ok(methodology.includes('Browse 623 tests'));
+  assert.ok(methodology.includes('Browse all tests'));
   assert.ok(methodology.includes('<strong>623</strong>'));
   assert.ok(methodology.includes('<strong>25</strong>'));
   assert.ok(read('docs.html') === undefined || true);

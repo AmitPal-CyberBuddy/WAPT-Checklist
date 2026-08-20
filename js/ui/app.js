@@ -1,10 +1,10 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r7';
-import { createWizard } from './wizard.js?v=1.0.0-r7';
-import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r7';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r7';
-import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r7';
-import { createCatalog } from './catalog.js?v=1.0.0-r7';
-import { createWorkspace } from './workspace.js?v=1.0.0-r7';
+import { initializeTheme } from './theme.js?v=1.0.0-r8';
+import { createWizard } from './wizard.js?v=1.0.0-r8';
+import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r8';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r8';
+import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r8';
+import { createCatalog } from './catalog.js?v=1.0.0-r8';
+import { createWorkspace } from './workspace.js?v=1.0.0-r8';
 
 const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -134,7 +134,7 @@ async function loadManifest() {
   } catch (error) {
     document.querySelector('[data-category-nav]').textContent = 'Catalog unavailable';
     const output = document.querySelector('[data-checklist-results]');
-    if (output) output.textContent = 'The checklist manifest could not be loaded. Serve the repository over HTTP rather than opening this file directly.';
+    if (output) output.textContent = 'The test library could not be loaded. Refresh the page and try again.';
     console.error(error);
   }
 }
@@ -169,31 +169,84 @@ function setSidebar(open, restoreFocus = false) {
   }
 }
 
+let navigationSequence = 0;
+let routeProgressTimer = 0;
+
+function swapVisibleView(view) {
+  const update = () => {
+    document.querySelectorAll('[data-view]').forEach((section) => { section.hidden = section.dataset.view !== view; });
+  };
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (!reduced && typeof document.startViewTransition === 'function') document.startViewTransition(update);
+  else update();
+}
+
+function beginNavigation(view, token) {
+  const workspaceNode = document.querySelector('#workspace');
+  const status = document.querySelector('[data-route-status]');
+  workspaceNode.dataset.route = view;
+  workspaceNode.setAttribute('aria-busy', 'true');
+  if (status) status.textContent = `Opening ${view.replaceAll('-', ' ')}…`;
+  clearTimeout(routeProgressTimer);
+  routeProgressTimer = setTimeout(() => {
+    if (token !== navigationSequence) return;
+    const progress = document.querySelector('[data-route-progress]');
+    if (progress) progress.hidden = false;
+    workspaceNode.classList.add('is-navigating');
+  }, 90);
+}
+
+function finishNavigation(view, token) {
+  if (token !== navigationSequence) return;
+  clearTimeout(routeProgressTimer);
+  const workspaceNode = document.querySelector('#workspace');
+  const progress = document.querySelector('[data-route-progress]');
+  const status = document.querySelector('[data-route-status]');
+  workspaceNode.removeAttribute('aria-busy');
+  workspaceNode.classList.remove('is-navigating');
+  if (progress) progress.hidden = true;
+  if (status) status.textContent = `${view.replaceAll('-', ' ')} ready`;
+}
+
 function route() {
   if (consumeShare()) return;
   const [viewPart, slug = ''] = location.hash.slice(1).split('/');
   const view = VIEWS.has(viewPart) ? viewPart : 'wizard';
-  document.querySelectorAll('[data-view]').forEach((section) => { section.hidden = section.dataset.view !== view; });
+  const token = ++navigationSequence;
+  swapVisibleView(view);
+  beginNavigation(view, token);
+
   document.querySelectorAll('[data-view-link]').forEach((link) => {
-    if (link.dataset.viewLink === view) link.setAttribute('aria-current', 'page');
-    else link.removeAttribute('aria-current');
+    if (link.dataset.viewLink === view) {
+      link.setAttribute('aria-current', 'page');
+      link.closest('details')?.setAttribute('open', '');
+    } else link.removeAttribute('aria-current');
   });
   setSidebar(false);
   const heading = document.querySelector(`[data-view="${view}"] h1`);
   if (heading && location.hash) heading.setAttribute('tabindex', '-1');
+
+  let work = Promise.resolve();
   if (['playbooks', 'playbook'].includes(view)) {
-    workspace.show(view, slug).catch((error) => {
+    work = workspace.show(view, slug).catch((error) => {
       const target = document.querySelector('[data-playbook-board], [data-playbook-root]');
-      if (target) target.textContent = `Playbooks could not be loaded: ${error.message}`;
+      if (target) target.textContent = 'This view could not be loaded. Refresh the page and try again.';
       console.error(error);
     });
   } else if (manifest.categories.length && ['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads'].includes(view)) {
-    workspace.show(view, slug).catch((error) => {
+    work = workspace.show(view, slug).then(() => {
+      if (view === 'dashboard' && slug === 'findings') {
+        const drawer = document.querySelector('[data-reporting-drawer]');
+        if (drawer) drawer.open = true;
+        document.querySelector('#findings-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }).catch((error) => {
       const target = document.querySelector(`[data-${view}-results], [data-suggested-next]`);
-      if (target) target.textContent = `Methodology could not be loaded: ${error.message}`;
+      if (target) target.textContent = 'This view could not be loaded. Refresh the page and try again.';
       console.error(error);
     });
   }
+  work.finally(() => finishNavigation(view, token));
 }
 
 function resetWizard() {
@@ -320,8 +373,12 @@ function initializeShell() {
       else if (event.key === 't') location.hash = 'families';
       else if (event.key === 'c') location.hash = 'checklist';
       else if (event.key === 'f') {
-        location.hash = 'dashboard';
-        setTimeout(() => document.querySelector('#findings-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 0);
+        location.hash = 'dashboard/findings';
+        setTimeout(() => {
+          const drawer = document.querySelector('[data-reporting-drawer]');
+          if (drawer) drawer.open = true;
+          document.querySelector('#findings-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 0);
       }
     } else {
       pendingShortcut = null;

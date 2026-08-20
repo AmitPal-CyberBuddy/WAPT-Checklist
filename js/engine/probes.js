@@ -9,7 +9,7 @@
 // CATALOG-ONLY: methodology available, practical variants pending. There is no fake
 // Repeater block.
 
-import { checkMaturity } from './maturity.js?v=1.0.0-r7';
+import { checkMaturity } from './maturity.js?v=1.0.0-r8';
 
 export function variantsForItem(item, overlay, path = '/') {
   void item;
@@ -19,18 +19,27 @@ export function variantsForItem(item, overlay, path = '/') {
 }
 
 export function checkFromItem(item, overlay, path = '/') {
-  const variants = variantsForItem(item, overlay, path);
+  // An overlay is practical procedure for its primary catalog item. `related` IDs are
+  // recommendation edges, not permission to relabel the same payload as several tests.
+  // Keeping that boundary prevents an authored Host-header request, for example, from
+  // masquerading as an authored cache or redirect procedure.
+  const authoredOverlay = overlay?.item === item.id ? overlay : null;
+  const variants = variantsForItem(item, authoredOverlay, path);
   const check = {
-    id: overlay?.id || item.id.toLowerCase(),
-    title: overlay?.title || item.title,
+    id: authoredOverlay?.id || item.id.toLowerCase(),
+    title: authoredOverlay?.title || item.title,
     item: item.id,
-    related: overlay?.related || [],
-    severity: overlay?.severity || item.severity,
-    tool: overlay?.tool,
-    why: overlay?.why || item.objective,
-    validate: overlay?.validate || item.validation,
+    category: item.category,
+    difficulty: item.difficulty,
+    tags: item.tags || [],
+    tools: item.tools || [],
+    related: [...new Set([...(item.related || []), ...(authoredOverlay?.related || [])])],
+    severity: authoredOverlay?.severity || item.severity,
+    tool: authoredOverlay?.tool,
+    why: authoredOverlay?.why || item.objective,
+    validate: authoredOverlay?.validate || item.validation,
     variants,
-    authored: Boolean(overlay)
+    authored: Boolean(authoredOverlay)
   };
   return { ...check, maturity: checkMaturity(check) };
 }

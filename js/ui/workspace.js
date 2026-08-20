@@ -1,22 +1,22 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r7';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r7';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r7';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r7';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r7';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r7';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r7';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r7';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r7';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r7';
-import { createChainStore } from './chains.js?v=1.0.0-r7';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r7';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r7';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r7';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r7';
-import { indexPlaybooks, matchPlaybooks, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r7';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r7';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r7';
-import { renderProfile } from './profile.js?v=1.0.0-r7';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r8';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r8';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r8';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r8';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r8';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r8';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r8';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r8';
+import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r8';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r8';
+import { createChainStore } from './chains.js?v=1.0.0-r8';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r8';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r8';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r8';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r8';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r8';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r8';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r8';
+import { renderProfile } from './profile.js?v=1.0.0-r8';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -41,7 +41,9 @@ function effectiveRecord(item, state, context) {
 
 function renderFilters(root, manifest, filters, onChange, options = {}) {
   root.replaceChildren();
-  const grid = element('div', 'filter-grid');
+  const grid = element('div', 'filter-grid filter-grid-primary');
+  const advancedGrid = element('div', 'filter-grid filter-grid-advanced');
+  const primaryFields = new Set(['query', 'category', 'severity', 'status']);
   const fields = [
     ['query', 'Search', 'search', 'CORS, JWT, BOLA, objective…'],
     ['category', 'Category', 'select', ''], ['severity', 'Severity', 'select', ''],
@@ -77,7 +79,7 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     input.value = filters[key] || '';
     input.addEventListener(type === 'search' || type === 'text' ? 'input' : 'change', () => onChange({ ...filters, [key]: input.value }, key));
     group.append(input);
-    grid.append(group);
+    (primaryFields.has(key) ? grid : advancedGrid).append(group);
   }
   const reset = element('button', 'button button-quiet filter-reset', 'Reset filters');
   reset.type = 'button';
@@ -97,8 +99,15 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     chips.append(chip);
   }
   if (options.fixedCategory && filters.category) chips.append(element('span', 'filter-chip fixed', `category: ${filters.category} (view)`));
-  root.append(chips);
-  root.append(grid);
+  root.append(chips, grid);
+  if (advancedGrid.childElementCount) {
+    const advanced = element('details', 'advanced-filters');
+    const advancedActive = activeEntries.filter(([key]) => !primaryFields.has(key)).length;
+    advanced.open = advancedActive > 0;
+    advanced.append(element('summary', '', advancedActive ? `More filters · ${advancedActive} active` : 'More filters'));
+    advanced.append(advancedGrid);
+    root.append(advanced);
+  }
 }
 
 function renderEvidenceForm(item, getState, onState) {
@@ -699,6 +708,29 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     return recent || null;
   }
 
+  function currentSurface() {
+    const state = getState();
+    const saved = playbookIndex.byId.get(state.position?.family || '');
+    if (saved) return saved;
+    if (!state.answers?.app_type || state.answers.app_type === 'unknown') return null;
+    return suggestedPlaybook(playbookIndex, context());
+  }
+
+  function selectSurface(surfaceId, engagement = getState().engagement) {
+    const surface = PLAYBOOK_SURFACES[surfaceId];
+    if (!surface?.scope) return;
+    let next = getState();
+    next = setEngagement(next, {
+      name: engagement.name,
+      targetUrl: engagement.targetUrl,
+      started_at: next.engagement.started_at || new Date().toISOString()
+    });
+    next = setAnswers(next, surface.scope);
+    next = setPosition(next, { view: 'dashboard', family: surfaceId });
+    commit(next);
+    if (location.hash !== '#dashboard') location.hash = 'dashboard';
+  }
+
   function playbookContextLabel() {
     const answers = getState().answers || {};
     if (answers.app_type && answers.app_type !== 'unknown') return `Scope: ${String(answers.app_type).replaceAll('_', ' ')}`;
@@ -715,7 +747,8 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       primary: suggestedPlaybook(playbookIndex, derived),
       contextLabel: playbookContextLabel(),
       derived,
-      items: records.map(({ item }) => item)
+      items: records.map(({ item }) => item),
+      onSelect: (surfaceId) => selectSurface(surfaceId)
     });
   }
 
@@ -733,9 +766,9 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     });
     const playbook = playbookIndex.byId.get(activePlaybook);
     const heading = document.querySelector('#playbook-title');
-    if (heading) heading.textContent = playbook ? playbook.title : 'Playbook';
+    if (heading) heading.textContent = playbook ? playbook.title : 'Testing plan';
     const eyebrow = document.querySelector('[data-playbook-eyebrow]');
-    if (eyebrow) eyebrow.textContent = playbook ? 'PAGE PLAYBOOK' : 'PAGE PLAYBOOK';
+    if (eyebrow) eyebrow.textContent = 'TESTING PLAN';
   }
 
   function renderBoard() {
@@ -820,17 +853,10 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }
   }
 
-  async function renderDashboard() {
-    renderDashboardMetrics();
-    await chainStore.loadAll();
-    const state = getState();
-    const itemList = records.map(({ item }) => item);
-    const coverage = computeCoverage(itemList, context(), state.statuses);
-    const queue = retestQueue(state);
+  function renderDashboardSecondary({ coverage, queue, state, itemList }) {
     const coverageByCategory = new Map(coverage.perCategory.map((entry) => [entry.slug, entry]));
-
     const progress = document.querySelector('[data-category-progress]');
-    progress.replaceChildren(...manifest.categories.filter(({ count }) => count > 0).map((category) => {
+    progress?.replaceChildren(...manifest.categories.filter(({ count }) => count > 0).map((category) => {
       const entry = coverageByCategory.get(category.slug) || { executable: category.count, tested: 0, na: 0 };
       const row = element('a', 'progress-row');
       row.href = `#checklist/${category.slug}`;
@@ -844,73 +870,15 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       return row;
     }));
 
-    const profileRoot = document.querySelector('[data-app-profile]');
-    if (profileRoot) {
-      renderProfile(profileRoot, {
-        answers: state.answers,
-        engagement: state.engagement,
-        onApply({ answers, engagement }) {
-          let next = getState();
-          next = setEngagement(next, {
-            name: engagement.name,
-            targetUrl: engagement.targetUrl,
-            started_at: next.engagement.started_at || new Date().toISOString()
-          });
-          next = setAnswers(next, answers);
-          next = setPosition(next, { view: 'dashboard' });
-          commit(next);
-        }
-      });
-    }
-    const plan = document.querySelector('[data-assessment-plan]');
-    if (plan) {
-      renderAssessmentPlan(plan, {
-        index: playbookIndex,
-        answers: state.answers,
-        engagement: state.engagement,
-        records,
-        getState,
-        coverage,
-        deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl)
-      });
-    }
-    const banner = document.querySelector('[data-playbook-banner]');
-    if (banner) banner.replaceChildren();
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
     renderFamilyGaps(document.querySelector('[data-family-gaps]'), { familyIndex, records, getState, categoryNames: names(), limit: 6 });
     renderBlockedList(document.querySelector('[data-blocked-list]'), records, state);
     renderRetestQueue(document.querySelector('[data-retest-queue]'), queue, itemList);
     renderChainOverview(document.querySelector('[data-chain-overview]'), itemList, state.statuses, chainStore);
 
-    const resume = document.querySelector('[data-resume]');
-    if (resume) {
-      const target = resumeTarget();
-      const nextCheck = target ? nextInFamily(target, state.statuses, '') : '';
-      resume.hidden = !target;
-      if (target) {
-        resume.href = `#family/${target.id}`;
-        resume.textContent = nextCheck ? `Continue ${target.title} → ${nextCheck}` : `Review ${target.title}`;
-      }
-    }
-
-    const suggestedRoot = document.querySelector('[data-suggested-next]');
-    const rows = suggestions(8);
-    if (!rows.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No executable Not Tested items match this context. Review Confirm/N/A filters or update scope.'));
-    else suggestedRoot.replaceChildren(...rows.map(({ item, reasons }) => {
-      const family = familyIndex.byItem.get(item.id);
-      const link = element('a', 'suggested-row');
-      link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
-      link.append(element('span', 'chip id-chip', item.id));
-      const copy = element('div');
-      copy.append(element('strong', '', item.title));
-      copy.append(element('small', '', reasons.join(' · ')));
-      link.append(copy);
-      return link;
-    }));
-
     const findingsRoot = document.querySelector('[data-findings-table]');
     const findings = findingItems(itemList, state);
-    if (!findings.length) findingsRoot.replaceChildren(element('p', 'empty-copy', 'No potential or confirmed findings recorded. Scanner leads should remain notes until manually validated.'));
+    if (!findings.length) findingsRoot.replaceChildren(element('p', 'empty-copy', 'No potential or confirmed findings recorded. Keep scanner leads as notes until they are manually validated.'));
     else {
       const table = element('table', 'findings-table');
       const head = document.createElement('thead');
@@ -938,8 +906,100 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       table.append(head, body);
       findingsRoot.replaceChildren(table);
     }
-
     renderEvidencePacks(document.querySelector('[data-evidence-packs]'), itemList, getState, commit);
+  }
+
+  async function renderDashboard() {
+    renderDashboardMetrics();
+    await chainStore.loadAll();
+    const state = getState();
+    const itemList = records.map(({ item }) => item);
+    const coverage = computeCoverage(itemList, context(), state.statuses);
+    const queue = retestQueue(state);
+    const selectedSurface = currentSurface();
+
+    const profileRoot = document.querySelector('[data-app-profile]');
+    if (profileRoot) {
+      renderProfile(profileRoot, {
+        answers: state.answers,
+        engagement: state.engagement,
+        playbooks: playbookIndex.playbooks,
+        currentSurface: selectedSurface,
+        onSurfaceSelect({ surfaceId, engagement }) { selectSurface(surfaceId, engagement); },
+        onApply({ answers, engagement }) {
+          let next = getState();
+          next = setEngagement(next, {
+            name: engagement.name,
+            targetUrl: engagement.targetUrl,
+            started_at: next.engagement.started_at || new Date().toISOString()
+          });
+          next = setAnswers(next, answers);
+          next = setPosition(next, { view: 'dashboard', family: selectedSurface?.id || '' });
+          commit(next);
+        }
+      });
+    }
+
+    const plan = document.querySelector('[data-assessment-plan]');
+    if (plan) {
+      renderAssessmentPlan(plan, {
+        index: playbookIndex,
+        answers: state.answers,
+        engagement: state.engagement,
+        records,
+        getState,
+        commit,
+        coverage,
+        familyIndex,
+        surfaceId: selectedSurface?.id || '',
+        deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl)
+      });
+    }
+    document.querySelector('[data-playbook-banner]')?.replaceChildren();
+
+    // Keep the small progress answers warm so the drawer opens instantly; defer the long
+    // category table, findings table, and evidence cards until they are actually requested.
+    renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
+    renderFamilyGaps(document.querySelector('[data-family-gaps]'), { familyIndex, records, getState, categoryNames: names(), limit: 6 });
+    renderBlockedList(document.querySelector('[data-blocked-list]'), records, state);
+    // Evidence packs are usually few and remain interactive even while the reporting drawer
+    // is closed; long aggregate tables still stay deferred.
+    renderEvidencePacks(document.querySelector('[data-evidence-packs]'), itemList, getState, commit);
+
+    const resume = document.querySelector('[data-resume]');
+    if (resume) {
+      const target = resumeTarget();
+      const nextCheck = target ? nextInFamily(target, state.statuses, '') : '';
+      resume.hidden = !target;
+      if (target) {
+        resume.href = `#family/${target.id}`;
+        resume.textContent = nextCheck ? `Continue ${target.title}` : `Review ${target.title}`;
+      }
+    }
+
+    const suggestedRoot = document.querySelector('[data-suggested-next]');
+    const rows = suggestions(8);
+    if (!rows.length) suggestedRoot.replaceChildren(element('p', 'empty-copy', 'No open tests match this context. Review the plan filters or update the scope.'));
+    else suggestedRoot.replaceChildren(...rows.map(({ item, reasons }) => {
+      const family = familyIndex.byItem.get(item.id);
+      const link = element('a', 'suggested-row');
+      link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
+      link.append(element('span', 'chip id-chip', item.id));
+      const copy = element('div');
+      copy.append(element('strong', '', item.title));
+      copy.append(element('small', '', reasons.join(' · ')));
+      link.append(copy);
+      return link;
+    }));
+
+    // Coverage analytics, findings, and evidence are secondary to active testing. Build
+    // those heavier tables only when the tester opens the reporting drawer.
+    const drawer = document.querySelector('[data-reporting-drawer]');
+    const secondaryContext = { coverage, queue, state, itemList };
+    if (drawer) {
+      drawer.ontoggle = () => { if (drawer.open) renderDashboardSecondary(secondaryContext); };
+      if (drawer.open) renderDashboardSecondary(secondaryContext);
+    }
   }
 
   async function ensureAll() {
@@ -953,7 +1013,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       renderDashboardMetrics();
       await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks(), chainStore.loadAll()]);
       await renderDashboard();
-      rememberPosition({ view: 'dashboard' });
+      rememberPosition({ view: 'dashboard', family: currentSurface()?.id || '' });
     } else if (view === 'playbooks') {
       await loadPlaybooks();
       renderPlaybooks();

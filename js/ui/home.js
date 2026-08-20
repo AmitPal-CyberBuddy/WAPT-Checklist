@@ -1,6 +1,4 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r7';
-import { deriveContext } from '../engine/context.js?v=1.0.0-r7';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r7';
+import { initializeTheme } from './theme.js?v=1.0.0-r8';
 
 const STORAGE_KEY = 'wapt.state.v1';
 
@@ -15,17 +13,6 @@ function localState() {
   } catch {
     return {};
   }
-}
-
-function hasScopedContext(state) {
-  if (!state || typeof state !== 'object') return false;
-  if (state.engagement?.targetUrl) return true;
-  const answers = state.answers;
-  if (!answers || typeof answers !== 'object') return false;
-  return Object.entries(answers).some(([, value]) => {
-    const entries = Array.isArray(value) ? value : [value];
-    return entries.some((entry) => entry !== 'unknown' && entry !== undefined);
-  });
 }
 
 // One primary action: resume the engagement this browser already holds, otherwise start one.
@@ -46,47 +33,21 @@ function renderPrimaryAction(state) {
   action.append(arrow);
 }
 
-async function renderStats() {
+function renderStats() {
   const state = localState();
   renderPrimaryAction(state);
   const statuses = state.statuses && typeof state.statuses === 'object' ? Object.values(state.statuses) : [];
-  let categories = 0;
-  let active = 0;
-  try {
-    const response = await fetch('checklist/manifest.json', { headers: { Accept: 'application/json' } });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const manifest = await response.json();
-    categories = manifest.categories.length;
-    // Applicability counts need the full catalog; only fetch it when a scoped
-    // engagement exists so the homepage stays light for first-time visitors.
-    if (hasScopedContext(state)) {
-      const published = manifest.categories.filter(({ count }) => count > 0);
-      const documents = await Promise.all(published.map(async ({ file }) => {
-        const categoryResponse = await fetch(`checklist/${file}`, { headers: { Accept: 'application/json' } });
-        if (!categoryResponse.ok) throw new Error(`${file}: HTTP ${categoryResponse.status}`);
-        return categoryResponse.json();
-      }));
-      const context = deriveContext(state.answers, state.engagement?.targetUrl || '');
-      active = documents.flatMap(({ items }) => items).filter((item) => evaluateApplicability(item, context).state !== APPLICABILITY.NA_CONTEXT).length;
-    }
-  } catch (error) {
-    console.error('Could not load checklist statistics.', error);
-  }
-
   const values = {
-    categories,
-    active: hasScopedContext(state) ? active : 0,
-    // Executed checks only: N/A, blocked, and in-progress are not tested work.
     tested: statuses.filter((status) => ['passed', 'potential_finding', 'confirmed_finding'].includes(status)).length,
     findings: statuses.filter((status) => status === 'potential_finding' || status === 'confirmed_finding').length
   };
-  const showActive = hasScopedContext(state);
   for (const [name, value] of Object.entries(values)) {
-    document.querySelector(`[data-stat="${name}"]`).textContent = name === 'active' && !showActive ? '—' : value.toLocaleString();
+    const node = document.querySelector(`[data-stat="${name}"]`);
+    if (node) node.textContent = value.toLocaleString();
   }
 }
 
-async function renderProjectMetrics() {
+async function renderProductProof() {
   try {
     const response = await fetch('release.json', { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
@@ -97,7 +58,7 @@ async function renderProjectMetrics() {
       if (node && Number.isFinite(Number(value))) node.textContent = Number(value).toLocaleString();
     }
   } catch (error) {
-    console.error('Could not load project metrics.', error);
+    console.error('Could not load product summary.', error);
   }
 }
 
@@ -137,5 +98,14 @@ async function renderChainPreview() {
 
 initializeTheme();
 renderStats();
-renderProjectMetrics();
-renderChainPreview();
+renderProductProof();
+
+const chainRoot = document.querySelector('[data-chain-preview]');
+if (chainRoot && 'IntersectionObserver' in window) {
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some(({ isIntersecting }) => isIntersecting)) return;
+    observer.disconnect();
+    renderChainPreview();
+  }, { rootMargin: '240px' });
+  observer.observe(chainRoot);
+} else renderChainPreview();
