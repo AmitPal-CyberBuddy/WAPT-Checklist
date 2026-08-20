@@ -3,14 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="A context-aware WAPT methodology, checklist, and local-first tester workspace for authorized web security assessments.">
+  <meta name="description" content="A practical, page-first VAPT operator console with prioritized tests, payloads, tools, evidence, and local-only engagement progress.">
   <meta name="theme-color" content="#07090d">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
-  <title>WAPT Checklist — Context-aware web security methodology</title>
+  <title>WAPT Checklist — Practical VAPT operator console</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r7"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r7">
-  <script type="module" src="js/ui/home.js?v=1.0.0-r7"></script>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r8"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r8">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r8">
+  <script type="module" src="js/ui/home.js?v=1.0.0-r8"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -24,8 +25,8 @@
       <span><strong>WAPT</strong> Checklist</span>
     </a>
     <nav class="header-nav" aria-label="Primary navigation">
-      <a href="app.html#dashboard">Assessment</a>
-      <a href="methodology.html">Methodology</a>
+      <a href="app.html#dashboard">Operator console</a>
+      <a href="methodology.html">How it works</a>
       <a href="https://github.com/AmitPal-CyberBuddy/WAPT-Checklist">GitHub</a>
       <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">◐</button>
     </nav>
@@ -36,70 +37,53 @@
       <div class="hero-copy">
         <p class="eyebrow"><span>LOCAL-FIRST</span> / CONTEXT-AWARE / OPEN SOURCE</p>
         <h1 id="hero-title">Test what matters.<br><em>Prove what is real.</em></h1>
-        <p class="hero-lede">Define the application you are testing. The workspace lists only the realistic tests for that profile, each with variants, payloads, and validation — not 623 checks organized by category.</p>
+        <p class="hero-lede">Choose the page or function in front of you. Get a prioritized testing plan with practical steps, payloads, tools, validation, and the next checks worth running.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="app.html#dashboard" data-primary-action>Start testing <span aria-hidden="true">→</span></a>
-          <a class="button button-secondary" href="methodology.html">Explore methodology</a>
+          <a class="button button-secondary" href="methodology.html">See how it works</a>
           <a class="button button-quiet" href="docs.html?doc=operating">How it works</a>
         </div>
         <p class="privacy-note"><span aria-hidden="true">◆</span> No backend · No telemetry · Your engagement stays on this device</p>
       </div>
       <div class="hero-visual">
-        <div class="hero-preview" role="img" aria-label="Preview of the assessment workspace for an SPA with JWT identity, a REST API, and tenant boundaries.">
+        <div class="hero-preview" role="img" aria-label="Preview of a static-page testing plan showing core coverage and prioritized tests.">
           <header class="hero-preview-head">
-            <div class="hero-preview-kicker"><span class="micro-label">CURRENT ASSESSMENT</span><span class="chip">LOCAL</span></div>
-            <h2>Single-page application</h2>
-            <p>https://app.example.com</p>
+            <div class="hero-preview-kicker"><span class="micro-label">CURRENT TESTING PLAN</span><span class="chip">LOCAL</span></div>
+            <h2>Static / published page</h2>
+            <p>https://example.com/about</p>
             <div class="chip-row assessment-chips">
-              <span class="chip">Authentication</span>
-              <span class="chip">JWT</span>
-              <span class="chip">REST</span>
-              <span class="chip">Multi-tenant</span>
+              <span class="chip">Core coverage</span>
+              <span class="chip">HTTP</span>
+              <span class="chip">TLS</span>
+              <span class="chip">Client-side</span>
             </div>
             <div class="assessment-stats">
-              <div class="assessment-stat"><strong>481</strong><span>applicable tests</span></div>
-              <div class="assessment-stat"><strong>198</strong><span>full playbooks</span></div>
-              <div class="assessment-stat"><strong>283</strong><span>methodology-only</span></div>
-              <div class="assessment-stat"><strong>11</strong><span>attack surfaces</span></div>
+              <div class="assessment-stat"><strong>30</strong><span>core tests</span></div>
+              <div class="assessment-stat"><strong>7</strong><span>completed</span></div>
+              <div class="assessment-stat"><strong>23</strong><span>remaining</span></div>
             </div>
           </header>
           <section class="hero-preview-surface">
-            <header><span class="micro-label">Authorization</span><span>8</span></header>
+            <header><span class="micro-label">DON'T MISS</span><span>12</span></header>
             <ul>
-              <li class="is-next"><span class="hero-preview-mark" aria-hidden="true">▶</span><span><strong>Object-level authorization</strong><small>WAPT-AUTHZ-003 · Not tested</small></span></li>
-              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Tenant isolation</span></li>
-              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Mass assignment</span></li>
-            </ul>
-          </section>
-          <section class="hero-preview-surface">
-            <header><span class="micro-label">JWT / Bearer</span><span>7</span></header>
-            <ul>
-              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>alg=none</span></li>
-              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Role claims</span></li>
+              <li class="is-done"><span class="hero-preview-mark" aria-hidden="true">✓</span><span><strong>Host header injection</strong><small>WAPT-HTTP-011 · 11 variants covered</small></span></li>
+              <li class="is-next"><span class="hero-preview-mark" aria-hidden="true">▶</span><span><strong>Directory enumeration</strong><small>Burp · ffuf · Gobuster</small></span></li>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Exposed .git and backups</span></li>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>CSP and clickjacking</span></li>
             </ul>
           </section>
         </div>
       </div>
     </section>
 
-    <section class="stats-band" aria-labelledby="stats-title">
-      <h2 class="sr-only" id="stats-title">Live project statistics</h2>
-      <div class="stats shell" aria-live="polite">
-        <div class="stat"><strong data-stat="categories">—</strong><span>Categories</span></div>
-        <div class="stat"><strong data-stat="active">—</strong><span>Active tests</span></div>
-        <div class="stat"><strong data-stat="tested">—</strong><span>Tested locally</span></div>
-        <div class="stat"><strong data-stat="findings">—</strong><span>Findings locally</span></div>
-      </div>
-    </section>
-
-    <section class="stats-band" aria-labelledby="project-metrics-title">
-      <h2 class="sr-only" id="project-metrics-title">Project statistics</h2>
+    <section class="stats-band product-proof" aria-labelledby="proof-title">
+      <h2 class="sr-only" id="proof-title">Built for practical testing</h2>
       <div class="project-metrics shell" aria-live="polite">
-        <div class="project-metric"><strong data-project-metric="production_items">—</strong><span>Validated tests</span></div>
-        <div class="project-metric"><strong data-project-metric="categories">—</strong><span>Security domains</span></div>
-        <div class="project-metric"><strong data-project-metric="attack_chains">—</strong><span>Attack chains</span></div>
-        <div class="project-metric"><strong data-project-metric="payload_references">—</strong><span>Payload references</span></div>
-        <div class="project-metric"><strong data-project-metric="burp_workflows">—</strong><span>Burp workflows</span></div>
+        <div class="project-metric"><strong data-project-metric="production_items">—</strong><span>Guided security tests</span></div>
+        <div class="project-metric"><strong>16</strong><span>Page &amp; function plans</span></div>
+        <div class="project-metric"><strong data-project-metric="attack_chains">—</strong><span>Connected attack paths</span></div>
+        <div class="project-metric"><strong data-stat="tested">0</strong><span>Completed on this device</span></div>
+        <div class="project-metric"><strong data-stat="findings">0</strong><span>Findings on this device</span></div>
       </div>
     </section>
 
@@ -112,9 +96,9 @@
       <ol class="pipeline">
         <li><strong>Scope</strong><span>Type, authentication, features.</span></li>
         <li><strong>Discover</strong><span>Recon, assets, routes, attack surface.</span></li>
-        <li><strong>Prioritize</strong><span>Applicability and deterministic next steps.</span></li>
-        <li><strong>Test &amp; validate</strong><span>Controlled procedure, evidence, false positives.</span></li>
-        <li><strong>Report</strong><span>Reportability gate, redacted evidence packs.</span></li>
+        <li><strong>Prioritize</strong><span>Core checks first, specialist work when needed.</span></li>
+        <li><strong>Test &amp; validate</strong><span>Practical steps, observations, and false-positive checks.</span></li>
+        <li><strong>Report</strong><span>Validated impact and redacted evidence.</span></li>
         <li><strong>Retest</strong><span>Verdicts, variant coverage, residual risk.</span></li>
       </ol>
     </section>
@@ -143,9 +127,9 @@
         </article>
         <article class="feature-card">
           <span class="feature-number">02</span>
-          <h3>Decision-grade methodology</h3>
-          <p>Every check defines its objective, controls, secure and vulnerable behavior, false positives, impact, evidence, and authoritative references.</p>
-          <a href="docs.html?doc=content-guide">Read the content standard <span aria-hidden="true">→</span></a>
+          <h3>Know what to try next</h3>
+          <p>Each test connects to the variants, tools, follow-up checks, observable behavior, and validation needed to prove real impact.</p>
+          <a href="app.html#dashboard">Open a testing plan <span aria-hidden="true">→</span></a>
         </article>
         <article class="feature-card">
           <span class="feature-number">03</span>
@@ -174,7 +158,7 @@
   <footer class="site-footer shell">
     <div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div>
     <p>Original methodology mapped to OWASP WSTG 4.2, ASVS 5.0.0, API Security Top 10, CWE, and primary specifications.</p>
-    <nav aria-label="Footer"><a href="app.html#playbooks">Page playbooks</a><a href="app.html#chains">Attack chains</a><a href="app.html#payloads">Burp workflows</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=contributing">Contribute</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
+    <nav aria-label="Footer"><a href="app.html#dashboard">Testing plans</a><a href="app.html#chains">Attack paths</a><a href="app.html#payloads">Tools &amp; payloads</a><a href="docs.html?doc=operating">Help</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
   </footer>
 </body>
 </html>

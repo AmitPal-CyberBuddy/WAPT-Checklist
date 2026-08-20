@@ -1,7 +1,8 @@
-// Compact application profile: type · authentication · features.
-// This is the tester-facing scope. The 18-question wizard remains as Advanced.
-import { APP_TYPES, AUTH_OPTIONS, FEATURE_OPTIONS, answersToProfile, profileToAnswers, profileIsScoped } from '../engine/profile.js?v=1.0.0-r7';
-import { element } from './dom.js?v=1.0.0-r7';
+// Compact application profile: page/function first, then optional application context.
+// “Generate test plan” remains the compatibility name for the profile-to-engine action;
+// the tester-facing control now says Build/Update testing plan. Advanced keeps all 18 questions.
+import { APP_TYPES, AUTH_OPTIONS, FEATURE_OPTIONS, answersToProfile, profileToAnswers, profileIsScoped } from '../engine/profile.js?v=1.0.0-r8';
+import { element } from './dom.js?v=1.0.0-r8';
 
 function optionButton(name, value, label, detail, checked, type = 'checkbox') {
   const wrap = element('label', `profile-option${checked ? ' is-on' : ''}`);
@@ -19,24 +20,33 @@ function optionButton(name, value, label, detail, checked, type = 'checkbox') {
 }
 
 export function renderProfile(root, context) {
-  const { answers = {}, engagement = {}, onApply } = context;
+  const { answers = {}, engagement = {}, onApply, playbooks = [], currentSurface, onSurfaceSelect } = context;
   const profile = answersToProfile(answers);
+  const scoped = profileIsScoped(profile);
   root.replaceChildren();
 
-  const shell = element('section', 'app-profile');
+  const shell = element('section', 'surface-context');
   shell.dataset.appProfile = 'true';
-  const head = element('header', 'app-profile-head');
-  head.append(element('p', 'micro-label', 'APPLICATION PROFILE'));
-  head.append(element('h2', '', 'What are you testing?'));
-  head.append(element('p', '', 'Pick the application type, authentication, and features. The plan below lists only the tests that apply.'));
-  shell.append(head);
+  const picker = element('details', 'surface-picker');
+  picker.dataset.surfacePicker = 'true';
+  picker.open = !scoped || !currentSurface;
+  const summary = element('summary', 'surface-picker-summary');
+  const summaryCopy = element('span');
+  summaryCopy.append(element('span', 'micro-label', currentSurface ? 'CURRENT SURFACE' : 'START HERE'));
+  summaryCopy.append(element('strong', '', currentSurface?.title || 'What are you looking at?'));
+  summaryCopy.append(element('small', '', currentSurface
+    ? 'Change the page or function without leaving the testing console.'
+    : 'Choose the page or function in front of you.'));
+  summary.append(summaryCopy, element('span', 'surface-picker-action', currentSurface ? 'Change' : 'Choose'));
+  picker.append(summary);
 
+  const body = element('div', 'surface-picker-body');
   const target = element('div', 'app-profile-target');
   const urlLabel = element('label', 'field-group');
-  urlLabel.append(element('span', '', 'Application URL'));
+  urlLabel.append(element('span', '', 'URL in front of you'));
   const url = document.createElement('input');
   url.type = 'url';
-  url.placeholder = 'https://www.example.com';
+  url.placeholder = 'https://www.example.com/about';
   url.value = engagement.targetUrl || '';
   url.maxLength = 2048;
   url.autocomplete = 'off';
@@ -47,50 +57,73 @@ export function renderProfile(root, context) {
   nameLabel.append(element('span', '', 'Engagement name'));
   const name = document.createElement('input');
   name.type = 'text';
-  name.placeholder = 'Example: Acme marketing site';
+  name.placeholder = 'Example: Acme public site';
   name.value = engagement.name || '';
   name.maxLength = 120;
   name.autocomplete = 'off';
   name.name = 'profile-name';
   nameLabel.append(name);
   target.append(nameLabel);
-  shell.append(target);
+  body.append(target);
+
+  const surfaceHead = element('div', 'surface-question');
+  surfaceHead.append(element('p', 'micro-label', 'WHAT ARE YOU LOOKING AT?'));
+  surfaceHead.append(element('h2', '', 'Choose the page or function'));
+  surfaceHead.append(element('p', '', 'This becomes the current testing plan. You can change it at any time.'));
+  body.append(surfaceHead);
+  const surfaceGrid = element('div', 'surface-choice-grid');
+  for (const playbook of playbooks) {
+    const button = element('button', `surface-choice${currentSurface?.id === playbook.id ? ' is-current' : ''}`);
+    button.type = 'button';
+    button.dataset.surfaceChoice = playbook.id;
+    button.append(element('strong', '', playbook.title), element('small', '', playbook.summary));
+    if (currentSurface?.id === playbook.id) button.append(element('span', 'chip', 'Current'));
+    button.addEventListener('click', () => onSurfaceSelect?.({
+      surfaceId: playbook.id,
+      engagement: { name: name.value, targetUrl: url.value }
+    }));
+    surfaceGrid.append(button);
+  }
+  body.append(surfaceGrid);
+
+  const fineTune = element('details', 'profile-fine-tune');
+  fineTune.append(element('summary', '', 'Fine-tune application context'));
+  const fineBody = element('div', 'profile-fine-body');
+  fineBody.append(element('p', 'profile-fine-intro', 'Optional: add authentication and features so the same plan includes the right conditional tests.'));
 
   const typeBlock = element('fieldset', 'app-profile-set');
-  typeBlock.append(element('legend', '', 'Application type'));
+  typeBlock.append(element('legend', '', 'Application architecture'));
   const typeGrid = element('div', 'profile-grid');
-  for (const [value, label, detail] of APP_TYPES) {
-    typeGrid.append(optionButton('app_type', value, label, detail, profile.app_type === value, 'radio'));
-  }
+  for (const [value, label, detail] of APP_TYPES) typeGrid.append(optionButton('app_type', value, label, detail, profile.app_type === value, 'radio'));
   typeBlock.append(typeGrid);
-  shell.append(typeBlock);
+  fineBody.append(typeBlock);
 
   const authBlock = element('fieldset', 'app-profile-set');
-  authBlock.append(element('legend', '', 'Authentication'));
+  authBlock.append(element('legend', '', 'Authentication present'));
   const authGrid = element('div', 'profile-grid');
-  for (const [value, label, detail] of AUTH_OPTIONS) {
-    authGrid.append(optionButton('auth', value, label, detail, profile.auth.includes(value)));
-  }
+  for (const [value, label, detail] of AUTH_OPTIONS) authGrid.append(optionButton('auth', value, label, detail, profile.auth.includes(value)));
   authBlock.append(authGrid);
-  shell.append(authBlock);
+  fineBody.append(authBlock);
 
   const featBlock = element('fieldset', 'app-profile-set');
-  featBlock.append(element('legend', '', 'Features'));
+  featBlock.append(element('legend', '', 'Features on this application'));
   const featGrid = element('div', 'profile-grid');
-  for (const [value, label, detail] of FEATURE_OPTIONS) {
-    featGrid.append(optionButton('features', value, label, detail, profile.features.includes(value)));
-  }
+  for (const [value, label, detail] of FEATURE_OPTIONS) featGrid.append(optionButton('features', value, label, detail, profile.features.includes(value)));
   featBlock.append(featGrid);
-  shell.append(featBlock);
+  fineBody.append(featBlock);
 
   const actions = element('p', 'app-profile-actions');
-  const apply = element('button', 'button button-primary', profileIsScoped(profile) ? 'Update test plan →' : 'Generate test plan →');
+  const apply = element('button', 'button button-primary', scoped ? 'Update testing plan →' : 'Build testing plan →');
   apply.type = 'button';
   apply.dataset.profileApply = 'true';
   const advanced = element('a', 'button button-quiet', 'Advanced scope');
   advanced.href = '#wizard';
   actions.append(apply, advanced);
-  shell.append(actions);
+  fineBody.append(actions);
+  fineTune.append(fineBody);
+  body.append(fineTune);
+  picker.append(body);
+  shell.append(picker);
 
   function readProfile() {
     const typeInput = shell.querySelector('input[name="app_type"]:checked');
@@ -121,29 +154,13 @@ export function renderProfile(root, context) {
         if (none) none.checked = false;
       }
     }
-    if (input.name === 'app_type' && input.value === 'static') {
-      const none = shell.querySelector('input[name="auth"][value="none"]');
-      const anyAuth = [...shell.querySelectorAll('input[name="auth"]:checked')].some((node) => node.value !== 'none');
-      if (none && !anyAuth) {
-        shell.querySelectorAll('input[name="auth"]').forEach((node) => { node.checked = node.value === 'none'; });
-      }
-      const noFeat = shell.querySelector('input[name="features"][value="none"]');
-      const anyFeat = [...shell.querySelectorAll('input[name="features"]:checked')].some((node) => node.value !== 'none');
-      if (noFeat && !anyFeat) {
-        shell.querySelectorAll('input[name="features"]').forEach((node) => { node.checked = node.value === 'none'; });
-      }
-    }
     paint();
   });
 
   apply.addEventListener('click', () => {
-    const next = readProfile();
     onApply?.({
-      answers: profileToAnswers(next, context.answers || {}),
-      engagement: {
-        name: name.value,
-        targetUrl: url.value
-      }
+      answers: profileToAnswers(readProfile(), context.answers || {}),
+      engagement: { name: name.value, targetUrl: url.value }
     });
   });
   root.append(shell);

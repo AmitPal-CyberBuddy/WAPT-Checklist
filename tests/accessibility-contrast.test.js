@@ -7,6 +7,7 @@ const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
 const css = fs.readFileSync(path.join(ROOT, 'css', 'styles.css'), 'utf8');
+const polishCss = fs.readFileSync(path.join(ROOT, 'css', 'polish.css'), 'utf8');
 
 function tokensFor(block) {
   const brace = block.indexOf('{');
@@ -52,8 +53,8 @@ function tintRgb(value) {
   return match ? { rgb: [Number(match[1]), Number(match[2]), Number(match[3])], alpha: Number(match[4]) } : null;
 }
 
-function themeTokens(themeName) {
-  const blocks = css.split('}');
+function themeTokens(themeName, sourceCss = css) {
+  const blocks = sourceCss.split('}');
   const root = blocks.find((block) => block.includes(':root{') || block.includes(':root\n'));
   const light = blocks.find((block) => block.includes(":root[data-theme='light']"));
   const source = themeName === 'light' ? light : root;
@@ -83,6 +84,17 @@ test('dark and light themes meet WCAG AA contrast for body, muted, and brand tex
     const chipSurface = mix(surface3.rgb, surface3.alpha, paper);
     const mutedChip = ratio(hexToRgb(tokens['--muted']), chipSurface);
     assert.ok(mutedChip >= 4.5, `${theme} muted chip text on surface-3 (${mutedChip.toFixed(2)})`);
+  }
+});
+
+test('the final product-polish theme overrides keep all small text WCAG AA', () => {
+  for (const theme of ['dark', 'light']) {
+    const tokens = themeTokens(theme, polishCss);
+    const paper = hexToRgb(tokens['--paper']);
+    for (const name of ['--ink', '--ink-2', '--muted', '--faint', '--brand']) {
+      const contrast = ratio(hexToRgb(tokens[name]), paper);
+      assert.ok(contrast >= 4.5, `${theme} polished ${name} on paper (${contrast.toFixed(2)})`);
+    }
   }
 });
 

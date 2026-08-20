@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r7';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r7';
+import { initializeTheme } from './theme.js?v=1.0.0-r8';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r8';
 
 const TOOLS = Object.freeze({
   proxy: 'Proxy', repeater: 'Repeater', intruder: 'Intruder', scanner: 'Scanner',
@@ -21,7 +21,7 @@ async function loadWorkflow() {
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     renderMarkdown(await response.text(), root);
   } catch (error) {
-    root.textContent = `Workflow could not be loaded: ${error.message}`;
+    root.textContent = 'This workflow could not be loaded. Refresh the page and try again.';
   }
 }
 

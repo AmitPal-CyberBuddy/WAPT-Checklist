@@ -872,7 +872,8 @@
               "why": "Suffix and look-alike hosts probe substring allowlist bypasses.",
               "payload_ref": "line-wrapped-host"
             }
-          ]
+          ],
+          "tool": "Burp Repeater · Param Miner · curl"
         },
         {
           "id": "absolute-url",
@@ -1154,6 +1155,38 @@
               "expect": "Keep rate low. Follow interesting hits by hand. A 403 is not a finding.",
               "category": "tool-assisted",
               "why": "A low-rate ffuf run widens discovery only when the client authorises it."
+            },
+            {
+              "name": "Burp Content Discovery",
+              "kind": "note",
+              "payload": "Burp Suite → Target → Site map → right-click the in-scope host → Engagement tools → Discover content. Start from /, keep recursion shallow, and review interesting 200/301/302/401/403 responses by hand.",
+              "expect": "New routes, backup extensions, or unlinked files. A discovered path is a lead; validate the response body before reporting.",
+              "category": "tool-assisted",
+              "why": "Burp Content Discovery reuses the live session and proxy scope, making it the quickest authenticated discovery pass."
+            },
+            {
+              "name": "Gobuster directory pass",
+              "kind": "command",
+              "payload": "gobuster dir -u https://www.example.com/ -w /usr/share/seclists/Discovery/Web-Content/common.txt -x bak,old,zip,tar.gz,conf,json,xml -s 200,204,301,302,307,401,403 -t 2",
+              "expect": "Review status, redirect target, content type, and response size. Keep concurrency within the agreed rate.",
+              "category": "tool-assisted",
+              "why": "Gobuster provides a second discovery implementation and an explicit extension pass for deployment leftovers."
+            },
+            {
+              "name": "Filter soft 404s and uniform responses",
+              "kind": "command",
+              "payload": "ffuf -u https://www.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -ac -fc 404 -rate 20 -t 2",
+              "expect": "Use -ac first, then filter stable false-positive sizes with -fs <length>. Compare 200, 301, 302, and 403 bodies instead of trusting status alone.",
+              "category": "tool-assisted",
+              "why": "Automatic calibration and response-size filtering stop a custom 200 soft-404 page from flooding the result set."
+            },
+            {
+              "name": "Bounded recursive discovery",
+              "kind": "command",
+              "payload": "ffuf -u https://www.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -recursion -recursion-depth 2 -rate 15 -t 2",
+              "expect": "Recurse only into confirmed directories. Stop on unstable latency, rate limiting, or a growing result tree outside the agreed scope.",
+              "category": "tool-assisted",
+              "why": "A shallow recursive pass finds nested admin, archive, and framework paths without an unbounded crawl."
             }
           ]
         },

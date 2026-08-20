@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Product polish, navigation, and performance)
+
+- Unified the homepage, operator console, methodology, help, and workflow pages under one spacing, typography, surface, form, focus, and responsive design system.
+- Added smooth same-document and cross-document view transitions, a delayed route progress indicator, modern loading states, and complete reduced-motion fallbacks.
+- Added in-plan search plus progress, severity, guide-type, depth, and attack-surface filters; secondary library filters now sit behind a clear “More filters” disclosure.
+- Heavy test bodies now mount only when opened, off-screen long views use content visibility, reporting tables render on demand, and the homepage no longer downloads the full catalog.
+- Reframed public copy around user tasks and removed QA, release, architecture, taxonomy, and other maintainer documentation from public navigation.
+- Bumped browser assets to `1.0.0-r8` so hosted clients receive the redesign and runtime changes immediately.
+
+
 ### Changed (Phase 2 — operator-console visual and responsive pass)
 
 - **One operator console.** Homepage hero preview, dashboard, playbook, wizard, families, and search now share the same night-ops canvas (mint signal, violet secondary, Sora + IBM Plex Mono) and the same card/terminal language. The homepage hero preview mirrors the real assessment dashboard, including the catalog-derived `applicable · full playbooks · methodology-only` split.

@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r7']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r8']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -54,12 +54,14 @@ test('manifest matches the architecture taxonomy and production files', () => {
   }
 });
 
-test('homepage computes context-active statistics from production category content', () => {
+test('homepage stays light and shows only useful product and local-progress counts', () => {
   const html = read('index.html');
   const home = read('js/ui/home.js');
-  assert.ok(html.includes('data-stat="active"'));
-  assert.match(home, /evaluateApplicability\(item, context\)/);
-  assert.match(home, /manifest\.categories\.filter\(\(\{ count \}\) => count > 0\)/);
+  assert.ok(html.includes('data-project-metric="production_items"'));
+  assert.ok(html.includes('data-stat="tested"'));
+  assert.ok(html.includes('data-stat="findings"'));
+  assert.match(home, /fetch\('release\.json'/);
+  assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });
 
 test('workspace shell exposes Phase 5 search, reporting, import, export, and notes surfaces', () => {

@@ -188,17 +188,15 @@ test('workspace starts from the profile, not the category catalog', () => {
   assert.match(playbookUi, /variantWithMeta\.observe/);
 });
 
-test('homepage demo card uses a real object-level authorization item', () => {
+test('homepage preview uses a real practical static-page test', () => {
   const home = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  const authz = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist/authorization.json'), 'utf8'));
-  const item = authz.items.find(({ id }) => id === 'WAPT-AUTHZ-003');
+  const http = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist/http.json'), 'utf8'));
+  const item = http.items.find(({ id }) => id === 'WAPT-HTTP-011');
   assert.ok(item);
-  assert.match(item.title, /horizontal read authorization/i);
-  assert.match(home, /WAPT-AUTHZ-003/);
-  assert.match(home, /Object-level authorization/);
-  assert.doesNotMatch(home, /WAPT-AUTHZ-014/);
-  assert.doesNotMatch(home, /Authorization suite boosted/);
-  assert.match(home, /CURRENT ASSESSMENT/);
+  assert.match(`${item.title} ${item.objective}`, /host|authority/i);
+  assert.match(home, /WAPT-HTTP-011/);
+  assert.match(home, /Host header injection/i);
+  assert.match(home, /CURRENT TESTING PLAN/);
   assert.match(home, /hero-preview/);
-  assert.doesNotMatch(home, /signal-card/);
+  assert.doesNotMatch(home, /methodology-only|full playbooks/i);
 });
