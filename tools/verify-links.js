@@ -53,7 +53,7 @@ const DOC_ALLOWED = new Set([
   'developer.mozilla.org', 'github.com', 'www.apache.org', 'keepachangelog.com',
   'creativecommons.org', 'json-schema.org', 'www.sitemaps.org', 'docs.oasis-open.org',
   'cloud.google.com', 'learn.microsoft.com', 'docs.aws.amazon.com', 'mitre.org',
-  'amitpal-cyberbuddy.github.io', 'linux.die.net', 'tools.ietf.org', 'datatracker.ietf.org',
+  'amitpal-cyberbuddy.github.io', 'linux.die.net', 'tools.ietf.org', 'datatracker.ietf.org', 'crt.sh',
   'www.iana.org', 'infosec.mozilla.org', 'cwe-api.mitre.org'
 ]);
 
@@ -64,7 +64,11 @@ function collectExternalRefs() {
     for (const match of source.matchAll(/https?:\/\/([a-z0-9.-]+)(\/[^\s"'<>)\]]*)?/gi)) {
       if (source.charAt(match.index + match[0].length) === '\\') continue; // escaped regex pattern artifacts
       const host = match[1].toLowerCase();
-      if (host.includes('example.com') || host.includes('example.test') || host === 'localhost') continue;
+      // Ignore intentionally inert payload/reference hosts. `.example`, `.test`, localhost,
+      // and loopback are reserved testing values rather than outbound dependencies.
+      if (host === 'example.com' || host.endsWith('.example.com') || host === 'example.test' || host.endsWith('.example.test')
+        || host === 'example' || host.endsWith('.example') || host === 'test' || host.endsWith('.test')
+        || host === 'localhost' || host === '127.0.0.1' || host === '.') continue;
       if (!links.has(host)) links.set(host, new Set());
       links.get(host).add(`${path.relative(ROOT, file)}`);
     }

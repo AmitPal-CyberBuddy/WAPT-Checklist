@@ -486,8 +486,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     if (activeView === 'search') renderSearch();
     if (activeView === 'families') renderBoard();
     if (activeView === 'family') renderFamily();
-    if (activeView === 'dashboard') renderDashboard();
-    else if (activeView === 'playbooks') renderPlaybooks();
+    if (activeView === 'dashboard') {
+      const scoped = getState().answers?.app_type && getState().answers.app_type !== 'unknown';
+      if (!records.length && scoped) void show('dashboard');
+      else renderDashboard();
+    } else if (activeView === 'playbooks') renderPlaybooks();
     else if (activeView === 'playbook') renderPlaybook();
     else renderDashboardMetrics();
   }
@@ -911,7 +914,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
 
   async function renderDashboard() {
     renderDashboardMetrics();
-    await chainStore.loadAll();
+    if (records.length) await chainStore.loadAll();
     const state = getState();
     const itemList = records.map(({ item }) => item);
     const coverage = computeCoverage(itemList, context(), state.statuses);
@@ -1011,7 +1014,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     activeView = view;
     if (view === 'dashboard') {
       renderDashboardMetrics();
-      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks(), chainStore.loadAll()]);
+      await loadPlaybooks();
+      const state = getState();
+      const hasSurface = playbookIndex.byId.has(state.position?.family || '')
+        || (state.answers?.app_type && state.answers.app_type !== 'unknown');
+      if (hasSurface) await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
+      else records = [];
       await renderDashboard();
       rememberPosition({ view: 'dashboard', family: currentSurface()?.id || '' });
     } else if (view === 'playbooks') {
