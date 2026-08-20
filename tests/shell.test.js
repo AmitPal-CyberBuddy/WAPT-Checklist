@@ -60,7 +60,7 @@ test('homepage stays light and shows only useful product and local-progress coun
   assert.ok(html.includes('data-project-metric="production_items"'));
   assert.ok(html.includes('data-stat="tested"'));
   assert.ok(html.includes('data-stat="findings"'));
-  assert.match(home, /fetch\('release\.json'/);
+  assert.match(home, /fetch\(asset\('release\.json'\)/);
   assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });
 

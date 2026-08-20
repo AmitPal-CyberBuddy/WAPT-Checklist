@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "category": "authentication",
-  "lastmod": "2026-08-18",
+  "lastmod": "2026-08-21",
   "items": [
     {
       "id": "WAPT-AUTH-001",
@@ -2567,12 +2567,12 @@
     },
     {
       "id": "WAPT-AUTH-031",
-      "title": "Rate-limit OTP and recovery-code verification",
+      "title": "Rate-limit OTP and recovery-code guesses within one challenge",
       "category": "authentication",
       "severity": "high",
       "difficulty": "medium",
       "mode": "manual",
-      "objective": "Determine whether short authentication codes can be guessed online within their lifetime.",
+      "objective": "Determine whether a single verification challenge can be exhausted online: per-challenge attempt caps, invalidation after repeated failures, progressive delays, and lockout.",
       "prerequisites": [
         "A designated disposable test account",
         "An approved authentication flow and safe stopping point"
@@ -2634,7 +2634,9 @@
           "https://portswigger.net/web-security/authentication"
         ]
       },
-      "related": [],
+      "related": [
+        "WAPT-RATE-003"
+      ],
       "tags": [
         "mfa",
         "otp",

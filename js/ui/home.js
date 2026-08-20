@@ -1,4 +1,5 @@
 import { initializeTheme } from './theme.js?v=1.0.0-r10';
+import { asset } from './paths.js?v=1.0.0-r10';
 
 const STORAGE_KEY = 'wapt.state.v1';
 
@@ -75,7 +76,7 @@ function observeCountUps(apply) {
 
 async function renderProductProof() {
   try {
-    const response = await fetch('release.json', { headers: { Accept: 'application/json' } });
+    const response = await fetch(asset('release.json'), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const release = await response.json();
     observeCountUps(() => {
@@ -98,11 +99,11 @@ async function renderChainPreview() {
   const root = document.querySelector('[data-chain-preview]');
   if (!root) return;
   try {
-    const manifestResponse = await fetch('attack-chains/manifest.json', { headers: { Accept: 'application/json' } });
+    const manifestResponse = await fetch(asset('attack-chains/manifest.json'), { headers: { Accept: 'application/json' } });
     if (!manifestResponse.ok) throw new Error(`HTTP ${manifestResponse.status}`);
     const manifest = await manifestResponse.json();
     const chains = await Promise.all(manifest.chains.map(async (entry) => {
-      const result = await fetch(`attack-chains/${entry.file}`, { headers: { Accept: 'application/json' } });
+      const result = await fetch(asset(`attack-chains/${entry.file}`), { headers: { Accept: 'application/json' } });
       if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
       return result.json();
     }));

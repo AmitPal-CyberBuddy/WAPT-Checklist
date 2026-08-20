@@ -55,14 +55,14 @@ test('methodology page is manifest-driven and exposes real workflow content', ()
   assert.match(html, /A deliberate assessment sequence/);
   assert.match(html, /Decision-grade test design/);
   assert.match(html, /data-method-categories/);
-  assert.match(script, /fetch\('checklist\/manifest\.json'/);
+  assert.match(script, /fetch\(asset\('checklist\/manifest\.json'\)/);
   assert.match(script, /app\.html#checklist\/\$\{category\.slug\}/);
 });
 
 test('sitemap includes designed methodology and documentation pages', () => {
   const sitemap = read('sitemap.xml');
-  assert.ok(sitemap.includes('/methodology.html'));
-  assert.ok(sitemap.includes('/docs.html'));
+  assert.ok(sitemap.includes('/methodology/'));
+  assert.ok(sitemap.includes('/docs/'));
 });
 
 test('Burp workflow links route through the designed workflow page', () => {
@@ -83,8 +83,8 @@ test('homepage presents the practical testing loop without loading the full cata
   assert.match(html, /data-project-metric="attack_chains"/);
   assert.match(html, /class="pipeline"/);
   assert.match(html, /data-chain-preview/);
-  assert.match(home, /fetch\('release\.json'/);
-  assert.match(home, /fetch\('attack-chains\/manifest\.json'/);
+  assert.match(home, /fetch\(asset\('release\.json'\)/);
+  assert.match(home, /fetch\(asset\('attack-chains\/manifest\.json'\)/);
   assert.match(home, /IntersectionObserver/);
   assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });

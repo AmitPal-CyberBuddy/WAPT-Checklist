@@ -5,6 +5,7 @@ import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, 
 import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r10';
 import { createCatalog } from './catalog.js?v=1.0.0-r10';
 import { createWorkspace } from './workspace.js?v=1.0.0-r10';
+import { asset } from './paths.js?v=1.0.0-r10';
 
 const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -125,7 +126,7 @@ function renderManifest() {
 
 async function loadManifest() {
   try {
-    const response = await fetch('checklist/manifest.json', { headers: { Accept: 'application/json' } });
+    const response = await fetch(asset('checklist/manifest.json'), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
     if (!Array.isArray(data.categories)) throw new Error('Invalid category manifest');

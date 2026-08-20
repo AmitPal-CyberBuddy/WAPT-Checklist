@@ -18,6 +18,7 @@ import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r10';
 import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r10';
 import { renderAssessmentPlan } from './plan.js?v=1.0.0-r10';
 import { renderProfile } from './profile.js?v=1.0.0-r10';
+import { asset } from './paths.js?v=1.0.0-r10';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -468,7 +469,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   async function loadFamilies() {
     if (familiesLoaded) return familyIndex;
     try {
-      const response = await fetch('checklist/families.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('checklist/families.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       familyIndex = indexFamilies(await response.json());
     } catch (error) {
@@ -481,11 +482,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   async function loadPlaybooks() {
     if (playbooksLoaded) return playbookIndex;
     try {
-      const response = await fetch('playbooks/manifest.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('playbooks/manifest.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const manifest = await response.json();
       const documents = await Promise.all((manifest.playbooks || []).map(async (entry) => {
-        const result = await fetch(`playbooks/${entry.file}`, { headers: { Accept: 'application/json' } });
+        const result = await fetch(asset(`playbooks/${entry.file}`), { headers: { Accept: 'application/json' } });
         if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
         return result.json();
       }));

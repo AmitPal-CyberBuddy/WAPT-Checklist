@@ -36,9 +36,16 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - uses: actions/configure-pages@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Build publish tree (public allowlist, clean URLs, redirect stubs)
+        run: node tools/build-publish.mjs --out publish
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: publish
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4

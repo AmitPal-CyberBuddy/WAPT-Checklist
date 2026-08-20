@@ -1,22 +1,22 @@
 {
   "schema_version": "1.0.0",
   "category": "graphql",
-  "lastmod": "2026-08-18",
+  "lastmod": "2026-08-21",
   "items": [
     {
       "id": "WAPT-GQL-001",
-      "title": "Confirm GraphQL endpoint and transport inventory",
+      "title": "Establish a GraphQL baseline on every confirmed transport",
       "category": "graphql",
       "severity": "informational",
       "difficulty": "medium",
       "mode": "manual",
-      "objective": "Identify every GraphQL HTTP, persisted-query, multipart, batch, and subscription transport before deeper testing.",
+      "objective": "Capture one minimal valid operation over each confirmed GraphQL transport — HTTP POST, persisted query, multipart, batch, and subscription — so later GraphQL checks have a known-good control.",
       "prerequisites": [
         "A confirmed in-scope GraphQL endpoint and supported transport",
         "Owner-approved schema/operations, synthetic data, and test identities as applicable"
       ],
       "steps": [
-        "Capture a minimal valid baseline for observed client traffic, owner documentation, and a minimal typename query",
+        "Capture a minimal valid baseline per transport from observed client traffic, owner documentation, and a minimal typename query",
         "Change one field, argument, operation, identity, or query-cost dimension",
         "Compare GraphQL data/errors plus HTTP, resolver, and authoritative state behavior",
         "Repeat a clean control and stop at the least-impacting proof"
@@ -65,7 +65,9 @@
           "https://portswigger.net/web-security/graphql"
         ]
       },
-      "related": [],
+      "related": [
+        "WAPT-RECON-024"
+      ],
       "tags": [
         "graphql",
         "inventory",

@@ -1,3 +1,5 @@
+import { asset } from './paths.js?v=1.0.0-r10';
+
 const STATUS_SHORT = Object.freeze({
   not_tested: 'Pending', in_progress: 'Active', passed: 'Secure',
   potential_finding: 'Potential', confirmed_finding: 'Confirmed', na: 'N/A'
@@ -28,11 +30,11 @@ export function createChainStore() {
     if (chains.length) return chains;
     if (pending) return pending;
     pending = (async () => {
-      const response = await fetch('attack-chains/manifest.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('attack-chains/manifest.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`Attack-chain manifest: HTTP ${response.status}`);
       manifest = await response.json();
       chains = await Promise.all(manifest.chains.map(async (entry) => {
-        const result = await fetch(`attack-chains/${entry.file}`, { headers: { Accept: 'application/json' } });
+        const result = await fetch(asset(`attack-chains/${entry.file}`), { headers: { Accept: 'application/json' } });
         if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
         return result.json();
       }));

@@ -152,7 +152,7 @@ test('tester-first card: progressive disclosure with the knowledge base preserve
   assert.doesNotMatch(card, /item\.steps\.slice/);
   assert.match(familyView, /family\.quick_test/);
   assert.match(familyView, /family\.validate/);
-  assert.match(workspace, /fetch\('checklist\/families\.json'/);
+  assert.match(workspace, /fetch\(asset\('checklist\/families\.json'\)/);
 });
 
 test('coverage, finding, and don\'t-miss variants are separate concepts in the UI', () => {
