@@ -6,7 +6,7 @@ Reviewed the public GitHub Pages experience and the release-candidate branch as 
 
 ## Published-site finding
 
-The public URL was still serving the previous `1.0.0-r7` experience during this review. The rendered homepage exposed project statistics, content-authoring links, and internal terminology; the application still presented Assessment, Page playbooks, Test families, Advanced scope, and the methodology catalog as competing concepts. The corrected product is packaged as `1.0.0-r8` on this branch. GitHub Pages will receive it when this branch is merged and the deployment workflow completes.
+The public URL was initially serving the previous `1.0.0-r7` experience. The rendered homepage exposed project statistics, content-authoring links, and internal terminology; the application still presented Assessment, Page playbooks, Test families, Advanced scope, and the methodology catalog as competing concepts. PR #8 merged the corrected `1.0.0-r8` product on 2026-08-20, and GitHub Pages deployment run `32393019602` completed successfully. A cache-busted read-back then confirmed the new homepage title, operator-console copy, release manifest, and `css/polish.css` on the public URL.
 
 ## Findings and resolutions
 
@@ -51,15 +51,21 @@ The public URL was still serving the previous `1.0.0-r7` experience during this 
 
 ## Deployment acceptance check
 
-After merge and Pages deployment, verify:
+Completed after PR #8 and Pages deployment:
 
-1. Homepage title is `WAPT Checklist — Practical VAPT operator console`.
-2. HTML and browser assets reference `1.0.0-r8`.
-3. `css/polish.css` returns 200.
-4. The homepage shows one product-proof strip, not Project statistics or QA links.
-5. The console opens on Testing Plan and asks “What are you looking at?”.
-6. Selecting Static / published page shows 183 applicable tests and a 30-test Core set.
-7. Search, progress, severity, guide-type, depth, and surface filters work without navigation.
-8. Opening a test mounts its practical body without blocking the rest of the plan.
-9. Coverage, findings, and reporting open on demand.
-10. Browser console has no uncaught errors and no cross-origin runtime requests.
+1. **Pass** — homepage title is `WAPT Checklist — Practical VAPT operator console`.
+2. **Pass** — release manifest and browser assets use `1.0.0-r8`.
+3. **Pass** — `css/polish.css` is publicly available.
+4. **Pass** — homepage shows the product-proof strip; Project statistics and QA links are absent.
+5. **Pass** — console opens on Testing Plan and asks “What are you looking at?”.
+6. **Pass** — Static / published page produces 183 applicable tests and a 30-test Core set.
+7. **Pass** — all six in-plan filter dimensions work without navigation.
+8. **Pass** — practical bodies mount per test rather than at plan startup.
+9. **Pass** — coverage, findings, and reporting open on demand.
+10. **Pass** — scripted runtime recorded no uncaught errors or cross-origin requests.
+
+The remaining release-candidate gate is manual visual sign-off in current Chromium and Firefox on real phone, tablet, laptop, and wide-monitor viewports.
+
+### Workflow maintenance note
+
+The successful CI and Pages runs emitted GitHub's Node 20 action deprecation annotation for `actions/checkout@v4` and `actions/setup-node@v4`. Reviewed `@v5` replacements are ready in `docs/workflows/ci.yml` and `docs/workflows/deploy.yml`. The Arena GitHub App is not permitted to modify `.github/workflows/**`; a repository maintainer must copy those templates into the active paths. This does not affect the successful r8 deployment or application runtime.
