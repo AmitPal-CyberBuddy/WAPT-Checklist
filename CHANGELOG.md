@@ -4,6 +4,11 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Context-driven testing workspace)
+
+- The **dashboard is the assessment plan**: after scoping, testers see this application, the features in play, and only the tests that apply — grouped as HTTP, headers, TLS, paths, client-side. Authentication and IDOR stay hidden on a static site.
+- Clicking a test opens a **practical playbook**: Quick Test, numbered variants with copyable requests, CHECK FOR, VALIDATE, DO NOT REPORT IF, then reporting/reference behind a disclosure. Methodology is no longer the first screen.
+
 ### Added (Page playbooks — reported: looking at a page type should show every applicable test with variants and payloads, not methodology prose)
 
 - **Page playbooks** (`#playbooks`, `#playbook/<id>`): tester-facing packs for the surface in front of you. Sixteen packs: static/published page, login, registration, password reset, account/profile, session/cookies, file upload, search, checkout, admin, REST API, GraphQL, WebSocket, OAuth/SSO/SAML, JWT, and SPA/client-side. Opening a pack lists **every applicable check** for that page type (static ≈ 180, login ≈ 300) — not a curated shortlist. Authored start-here probes keep the named variants (Host header arbitrary/duplicate/X-Forwarded-Host, CSP, testssl, BOLA, alg=none…); the rest of the catalog expands in place with copyable requests.

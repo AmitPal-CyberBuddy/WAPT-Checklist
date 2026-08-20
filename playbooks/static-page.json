@@ -279,7 +279,19 @@
               "name": "Duplicate Host",
               "kind": "request",
               "payload": "GET / HTTP/1.1\nHost: www.example.com\nHost: evil.example\nConnection: close",
-              "expect": "Reject, or consistently use the first/last value at every hop. Vulnerable if the edge routes on one Host and the app builds URLs from the other."
+              "expect": "Which Host is processed? Redirect, routing, or cache disagreement between hops is the finding — not a 200 alone."
+            },
+            {
+              "name": "Duplicate Host reversed",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: evil.example\nHost: www.example.com\nConnection: close",
+              "expect": "Compare with the previous order. Front-end and origin must agree on first vs last Host."
+            },
+            {
+              "name": "Host normalization",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: EXAMPLE.COM\nConnection: close",
+              "expect": "Also try example.com. and example.com:443. Case, trailing dot, and default port must not change routing or generated URLs."
             },
             {
               "name": "Host with port",

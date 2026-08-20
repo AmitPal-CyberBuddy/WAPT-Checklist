@@ -87,17 +87,18 @@ export function renderPlaybookBoard(root, context) {
   void matched;
 }
 
-function renderVariant(variant) {
+function renderVariant(variant, index = 0) {
   const box = element('article', 'probe-variant');
   const head = element('header', 'probe-variant-head');
-  head.append(element('strong', '', variant.name));
+  const name = index ? `Variant ${index} — ${variant.name}` : variant.name;
+  head.append(element('strong', '', name));
   if (variant.kind) head.append(element('span', 'chip', variant.kind));
   head.append(copyButton(variant.payload, variant.name));
   box.append(head);
   box.append(element('pre', 'probe-payload', variant.payload));
   if (variant.expect) {
     const expect = element('p', 'probe-expect');
-    expect.append(element('span', 'micro-label', 'LOOK FOR'));
+    expect.append(element('span', 'micro-label', 'CHECK FOR'));
     expect.append(document.createTextNode(` ${variant.expect}`));
     box.append(expect);
   }
@@ -107,6 +108,8 @@ function renderVariant(variant) {
 function renderCheck(check, context) {
   const { recordsById, getState, commit, familyIndex } = context;
   const record = recordFor(check, recordsById);
+  const item = record?.item;
+  const variants = check.variants || [];
   const article = element('article', `probe-check severity-${check.severity || 'medium'}`);
   article.dataset.playbookCheck = check.id;
 
@@ -122,13 +125,26 @@ function renderCheck(check, context) {
     chips.append(link);
   }
   identity.append(chips, element('h3', '', check.title));
-  if (check.why) identity.append(element('p', 'probe-why', check.why));
   head.append(identity);
   if (record && getState && commit) {
     const status = itemStatus(record.item, getState());
     head.append(statusControls(record.item, status, { getState, commit }));
   }
   article.append(head);
+
+  if (variants.length) {
+    const quick = element('section', 'probe-quick');
+    quick.append(element('p', 'micro-label', 'QUICK TEST'));
+    quick.append(renderVariant({ ...variants[0], name: variants[0].name }, 0));
+    article.append(quick);
+  }
+
+  if (variants.length > 1) {
+    const list = element('div', 'probe-variant-list');
+    list.append(element('p', 'micro-label', 'VARIANTS'));
+    variants.slice(1).forEach((variant, index) => list.append(renderVariant(variant, index + 1)));
+    article.append(list);
+  }
 
   if (check.validate) {
     const validate = element('p', 'test-validate');
@@ -137,9 +153,36 @@ function renderCheck(check, context) {
     article.append(validate);
   }
 
-  const list = element('div', 'probe-variant-list');
-  for (const variant of check.variants || []) list.append(renderVariant(variant));
-  article.append(list);
+  const boundary = item?.do_not_report?.length ? item.do_not_report : item?.false_positives;
+  if (boundary?.length) {
+    const block = element('section', 'probe-boundary');
+    block.append(element('p', 'micro-label', 'DO NOT REPORT IF'));
+    const list = element('ul');
+    for (const line of boundary) list.append(element('li', '', line));
+    block.append(list);
+    article.append(block);
+  }
+
+  if (item) {
+    const more = element('details', 'probe-more');
+    more.append(element('summary', '', 'Reporting and reference information'));
+    const body = element('div', 'probe-more-body');
+    if (item.objective) body.append(element('p', '', item.objective));
+    if (item.impact) {
+      body.append(element('p', 'micro-label', 'IMPACT'));
+      body.append(element('p', '', item.impact));
+    }
+    if (item.remediation) {
+      body.append(element('p', 'micro-label', 'REMEDIATION'));
+      body.append(element('p', '', item.remediation));
+    }
+    const family = familyIndex?.byItem?.get(item.id);
+    const method = element('a', '', 'Open full methodology');
+    method.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
+    body.append(method);
+    more.append(body);
+    article.append(more);
+  }
   return article;
 }
 

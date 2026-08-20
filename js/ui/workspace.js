@@ -15,6 +15,7 @@ import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r6';
 import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r6';
 import { indexPlaybooks, matchPlaybooks, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r6';
 import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r6';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r6';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -842,14 +843,20 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       return row;
     }));
 
-    const banner = document.querySelector('[data-playbook-banner]');
-    if (banner) {
-      renderPlaybookBanner(banner, {
+    const plan = document.querySelector('[data-assessment-plan]');
+    if (plan) {
+      renderAssessmentPlan(plan, {
         index: playbookIndex,
         answers: state.answers,
+        engagement: state.engagement,
+        records,
+        getState,
+        coverage,
         deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl)
       });
     }
+    const banner = document.querySelector('[data-playbook-banner]');
+    if (banner) banner.replaceChildren();
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
     renderFamilyGaps(document.querySelector('[data-family-gaps]'), { familyIndex, records, getState, categoryNames: names(), limit: 6 });
     renderBlockedList(document.querySelector('[data-blocked-list]'), records, state);

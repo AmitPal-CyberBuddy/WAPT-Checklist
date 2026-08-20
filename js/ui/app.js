@@ -204,7 +204,7 @@ function initializeShell() {
     },
     onComplete(nextState) {
       setActiveState(nextState);
-      location.hash = nextState.answers?.app_type === 'static' ? 'playbook/static-page' : 'playbooks';
+      location.hash = 'dashboard';
     }
   });
 

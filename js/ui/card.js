@@ -50,6 +50,7 @@ export function renderCard(record, context) {
   validate.append(element('span', 'micro-label', 'VALIDATE'), document.createTextNode(` ${item.validation}`));
   header.append(validate);
   card.append(header);
+  if (context.playbookIndex) renderItemProbes(card, context.playbookIndex, item.id);
 
   if (applicability.reasons?.length || applicability.overridden) {
     const reason = element('p', 'applicability-reason');
@@ -118,7 +119,7 @@ export function renderCard(record, context) {
 
   // ---------------------------------------------------------------- level 3: methodology
   const details = element('details', 'method-details');
-  details.append(element('summary', '', 'Detailed methodology'));
+  details.append(element('summary', '', 'Reporting and reference information'));
   const body = element('div', 'method-body');
   body.append(section('Prerequisites', item.prerequisites));
   body.append(section('Validation', item.validation));

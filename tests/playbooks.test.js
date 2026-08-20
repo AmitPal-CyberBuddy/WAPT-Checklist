@@ -175,17 +175,17 @@ test('workspace and app shell expose playbooks as a first-class view', () => {
   const app = fs.readFileSync(path.join(ROOT, 'js/ui/app.js'), 'utf8');
   const workspace = fs.readFileSync(path.join(ROOT, 'js/ui/workspace.js'), 'utf8');
   const playbookUi = fs.readFileSync(path.join(ROOT, 'js/ui/playbook.js'), 'utf8');
-  for (const marker of ['data-view="playbooks"', 'data-view="playbook"', 'data-playbook-board', 'data-playbook-root', 'data-view-link="playbooks"', 'data-playbook-banner']) {
+  for (const marker of ['data-view="playbooks"', 'data-view="playbook"', 'data-playbook-board', 'data-playbook-root', 'data-view-link="playbooks"', 'data-assessment-plan']) {
     assert.ok(appHtml.includes(marker), `app.html missing ${marker}`);
   }
   assert.match(app, /playbooks', 'playbook'/);
-  assert.match(app, /app_type === 'static' \? 'playbook\/static-page'/);
-  assert.match(app, /: 'playbooks'/);
+  assert.match(app, /location.hash = 'dashboard'/);
   assert.match(app, /event\.key === 'p'\) location\.hash = 'playbooks'/);
   assert.match(workspace, /loadPlaybooks/);
   assert.match(workspace, /view === 'playbooks'/);
   assert.match(workspace, /view === 'playbook'/);
-  assert.match(playbookUi, /LOOK FOR/);
+  assert.match(playbookUi, /CHECK FOR/);
+  assert.match(playbookUi, /QUICK TEST/);
   assert.match(playbookUi, /probe-payload/);
   assert.match(playbookUi, /Matches this scope/);
 });
