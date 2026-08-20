@@ -188,4 +188,7 @@ test('workspace and app shell expose playbooks as a first-class view', () => {
   assert.match(playbookUi, /QUICK TEST/);
   assert.match(playbookUi, /probe-payload/);
   assert.match(playbookUi, /Matches this scope/);
+  const plan = fs.readFileSync(path.join(ROOT, 'js/ui/plan.js'), 'utf8');
+  assert.match(plan, /assessmentSurfaces/);
+  assert.match(plan, /Copy share link/);
 });

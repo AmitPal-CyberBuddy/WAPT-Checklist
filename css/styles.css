@@ -461,8 +461,13 @@ select:focus-visible,textarea:focus-visible{box-shadow:var(--focus);border-color
 .assessment-stat strong{font:500 1.05rem var(--font-mono);color:var(--brand)}
 .assessment-stat span{color:var(--muted);font:400 .55rem var(--font-mono);text-transform:uppercase;letter-spacing:.06em}
 .assessment-actions{display:flex;flex-wrap:wrap;gap:.45rem;margin:.6rem 0 0}
+.assessment-share-note{margin:.45rem 0 0;color:var(--muted);font-size:.62rem;line-height:1.5}
+.assessment-surface-copy{min-width:0;flex:1}
+.assessment-surface-copy h3{margin:0}
+.assessment-surface-copy h3 a:hover{color:var(--brand)}
+.assessment-surface-copy p{margin:.2rem 0 0;color:var(--muted);font-size:.68rem;line-height:1.45}
 .assessment-surface{border:1px solid var(--line);border-radius:12px;background:var(--surface);overflow:hidden}
-.assessment-surface-head{display:flex;justify-content:space-between;align-items:baseline;padding:.65rem .9rem;border-bottom:1px solid var(--line);background:var(--surface-3)}
+.assessment-surface-head{display:flex;justify-content:space-between;align-items:flex-start;gap:.8rem;padding:.65rem .9rem;border-bottom:1px solid var(--line);background:var(--surface-3)}
 .assessment-surface-head h3{margin:0;font-size:.92rem}
 .assessment-surface-head span{color:var(--brand);font:500 .62rem var(--font-mono)}
 .assessment-check-list{margin:0;padding:.25rem 0;list-style:none}

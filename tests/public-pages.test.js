@@ -68,7 +68,7 @@ test('Burp workflow links route through the designed workflow page', () => {
 test('homepage presents the assessment loop, project metrics, and attack-chain preview', () => {
   const html = read('index.html');
   const home = read('js/ui/home.js');
-  assert.match(html, /Start a WAPT/);
+  assert.match(html, /Start testing/);
   assert.match(html, /Explore methodology/);
   assert.match(html, /data-project-metric="production_items"/);
   assert.match(html, /data-project-metric="attack_chains"/);

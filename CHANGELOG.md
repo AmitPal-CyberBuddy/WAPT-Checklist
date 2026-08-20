@@ -6,7 +6,8 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed (Context-driven testing workspace)
 
-- The **dashboard is the assessment plan**: after scoping, testers see this application, the features in play, and only the tests that apply — grouped as HTTP, headers, TLS, paths, client-side. Authentication and IDOR stay hidden on a static site.
+- **Start testing** (scope wizard) is the product entry. After the questions, the dashboard is the result for *this application* — every matching surface, not one page type. A static site shows TLS/headers/host/paths; a SaaS JWT app shows login + SPA + API + JWT + profile together. Surfaces the profile excludes stay listed as hidden.
+- **Share the plan:** Copy share link encodes answers and the engagement label in `#share/…` (never statuses, notes, findings, or evidence). Opening the link rebuilds the same assessment locally. Copy plan Markdown is the paste-ready checklist.
 - Clicking a test opens a **practical playbook**: Quick Test, numbered variants with copyable requests, CHECK FOR, VALIDATE, DO NOT REPORT IF, then reporting/reference behind a disclosure. Methodology is no longer the first screen.
 
 ### Added (Page playbooks — reported: looking at a page type should show every applicable test with variants and payloads, not methodology prose)

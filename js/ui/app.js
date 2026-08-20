@@ -1,7 +1,8 @@
 import { initializeTheme } from './theme.js?v=1.0.0-r6';
 import { createWizard } from './wizard.js?v=1.0.0-r6';
-import { STATE_KEY, createState } from '../engine/state.js?v=1.0.0-r6';
+import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r6';
 import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r6';
+import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r6';
 import { createCatalog } from './catalog.js?v=1.0.0-r6';
 import { createWorkspace } from './workspace.js?v=1.0.0-r6';
 
@@ -68,6 +69,31 @@ function activatePortfolio(nextPortfolio, destination = 'dashboard') {
   wizard?.reset(state);
   location.hash = destination;
   route();
+}
+
+function applyShare(payload) {
+  const nextPortfolio = engagementIsBlank(state) ? portfolio : addEngagement(portfolio);
+  let nextState = activeEngagement(nextPortfolio);
+  nextState = setEngagement(nextState, {
+    name: payload.name,
+    targetUrl: payload.targetUrl,
+    started_at: nextState.engagement.started_at || new Date().toISOString()
+  });
+  nextState = setAnswers(nextState, payload.answers);
+  nextState = setPosition(nextState, { view: 'dashboard' });
+  activatePortfolio(updateActiveEngagement(nextPortfolio, nextState), 'dashboard');
+}
+
+function consumeShare() {
+  const raw = location.hash.slice(1);
+  if (!raw.startsWith('share/')) return false;
+  const payload = parseShareHash(location.hash);
+  if (!payload) {
+    location.hash = 'wizard';
+    return false;
+  }
+  applyShare(payload);
+  return true;
 }
 
 function renderManifest() {
@@ -144,6 +170,7 @@ function setSidebar(open, restoreFocus = false) {
 }
 
 function route() {
+  if (consumeShare()) return;
   const [viewPart, slug = ''] = location.hash.slice(1).split('/');
   const view = VIEWS.has(viewPart) ? viewPart : 'wizard';
   document.querySelectorAll('[data-view]').forEach((section) => { section.hidden = section.dataset.view !== view; });

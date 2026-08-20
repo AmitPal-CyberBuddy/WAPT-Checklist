@@ -4,9 +4,9 @@ Operator documentation: what this tool is for, the working vocabulary, the loop 
 
 ## Quick start
 
-1. **Start a WAPT** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
+1. **Start testing** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
 2. **Scope it** — answer the adaptive questions or pick a preset. `Not confirmed yet` is a real answer: affected checks stay visible as *Confirm*, never silently dropped.
-3. **Open the page playbook** — pick the surface you are looking at (static page, login, registration, reset, profile, upload, search, checkout, admin, REST, GraphQL, WebSocket, OAuth, JWT, SPA). The pack lists **every applicable check** for that page — not a shortlist — each with named variants and copyable payloads. Start-here probes sit at the top; the rest of the catalog follows by family. The methodology is one click behind each check.
+3. **Read the assessment** — Start testing opens every matching surface for this application (login + JWT + API on a SaaS app; TLS/headers/host on a static site), not one page type. **Copy share link** sends that scope as a URL; it never includes findings, notes, or evidence. Click a test for variants and payloads.
 4. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
 5. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
 6. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
@@ -73,6 +73,8 @@ Plus a boundary line: **NOT HERE** names the sibling families that own the rest 
 
 | Output | Use it for |
 | --- | --- |
+| **Copy share link** (assessment) | URL that rebuilds the same applicable plan from scope answers only |
+| **Copy plan Markdown** (assessment) | Paste-ready checklist of matching surfaces and tests |
 | **Copy coverage** (family header) | Markdown block for engagement notes, stand-ups, and status updates |
 | **Export coverage CSV** | Client trackers and retest matrices: one row per check, coverage state and finding in separate columns |
 | **Export checklist (Markdown)** | The engagement checklist with per-surface tested/N/A/blocked counts |
