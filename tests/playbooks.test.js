@@ -56,12 +56,14 @@ test('static-page playbook lists the tester-named checks with real payloads', ()
   const playbook = documents.find(({ id }) => id === 'static-page');
   assert.ok(playbook);
   const titles = playbook.groups.flatMap((group) => group.checks.map(({ title }) => title.toLowerCase()));
-  assert.ok(playbook.groups.flatMap((group) => group.checks).length >= 30, 'static playbook should list the named tests');
+  assert.ok(playbook.groups.flatMap((group) => group.checks).length >= 40, 'static playbook should list the named tests');
   for (const needle of [
     'clickjacking', 'missing security header', 'ssl config', 'hsts', 'csp',
     'directory enumeration', 'directory listing', 'path traversal',
     'absolute url', 'host header', 'http method', 'mixed content',
-    'permissions policy', 'prototype pollution', 'postmessage'
+    'permissions policy', 'prototype pollution', 'postmessage',
+    'robots.txt', 'sitemap', 'well-known', 'dns records', 'certificate transparency',
+    'dangling dns', 'service worker', 'web storage', 'method override', 'normalization'
   ]) {
     assert.ok(titles.some((title) => title.includes(needle)), `static playbook missing ${needle}`);
   }
@@ -74,6 +76,11 @@ test('static-page playbook lists the tester-named checks with real payloads', ()
   assert.ok(host.variants.some(({ payload }) => payload.includes('X-Forwarded-Host')));
   const traversal = playbook.groups.flatMap((group) => group.checks).find(({ id }) => id === 'path-traversal');
   assert.ok(traversal.variants.some(({ payload }) => payload.includes('..%2f') || payload.includes('../')));
+  // Fully-authored variants carry a one-line why, a variant class, and resolve their payload_ref.
+  assert.ok(host.variants.every(({ why, category }) => why && category), 'host header variants need why + category');
+  assert.ok(host.variants.every(({ payload_ref }) => payload_ref && playbook.payloads[payload_ref]), 'host header variants must resolve payload_ref');
+  assert.ok(traversal.variants.every(({ why, category }) => why && category), 'traversal variants need why + category');
+  assert.ok(playbook.groups.flatMap((group) => group.checks).find(({ id }) => id === 'csp').variants.every(({ why, category }) => why && category));
 });
 
 test('login, upload, jwt, and graphql packs carry concrete request variants', () => {
@@ -130,15 +137,11 @@ test('playbook engine matches each preset to the surfaces a tester would open', 
   assert.ok(probes.some(({ check }) => check.id === 'clickjacking'));
 });
 
-test('expanded playbook lists every applicable check, not a shortlist', async () => {
-  const [{ expandPlaybook, indexPlaybooks, playbookChecks }, { indexFamilies }] = await Promise.all([
+test('expanded playbook lists every applicable check with authored overlays and catalog-only remainder', async () => {
+  const [{ expandPlaybook, indexPlaybooks, playbookChecks, expandedMaturityCounts }, { indexFamilies }] = await Promise.all([
     import('../js/engine/playbooks.js'),
     import('../js/engine/families.js')
   ]);
-  const items = [...productionIds()].map((id) => {
-    // load real items once
-    return id;
-  });
   const skip = new Set(['manifest.json', 'sample.json', 'families.json']);
   const catalog = fs.readdirSync(path.join(ROOT, 'checklist'))
     .filter((name) => name.endsWith('.json') && !skip.has(name))
@@ -157,8 +160,20 @@ test('expanded playbook lists every applicable check, not a shortlist', async ()
   assert.ok(staticChecks.some(({ item }) => item === 'WAPT-HTTP-015'), 'static must include CORS');
   assert.ok(staticChecks.some(({ item }) => item === 'WAPT-SMUG-003'), 'static must include request smuggling');
   assert.ok(staticChecks.some(({ item }) => item === 'WAPT-HDR-011'), 'static must include Permissions-Policy');
-  assert.ok(staticChecks.every((check) => (check.variants || []).length >= 2));
-  assert.ok(staticChecks.every((check) => check.variants.every(({ payload }) => payload && payload.length > 4)));
+
+  // Authored checks keep real variants; catalog-only remainder must have ZERO synthesized variants.
+  const authored = staticChecks.filter(({ maturity }) => maturity !== 'catalog-only');
+  const catalogOnly = staticChecks.filter(({ maturity }) => maturity === 'catalog-only');
+  assert.ok(authored.length >= 30, 'static authored checks should remain substantial');
+  assert.ok(authored.every((check) => (check.variants || []).length >= 2), 'authored checks need real variants');
+  assert.ok(authored.every((check) => check.variants.every(({ payload }) => payload && payload.length > 4)));
+  assert.ok(catalogOnly.length > 0, 'static should have a catalog-only remainder');
+  assert.ok(catalogOnly.every((check) => (check.variants || []).length === 0), 'catalog-only checks must have ZERO synthesized variants');
+
+  const counts = expandedMaturityCounts(index.byId.get('static-page'), catalog);
+  assert.ok(counts.applicable >= 150, `applicable should be catalog-scale, got ${counts.applicable}`);
+  assert.ok(counts.applicable > counts.authored, 'methodology-only remainder is distinct from authored count');
+  assert.equal(counts.applicable, counts.authored + counts.methodology);
 
   const loginExpanded = expandPlaybook(index.byId.get('login-page'), catalog, families);
   const loginChecks = playbookChecks(loginExpanded);
@@ -169,7 +184,6 @@ test('expanded playbook lists every applicable check, not a shortlist', async ()
   }
   assert.ok(loginChecks.some(({ item }) => item === 'WAPT-HDR-006'), 'login page still gets clickjacking');
   assert.ok(loginChecks.some(({ item }) => item === 'WAPT-INJ-001'), 'login page still gets SQLi');
-  void items;
 });
 
 test('workspace and app shell expose playbooks as a first-class view', () => {

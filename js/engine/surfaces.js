@@ -76,6 +76,46 @@ const PLAYBOOK_SURFACE = Object.freeze({
 
 const HIDDEN_ON_STATIC = new Set(['auth', 'session', 'authz', 'upload', 'api', 'graphql', 'jwt', 'oauth', 'websocket', 'business', 'ai']);
 
+// Catalog item.category → attack-surface family. Used when a catalog item has no
+// authored playbook overlay to pin a more specific surface. Static keeps cloud-storage,
+// rate-limiting, and advanced grouped under http so a static site never lights up
+// upload / business / AI surfaces (which STATIC_NA_CATEGORIES already excludes).
+export const CATEGORY_SURFACE = Object.freeze({
+  reconnaissance: 'http',
+  http: 'http',
+  'security-headers': 'headers',
+  'information-disclosure': 'http',
+  'client-side': 'client',
+  xss: 'client',
+  csrf: 'session',
+  authentication: 'auth',
+  'session-management': 'session',
+  authorization: 'authz',
+  'file-handling': 'upload',
+  'api-security': 'api',
+  graphql: 'graphql',
+  jwt: 'jwt',
+  'oauth-sso-saml': 'oauth',
+  ssrf: 'api',
+  'request-smuggling': 'http',
+  'business-logic': 'business',
+  'race-conditions': 'business',
+  websocket: 'websocket',
+  'cloud-storage': 'http',
+  'rate-limiting': 'http',
+  advanced: 'http',
+  'ai-llm-security': 'ai'
+});
+
+// Surface for a catalog item: an authored overlay's own surface, then the overlay's
+// playbook group surface, then the category default.
+export function surfaceForItem(item, overlay = null, group = null) {
+  if (overlay?.surface && SURFACES.some(({ id }) => id === overlay.surface)) return overlay.surface;
+  if (group?.surface && SURFACES.some(({ id }) => id === group.surface)) return group.surface;
+  if (item?.category && CATEGORY_SURFACE[item.category]) return CATEGORY_SURFACE[item.category];
+  return 'http';
+}
+
 export function surfaceFor(check, group, playbook) {
   if (check?.surface && SURFACES.some(({ id }) => id === check.surface)) return check.surface;
   if (group?.surface && SURFACES.some(({ id }) => id === group.surface)) return group.surface;

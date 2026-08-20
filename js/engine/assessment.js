@@ -1,6 +1,34 @@
-// Assessment plan: profile → attack-surface families → named tests.
+// Assessment plan (item 4): feature-aware, not page-type-primary.
+//
+// Application Profile → Surfaces/Features → Applicable Tests (catalog) → Authored
+// overlays where they exist. A page type is one way of discovering a surface, not the
+// plan. buildAssessmentPlan() starts from the applicable catalog items for the profile,
+// attaches authored playbook overlays where they exist, and groups by attack surface.
+// Playbook matching still lights up (SaaS → login + SPA + API + JWT + profile), but the
+// dashboard list IS the catalog, grouped by surface.
 import { classifyPlaybook, playbookChecks, suggestedPlaybook } from './playbooks.js?v=1.0.0-r6';
-import { SURFACES, surfaceFor, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r6';
+import { SURFACES, surfaceForItem, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r6';
+import { applicableItems } from './applicable.js?v=1.0.0-r6';
+import { checkFromItem } from './probes.js?v=1.0.0-r6';
+import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r6';
+
+// Best authored overlay for an item across every playbook. Prefer overlays from a
+// playbook that matches or is relevant to the current profile, then the check where the
+// item is the primary item, then the first check that references it.
+function overlayHit(index, itemId, context) {
+  const hits = index?.byItem?.get(itemId) || [];
+  if (!hits.length) return null;
+  const inScope = (hit) => {
+    const kind = classifyPlaybook(hit.playbook, context);
+    return kind === 'match' || kind === 'relevant';
+  };
+  const scopedPrimary = hits.find((hit) => inScope(hit) && hit.check.item === itemId);
+  if (scopedPrimary) return scopedPrimary;
+  const scoped = hits.find((hit) => inScope(hit));
+  if (scoped) return scoped;
+  const primary = hits.find(({ check }) => check.item === itemId);
+  return primary || hits[0];
+}
 
 function withPrimaryFirst(list, primaryId) {
   if (!primaryId) return list.slice();
@@ -9,6 +37,8 @@ function withPrimaryFirst(list, primaryId) {
   return [...head, ...rest];
 }
 
+// Which playbooks light up for this scope. Kept for the board / banner; the plan list
+// itself is the catalog.
 export function assessmentSurfaces(index, context) {
   const matches = [];
   const relevant = [];
@@ -39,27 +69,52 @@ export function assessmentChecks(surfaces = []) {
   })));
 }
 
-export function buildAssessmentPlan(index, context, answers = {}) {
+// Plan = applicable catalog items (the canonical count) with authored overlays attached,
+// grouped by attack surface.
+export function buildAssessmentPlan(index, context, answers = {}, items = []) {
+  const applicable = applicableItems(items, context);
   const pack = assessmentSurfaces(index, context);
   const bySurface = new Map();
-  const seen = new Set();
-  for (const { playbook, kind } of pack.surfaces) {
-    for (const group of playbook.groups || []) {
-      for (const check of group.checks || []) {
-        if (seen.has(check.id)) continue;
-        seen.add(check.id);
-        const sid = surfaceFor(check, group, playbook);
-        const bucket = bySurface.get(sid) || [];
-        bucket.push({ ...check, playbookId: playbook.id, playbookTitle: playbook.title, kind, groupId: group.id });
-        bySurface.set(sid, bucket);
-      }
+  let fullAuthoredCount = 0;
+  let authoredCount = 0;
+  let variantCompleteCount = 0;
+  let methodologyCount = 0;
+  for (const item of applicable) {
+    const hit = overlayHit(index, item.id, context);
+    const overlay = hit?.check || null;
+    const check = checkFromItem(item, overlay);
+    const maturity = checkMaturity(check);
+    // "Authored" = the item has a real playbook overlay (named variants + payloads),
+    // whether fully described (AUTHORED) or still variant-complete. Only catalog-only
+    // rows are methodology. So authored + methodology === applicable.
+    if (maturity === MATURITY.CATALOG_ONLY) methodologyCount += 1;
+    else {
+      authoredCount += 1;
+      if (maturity === MATURITY.AUTHORED) fullAuthoredCount += 1;
+      else variantCompleteCount += 1;
     }
+    const sid = surfaceForItem(item, overlay, hit?.check?.group);
+    const bucket = bySurface.get(sid) || [];
+    bucket.push({
+      ...check,
+      playbookId: hit?.playbook?.id || null,
+      playbookTitle: hit?.playbook?.title || null,
+      kind: hit?.playbook ? classifyPlaybook(hit.playbook, context) : null
+    });
+    bySurface.set(sid, bucket);
   }
   const families = SURFACES.map((surface) => {
     const checks = bySurface.get(surface.id) || [];
+    // Authored rows first (they have a playbook), then the methodology-only split
+    // ("Methodology available — practical variants pending").
+    const ordered = [...checks].sort((a, b) => {
+      const am = a.maturity === 'catalog-only' ? 1 : 0;
+      const bm = b.maturity === 'catalog-only' ? 1 : 0;
+      return am - bm;
+    });
     return Object.freeze({
       ...surface,
-      checks: Object.freeze(checks),
+      checks: Object.freeze(ordered),
       hidden: !checks.length && isHiddenSurface(surface.id, answers)
     });
   });
@@ -70,7 +125,12 @@ export function buildAssessmentPlan(index, context, answers = {}) {
     ...pack,
     families: Object.freeze(visible),
     hiddenFamilies: Object.freeze(hiddenFamilies),
-    checks: Object.freeze(checks)
+    checks: Object.freeze(checks),
+    applicableCount: applicable.length,
+    authoredCount,
+    fullAuthoredCount,
+    variantCompleteCount,
+    methodologyCount
   });
 }
 
@@ -79,18 +139,21 @@ function safe(value) {
 }
 
 export function composeAssessmentMarkdown(plan, options = {}) {
-  const { name = '', targetUrl = '', chips = [], surfaces = [], hidden = [], families, hiddenFamilies } = plan;
+  const { name = '', targetUrl = '', chips = [], surfaces = [], hidden = [], families, hiddenFamilies, applicableCount, authoredCount, methodologyCount } = plan;
   const grouped = families?.length
     ? families
     : surfaces.map(({ playbook, kind }) => ({ title: playbook.title, summary: playbook.summary, checks: playbookChecks(playbook).map((check) => ({ ...check, playbookId: playbook.id })), kind }));
   const checks = grouped.flatMap(({ checks: list }) => list);
+  const applicable = typeof applicableCount === 'number' ? applicableCount : checks.length;
+  const authored = typeof authoredCount === 'number' ? authoredCount : 0;
+  const methodology = typeof methodologyCount === 'number' ? methodologyCount : 0;
   const lines = [
     `# ${safe(name || 'WAPT assessment')} — Applicable tests`,
     '',
     `- Target: ${safe(targetUrl || 'Not provided')}`,
     `- Profile: ${safe(chips.join(' · ') || 'Not scoped')}`,
     `- Attack surfaces: ${grouped.length}`,
-    `- Applicable tests: ${checks.length}`,
+    `- Applicable tests: ${applicable} (${authored} with playbooks · ${methodology} methodology-only)`,
     '',
     '> Scope only. This plan does not include findings, notes, or evidence.',
     '> Authorized testing only.',

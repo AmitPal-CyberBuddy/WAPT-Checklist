@@ -1,7 +1,12 @@
 // Surface playbooks: the tester-facing working layer.
-// A playbook is every applicable check for a page type, with named variants
-// and copyable payloads sitting in the open — not behind methodology prose.
-import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedCheckCount } from '../engine/playbooks.js?v=1.0.0-r6';
+// A playbook is the applicable checks for a page type with authored overlays first and
+// the catalog-only remainder behind them. Authored checks show named attack hypotheses
+// (tickable coverage, never findings) with a one-line Why; catalog-only checks show a
+// maturity chip and a methodology link — never a fabricated request.
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r6';
+import { checkMaturity, MATURITY, MATURITY_LABEL, MATURITY_NOTE, resolveVariant } from '../engine/maturity.js?v=1.0.0-r6';
+import { variantKey } from '../engine/families.js?v=1.0.0-r6';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
 import { copyButton, element, SEVERITY_GLYPHS, statusControls } from './dom.js?v=1.0.0-r6';
 
@@ -32,10 +37,14 @@ function playbookCard(playbook, kind, isPrimary, items) {
   card.append(element('h2', '', playbook.title));
   card.append(element('p', '', playbook.summary));
   const meta = element('p', 'playbook-card-meta');
-  const checks = items?.length ? expandedCheckCount(playbook, items) : checkCount(playbook);
-  meta.textContent = items?.length
-    ? `${checks} applicable checks · named variants & payloads`
-    : `${checks} checks · ${variantCount(playbook)} variants & payloads`;
+  if (items?.length) {
+    const { applicable, authored, methodology } = expandedMaturityCounts(playbook, items);
+    meta.textContent = items?.length
+      ? `${applicable} applicable checks · ${authored} with full playbooks · ${methodology} methodology-only`
+      : meta.textContent;
+  } else {
+    meta.textContent = `${checkCount(playbook)} authored checks · ${variantCount(playbook)} variants & payloads`;
+  }
   card.append(meta);
   return card;
 }
@@ -68,35 +77,67 @@ export function renderPlaybookBoard(root, context) {
 
   const intro = element('p', 'playbook-board-intro');
   if (matches.length) {
-    intro.textContent = `This scope matches ${matches.length} surface${matches.length === 1 ? '' : 's'}. Open the one you are looking at — every check has named variants and copyable payloads.`;
+    intro.textContent = `This scope matches ${matches.length} surface${matches.length === 1 ? '' : 's'}. Open the one you are looking at — authored checks carry named variants and copyable payloads; the rest list the full methodology.`;
   } else if (contextLabel) {
     intro.textContent = `${contextLabel} does not pin a single page type. Open any pack, or finish the scope wizard.`;
   } else {
-    intro.textContent = 'Pick the surface you are looking at. Each pack lists the checks that apply, with the payloads to send.';
+    intro.textContent = 'Pick the surface you are looking at. Each pack lists the checks that apply, with authored payloads where they exist.';
   }
   root.append(intro);
 
-  appendBoardSection(root, 'Matches this scope', matches, primary);
-  appendBoardSection(root, 'Also relevant', relevant, primary);
-  appendBoardSection(root, matches.length || relevant.length ? 'Other surfaces' : 'All surfaces', browse, primary);
+  appendBoardSection(root, 'Matches this scope', matches, primary, items);
+  appendBoardSection(root, 'Also relevant', relevant, primary, items);
+  appendBoardSection(root, matches.length || relevant.length ? 'Other surfaces' : 'All surfaces', browse, primary, items);
   if (!matches.length && !relevant.length && !browse.length) {
     const grid = element('div', 'playbook-grid');
-    for (const playbook of index.playbooks) grid.append(playbookCard(playbook, 'browse', primary?.id === playbook.id));
+    for (const playbook of index.playbooks) grid.append(playbookCard(playbook, 'browse', primary?.id === playbook.id, items));
     root.append(grid);
   }
   void matched;
 }
 
-function renderVariant(variant, index = 0) {
+function renderVariant(variant, options = {}) {
+  const { covered = false, state, commit, payloads } = options;
+  const resolved = resolveVariant(variant, payloads || {});
+  const variantWithMeta = { ...resolved };
   const box = element('article', 'probe-variant');
   const head = element('header', 'probe-variant-head');
-  const name = index ? `Variant ${index} — ${variant.name}` : variant.name;
-  head.append(element('strong', '', name));
-  if (variant.kind) head.append(element('span', 'chip', variant.kind));
-  head.append(copyButton(variant.payload, variant.name));
+
+  const key = variantKey(variant.familyId || variant._checkId || 'wapt', variant.name);
+  if (state && commit) {
+    const label = element('label', 'probe-variant-toggle');
+    const checkbox = element('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = covered;
+    checkbox.dataset.variantKey = key;
+    checkbox.addEventListener('change', () => {
+      commit(setVariantCovered(state(), key, checkbox.checked));
+    });
+    label.append(checkbox);
+    label.append(element('span', 'probe-variant-name', variant.name));
+    head.append(label);
+  } else {
+    head.append(element('strong', 'probe-variant-name', variant.name));
+  }
+
+  if (variantWithMeta.kind) head.append(element('span', 'chip', variantWithMeta.kind));
+  if (variantWithMeta.category) head.append(element('span', 'chip variant-class-chip', variantWithMeta.category));
+  if (variantWithMeta.payloadObject?.safe) head.append(element('span', 'chip safe-chip', '✓ Safe payload'));
+  if (variantWithMeta.payloadObject?.encoding && variantWithMeta.payloadObject.encoding !== 'none') {
+    head.append(element('span', 'chip encoding-chip', `encoding: ${variantWithMeta.payloadObject.encoding}`));
+  }
+  head.append(copyButton(variantWithMeta.payload, variantWithMeta.name));
   box.append(head);
-  box.append(element('pre', 'probe-payload', variant.payload));
-  const observe = Array.isArray(variant.observe) ? variant.observe : [];
+
+  if (variantWithMeta.why) {
+    const why = element('p', 'probe-variant-why');
+    why.append(element('span', 'micro-label', 'Why'));
+    why.append(document.createTextNode(` ${variantWithMeta.why}`));
+    box.append(why);
+  }
+
+  box.append(element('pre', 'probe-payload', variantWithMeta.payload));
+  const observe = Array.isArray(variantWithMeta.observe) ? variantWithMeta.observe : [];
   if (observe.length) {
     const block = element('section', 'probe-observe');
     block.append(element('p', 'micro-label', 'CHECK FOR'));
@@ -104,27 +145,41 @@ function renderVariant(variant, index = 0) {
     for (const line of observe) list.append(element('li', '', line));
     block.append(list);
     box.append(block);
-  } else if (variant.expect) {
+  } else if (variantWithMeta.expect) {
     const expect = element('p', 'probe-expect');
     expect.append(element('span', 'micro-label', 'CHECK FOR'));
-    expect.append(document.createTextNode(` ${variant.expect}`));
+    expect.append(document.createTextNode(` ${variantWithMeta.expect}`));
     box.append(expect);
   }
   return box;
 }
 
+function renderVariantWithCoverage(variant, checkId, context) {
+  const { getState, commit, payloads } = context;
+  const key = variantKey(checkId, variant.name);
+  const variants = getState ? (getState().variants || {}) : {};
+  return renderVariant({ ...variant, _checkId: checkId }, {
+    covered: variants[key] === true,
+    state: getState,
+    commit,
+    payloads
+  });
+}
+
 function renderCheck(check, context) {
-  const { recordsById, getState, commit, familyIndex } = context;
+  const { recordsById, getState, commit, familyIndex, payloads } = context;
   const record = recordFor(check, recordsById);
   const item = record?.item;
   const variants = check.variants || [];
-  const article = element('article', `probe-check severity-${check.severity || 'medium'}`);
+  const maturity = checkMaturity(check);
+  const article = element('article', `probe-check severity-${check.severity || 'medium'} maturity-${maturity}`);
   article.dataset.playbookCheck = check.id;
 
   const head = element('header', 'probe-check-head');
   const identity = element('div', 'probe-check-identity');
   const chips = element('div', 'chip-row');
   chips.append(element('span', `chip severity-chip ${check.severity || 'medium'}`, `${SEVERITY_GLYPHS[check.severity] || ''} ${check.severity || 'medium'}`));
+  chips.append(element('span', `chip maturity-chip maturity-${maturity}`, MATURITY_LABEL[maturity] || maturity));
   if (check.tool) chips.append(element('span', 'chip tool-chip', check.tool));
   for (const id of checkItemIds(check)) {
     const family = familyIndex?.byItem?.get(id);
@@ -143,15 +198,24 @@ function renderCheck(check, context) {
   if (variants.length) {
     const quick = element('section', 'probe-quick');
     quick.append(element('p', 'micro-label', 'QUICK TEST'));
-    quick.append(renderVariant({ ...variants[0], name: variants[0].name }, 0));
+    quick.append(renderVariantWithCoverage(variants[0], check.id, context));
     article.append(quick);
-  }
 
-  if (variants.length > 1) {
-    const list = element('div', 'probe-variant-list');
-    list.append(element('p', 'micro-label', 'VARIANTS'));
-    variants.slice(1).forEach((variant, index) => list.append(renderVariant(variant, index + 1)));
-    article.append(list);
+    const rest = variants.slice(1);
+    if (rest.length) {
+      const list = element('div', 'probe-variant-list');
+      list.append(element('p', 'micro-label', 'VARIANTS'));
+      for (const variant of rest) list.append(renderVariantWithCoverage(variant, check.id, context));
+      article.append(list);
+    }
+  } else {
+    const pending = element('div', 'probe-catalog-only');
+    pending.append(element('p', 'probe-catalog-only-note', MATURITY_NOTE[MATURITY.CATALOG_ONLY]));
+    const family = item && familyIndex?.byItem?.get(item.id);
+    const method = element('a', 'button button-quiet', 'Open full methodology');
+    method.href = family ? `#family/${family.id}` : `#checklist/${item?.category || ''}`;
+    pending.append(method);
+    article.append(pending);
   }
 
   if (check.validate) {
@@ -218,8 +282,10 @@ export function renderPlaybookWorkspace(root, context) {
   hero.append(element('h2', '', playbook.title));
   hero.append(element('p', 'family-summary', playbook.summary));
   const meta = element('p', 'playbook-hero-meta');
-  const authored = playbookChecks(raw).length;
-  meta.textContent = `${checkCount(playbook)} applicable checks · ${variantCount(playbook)} variants & payloads · ${authored} named start-here probes · copy any block into Repeater`;
+  const { applicable, authored, methodology } = items.length
+    ? expandedMaturityCounts(raw, items)
+    : { applicable: checkCount(playbook), authored: checkCount(playbook), methodology: 0 };
+  meta.textContent = `${applicable} applicable checks · ${authored} with full playbooks · ${methodology} methodology-only · copy any authored block into Repeater`;
   hero.append(meta);
 
   const toc = element('nav', 'playbook-toc');
@@ -242,7 +308,7 @@ export function renderPlaybookWorkspace(root, context) {
     if (group.summary) head.append(element('p', '', group.summary));
     section.append(head);
     for (const check of group.checks || []) {
-      const node = renderCheck(check, { recordsById, getState, commit, familyIndex, categoryNames });
+      const node = renderCheck(check, { recordsById, getState, commit, familyIndex, categoryNames, payloads: playbook.payloads });
       node.id = `probe-${check.id}`;
       section.append(node);
     }
@@ -270,7 +336,7 @@ export function renderPlaybookBanner(root, context) {
   const copy = element('div');
   copy.append(element('p', 'micro-label', 'PAGE-TYPE PLAYBOOKS'));
   copy.append(element('strong', '', primary.title));
-  copy.append(element('p', '', 'Every applicable check for the page in front of you — named variants and copyable payloads, not a shortlist and not methodology prose.'));
+  copy.append(element('p', '', 'Every applicable check for the page in front of you — authored named variants and copyable payloads first, the full methodology behind the rest.'));
   const action = element('a', 'button button-primary', `Open ${primary.title} →`);
   action.href = `#playbook/${primary.id}`;
   banner.append(copy, action);

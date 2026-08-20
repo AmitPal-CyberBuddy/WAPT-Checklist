@@ -61,6 +61,17 @@ const URL_HINTS = new Set([
   'nonproduction_subdomain', 'punycode_hostname'
 ]);
 
+// Playbook variant taxonomy (item 5). These are playbook-overlay fields only; the
+// 623-item schema is untouched (why/category are never required on checklist items).
+const VARIANT_CLASSES = new Set([
+  'baseline', 'mutation', 'encoding', 'parser-differential', 'header-variant',
+  'parameter-variant', 'authentication-context', 'authorization-context',
+  'browser-context', 'technology-specific', 'protocol-variant', 'tool-assisted',
+  'out-of-band', 'race-concurrency'
+]);
+
+const PAYLOAD_FIELDS = new Set(['id', 'category', 'context', 'encoding', 'purpose', 'safe', 'payload']);
+
 const ENUMS = Object.freeze({
   severity: new Set(['critical', 'high', 'medium', 'low', 'informational']),
   difficulty: new Set(['low', 'medium', 'high']),
@@ -512,6 +523,18 @@ function validatePlaybooks(itemIds = new Set()) {
     if (document.id !== entry.id) errors.push(`${at}: document ID does not match manifest`);
     if (!hasText(document.title) || !hasText(document.summary)) errors.push(`${at}: title and summary are required`);
     if (!Array.isArray(document.groups) || document.groups.length === 0) errors.push(`${at}.groups: at least one group required`);
+    const payloads = document.payloads && typeof document.payloads === 'object' && !Array.isArray(document.payloads) ? document.payloads : {};
+    for (const [pKey, obj] of Object.entries(payloads)) {
+      if (!obj || typeof obj !== 'object') { errors.push(`${at}.payloads.${pKey}: must be an object`); continue; }
+      if (obj.id !== pKey) errors.push(`${at}.payloads.${pKey}.id: must equal the map key ${pKey}`);
+      for (const field of Object.keys(obj)) {
+        if (!PAYLOAD_FIELDS.has(field)) errors.push(`${at}.payloads.${pKey}.${field}: unknown payload field`);
+      }
+      if (!hasText(obj.category) || !VARIANT_CLASSES.has(obj.category)) errors.push(`${at}.payloads.${pKey}.category: must be a recognised variant class`);
+      if (!hasText(obj.purpose) || !hasText(obj.payload)) errors.push(`${at}.payloads.${pKey}: purpose and payload are required`);
+      if (!hasText(obj.context)) errors.push(`${at}.payloads.${pKey}.context: required`);
+      if (obj.safe !== true && obj.safe !== false) errors.push(`${at}.payloads.${pKey}.safe: must be boolean`);
+    }
     const checkIds = new Set();
     let checks = 0;
     for (const [gIndex, group] of (document.groups || []).entries()) {
@@ -535,6 +558,12 @@ function validatePlaybooks(itemIds = new Set()) {
           const vAt = `${spot}.variants[${vIndex}]`;
           if (!hasText(variant?.name) || !hasText(variant?.payload) || !hasText(variant?.expect)) errors.push(`${vAt}: name, payload, and expect are required`);
           if (variant?.kind && !['request', 'command', 'html', 'note'].includes(variant.kind)) errors.push(`${vAt}.kind: invalid`);
+          if (variant?.category !== undefined && !VARIANT_CLASSES.has(variant.category)) errors.push(`${vAt}.category: unrecognised variant class ${JSON.stringify(variant.category)}`);
+          if (variant?.why !== undefined && !hasText(variant.why)) errors.push(`${vAt}.why: must be a non-empty string`);
+          if (variant?.payload_ref !== undefined) {
+            if (!hasText(variant.payload_ref)) errors.push(`${vAt}.payload_ref: must be a non-empty string`);
+            else if (!Object.hasOwn(payloads, variant.payload_ref)) errors.push(`${vAt}.payload_ref: ${variant.payload_ref} does not resolve to a playbook payload`);
+          }
         }
       }
     }
