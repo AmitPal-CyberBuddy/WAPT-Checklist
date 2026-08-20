@@ -16,7 +16,7 @@ function initialHash(current) {
   if (position.view === 'playbook' && position.family) return `playbook/${position.family}`;
   if (position.view === 'checklist' && position.category) return `checklist/${position.category}`;
   if (position.view) return position.view;
-  return 'playbooks';
+  return 'dashboard';
 }
 
 function loadPortfolio() {

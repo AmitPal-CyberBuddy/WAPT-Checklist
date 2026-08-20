@@ -30,7 +30,7 @@
         <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">⌂</span> Assessment</a>
         <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">▣</span> Page playbooks</a>
         <a href="#families" data-view-link="families"><span aria-hidden="true">▦</span> Test families</a>
-        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Scope wizard</a>
+        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Advanced scope</a>
         <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> All tests</a>
         <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search</a>
         <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
@@ -94,9 +94,13 @@
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">CURRENT ASSESSMENT</p><h1 id="dashboard-title">Testing workspace</h1><p>Every matching surface for this application — not one page type. Share the plan as a link (scope only). Methodology stays behind each test.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Edit scope</a><a class="button button-primary" href="#playbooks">All page types</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div class="view-heading"><div><p class="eyebrow">CURRENT ASSESSMENT</p><h1 id="dashboard-title">Testing workspace</h1><p>Define the application. The plan lists every realistic test for that profile, grouped by attack surface. Click a test for variants and payloads.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Advanced scope</a><a class="button button-quiet" href="#playbooks">Page playbooks</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div data-app-profile></div>
         <div data-assessment-plan></div>
         <div data-playbook-banner></div>
+
+        <details class="assessment-more">
+          <summary>Coverage, gaps, and methodology catalog</summary>
 
         <section class="panel dashboard-panel coverage-panel" aria-labelledby="coverage-title">
           <div class="panel-heading"><div><p class="eyebrow">QUESTION 1</p><h2 id="coverage-title">What have I tested?</h2></div></div>
@@ -130,6 +134,7 @@
         </div>
 
         <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">SURFACE COVERAGE</p><h2 id="progress-title">Attack surfaces</h2></div></div><div data-category-progress class="progress-list"></div></section>
+        </details>
 
         <section class="panel dashboard-panel findings-panel" id="findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-csv>Export coverage CSV</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="evidence-packs-kicker">EVIDENCE PACKS · RETEST VERDICTS</p><div data-evidence-packs></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
       </section>

@@ -56,10 +56,12 @@ test('static-page playbook lists the tester-named checks with real payloads', ()
   const playbook = documents.find(({ id }) => id === 'static-page');
   assert.ok(playbook);
   const titles = playbook.groups.flatMap((group) => group.checks.map(({ title }) => title.toLowerCase()));
+  assert.ok(playbook.groups.flatMap((group) => group.checks).length >= 30, 'static playbook should list the named tests');
   for (const needle of [
     'clickjacking', 'missing security header', 'ssl config', 'hsts', 'csp',
     'directory enumeration', 'directory listing', 'path traversal',
-    'absolute url', 'host header'
+    'absolute url', 'host header', 'http method', 'mixed content',
+    'permissions policy', 'prototype pollution', 'postmessage'
   ]) {
     assert.ok(titles.some((title) => title.includes(needle)), `static playbook missing ${needle}`);
   }
@@ -189,6 +191,6 @@ test('workspace and app shell expose playbooks as a first-class view', () => {
   assert.match(playbookUi, /probe-payload/);
   assert.match(playbookUi, /Matches this scope/);
   const plan = fs.readFileSync(path.join(ROOT, 'js/ui/plan.js'), 'utf8');
-  assert.match(plan, /assessmentSurfaces/);
+  assert.match(plan, /buildAssessmentPlan/);
   assert.match(plan, /Copy share link/);
 });

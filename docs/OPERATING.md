@@ -4,9 +4,9 @@ Operator documentation: what this tool is for, the working vocabulary, the loop 
 
 ## Quick start
 
-1. **Start testing** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
-2. **Scope it** — answer the adaptive questions or pick a preset. `Not confirmed yet` is a real answer: affected checks stay visible as *Confirm*, never silently dropped.
-3. **Read the assessment** — Start testing opens every matching surface for this application (login + JWT + API on a SaaS app; TLS/headers/host on a static site), not one page type. **Copy share link** sends that scope as a URL; it never includes findings, notes, or evidence. Click a test for variants and payloads.
+1. **Start testing** — open the assessment workspace. Set **application type**, **authentication**, and **features**. Optionally add the target URL (never fetched).
+2. **Read the plan** — the dashboard lists every realistic test for that profile, grouped as TLS, Security Headers, HTTP / Server, Client-Side, and (when in scope) Authentication, Session, Authorization, API, JWT, upload, checkout. A static site hides login, IDOR, and privilege tests.
+3. **Run a test** — click it for Quick Test, numbered variants, copyable payloads, CHECK FOR, VALIDATE, and DO NOT REPORT. Methodology stays under Reporting and reference. **Copy share link** sends the scope as a URL (never findings). Advanced 18-question scope remains available.
 4. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
 5. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
 6. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.

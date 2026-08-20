@@ -479,5 +479,26 @@ select:focus-visible,textarea:focus-visible{box-shadow:var(--focus);border-color
 .assessment-check.status-passed .assessment-mark,.assessment-check.status-confirmed_finding .assessment-mark{color:var(--low)}
 .assessment-check.status-potential_finding .assessment-mark{color:var(--med)}
 .assessment-footnote{margin:0;color:var(--muted);font-size:.68rem;line-height:1.55}
+.assessment-more{margin:1.2rem 0;padding:.7rem .9rem;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.assessment-more>summary{cursor:pointer;color:var(--brand);font:500 .72rem var(--font-mono)}
+.assessment-more[open]>summary{margin-bottom:.8rem}
+.assessment-more .dashboard-panel{margin-top:.8rem}
+.app-profile{display:grid;gap:.85rem;margin:0 0 1.2rem;padding:1rem 1.1rem;border:1px solid var(--line);border-radius:12px;background:var(--surface)}
+.app-profile-head h2{margin:.1rem 0 .25rem;font-size:1.15rem}
+.app-profile-head p{margin:0;color:var(--muted);font-size:.72rem;line-height:1.5}
+.app-profile-target{display:grid;grid-template-columns:1.4fr 1fr;gap:.7rem}
+.app-profile-set{margin:0;padding:0;border:0}
+.app-profile-set legend{margin:0 0 .45rem;color:var(--brand);font:500 .58rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
+.profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.45rem}
+.profile-option{display:flex;gap:.55rem;align-items:flex-start;padding:.5rem .6rem;border:1px solid var(--line);border-radius:9px;background:var(--surface-2);cursor:pointer}
+.profile-option:hover,.profile-option.is-on{border-color:rgba(62,224,194,.45);background:var(--brand-soft)}
+.profile-option input{margin-top:.15rem;accent-color:var(--brand)}
+.profile-option-copy{display:grid;gap:.1rem}
+.profile-option-copy strong{font-size:.74rem}
+.profile-option-copy small{color:var(--muted);font-size:.6rem;line-height:1.35}
+.app-profile-actions{display:flex;flex-wrap:wrap;gap:.45rem;margin:.2rem 0 0}
+.probe-observe{margin:.45rem 0 0}
+.probe-observe ul{margin:.2rem 0 0;padding-left:1.1rem;color:var(--ink-2);font-size:.68rem;line-height:1.5}
+@media (max-width:700px){.app-profile-target{grid-template-columns:1fr}.profile-grid{grid-template-columns:1fr}}
 @media (max-width:700px){.playbook-banner{flex-direction:column;align-items:stretch}.playbook-check-head,.probe-check-head{flex-direction:column}.playbook-grid{grid-template-columns:1fr}}
 

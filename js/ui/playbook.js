@@ -96,7 +96,15 @@ function renderVariant(variant, index = 0) {
   head.append(copyButton(variant.payload, variant.name));
   box.append(head);
   box.append(element('pre', 'probe-payload', variant.payload));
-  if (variant.expect) {
+  const observe = Array.isArray(variant.observe) ? variant.observe : [];
+  if (observe.length) {
+    const block = element('section', 'probe-observe');
+    block.append(element('p', 'micro-label', 'CHECK FOR'));
+    const list = element('ul');
+    for (const line of observe) list.append(element('li', '', line));
+    block.append(list);
+    box.append(block);
+  } else if (variant.expect) {
     const expect = element('p', 'probe-expect');
     expect.append(element('span', 'micro-label', 'CHECK FOR'));
     expect.append(document.createTextNode(` ${variant.expect}`));

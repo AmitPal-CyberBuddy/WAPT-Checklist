@@ -2,7 +2,7 @@
 
 A professional, context-aware Web Application Penetration Testing methodology, checklist, knowledge base, and local-first tester workspace for **authorized security assessments only**.
 
-[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
+[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start testing](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#dashboard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
 
 > **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployed via GitHub Actions on 2026-08-18 (PR #3 merged, `9874987`); browser and visual QA sign-off remains pending.
 

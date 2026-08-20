@@ -2,7 +2,7 @@ import { deriveContext } from '../engine/context.js?v=1.0.0-r6';
 import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r6';
 import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r6';
 import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r6';
-import { clearOverride, importState, setPosition, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
 import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r6';
 import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
 import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r6';
@@ -16,6 +16,7 @@ import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFa
 import { indexPlaybooks, matchPlaybooks, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r6';
 import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r6';
 import { renderAssessmentPlan } from './plan.js?v=1.0.0-r6';
+import { renderProfile } from './profile.js?v=1.0.0-r6';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -843,6 +844,24 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       return row;
     }));
 
+    const profileRoot = document.querySelector('[data-app-profile]');
+    if (profileRoot) {
+      renderProfile(profileRoot, {
+        answers: state.answers,
+        engagement: state.engagement,
+        onApply({ answers, engagement }) {
+          let next = getState();
+          next = setEngagement(next, {
+            name: engagement.name,
+            targetUrl: engagement.targetUrl,
+            started_at: next.engagement.started_at || new Date().toISOString()
+          });
+          next = setAnswers(next, answers);
+          next = setPosition(next, { view: 'dashboard' });
+          commit(next);
+        }
+      });
+    }
     const plan = document.querySelector('[data-assessment-plan]');
     if (plan) {
       renderAssessmentPlan(plan, {

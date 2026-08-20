@@ -6,9 +6,10 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Changed (Context-driven testing workspace)
 
-- **Start testing** (scope wizard) is the product entry. After the questions, the dashboard is the result for *this application* — every matching surface, not one page type. A static site shows TLS/headers/host/paths; a SaaS JWT app shows login + SPA + API + JWT + profile together. Surfaces the profile excludes stay listed as hidden.
-- **Share the plan:** Copy share link encodes answers and the engagement label in `#share/…` (never statuses, notes, findings, or evidence). Opening the link rebuilds the same assessment locally. Copy plan Markdown is the paste-ready checklist.
-- Clicking a test opens a **practical playbook**: Quick Test, numbered variants with copyable requests, CHECK FOR, VALIDATE, DO NOT REPORT IF, then reporting/reference behind a disclosure. Methodology is no longer the first screen.
+- **Start testing** opens a compact **application profile** (type · authentication · features), not 623 checks and not an 18-question wizard. The wizard remains as Advanced scope.
+- The dashboard is the **applicable test plan**, grouped as TLS / Security Headers / HTTP / Client-Side (and Auth, Session, Authorization, API, JWT, upload, checkout when the profile includes them). A static site lists the named practical tests (Host Header, methods, traversal, CSP, mixed content, DOM XSS, prototype pollution, postMessage, .git, …) and hides login/IDOR/privilege.
+- Clicking a test is a **practical playbook**: Quick Test, numbered variants with copyable payloads, CHECK FOR (including per-variant observe bullets), VALIDATE, DO NOT REPORT. Methodology stays under Reporting and reference.
+- **Share the plan:** Copy share link encodes answers only (`#share/…`). Copy plan Markdown is the paste-ready checklist.
 
 ### Added (Page playbooks — reported: looking at a page type should show every applicable test with variants and payloads, not methodology prose)
 

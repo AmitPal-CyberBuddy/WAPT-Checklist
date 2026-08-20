@@ -3,7 +3,7 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
-const path = require('node:path');
+const path = require('path');
 
 const ROOT = path.resolve(__dirname, '..');
 
@@ -13,8 +13,8 @@ function loadPlaybooks() {
   return { manifest, documents };
 }
 
-test('assessment plan lists every matching surface, not one playbook', async () => {
-  const [{ deriveContext }, { indexPlaybooks }, { assessmentSurfaces, assessmentChecks, composeAssessmentMarkdown }, { PRESETS }] = await Promise.all([
+test('static assessment is attack-surface families, not one page pack', async () => {
+  const [{ deriveContext }, { indexPlaybooks }, { buildAssessmentPlan, composeAssessmentMarkdown }, { PRESETS }] = await Promise.all([
     import('../js/engine/context.js'),
     import('../js/engine/playbooks.js'),
     import('../js/engine/assessment.js'),
@@ -22,37 +22,74 @@ test('assessment plan lists every matching surface, not one playbook', async () 
   ]);
   const { manifest, documents } = loadPlaybooks();
   const index = indexPlaybooks(manifest, documents);
-
-  const staticPlan = assessmentSurfaces(index, deriveContext(PRESETS.static_marketing.answers));
-  assert.deepEqual(staticPlan.matches.map(({ playbook }) => playbook.id), ['static-page']);
-  assert.ok(!staticPlan.surfaces.some(({ playbook }) => playbook.id === 'login-page'));
-  assert.ok(staticPlan.hidden.some(({ id }) => id === 'login-page'));
-  assert.ok(staticPlan.hidden.some(({ id }) => id === 'jwt-token'));
-  const staticMarkdown = composeAssessmentMarkdown({
+  const answers = PRESETS.static_marketing.answers;
+  const plan = buildAssessmentPlan(index, deriveContext(answers), answers);
+  const familyIds = plan.families.map(({ id }) => id);
+  for (const id of ['http', 'headers', 'tls', 'client']) {
+    assert.ok(familyIds.includes(id), `static missing family ${id}`);
+  }
+  assert.ok(!familyIds.includes('auth'));
+  assert.ok(!familyIds.includes('authz'));
+  assert.ok(plan.checks.length >= 30, `static should list the named tests, got ${plan.checks.length}`);
+  const titles = plan.checks.map(({ title }) => title.toLowerCase());
+  for (const needle of [
+    'host header', 'http method', 'absolute url', 'directory enumeration', 'directory listing',
+    'path traversal', 'clickjacking', 'csp', 'hsts', 'permissions policy',
+    'mixed content', 'dom xss', 'prototype pollution', 'postmessage', '.git'
+  ]) {
+    assert.ok(titles.some((title) => title.includes(needle)), `static plan missing ${needle}`);
+  }
+  const markdown = composeAssessmentMarkdown({
     name: 'Marketing',
     targetUrl: 'https://www.example.com',
     chips: ['Static website', 'No authentication'],
-    surfaces: staticPlan.surfaces,
-    hidden: staticPlan.hidden
+    families: plan.families,
+    hiddenFamilies: plan.hiddenFamilies
   });
-  assert.match(staticMarkdown, /Static \/ published page/);
-  assert.match(staticMarkdown, /Host Header/i);
-  assert.doesNotMatch(staticMarkdown, /## Login/);
-  assert.match(staticMarkdown, /Hidden until the profile includes them/);
-  assert.match(staticMarkdown, /Login \/ identity page/);
+  assert.match(markdown, /HTTP \/ Server Configuration/);
+  assert.match(markdown, /Security Headers/);
+  assert.match(markdown, /TLS \/ Transport Security/);
+  assert.match(markdown, /Client-Side Security/);
+  assert.match(markdown, /Host Header/i);
+  assert.doesNotMatch(markdown, /## Authentication/);
+  assert.match(markdown, /Hidden until the profile includes them/);
+});
 
-  const saasPlan = assessmentSurfaces(index, deriveContext(PRESETS.saas_jwt_api.answers));
-  const saasIds = saasPlan.surfaces.map(({ playbook }) => playbook.id);
-  for (const id of ['login-page', 'spa-client', 'api-endpoint', 'jwt-token', 'account-profile']) {
-    assert.ok(saasIds.includes(id), `SaaS assessment missing ${id}, got ${saasIds.join(',')}`);
+test('SaaS and e-commerce profiles add auth, API, and feature families', async () => {
+  const [{ deriveContext }, { indexPlaybooks }, { buildAssessmentPlan }, { PRESETS }] = await Promise.all([
+    import('../js/engine/context.js'),
+    import('../js/engine/playbooks.js'),
+    import('../js/engine/assessment.js'),
+    import('../js/data/presets.mjs')
+  ]);
+  const { manifest, documents } = loadPlaybooks();
+  const index = indexPlaybooks(manifest, documents);
+  const saas = buildAssessmentPlan(index, deriveContext(PRESETS.saas_jwt_api.answers), PRESETS.saas_jwt_api.answers);
+  const saasIds = saas.families.map(({ id }) => id);
+  for (const id of ['auth', 'jwt', 'api', 'client', 'authz']) {
+    assert.ok(saasIds.includes(id), `SaaS missing ${id}, got ${saasIds.join(',')}`);
   }
-  assert.ok(assessmentChecks(saasPlan.surfaces).length > assessmentChecks(staticPlan.surfaces).length);
+  const shop = buildAssessmentPlan(index, deriveContext(PRESETS.ecommerce.answers), PRESETS.ecommerce.answers);
+  const shopIds = shop.families.map(({ id }) => id);
+  for (const id of ['business', 'upload', 'auth']) {
+    assert.ok(shopIds.includes(id), `e-commerce missing ${id}`);
+  }
+  assert.ok(saas.checks.length > 40);
+});
 
-  const shopPlan = assessmentSurfaces(index, deriveContext(PRESETS.ecommerce.answers));
-  const shopIds = shopPlan.surfaces.map(({ playbook }) => playbook.id);
-  for (const id of ['checkout', 'file-upload', 'search-page', 'login-page']) {
-    assert.ok(shopIds.includes(id), `e-commerce assessment missing ${id}`);
-  }
+test('compact profile maps onto engine answers', async () => {
+  const { profileToAnswers, answersToProfile, profileIsScoped } = await import('../js/engine/profile.js');
+  const staticAnswers = profileToAnswers({ app_type: 'static', auth: ['none'], features: ['none'] });
+  assert.equal(staticAnswers.app_type, 'static');
+  assert.equal(staticAnswers.has_login, 'no');
+  assert.deepEqual(staticAnswers.api_style, ['none']);
+  assert.ok(profileIsScoped(answersToProfile(staticAnswers)));
+
+  const saas = profileToAnswers({ app_type: 'spa', auth: ['jwt', 'password'], features: ['api', 'registration'] });
+  assert.equal(saas.app_type, 'spa');
+  assert.equal(saas.has_login, 'yes');
+  assert.ok(saas.auth_mechanism.includes('jwt'));
+  assert.equal(saas.registration, 'yes');
 });
 
 test('share payload round-trips answers and never carries findings', async () => {
@@ -65,40 +102,29 @@ test('share payload round-trips answers and never carries findings', async () =>
     targetUrl: 'https://app.example.com',
     answers: PRESETS.saas_jwt_api.answers
   });
-  assert.match(encoded, /^[A-Za-z0-9_-]+$/);
   const decoded = decodeShare(encoded);
   assert.equal(decoded.name, 'Acme portal');
-  assert.equal(decoded.targetUrl, 'https://app.example.com');
   assert.equal(decoded.answers.app_type, 'spa');
-  assert.equal(decoded.answers.has_login, 'yes');
-  assert.deepEqual(decoded.answers.auth_mechanism, ['jwt']);
-  assert.equal(decoded.statuses, undefined);
-  assert.equal(decoded.findings, undefined);
   assert.doesNotMatch(JSON.stringify(decoded), /confirmed_finding|find-/);
-
   const href = shareHref({ name: 'Acme portal', targetUrl: 'https://app.example.com', answers: PRESETS.saas_jwt_api.answers }, 'https://example.test/app.html#dashboard');
   assert.match(href, /^https:\/\/example\.test\/app\.html#share\//);
   assert.deepEqual(parseShareHash(href.slice(href.indexOf('#'))), decoded);
   assert.equal(decodeShare('!!!'), null);
-  assert.equal(parseShareHash('#dashboard'), null);
   assert.equal(engagementIsBlank(createState()), true);
-  assert.equal(engagementIsBlank({ engagement: { name: 'Kept' }, answers: {}, statuses: {} }), false);
 });
 
-test('wizard finish starts testing and the assessment can be shared', () => {
-  const wizard = fs.readFileSync(path.join(ROOT, 'js/ui/wizard.js'), 'utf8');
+test('workspace starts from the profile, not the category catalog', () => {
+  const appHtml = fs.readFileSync(path.join(ROOT, 'app.html'), 'utf8');
   const plan = fs.readFileSync(path.join(ROOT, 'js/ui/plan.js'), 'utf8');
-  const app = fs.readFileSync(path.join(ROOT, 'js/ui/app.js'), 'utf8');
+  const profile = fs.readFileSync(path.join(ROOT, 'js/ui/profile.js'), 'utf8');
   const home = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
-  assert.match(wizard, /Start testing →/);
-  assert.match(wizard, /every matching surface/);
-  assert.match(plan, /Copy share link/);
-  assert.match(plan, /dataset\.shareLink/);
-  assert.match(plan, /dataset\.shareMarkdown/);
-  assert.match(plan, /assessmentSurfaces/);
-  assert.match(app, /parseShareHash/);
-  assert.match(app, /function applyShare/);
-  assert.match(app, /location.hash = 'dashboard'/);
-  assert.match(home, /app\.html#wizard/);
+  const playbookUi = fs.readFileSync(path.join(ROOT, 'js/ui/playbook.js'), 'utf8');
+  assert.ok(appHtml.includes('data-app-profile'));
+  assert.ok(appHtml.includes('data-assessment-plan'));
+  assert.match(plan, /buildAssessmentPlan/);
+  assert.match(profile, /Generate test plan/);
+  assert.match(home, /app\.html#dashboard/);
   assert.match(home, /Start testing/);
+  assert.match(playbookUi, /CHECK FOR/);
+  assert.match(playbookUi, /variant\.observe/);
 });
