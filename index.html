@@ -24,7 +24,7 @@
       <span><strong>WAPT</strong> Checklist</span>
     </a>
     <nav class="header-nav" aria-label="Primary navigation">
-      <a href="app.html#checklist">Checklist</a>
+      <a href="app.html#dashboard">Assessment</a>
       <a href="methodology.html">Methodology</a>
       <a href="https://github.com/AmitPal-CyberBuddy/WAPT-Checklist">GitHub</a>
       <button class="icon-button" type="button" data-theme-toggle aria-label="Switch color theme" title="Switch color theme">◐</button>
@@ -44,22 +44,40 @@
         </div>
         <p class="privacy-note"><span aria-hidden="true">◆</span> No backend · No telemetry · Your engagement stays on this device</p>
       </div>
-      <div class="hero-visual" role="group" aria-label="Example: a profile becomes an applicable test plan">
-        <div class="signal-card signal-card-main">
-          <div class="signal-head"><span>APPLICATION PROFILE</span><span class="live-chip">LOCAL</span></div>
-          <div class="signal-row"><span>Type</span><strong>SPA + REST API</strong></div>
-          <div class="signal-row"><span>Identity</span><strong>JWT · several roles</strong></div>
-          <div class="signal-row"><span>Features</span><strong>Multi-tenant</strong></div>
-          <div class="context-result">
-            <span class="context-icon" aria-hidden="true">✓</span>
-            <span><strong>Authorization added to the plan</strong><small>IDOR/BOLA, JWT, and API tests now listed</small></span>
-          </div>
+      <div class="hero-visual">
+        <div class="hero-preview" role="img" aria-label="Preview of the assessment workspace for an SPA with JWT identity, a REST API, and tenant boundaries.">
+          <header class="hero-preview-head">
+            <div class="hero-preview-kicker"><span class="micro-label">CURRENT ASSESSMENT</span><span class="chip">LOCAL</span></div>
+            <h2>Single-page application</h2>
+            <p>https://app.example.com</p>
+            <div class="chip-row assessment-chips">
+              <span class="chip">Authentication</span>
+              <span class="chip">JWT</span>
+              <span class="chip">REST</span>
+              <span class="chip">Multi-tenant</span>
+            </div>
+            <div class="assessment-stats">
+              <div class="assessment-stat"><strong>64</strong><span>applicable tests</span></div>
+              <div class="assessment-stat"><strong>6</strong><span>attack surfaces</span></div>
+              <div class="assessment-stat"><strong>0</strong><span>completed</span></div>
+            </div>
+          </header>
+          <section class="hero-preview-surface">
+            <header><span class="micro-label">Authorization</span><span>8</span></header>
+            <ul>
+              <li class="is-next"><span class="hero-preview-mark" aria-hidden="true">▶</span><span><strong>Object-level authorization</strong><small>WAPT-AUTHZ-003 · Not tested</small></span></li>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Tenant isolation</span></li>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Mass assignment</span></li>
+            </ul>
+          </section>
+          <section class="hero-preview-surface">
+            <header><span class="micro-label">JWT / Bearer</span><span>7</span></header>
+            <ul>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>alg=none</span></li>
+              <li><span class="hero-preview-mark" aria-hidden="true">□</span><span>Role claims</span></li>
+            </ul>
+          </section>
         </div>
-        <div class="signal-card signal-card-back" aria-hidden="true">
-          <span>WAPT-AUTHZ-003</span>
-          <strong>Object-level authorization</strong>
-        </div>
-        <div class="grid-decoration" aria-hidden="true"></div>
       </div>
     </section>
 

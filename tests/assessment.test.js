@@ -141,5 +141,7 @@ test('homepage demo card uses a real object-level authorization item', () => {
   assert.match(home, /Object-level authorization/);
   assert.doesNotMatch(home, /WAPT-AUTHZ-014/);
   assert.doesNotMatch(home, /Authorization suite boosted/);
-  assert.match(home, /APPLICATION PROFILE/);
+  assert.match(home, /CURRENT ASSESSMENT/);
+  assert.match(home, /hero-preview/);
+  assert.doesNotMatch(home, /signal-card/);
 });
