@@ -17,28 +17,46 @@ concurrency:
 jobs:
   test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
-      - run: node --test
-      - run: node tools/validate.js checklist/sample.json
-      - run: node tools/validate.js --floors
-      - run: node tools/check-references.js
-      - run: node tools/audit-content.js
+
+      - name: Run tests
+        run: node --test
+
+      - name: Validate schema review sample
+        run: node tools/validate.js checklist/sample.json
+
+      - name: Validate all production category floors
+        run: node tools/validate.js --floors
+
+      - name: Validate authoritative references and mapping editions
+        run: node tools/check-references.js
+
+      - name: Audit content quality and safety
+        run: node tools/audit-content.js
+
   deploy:
     needs: test
+    runs-on: ubuntu-latest
+
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
