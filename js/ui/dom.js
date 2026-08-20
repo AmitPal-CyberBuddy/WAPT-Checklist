@@ -1,6 +1,6 @@
 // Shared DOM helpers and the status vocabulary used across every workspace view.
-import { STATUS_LABELS } from './export.js?v=1.0.0-r6';
-import { setItemStatus } from '../engine/state.js?v=1.0.0-r6';
+import { STATUS_LABELS } from './export.js?v=1.0.0-r7';
+import { setItemStatus } from '../engine/state.js?v=1.0.0-r7';
 
 export const SEVERITY_GLYPHS = Object.freeze({ critical: '▲', high: '◆', medium: '●', low: '■', informational: '○' });
 export const STATUS_GLYPHS = Object.freeze({

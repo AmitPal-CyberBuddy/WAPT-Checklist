@@ -1,13 +1,13 @@
 // Current Assessment: profile → attack-surface families → named practical tests.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r6';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r6';
-import { shareHref } from '../engine/share.js?v=1.0.0-r6';
-import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r6';
-import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r6';
-import { checkMaturity, MATURITY, MATURITY_LABEL } from '../engine/maturity.js?v=1.0.0-r6';
-import { itemStatus } from './filters.js?v=1.0.0-r6';
-import { element, STATUS_GLYPHS } from './dom.js?v=1.0.0-r6';
-import { STATUS_LABELS } from './export.js?v=1.0.0-r6';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r7';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r7';
+import { shareHref } from '../engine/share.js?v=1.0.0-r7';
+import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r7';
+import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r7';
+import { checkMaturity, MATURITY, MATURITY_LABEL } from '../engine/maturity.js?v=1.0.0-r7';
+import { itemStatus } from './filters.js?v=1.0.0-r7';
+import { element, STATUS_GLYPHS } from './dom.js?v=1.0.0-r7';
+import { STATUS_LABELS } from './export.js?v=1.0.0-r7';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',

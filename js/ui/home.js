@@ -1,6 +1,6 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r6';
-import { deriveContext } from '../engine/context.js?v=1.0.0-r6';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r6';
+import { initializeTheme } from './theme.js?v=1.0.0-r7';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r7';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r7';
 
 const STORAGE_KEY = 'wapt.state.v1';
 

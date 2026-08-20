@@ -4,6 +4,16 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Phase 2 — operator-console visual and responsive pass)
+
+- **One operator console.** Homepage hero preview, dashboard, playbook, wizard, families, and search now share the same night-ops canvas (mint signal, violet secondary, Sora + IBM Plex Mono) and the same card/terminal language. The homepage hero preview mirrors the real assessment dashboard, including the catalog-derived `applicable · full playbooks · methodology-only` split.
+- **Fluid design tokens.** Added `--faint`, `--on-brand`, `--brand-ring`, `--terminal`/`--terminal-line`, and a fluid type/spacing scale (`--fs-h1…--fs-lead`, `--space-section`, `--card-pad`, `--grid-gap`) plus quiet inset-highlight + soft-drop shadows. Documented breakpoint ladder: 560 / 768 / 1060 / 1440 / 1920 / 2560.
+- **Named hypotheses are the visual unit of a test.** A variant is a tickable hypothesis with a one-line Why, class/kind/safe/encoding chips, and a terminal payload block. Catalog-only checks render an honest "◐ Methodology available — practical variants pending" state, never a fabricated request.
+- **Responsive recomposition (not scaling).** Assessment stats, playbook/probe heads, chips, and hypothesis rows reflow at tablet and phone; wide monitors get a calm 1240→1460→1680px column cap. `overflow-x: clip` and `scroll-padding-top` keep sticky-header navigation and decorative gradients from causing horizontal scroll or hidden anchors.
+- **Motion.** Quiet view-in / rise-in enters only; removed the leftover `signal-float` loop. `prefers-reduced-motion: reduce` disables all animation and transforms.
+- **AA contrast.** Light theme brand raised to `#0b756b` (5.18:1) with an `--on-brand` text token for buttons/toggles; small secondary metadata uses `--faint` (AA). Severity, status, and maturity chips keep AA in both themes.
+- **Cache bump to `1.0.0-r7`** for the restyled CSS and page assets; every pinned reference (pages, modules, tests) updated together. Payload library still 40.
+
 ### Changed (Post-merge corrections — catalog-derived Applicable Test Count and honest maturity)
 
 - **One canonical Applicable Test Count.** The dashboard, playbook hero, share Markdown, and tests now use the catalog count: how many of the 623 checklist items evaluate as **Active or Confirm** for the current profile (`js/engine/applicable.js`). This is **not** `playbooks/manifest.json` `count`, which stays the authored-overlay count only. A static profile now reports its real catalog count (≈ 183, not the 49 authored overlays), shown as **N applicable · A with authored playbooks · M methodology-only**.

@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r6';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r6';
+import { initializeTheme } from './theme.js?v=1.0.0-r7';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r7';
 
 const DOCUMENTS = Object.freeze({
   operating: { title: 'How to run an engagement', kicker: 'OPERATOR GUIDE', summary: 'Quick start, the coverage vocabulary, the family contract, keyboard model, outputs, and the honest limits of this workspace.', file: 'docs/OPERATING.md' },

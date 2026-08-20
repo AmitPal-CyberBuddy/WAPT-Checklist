@@ -6,11 +6,11 @@
 // attaches authored playbook overlays where they exist, and groups by attack surface.
 // Playbook matching still lights up (SaaS → login + SPA + API + JWT + profile), but the
 // dashboard list IS the catalog, grouped by surface.
-import { classifyPlaybook, playbookChecks, suggestedPlaybook } from './playbooks.js?v=1.0.0-r6';
-import { SURFACES, surfaceForItem, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r6';
-import { applicableItems } from './applicable.js?v=1.0.0-r6';
-import { checkFromItem } from './probes.js?v=1.0.0-r6';
-import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r6';
+import { classifyPlaybook, playbookChecks, suggestedPlaybook } from './playbooks.js?v=1.0.0-r7';
+import { SURFACES, surfaceForItem, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r7';
+import { applicableItems } from './applicable.js?v=1.0.0-r7';
+import { checkFromItem } from './probes.js?v=1.0.0-r7';
+import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r7';
 
 // Best authored overlay for an item across every playbook. Prefer overlays from a
 // playbook that matches or is relevant to the current profile, then the check where the
