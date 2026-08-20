@@ -1,5 +1,5 @@
-import { PRESET_LIST } from '../data/presets.mjs?v=1.0.0-r8';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r8';
+import { PRESET_LIST } from '../data/presets.mjs?v=1.0.0-r9';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r9';
 
 const UNKNOWN = 'unknown';
 
@@ -28,6 +28,39 @@ const HINT_LABELS = Object.freeze({
   plain_http: 'Plain HTTP — confirm TLS coverage', unusual_tls_port: 'Unusual TLS port — review configuration',
   api_subdomain: 'API subdomain — confirm API scope', admin_subdomain: 'Admin subdomain — confirm privileged surface',
   nonproduction_subdomain: 'Non-production label — review disclosure/configuration', punycode_hostname: 'Punycode hostname — review canonical host handling'
+});
+
+// One section label per question so the sequence reads as grouped stages, not a wall of 18.
+const QUESTION_SECTIONS = Object.freeze({
+  mode: 'APPROACH', app_type: 'DELIVERY',
+  has_login: 'IDENTITY & ACCESS', creds: 'IDENTITY & ACCESS', registration: 'IDENTITY & ACCESS',
+  roles: 'IDENTITY & ACCESS', auth_mechanism: 'IDENTITY & ACCESS', identity_features: 'IDENTITY & ACCESS',
+  api_style: 'INTERFACES', api_docs: 'INTERFACES',
+  source_access: 'ENVIRONMENT', backend: 'ENVIRONMENT', database: 'ENVIRONMENT', cloud: 'ENVIRONMENT',
+  features: 'BUSINESS FEATURES',
+  intermediary: 'EDGES & JOBS', outbound_fetch: 'EDGES & JOBS', async_jobs: 'EDGES & JOBS'
+});
+
+// What each answer shapes in the plan — stated up front so skipping is a conscious choice.
+const QUESTION_IMPACT = Object.freeze({
+  mode: ['implementation access', 'evidence expectations'],
+  app_type: ['client-side suites', 'API suites', 'delivery checks'],
+  has_login: ['authentication suites', 'session suites'],
+  creds: ['authorization depth', 'blocked roadmap work'],
+  registration: ['signup abuse paths', 'verification flows'],
+  roles: ['vertical privilege tests', 'RBAC checks'],
+  auth_mechanism: ['JWT suites', 'SSO / federation suites', 'session suites'],
+  identity_features: ['MFA & recovery suites', 'passkey checks'],
+  api_style: ['API suites', 'GraphQL suites', 'WebSocket suites'],
+  api_docs: ['surface discovery depth'],
+  source_access: ['code-assisted review'],
+  backend: ['runtime fingerprinting', 'injection variants'],
+  database: ['injection suites'],
+  cloud: ['cloud metadata suites', 'storage suites'],
+  features: ['business-logic suites', 'file handling', 'payments & commerce'],
+  intermediary: ['cache poisoning suites', 'request smuggling'],
+  outbound_fetch: ['SSRF suites', 'webhook validation'],
+  async_jobs: ['job authorization', 'race conditions']
 });
 
 function safeUrlHints(raw) {
@@ -95,11 +128,13 @@ export function createWizard(root, initialState, callbacks = {}) {
   function renderQuestion(question) {
     const value = state.answers[question.key];
     const selected = Array.isArray(value) ? value : [value];
+    const impact = QUESTION_IMPACT[question.key] || [];
     return `
       <fieldset class="wizard-question" data-question="${question.key}" data-focus-region>
         <legend class="sr-only">${question.title}</legend>
         <h2 tabindex="-1"><span class="wizard-step-id">SCOPE ${String(activeQuestions().indexOf(question) + 1).padStart(2, '0')}/${String(activeQuestions().length).padStart(2, '0')}</span>${question.title}</h2>
         <p>${question.description}</p>
+        ${impact.length ? `<p class="wizard-impact"><span>SHAPES</span>${impact.map((area) => `<span class="chip">${area}</span>`).join('')}</p>` : ''}
         <div class="option-grid" role="${question.multi ? 'group' : 'radiogroup'}">${question.options.map(([optionValue, label, detail]) => `
           <label class="option-card" ${question.multi ? 'data-multi' : ''}>
             <input type="${question.multi ? 'checkbox' : 'radio'}" name="${question.key}" value="${optionValue}" ${selected.includes(optionValue) ? 'checked' : ''}>
@@ -203,7 +238,7 @@ export function createWizard(root, initialState, callbacks = {}) {
     const isLast = currentKey === 'review';
     root.innerHTML = `
       <div class="wizard-progress" aria-hidden="true"><progress max="100" value="${Math.round((index / (keys.length - 1)) * 100)}"></progress></div>
-      <div class="wizard-meta"><span>STEP ${String(index + 1).padStart(2, '0')} OF ${String(keys.length).padStart(2, '0')}</span><span>${Math.round((index / (keys.length - 1)) * 100)}% scoped</span></div>
+      <div class="wizard-meta"><span><span class="wizard-meta-section">${currentKey === 'engagement' ? 'ENGAGEMENT' : currentKey === 'review' ? 'REVIEW' : QUESTION_SECTIONS[currentKey] || 'SCOPE'}</span> · STEP ${String(index + 1).padStart(2, '0')} OF ${String(keys.length).padStart(2, '0')}</span><span>${Math.round((index / (keys.length - 1)) * 100)}% scoped</span></div>
       <div class="wizard-body">${content}</div>
       <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Start testing →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
     attachEvents();

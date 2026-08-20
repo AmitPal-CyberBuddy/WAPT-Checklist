@@ -1,6 +1,9 @@
 (function applyThemeBeforePaint() {
   const STORAGE_KEY = 'wapt.state.v1';
   const root = document.documentElement;
+  // Marks a scripting environment so progressive enhancements (scroll reveals)
+  // never hide content when JavaScript is unavailable.
+  root.classList.add('js');
   let storedTheme = null;
 
   try {
@@ -14,6 +17,12 @@
   const systemTheme = window.matchMedia?.('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
   root.dataset.theme = storedTheme || systemTheme;
 
+  // Paint the themed canvas before the stylesheet parses so cross-document
+  // navigation never flashes a white page.
+  const light = root.dataset.theme === 'light';
+  root.style.backgroundColor = light ? '#f7f9fc' : '#090d13';
+  root.style.colorScheme = light ? 'light' : 'dark';
+
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = root.dataset.theme === 'light' ? '#f4f7fb' : '#07090d';
+  if (themeColor) themeColor.content = light ? '#f7f9fc' : '#090d13';
 }());

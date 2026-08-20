@@ -4,12 +4,12 @@
 //
 // The board answers "where is work left?", the family workspace answers "what do I do now,
 // what have I covered, what must I not forget, and what comes next?" — without losing context.
-import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r8';
-import { familyBoundary, familyContract, familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies, surfaceSuites } from '../engine/families.js?v=1.0.0-r8';
-import { setVariantCovered } from '../engine/state.js?v=1.0.0-r8';
-import { itemStatus } from './filters.js?v=1.0.0-r8';
-import { contractRow, element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r8';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r8';
+import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r9';
+import { familyBoundary, familyContract, familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies, surfaceSuites } from '../engine/families.js?v=1.0.0-r9';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r9';
+import { itemStatus } from './filters.js?v=1.0.0-r9';
+import { contractRow, element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r9';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r9';
 
 function familyRecordMap(records, familyIndex) {
   const map = new Map();
@@ -73,7 +73,14 @@ export function renderFamilyBoard(root, context) {
   search.placeholder = 'Filter families — BOLA, upload, tenant…';
   search.value = boardFilters.query;
   search.setAttribute('aria-label', 'Filter test families');
-  search.addEventListener('input', () => onFilterChange({ ...boardFilters, query: search.value }, 'familyQuery'));
+  // The board rebuilds on change; typing commits after a short pause, not per keystroke.
+  let queryTimer = 0;
+  let queryFilters = boardFilters;
+  search.addEventListener('input', () => {
+    queryFilters = { ...queryFilters, query: search.value };
+    clearTimeout(queryTimer);
+    queryTimer = setTimeout(() => onFilterChange(queryFilters, 'familyQuery'), 160);
+  });
   const categorySelect = document.createElement('select');
   categorySelect.name = 'familyCategory';
   categorySelect.setAttribute('aria-label', 'Filter by attack surface');

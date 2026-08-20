@@ -1,6 +1,6 @@
 # How to run an engagement with this workspace
 
-Operator documentation: what this tool is for, the working vocabulary, the loop it supports, and its honest limits. Contributor-facing detail lives in [Architecture](docs.html?doc=architecture) and [Adaptive engine](docs.html?doc=engine).
+Operator documentation: what this tool is for, the working vocabulary, the loop it supports, and its honest limits.
 
 ## Quick start
 

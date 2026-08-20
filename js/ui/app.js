@@ -1,10 +1,10 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r8';
-import { createWizard } from './wizard.js?v=1.0.0-r8';
-import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r8';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r8';
-import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r8';
-import { createCatalog } from './catalog.js?v=1.0.0-r8';
-import { createWorkspace } from './workspace.js?v=1.0.0-r8';
+import { initializeTheme } from './theme.js?v=1.0.0-r9';
+import { createWizard } from './wizard.js?v=1.0.0-r9';
+import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r9';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r9';
+import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r9';
+import { createCatalog } from './catalog.js?v=1.0.0-r9';
+import { createWorkspace } from './workspace.js?v=1.0.0-r9';
 
 const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -171,10 +171,17 @@ function setSidebar(open, restoreFocus = false) {
 
 let navigationSequence = 0;
 let routeProgressTimer = 0;
+let firstRouteDone = false;
+
+function dismissBootSplash() {
+  const splash = document.querySelector('[data-app-boot]');
+  if (splash) splash.remove();
+}
 
 function swapVisibleView(view) {
   const update = () => {
     document.querySelectorAll('[data-view]').forEach((section) => { section.hidden = section.dataset.view !== view; });
+    dismissBootSplash();
   };
   const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (!reduced && typeof document.startViewTransition === 'function') document.startViewTransition(update);
@@ -215,6 +222,9 @@ function route() {
   const token = ++navigationSequence;
   swapVisibleView(view);
   beginNavigation(view, token);
+
+  // A new view starts at the top; the findings sub-route scrolls to its panel below.
+  if (!(view === 'dashboard' && slug === 'findings')) window.scrollTo({ top: 0, behavior: 'auto' });
 
   document.querySelectorAll('[data-view-link]').forEach((link) => {
     if (link.dataset.viewLink === view) {

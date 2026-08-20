@@ -8,10 +8,13 @@
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>Methodology — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r8"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r8">
-  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r8">
-  <script type="module" src="js/ui/methodology-page.js?v=1.0.0-r8"></script>
+  <link rel="prefetch" href="app.html" as="document">
+  <link rel="preload" href="assets/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r9"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r9">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r9">
+  <script type="module" src="js/ui/methodology-page.js?v=1.0.0-r9"></script>
 </head>
 <body class="content-page methodology-page">
   <a class="skip-link" href="#main">Skip to methodology</a>
@@ -31,6 +34,6 @@
     <section class="section shell" aria-labelledby="taxonomy-title"><div class="section-heading"><p class="eyebrow">25 SECURITY AREAS</p><h2 id="taxonomy-title">Complete coverage without noise</h2><p>Move from reconnaissance and HTTP behavior through identity, APIs, business logic, browser security, cloud, and advanced protocol testing.</p></div><div class="method-category-grid" data-method-categories aria-live="polite"><p class="loading-line">Loading security areas…</p></div></section>
     <section class="section principles-section"><div class="shell method-principles"><div><p class="eyebrow">NON-NEGOTIABLE</p><h2>Do no harm.<br>Do not over-report.</h2></div><div class="principle-cards"><article><strong>Authorized only</strong><p>Designated identities, synthetic data, explicit limits, rollback, and stop conditions.</p></article><article><strong>Unknown stays visible</strong><p>Uncertain scope produces Confirm—not silent exclusion or a guessed fact.</p></article><article><strong>Scanner ≠ finding</strong><p>Missing headers, signatures, timing, and tool alerts require behavior and impact.</p></article><article><strong>Local by design</strong><p>No backend, sync, telemetry, CDN, or request to the assessment target.</p></article></div></div></section>
   </main>
-  <footer class="site-footer shell"><div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div><p>Original methodology mapped to authoritative standards and tested for quality, safety, and traceability.</p><nav aria-label="Footer"><a href="docs.html?doc=operating">Operator guide</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=license">License</a></nav></footer>
+  <footer class="site-footer"><div class="shell site-footer-grid"><div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div><p>Original methodology mapped to authoritative standards and tested for quality, safety, and traceability.</p><nav aria-label="Footer"><a href="docs.html?doc=operating">Operator guide</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=license">License</a></nav></div></footer>
 </body>
 </html>

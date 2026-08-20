@@ -31,15 +31,15 @@ export const VARIANT_CLASSES = Object.freeze([
 ]);
 
 export const MATURITY_LABEL = Object.freeze({
-  [MATURITY.AUTHORED]: 'Full playbook',
-  [MATURITY.VARIANT_COMPLETE]: 'Variant-complete',
-  [MATURITY.CATALOG_ONLY]: 'Methodology available'
+  [MATURITY.AUTHORED]: 'Step-by-step guide',
+  [MATURITY.VARIANT_COMPLETE]: 'Guided variants',
+  [MATURITY.CATALOG_ONLY]: 'Methodology reference'
 });
 
 export const MATURITY_NOTE = Object.freeze({
-  [MATURITY.AUTHORED]: 'Named variants, payloads, validation, and safety are authored.',
-  [MATURITY.VARIANT_COMPLETE]: 'Named variants exist; per-variant why and class are still pending.',
-  [MATURITY.CATALOG_ONLY]: 'Practical variants pending. Open the full methodology instead of a fabricated request.'
+  [MATURITY.AUTHORED]: 'Named variants, payloads, validation, and safety guidance are included.',
+  [MATURITY.VARIANT_COMPLETE]: 'Named variants are listed with payloads and expectations.',
+  [MATURITY.CATALOG_ONLY]: 'Covered by the full methodology reference; open it to run this check.'
 });
 
 function hasText(value) {

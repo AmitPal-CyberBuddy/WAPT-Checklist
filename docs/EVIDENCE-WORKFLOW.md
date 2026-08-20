@@ -1,8 +1,6 @@
 # Evidence, reportability, and retest workflow
 
-> Phase 4 implementation contract — 2026-08-18
-
-This document describes how the workspace carries a tester from a checklist observation to a reportable finding and a verified retest. The rules live in pure engine modules (`js/engine/state.js`, `reportability.js`, `coverage.js`) and are exercised by `tests/workflow-e2e.test.js`; the dashboard and report generator consume them.
+This document describes how the workspace carries a tester from a checklist observation to a reportable finding and a verified retest. The rules live in pure engine modules (`js/engine/state.js`, `reportability.js`, `coverage.js`); the dashboard and report generator consume them.
 
 ## Decision workflow
 
@@ -43,7 +41,7 @@ All user text must be redacted before recording: no credentials, tokens, persona
 - Exploitability `proven`/`likely` → **Demonstrated**.
 - Demonstrated + reportable flag → **Reportable**, with the item's `do_not_report` boundary surfaced for final review.
 
-The Phase 2 `do_not_report` content and this gate share one purpose: a scanner lead, absent header, or theoretical path is not a finding until behavior and impact are demonstrated.
+The `do_not_report` guidance and this gate share one purpose: a scanner lead, absent header, or theoretical path is not a finding until behavior and impact are demonstrated.
 
 ## Retest verdicts
 

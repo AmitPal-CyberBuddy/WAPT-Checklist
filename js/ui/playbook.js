@@ -3,12 +3,12 @@
 // the catalog-only remainder behind them. Authored checks show named attack hypotheses
 // (tickable coverage, never findings) with a one-line Why; catalog-only checks show a
 // maturity chip and a methodology link — never a fabricated request.
-import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r8';
-import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r8';
-import { variantKey } from '../engine/families.js?v=1.0.0-r8';
-import { setVariantCovered } from '../engine/state.js?v=1.0.0-r8';
-import { itemStatus } from './filters.js?v=1.0.0-r8';
-import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r8';
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r9';
+import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r9';
+import { variantKey } from '../engine/families.js?v=1.0.0-r9';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r9';
+import { itemStatus } from './filters.js?v=1.0.0-r9';
+import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r9';
 
 function checkCount(playbook) {
   return (playbook.groups || []).reduce((sum, group) => sum + (group.checks || []).length, 0);
@@ -352,7 +352,7 @@ export function renderOperatorCheck(check, context) {
       }
     } else {
       const pending = element('div', 'probe-catalog-only');
-      pending.append(element('p', 'probe-catalog-only-note', 'A testing reference is available; a step-by-step operator guide has not been added yet.'));
+      pending.append(element('p', 'probe-catalog-only-note', 'This check is covered by the full methodology reference rather than a quick step-by-step. Open the reference to run it.'));
       const family = item && familyIndex?.byItem?.get(item.id);
       const method = element('a', 'button button-quiet', 'Open testing reference');
       method.href = family ? `#family/${family.id}` : `#checklist/${item?.category || ''}`;
