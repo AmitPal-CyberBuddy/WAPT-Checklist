@@ -51,8 +51,34 @@ test('catalog covers every tester surface with named variants and real payloads'
   }
 });
 
-test('static-page playbook lists the tester-named checks with real payloads', () => {
+test('every authored variant across every playbook is fully described (why + category + payload_ref)', () => {
   const { documents } = loadPlaybooks();
+  const variants = [];
+  for (const playbook of documents) {
+    for (const group of playbook.groups || []) {
+      for (const check of group.checks || []) {
+        assert.ok(check.variants.length >= 2, `${playbook.id}/${check.id} needs variants`);
+        for (const variant of check.variants) {
+          variants.push(variant);
+          assert.ok(variant.name && variant.payload && variant.expect, `${playbook.id}/${check.id}:${variant.name} missing name/payload/expect`);
+          assert.ok(variant.why, `${playbook.id}/${check.id}:${variant.name} needs a one-line why`);
+          assert.ok(variant.category, `${playbook.id}/${check.id}:${variant.name} needs a variant class`);
+          if (variant.payload_ref) {
+            assert.ok(playbook.payloads && playbook.payloads[variant.payload_ref], `${playbook.id}/${check.id}:${variant.name} payload_ref unresolved`);
+            const obj = playbook.payloads[variant.payload_ref];
+            assert.equal(obj.payload, variant.payload, `${playbook.id}/${check.id}:${variant.name} payload_ref must match embedded payload`);
+          }
+        }
+      }
+    }
+  }
+  assert.ok(variants.length >= 300, 'product-wide authored variants should be substantial');
+  // Payload maps exist beyond the static reference so payloads-as-objects is product-wide.
+  const withPayloadMaps = documents.filter(({ payloads }) => payloads && Object.keys(payloads).length);
+  assert.ok(withPayloadMaps.length >= 8, 'payload maps should span most playbooks, not just static');
+});
+
+test('static-page playbook lists the tester-named checks with real payloads', () => {  const { documents } = loadPlaybooks();
   const playbook = documents.find(({ id }) => id === 'static-page');
   assert.ok(playbook);
   const titles = playbook.groups.flatMap((group) => group.checks.map(({ title }) => title.toLowerCase()));

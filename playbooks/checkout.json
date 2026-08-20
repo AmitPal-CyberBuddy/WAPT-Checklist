@@ -32,19 +32,25 @@
               "name": "Lower the unit price",
               "kind": "request",
               "payload": "POST /cart/items HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"sku\":\"SKU-1\",\"qty\":1,\"price\":0.01,\"unit_amount\":1}",
-              "expect": "Read the cart and the payment intent. Price must be recomputed from SKU-1."
+              "expect": "Read the cart and the payment intent. Price must be recomputed from SKU-1.",
+              "category": "parameter-variant",
+              "why": "A client-supplied unit price means the server trusts the price the client sends."
             },
             {
               "name": "Negative / zero total",
               "kind": "request",
               "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"total\":0,\"amount\":-1}",
-              "expect": "Must refuse. A fulfilled order at 0 is the finding."
+              "expect": "Must refuse. A fulfilled order at 0 is the finding.",
+              "category": "mutation",
+              "why": "A negative or zero total exploits sign/zero handling to pay nothing."
             },
             {
               "name": "Hidden integrity field",
               "kind": "request",
               "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"total\":1,\"checksum\":\"deadbeef\",\"hash\":\"00\"}",
-              "expect": "A client hash is not a control. Tamper it; the server must ignore it."
+              "expect": "A client hash is not a control. Tamper it; the server must ignore it.",
+              "category": "parameter-variant",
+              "why": "A hidden price/signature field the client controls can be replayed to a cheaper value."
             }
           ]
         },
@@ -64,19 +70,25 @@
               "name": "Negative quantity",
               "kind": "request",
               "payload": "POST /cart/items HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"sku\":\"SKU-1\",\"qty\":-1}",
-              "expect": "Must refuse. A credit or stock increase is the finding."
+              "expect": "Must refuse. A credit or stock increase is the finding.",
+              "category": "mutation",
+              "why": "Negative quantities can flip charges into credits."
             },
             {
               "name": "Currency swap",
               "kind": "request",
               "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"currency\":\"IDR\",\"total\":10}",
-              "expect": "Currency must be bound to the catalog/settlement context, not the client string."
+              "expect": "Currency must be bound to the catalog/settlement context, not the client string.",
+              "category": "parameter-variant",
+              "why": "Swapping currency is parsed differently at pricing vs settlement, creating a rate mismatch."
             },
             {
               "name": "Drop tax / shipping",
               "kind": "request",
               "payload": "POST /checkout HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"skip_tax\":true,\"shipping\":0,\"discount\":999}",
-              "expect": "Tax, shipping, and discount must be recomputed server-side."
+              "expect": "Tax, shipping, and discount must be recomputed server-side.",
+              "category": "mutation",
+              "why": "Removing tax/shipping fields may change the server-computed total."
             }
           ]
         },
@@ -96,13 +108,17 @@
               "name": "Apply another user's code",
               "kind": "request",
               "payload": "POST /cart/coupon HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"code\":\"B-UNIQUE-CODE\"}",
-              "expect": "A personal or single-use code for B must fail for A."
+              "expect": "A personal or single-use code for B must fail for A.",
+              "category": "authorization-context",
+              "why": "Reusing a single-use or user-bound code is a coupon-stealing primitive."
             },
             {
               "name": "Stack and reuse",
               "kind": "request",
               "payload": "POST /cart/coupon HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"codes\":[\"SAVE10\",\"SAVE10\",\"WELCOME\"]}",
-              "expect": "Same code twice, plus a new-customer code on an old account, must not stack past the rule."
+              "expect": "Same code twice, plus a new-customer code on an old account, must not stack past the rule.",
+              "category": "race-concurrency",
+              "why": "Redeeming the same code twice or stacking codes exploits redemption state."
             }
           ]
         }
@@ -129,13 +145,17 @@
               "name": "Swap order id on confirm",
               "kind": "request",
               "payload": "POST /checkout/confirm HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"order_id\":1002,\"payment_intent\":\"pi_A\"}",
-              "expect": "pi_A was created for 1001. Must not fulfill 1002."
+              "expect": "pi_A was created for 1001. Must not fulfill 1002.",
+              "category": "authorization-context",
+              "why": "Confirming a payment against a different order id breaks the amount-to-order binding."
             },
             {
               "name": "Webhook amount mismatch",
               "kind": "note",
               "payload": "If you control a test webhook, replay a succeeded event with amount=1 against a larger order.",
-              "expect": "Must refuse. Do not replay live provider events against production money."
+              "expect": "Must refuse. Do not replay live provider events against production money.",
+              "category": "parser-differential",
+              "why": "A webhook amount that differs from the order total means settlement does not verify the charge."
             }
           ]
         },
@@ -155,13 +175,17 @@
               "name": "Parallel place-order",
               "kind": "note",
               "payload": "Capture one POST /checkout. Fire it twice at the same moment (Turbo Intruder / two Repeater tabs).",
-              "expect": "One success, one fail. Two fulfilled orders is the finding. Keep amounts tiny."
+              "expect": "One success, one fail. Two fulfilled orders is the finding. Keep amounts tiny.",
+              "category": "race-concurrency",
+              "why": "Two concurrent place-order calls can both consume stock or both apply a single-use coupon."
             },
             {
               "name": "Coupon double redeem",
               "kind": "note",
               "payload": "Apply a single-use code, then parallel-confirm two checkouts that both carry it.",
-              "expect": "The code must be consumed atomically."
+              "expect": "The code must be consumed atomically.",
+              "category": "race-concurrency",
+              "why": "Concurrent redeems race the redemption flag."
             }
           ]
         },
@@ -181,13 +205,17 @@
               "name": "Cross-site place-order",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/checkout\" method=\"POST\">\n  <input name=\"sku\" value=\"SKU-1\">\n  <input name=\"qty\" value=\"1\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Must fail without a valid CSRF token / step-up. Impact is a created order, not a 200."
+              "expect": "Must fail without a valid CSRF token / step-up. Impact is a created order, not a 200.",
+              "category": "browser-context",
+              "why": "A cross-site order placed in a victim's session is the CSRF impact."
             },
             {
               "name": "JSON as text/plain",
               "kind": "request",
               "payload": "POST /api/v1/checkout HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<victim>\n\n{\"sku\":\"SKU-1\",\"qty\":1}",
-              "expect": "Must not create an order."
+              "expect": "Must not create an order.",
+              "category": "browser-context",
+              "why": "A simple-request JSON order can be CSRF'd unless a token is enforced."
             }
           ]
         }

@@ -32,19 +32,25 @@
               "name": "Classic introspection",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{__schema{types{name fields{name}}}}\"}",
-              "expect": "Disabled in production, or limited to an allowlisted consumer. A full dump is a lead plus any hidden mutations."
+              "expect": "Disabled in production, or limited to an allowlisted consumer. A full dump is a lead plus any hidden mutations.",
+              "category": "baseline",
+              "why": "Introspection reveals the full schema; production should disable or restrict it."
             },
             {
               "name": "GET introspection",
               "kind": "request",
               "payload": "GET /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D HTTP/1.1\nHost: api.example.com\nConnection: close",
-              "expect": "Some stacks disable POST introspection and leave GET on."
+              "expect": "Some stacks disable POST introspection and leave GET on.",
+              "category": "protocol-variant",
+              "why": "A GET query bypasses any method-based introspection gate."
             },
             {
               "name": "Field suggestion",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{user{emial}}\"}",
-              "expect": "\"Did you mean email?\" confirms names even when introspection is off."
+              "expect": "\"Did you mean email?\" confirms names even when introspection is off.",
+              "category": "technology-specific",
+              "why": "Suggestions disclose field names even when introspection is blocked."
             }
           ]
         },
@@ -64,13 +70,17 @@
               "name": "Common admin mutations",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { updateUserRole(id: 1, role: \\\"admin\\\") { id role } }\"}",
-              "expect": "Try names from introspection / suggestions: deleteUser, impersonate, setRole, inviteAdmin."
+              "expect": "Try names from introspection / suggestions: deleteUser, impersonate, setRole, inviteAdmin.",
+              "category": "mutation",
+              "why": "Mutation names follow conventions; probing common ones finds hidden admin operations."
             },
             {
               "name": "Typename probe",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"{ __type(name: \\\"Mutation\\\") { fields { name } } }\"}",
-              "expect": "Works when full __schema is off but __type is not."
+              "expect": "Works when full __schema is off but __type is not.",
+              "category": "browser-context",
+              "why": "__typename leaks implementation type names across the schema."
             }
           ]
         }
@@ -97,13 +107,18 @@
               "name": "node(id:) swap",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{node(id:\\\"T3JkZXI6MTAwMg==\\\"){... on Order{id total}}}\"}",
-              "expect": "Order 1002 is B's. Decode and recode other type prefixes too."
+              "expect": "Order 1002 is B's. Decode and recode other type prefixes too.",
+              "category": "authorization-context",
+              "why": "Reading another object by global id is object-level authorization failure.",
+              "payload_ref": "gql-node-swap"
             },
             {
               "name": "Aliased parallel reads",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{a:order(id:1001){id} b:order(id:1002){id total}}\"}",
-              "expect": "Each alias needs its own decision. b must not return B's order."
+              "expect": "Each alias needs its own decision. b must not return B's order.",
+              "category": "parameter-variant",
+              "why": "Aliases let one query fetch many objects and compare which are authorised."
             }
           ]
         },
@@ -123,13 +138,17 @@
               "name": "Sensitive field selection",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"{me{id email role passwordHash ssn taxId}}\"}",
-              "expect": "role, hashes, and internal fields must be absent or unauthorized."
+              "expect": "role, hashes, and internal fields must be absent or unauthorized.",
+              "category": "authorization-context",
+              "why": "Fields with per-field authorization can be read directly by selection."
             },
             {
               "name": "Nested owner fields",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{order(id:1002){id user{email role}}}\"}",
-              "expect": "Even if the order is denied, a nested user leak is still a finding."
+              "expect": "Even if the order is denied, a nested user leak is still a finding.",
+              "category": "authorization-context",
+              "why": "Nested owner/tenant fields on an object expose data the object check does not cover."
             }
           ]
         },
@@ -149,13 +168,17 @@
               "name": "Admin mutation as member",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { deleteUser(id: 42) { id } }\"}",
-              "expect": "Must be unauthorized. Confirm the user still exists."
+              "expect": "Must be unauthorized. Confirm the user still exists.",
+              "category": "authorization-context",
+              "why": "A member invoking an admin mutation is function-level authorization failure."
             },
             {
               "name": "Input property mass-assign",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { updateMe(input: { role: \\\"admin\\\", verified: true }) { role verified } }\"}",
-              "expect": "role/verified must be unchanged."
+              "expect": "role/verified must be unchanged.",
+              "category": "parameter-variant",
+              "why": "Mutation inputs can include privilege fields the client should not set."
             }
           ]
         },
@@ -175,13 +198,17 @@
               "name": "JSON array batch",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n[{\"query\":\"{me{id}}\"},{\"query\":\"{order(id:1002){id total}}\"}]",
-              "expect": "Second element is B's order. Each member needs its own decision."
+              "expect": "Second element is B's order. Each member needs its own decision.",
+              "category": "race-concurrency",
+              "why": "Batched operations run against pooled rate/cost limits and can skip per-request checks."
             },
             {
               "name": "Alias flood / repeated fields",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{a1:me{id} a2:me{id} a3:me{id}}\"}",
-              "expect": "Aliases must count toward cost. This is a lead for the depth/cost check, not a finding by itself."
+              "expect": "Aliases must count toward cost. This is a lead for the depth/cost check, not a finding by itself.",
+              "category": "race-concurrency",
+              "why": "Aliases multiply work in one query, evading per-query cost limits."
             }
           ]
         }
@@ -208,13 +235,17 @@
               "name": "GET mutation",
               "kind": "request",
               "payload": "GET /graphql?query=mutation%7BdeleteMe%7Bok%7D%7D HTTP/1.1\nHost: api.example.com\nCookie: session=<victim>",
-              "expect": "Mutations over GET must be rejected."
+              "expect": "Mutations over GET must be rejected.",
+              "category": "browser-context",
+              "why": "A mutation over GET can be triggered cross-site without a preflight."
             },
             {
               "name": "form-urlencoded mutation",
               "kind": "html",
               "payload": "<form action=\"https://api.example.com/graphql\" method=\"POST\">\n  <input name=\"query\" value=\"mutation { deleteMe { ok } }\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Must fail without a custom content type + CSRF token / SameSite=Strict."
+              "expect": "Must fail without a custom content type + CSRF token / SameSite=Strict.",
+              "category": "browser-context",
+              "why": "A form-encoded POST is a CSRF-simple request that must still require a token."
             }
           ]
         },
@@ -234,17 +265,32 @@
               "name": "Deep nesting",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{me{friends{friends{friends{friends{id}}}}}}\"}",
-              "expect": "Must 400 / cost-exceeded, not a multi-second 200. Stop after one demonstration."
+              "expect": "Must 400 / cost-exceeded, not a multi-second 200. Stop after one demonstration.",
+              "category": "mutation",
+              "why": "Deeply nested selections can exhaust the resolver regardless of cost limits."
             },
             {
               "name": "Wide connection",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{users(first:10000){edges{node{id email}}}}\"}",
-              "expect": "page size must be capped. Do not page through the corpus."
+              "expect": "page size must be capped. Do not page through the corpus.",
+              "category": "mutation",
+              "why": "A huge first/limit on a connection amplifies response cost."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "gql-node-swap": {
+      "id": "gql-node-swap",
+      "category": "authorization-context",
+      "context": "GraphQL node(id) argument",
+      "encoding": "none",
+      "purpose": "Reading another object by global id is object-level authorization failure.",
+      "safe": true,
+      "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{node(id:\\\"T3JkZXI6MTAwMg==\\\"){... on Order{id total}}}\"}"
+    }
+  }
 }

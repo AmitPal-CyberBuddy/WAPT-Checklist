@@ -38,19 +38,25 @@
               "name": "Hash to HTML",
               "kind": "note",
               "payload": "https://www.example.com/#<img src=x onerror=alert(1)>\\nhttps://www.example.com/?q=<img src=x onerror=alert(1)>",
-              "expect": "Grep the bundle for location.hash, location.search, document.write, innerHTML, insertAdjacentHTML."
+              "expect": "Grep the bundle for location.hash, location.search, document.write, innerHTML, insertAdjacentHTML.",
+              "category": "browser-context",
+              "why": "A hash fragment written into innerHTML is a DOM-XSS sink reachable without a server round-trip."
             },
             {
               "name": "javascript: navigation",
               "kind": "note",
               "payload": "https://www.example.com/#javascript:alert(1)\\nhttps://www.example.com/?next=javascript:alert(1)",
-              "expect": "Must not become location.href / window.open. data:text/html,… is the same class."
+              "expect": "Must not become location.href / window.open. data:text/html,… is the same class.",
+              "category": "browser-context",
+              "why": "A javascript: URL assigned to location/window.open executes in the page."
             },
             {
               "name": "Template sink",
               "kind": "note",
               "payload": "https://www.example.com/#{{constructor.constructor('alert(1)')()}}",
-              "expect": "Client-side template injection (Angular/Vue/Mavo gadgets) after you confirm the sink."
+              "expect": "Client-side template injection (Angular/Vue/Mavo gadgets) after you confirm the sink.",
+              "category": "technology-specific",
+              "why": "Client-side template renderers re-parse attacker input into HTML."
             }
           ]
         },
@@ -70,13 +76,17 @@
               "name": "Listener inventory",
               "kind": "note",
               "payload": "addEventListener('message', …)\\nonmessage = …",
-              "expect": "For each listener, record whether origin is compared to an exact allowlist (===, not indexOf)."
+              "expect": "For each listener, record whether origin is compared to an exact allowlist (===, not indexOf).",
+              "category": "baseline",
+              "why": "Enumerating message listeners shows which handlers trust event.data."
             },
             {
               "name": "Drive from a child window",
               "kind": "html",
               "payload": "<script>const w = window.open('https://www.example.com/app');\\nsetTimeout(() => w.postMessage({type:'setToken', token:'wapt'}, '*'), 1500);</script>",
-              "expect": "Must be ignored. A token or HTML sink accepting this is the finding. Use a test account."
+              "expect": "Must be ignored. A token or HTML sink accepting this is the finding. Use a test account.",
+              "category": "browser-context",
+              "why": "A child/opener frame sends a message to confirm an origin-unchecked handler."
             }
           ]
         },
@@ -96,13 +106,17 @@
               "name": "Token / role in localStorage",
               "kind": "note",
               "payload": "localStorage.setItem('role','admin')\\nlocalStorage.setItem('token','<edited-jwt>')",
-              "expect": "Reload. Client-only role changes are presentational if the API refuses; a working admin view against a member API is still a finding if it discloses data."
+              "expect": "Reload. Client-only role changes are presentational if the API refuses; a working admin view against a member API is still a finding if it discloses data.",
+              "category": "browser-context",
+              "why": "A token or role in localStorage is readable by any script and survives logout."
             },
             {
               "name": "Storage → sink",
               "kind": "note",
               "payload": "localStorage.setItem('name','<img src=x onerror=alert(1)>') then reload / navigate.",
-              "expect": "If name is dropped into innerHTML, that is DOM XSS. Treat storage as untrusted input."
+              "expect": "If name is dropped into innerHTML, that is DOM XSS. Treat storage as untrusted input.",
+              "category": "parser-differential",
+              "why": "A value read from storage into a sink can be attacker-controlled via the same storage key."
             }
           ]
         }
@@ -128,13 +142,17 @@
               "name": "Call the hidden route",
               "kind": "request",
               "payload": "GET /api/v1/admin/users HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "403/404. Repeat any path you grepped from the bundle (admin, internal, debug, impersonate)."
+              "expect": "403/404. Repeat any path you grepped from the bundle (admin, internal, debug, impersonate).",
+              "category": "authorization-context",
+              "why": "A route hidden in the UI but served without a server check is client-only authorization."
             },
             {
               "name": "Feature-flag in localStorage",
               "kind": "note",
               "payload": "localStorage.setItem('flags','{\"admin\":true}') or ?ff=admin",
-              "expect": "If the UI appears but the API refuses, record as informational. If the API obeys the flag, that is the finding."
+              "expect": "If the UI appears but the API refuses, record as informational. If the API obeys the flag, that is the finding.",
+              "category": "browser-context",
+              "why": "A feature flag stored in localStorage can be flipped to reveal admin UI."
             }
           ]
         },
@@ -154,13 +172,17 @@
               "name": "Grep the bundle",
               "kind": "note",
               "payload": "api[_-]?key|secret|password|token|AKIA[0-9A-Z]{16}|sk_live_|ghp_|xox[baprs]-|Bearer [A-Za-z0-9._-]+",
-              "expect": "Confirm any hit is a live credential, not a public Stripe pk_ or a Mapbox token."
+              "expect": "Confirm any hit is a live credential, not a public Stripe pk_ or a Mapbox token.",
+              "category": "baseline",
+              "why": "Secret patterns in the published bundle are the first-pass disclosure check."
             },
             {
               "name": "Source map",
               "kind": "request",
               "payload": "GET /assets/index-*.js.map HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "A map with sourcesContent is a lead. Embedded secrets or internal URLs are the finding."
+              "expect": "A map with sourcesContent is a lead. Embedded secrets or internal URLs are the finding.",
+              "category": "parser-differential",
+              "why": "A source map reconstructs original source and may embed secrets or internal URLs."
             }
           ]
         },
@@ -180,13 +202,17 @@
               "name": "Reflected Origin with cookies",
               "kind": "request",
               "payload": "GET /api/v1/me HTTP/1.1\nHost: api.example.com\nOrigin: https://evil.example\nCookie: session=<account-A>",
-              "expect": "ACAO: https://evil.example and ACAC: true together are the finding if the body is the user."
+              "expect": "ACAO: https://evil.example and ACAC: true together are the finding if the body is the user.",
+              "category": "header-variant",
+              "why": "A reflected ACAO with credentials lets another origin read the response."
             },
             {
               "name": "null / regex mistakes",
               "kind": "request",
               "payload": "GET /api/v1/me HTTP/1.1\nHost: api.example.com\nOrigin: https://www.example.com.evil.example\nCookie: session=<account-A>",
-              "expect": "Substring and endsWith('example.com') allowlists fail this way. Also try Origin: null."
+              "expect": "Substring and endsWith('example.com') allowlists fail this way. Also try Origin: null.",
+              "category": "parser-differential",
+              "why": "null and substring/regex allowlists fail to restrict the reading origin."
             }
           ]
         },
@@ -206,13 +232,17 @@
               "name": "Absolute next",
               "kind": "note",
               "payload": "https://www.example.com/login?next=https://evil.example/\\nhttps://www.example.com/login?next=//evil.example/",
-              "expect": "After login the shell must stay on-origin. Watch location.assign / href / router.push."
+              "expect": "After login the shell must stay on-origin. Watch location.assign / href / router.push.",
+              "category": "browser-context",
+              "why": "A client-side navigation accepting an absolute URL is an open redirect."
             },
             {
               "name": "javascript: next",
               "kind": "note",
               "payload": "https://www.example.com/login?next=javascript:alert(1)",
-              "expect": "Must be rejected. This is XSS, not just a redirect."
+              "expect": "Must be rejected. This is XSS, not just a redirect.",
+              "category": "browser-context",
+              "why": "A javascript: next URL in a client-side redirect is a DOM-XSS sink."
             }
           ]
         }

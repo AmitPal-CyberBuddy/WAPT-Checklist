@@ -32,25 +32,33 @@
               "name": "HTML context",
               "kind": "request",
               "payload": "GET /search?q=%3Cimg%20src=x%20onerror=alert(1)%3E HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "If the raw markup appears in the HTML body, refine until it executes. Also try the same in POST."
+              "expect": "If the raw markup appears in the HTML body, refine until it executes. Also try the same in POST.",
+              "category": "browser-context",
+              "why": "The search term reflected in HTML is the simplest reflected-XSS context."
             },
             {
               "name": "Attribute context",
               "kind": "request",
               "payload": "GET /search?q=%22%20onmouseover%3Dalert(1)%20x%3D%22 HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "If q= lands in value=\"…\", a quote breakout executes."
+              "expect": "If q= lands in value=\"…\", a quote breakout executes.",
+              "category": "encoding",
+              "why": "A quote breakout in an attribute reaches a scriptable context."
             },
             {
               "name": "JS string context",
               "kind": "request",
               "payload": "GET /search?q=%27-alert(1)-%27 HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "If the page does var q = '…', a quote plus a call executes. Confirm in the browser."
+              "expect": "If the page does var q = '…', a quote plus a call executes. Confirm in the browser.",
+              "category": "encoding",
+              "why": "An unescaped value in a JS string can escape into executable code."
             },
             {
               "name": "javascript: and data:",
               "kind": "request",
               "payload": "GET /search?next=javascript:alert(1) HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Must not become a navigable href or Location. Repeat for q, query, s, term, filter."
+              "expect": "Must not become a navigable href or Location. Repeat for q, query, s, term, filter.",
+              "category": "protocol-variant",
+              "why": "A javascript: or data: URL in a sink navigates to attacker code."
             }
           ]
         },
@@ -69,13 +77,17 @@
               "name": "Saved-search name",
               "kind": "request",
               "payload": "POST /searches HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"name\":\"<img src=x onerror=alert(1)>\",\"q\":\"widget\"}",
-              "expect": "Open the saved list as B and in any admin view."
+              "expect": "Open the saved list as B and in any admin view.",
+              "category": "browser-context",
+              "why": "A saved-search name rendered for other users is stored XSS."
             },
             {
               "name": "Highlight / snippet",
               "kind": "note",
               "payload": "Store a document whose body is <img src=x onerror=alert(1)> then search for a word inside it.",
-              "expect": "Highlighter XSS is stored XSS. Confirm the snippet is encoded."
+              "expect": "Highlighter XSS is stored XSS. Confirm the snippet is encoded.",
+              "category": "parser-differential",
+              "why": "The highlight/snippet renderer may re-parse the stored input into HTML."
             }
           ]
         }
@@ -102,19 +114,26 @@
               "name": "Error / syntax",
               "kind": "request",
               "payload": "GET /search?q=%27 HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "A SQL error, stack, or a different 500 vs the baseline is a lead. Follow with a boolean pair."
+              "expect": "A SQL error, stack, or a different 500 vs the baseline is a lead. Follow with a boolean pair.",
+              "category": "mutation",
+              "why": "A quote or syntax error in q= is the first differential for SQL injection."
             },
             {
               "name": "Boolean pair",
               "kind": "request",
               "payload": "GET /search?q=widget%27+AND+1%3D1-- HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Compare with AND+1%3D2. Same pair as q=widget' AND '1'='1. A stable differential is the finding."
+              "expect": "Compare with AND+1%3D2. Same pair as q=widget' AND '1'='1. A stable differential is the finding.",
+              "category": "parameter-variant",
+              "why": "Stable AND 1=1 / AND 1=2 differentials confirm injection without dumping data.",
+              "payload_ref": "sqli-boolean"
             },
             {
               "name": "ORDER BY / sort",
               "kind": "request",
               "payload": "GET /search?q=widget&sort=id;select+1 HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "sort, order, field, and column identifiers are a different injection point. Also try sort=1 / sort=99."
+              "expect": "sort, order, field, and column identifiers are a different injection point. Also try sort=1 / sort=99.",
+              "category": "parameter-variant",
+              "why": "Sort parameters flow into ORDER BY and can be injected."
             }
           ]
         },
@@ -134,13 +153,17 @@
               "name": "Mongo operator in JSON",
               "kind": "request",
               "payload": "POST /api/v1/search HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\nAuthorization: Bearer <token>\n\n{\"q\":{\"$ne\":null},\"filter\":{\"status\":{\"$ne\":\"\"}}}",
-              "expect": "Must be rejected or treated as a literal string. Extra rows vs q=\"widget\" is the finding."
+              "expect": "Must be rejected or treated as a literal string. Extra rows vs q=\"widget\" is the finding.",
+              "category": "mutation",
+              "why": "A $ operator in JSON search input turns an equality into an operator comparison."
             },
             {
               "name": "Bracket operators",
               "kind": "request",
               "payload": "GET /search?q[$ne]=&status[$gt]= HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "qs parsers turn this into operators. Same comparison against a normal q=."
+              "expect": "qs parsers turn this into operators. Same comparison against a normal q=.",
+              "category": "parameter-variant",
+              "why": "qs-style bracket operators convert ordinary fields into NoSQL operators."
             }
           ]
         },
@@ -160,13 +183,17 @@
               "name": "Twig / Jinja arithmetic",
               "kind": "request",
               "payload": "GET /search?q={{7*7}} HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Look for 49 in the page where the query is echoed. Also try ${7*7} and <%= 7*7 %>."
+              "expect": "Look for 49 in the page where the query is echoed. Also try ${7*7} and <%= 7*7 %>.",
+              "category": "mutation",
+              "why": "Template engines evaluate arithmetic first, so a small expression is a safe probe."
             },
             {
               "name": "Freemarker / Velocity",
               "kind": "request",
               "payload": "GET /search?q=%24%7B7*7%7D HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Same 49 check. Blind SSTI uses a unique Collaborator callback, not a reverse shell."
+              "expect": "Same 49 check. Blind SSTI uses a unique Collaborator callback, not a reverse shell.",
+              "category": "technology-specific",
+              "why": "Different engines use different syntax; probing the stack's engine matters."
             }
           ]
         }
@@ -193,13 +220,17 @@
               "name": "Search for B's unique marker",
               "kind": "request",
               "payload": "GET /search?q=wapt-private-marker-B HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "A's session must not see B's private document. Also try the same query on /export."
+              "expect": "A's session must not see B's private document. Also try the same query on /export.",
+              "category": "authorization-context",
+              "why": "A hit for a marker only B's account holds proves cross-account data leakage via search."
             },
             {
               "name": "Filter by owner_id",
               "kind": "request",
               "payload": "GET /api/v1/items?owner_id=1002 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
-              "expect": "A filter is not an authorization bypass. Empty or 403, not B's list."
+              "expect": "A filter is not an authorization bypass. Empty or 403, not B's list.",
+              "category": "parameter-variant",
+              "why": "An owner filter parameter can be changed to read another user's results."
             }
           ]
         },
@@ -218,17 +249,32 @@
               "name": "Page walk",
               "kind": "request",
               "payload": "GET /search?q=a&page=1 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "Walk a few pages only. page=99999, page_size=10000, and offset=-1 are the interesting variants."
+              "expect": "Walk a few pages only. page=99999, page_size=10000, and offset=-1 are the interesting variants.",
+              "category": "race-concurrency",
+              "why": "Walking pages tests pagination rate limits without a wide scrape."
             },
             {
               "name": "Export",
               "kind": "request",
               "payload": "GET /search/export?q= HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "A full-corpus CSV without a limit is the finding. Stop after you see the size."
+              "expect": "A full-corpus CSV without a limit is the finding. Stop after you see the size.",
+              "category": "parameter-variant",
+              "why": "Bulk export endpoints may bypass the per-page rate limit."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "sqli-boolean": {
+      "id": "sqli-boolean",
+      "category": "parameter-variant",
+      "context": "Search q parameter",
+      "encoding": "none",
+      "purpose": "Stable AND 1=1 / AND 1=2 differentials confirm injection without dumping data.",
+      "safe": true,
+      "payload": "GET /search?q=widget%27+AND+1%3D1-- HTTP/1.1\nHost: www.example.com\nConnection: close"
+    }
+  }
 }

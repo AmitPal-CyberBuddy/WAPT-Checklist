@@ -35,13 +35,18 @@
               "name": "Read Set-Cookie on login",
               "kind": "request",
               "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
-              "expect": "Every cookie that carries authority must include Secure. Repeat on the first 302."
+              "expect": "Every cookie that carries authority must include Secure. Repeat on the first 302.",
+              "category": "baseline",
+              "why": "The Secure flag on the session cookie is the transport protection.",
+              "payload_ref": "sess-cookie"
             },
             {
               "name": "HTTP Set-Cookie",
               "kind": "request",
               "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "A session cookie issued on HTTP is worse. Confirm on port 80 only if HTTP is in scope."
+              "expect": "A session cookie issued on HTTP is worse. Confirm on port 80 only if HTTP is in scope.",
+              "category": "protocol-variant",
+              "why": "A session cookie issued over plaintext HTTP can be stolen on the network."
             }
           ]
         },
@@ -60,13 +65,18 @@
               "name": "Read Set-Cookie",
               "kind": "request",
               "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
-              "expect": "Session cookies must include HttpOnly. CSRF tokens may be readable; session ids must not."
+              "expect": "Session cookies must include HttpOnly. CSRF tokens may be readable; session ids must not.",
+              "category": "baseline",
+              "why": "HttpOnly keeps the session cookie out of script reach."
             },
             {
               "name": "document.cookie",
               "kind": "note",
               "payload": "In the logged-in origin console: document.cookie",
-              "expect": "The session name must be absent. Any other privileged cookie you can read is the same class."
+              "expect": "The session name must be absent. Any other privileged cookie you can read is the same class.",
+              "category": "browser-context",
+              "why": "A session cookie readable from document.cookie is exposed to any XSS.",
+              "payload_ref": "doc-cookie"
             }
           ]
         },
@@ -85,13 +95,17 @@
               "name": "Read SameSite",
               "kind": "request",
               "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
-              "expect": "None requires Secure. Strict breaks top-level OAuth returns. Lax is the usual default — still need a CSRF token on POST."
+              "expect": "None requires Secure. Strict breaks top-level OAuth returns. Lax is the usual default — still need a CSRF token on POST.",
+              "category": "baseline",
+              "why": "SameSite binds the cookie to the request's site context."
             },
             {
               "name": "Cross-site POST with Lax",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/account/email\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Lax should not send the cookie on this POST in modern browsers. A change still happening means the cookie is None or not SameSite."
+              "expect": "Lax should not send the cookie on this POST in modern browsers. A change still happening means the cookie is None or not SameSite.",
+              "category": "browser-context",
+              "why": "Lax still allows top-level cross-site POSTs, so it is not a CSRF control by itself."
             }
           ]
         }
@@ -117,13 +131,17 @@
               "name": "Compare pre- and post-login cookies",
               "kind": "note",
               "payload": "Note Set-Cookie on GET /login, submit credentials, compare the cookie name and value.",
-              "expect": "Value must change. A new name with the old value still counting is the same bug."
+              "expect": "Value must change. A new name with the old value still counting is the same bug.",
+              "category": "baseline",
+              "why": "The session id must rotate on login; a stable id is the fixation primitive."
             },
             {
               "name": "Planted cookie",
               "kind": "request",
               "payload": "POST /login HTTP/1.1\nHost: www.example.com\nCookie: session=wapt-planted-value\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
-              "expect": "The planted value must not become the authenticated session."
+              "expect": "The planted value must not become the authenticated session.",
+              "category": "authentication-context",
+              "why": "Accepting a pre-set session cookie after login means the server did not issue a fresh one."
             }
           ]
         },
@@ -143,13 +161,17 @@
               "name": "Replay after logout",
               "kind": "note",
               "payload": "Copy the session cookie, log out, send GET /api/v1/me with the old cookie.",
-              "expect": "Must 401. A 200 is the finding."
+              "expect": "Must 401. A 200 is the finding.",
+              "category": "authentication-context",
+              "why": "A session that still works after logout means server-side invalidation is missing."
             },
             {
               "name": "Logout CSRF / missing logout",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/logout\" method=\"POST\"></form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Forced logout is a finding if there is no CSRF token. Missing logout entirely is a finding too."
+              "expect": "Forced logout is a finding if there is no CSRF token. Missing logout entirely is a finding too.",
+              "category": "browser-context",
+              "why": "A missing or CSRF-able logout lets an attacker silently end or hijack the session."
             }
           ]
         },
@@ -168,17 +190,41 @@
               "name": "Path / query session",
               "kind": "request",
               "payload": "GET /app;jsessionid=<value> HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Rewriting session ids into the URL must be off. Also try ?PHPSESSID= and ?session=."
+              "expect": "Rewriting session ids into the URL must be off. Also try ?PHPSESSID= and ?session=.",
+              "category": "protocol-variant",
+              "why": "A session id in the URL leaks into logs, history, and Referer."
             },
             {
               "name": "Referer leak",
               "kind": "note",
               "payload": "If any URL contains the session id, load a third-party image and inspect Referer.",
-              "expect": "The identifier must not leave the origin."
+              "expect": "The identifier must not leave the origin.",
+              "category": "browser-context",
+              "why": "A session id in the URL reaches a third party via the Referer header."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "sess-cookie": {
+      "id": "sess-cookie",
+      "category": "baseline",
+      "context": "Set-Cookie on login",
+      "encoding": "none",
+      "purpose": "The Secure flag on the session cookie is the transport protection.",
+      "safe": true,
+      "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!"
+    },
+    "doc-cookie": {
+      "id": "doc-cookie",
+      "category": "browser-context",
+      "context": "document.cookie read",
+      "encoding": "none",
+      "purpose": "A session cookie readable from document.cookie is exposed to any XSS.",
+      "safe": true,
+      "payload": "In the logged-in origin console: document.cookie"
+    }
+  }
 }
