@@ -487,6 +487,9 @@ select:focus-visible,textarea:focus-visible{box-shadow:var(--focus);border-color
 .app-profile-head h2{margin:.1rem 0 .25rem;font-size:1.15rem}
 .app-profile-head p{margin:0;color:var(--muted);font-size:.72rem;line-height:1.5}
 .app-profile-target{display:grid;grid-template-columns:1.4fr 1fr;gap:.7rem}
+.app-profile .field-group{display:grid;gap:.35rem}
+.app-profile .field-group>span{color:var(--ink-2);font-size:.68rem}
+.app-profile .field-group input{width:100%;height:44px;padding:0 .8rem;border:1px solid var(--line-strong);border-radius:9px;background:var(--paper);color:var(--ink)}
 .app-profile-set{margin:0;padding:0;border:0}
 .app-profile-set legend{margin:0 0 .45rem;color:var(--brand);font:500 .58rem var(--font-mono);letter-spacing:.1em;text-transform:uppercase}
 .profile-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:.45rem}

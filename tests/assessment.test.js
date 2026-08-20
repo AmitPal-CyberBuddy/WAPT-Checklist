@@ -122,9 +122,24 @@ test('workspace starts from the profile, not the category catalog', () => {
   assert.ok(appHtml.includes('data-app-profile'));
   assert.ok(appHtml.includes('data-assessment-plan'));
   assert.match(plan, /buildAssessmentPlan/);
+  assert.doesNotMatch(plan, /plan-chips/);
+  assert.match(plan, /export function featureChips/);
   assert.match(profile, /Generate test plan/);
   assert.match(home, /app\.html#dashboard/);
   assert.match(home, /Start testing/);
   assert.match(playbookUi, /CHECK FOR/);
   assert.match(playbookUi, /variant\.observe/);
+});
+
+test('homepage demo card uses a real object-level authorization item', () => {
+  const home = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const authz = JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist/authorization.json'), 'utf8'));
+  const item = authz.items.find(({ id }) => id === 'WAPT-AUTHZ-003');
+  assert.ok(item);
+  assert.match(item.title, /horizontal read authorization/i);
+  assert.match(home, /WAPT-AUTHZ-003/);
+  assert.match(home, /Object-level authorization/);
+  assert.doesNotMatch(home, /WAPT-AUTHZ-014/);
+  assert.doesNotMatch(home, /Authorization suite boosted/);
+  assert.match(home, /APPLICATION PROFILE/);
 });

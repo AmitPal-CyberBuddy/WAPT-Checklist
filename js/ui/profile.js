@@ -19,7 +19,7 @@ function optionButton(name, value, label, detail, checked, type = 'checkbox') {
 }
 
 export function renderProfile(root, context) {
-  const { answers = {}, engagement = {}, onApply, onAdvanced } = context;
+  const { answers = {}, engagement = {}, onApply } = context;
   const profile = answersToProfile(answers);
   root.replaceChildren();
 
@@ -146,6 +146,5 @@ export function renderProfile(root, context) {
       }
     });
   });
-  void onAdvanced;
   root.append(shell);
 }

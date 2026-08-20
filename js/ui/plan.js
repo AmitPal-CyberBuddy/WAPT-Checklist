@@ -7,7 +7,35 @@ import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r6';
 import { itemStatus } from './filters.js?v=1.0.0-r6';
 import { element, STATUS_GLYPHS } from './dom.js?v=1.0.0-r6';
 import { STATUS_LABELS } from './export.js?v=1.0.0-r6';
-import { featureChips } from './plan-chips.js?v=1.0.0-r6';
+
+const APP_TYPE_LABEL = Object.freeze({
+  static: 'Static website',
+  spa: 'Single-page application',
+  server_rendered: 'Dynamic web application',
+  hybrid: 'Hybrid web application',
+  api_only: 'API / mobile backend',
+  unknown: 'Not confirmed'
+});
+
+function list(value) {
+  return Array.isArray(value) ? value : value ? [value] : [];
+}
+
+export function featureChips(answers = {}) {
+  const chips = [];
+  chips.push(APP_TYPE_LABEL[answers.app_type] || 'Application');
+  if (answers.has_login === 'no') chips.push('No authentication');
+  else if (answers.has_login === 'yes') chips.push('Authentication');
+  const api = list(answers.api_style).filter((value) => value !== 'none' && value !== 'unknown');
+  if (!api.length || list(answers.api_style).includes('none')) chips.push('No API');
+  else chips.push(...api.map((value) => value.toUpperCase()));
+  const features = list(answers.features).filter((value) => value !== 'none' && value !== 'unknown');
+  if (!features.length || list(answers.features).includes('none')) chips.push('No extra features');
+  else chips.push(...features.map((value) => String(value).replaceAll('_', ' ')));
+  const auth = list(answers.auth_mechanism).filter((value) => value !== 'none' && value !== 'unknown');
+  for (const value of auth) chips.push(String(value).replaceAll('_', ' '));
+  return [...new Set(chips)];
+}
 
 function checkStatus(check, recordsById, state) {
   for (const id of checkItemIds(check)) {

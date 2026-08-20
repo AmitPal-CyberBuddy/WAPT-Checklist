@@ -36,29 +36,27 @@
       <div class="hero-copy">
         <p class="eyebrow"><span>LOCAL-FIRST</span> / CONTEXT-AWARE / OPEN SOURCE</p>
         <h1 id="hero-title">Test what matters.<br><em>Prove what is real.</em></h1>
-        <p class="hero-lede">A professional WAPT methodology that adapts to the target, keeps assessment state in your browser, and turns security checks into defensible evidence—not scanner noise.</p>
+        <p class="hero-lede">Define the application you are testing. The workspace lists only the realistic tests for that profile, each with variants, payloads, and validation — not 623 checks organized by category.</p>
         <div class="hero-actions">
           <a class="button button-primary" href="app.html#dashboard" data-primary-action>Start testing <span aria-hidden="true">→</span></a>
-          <a class="button button-secondary" href="app.html#playbooks">Page playbooks</a>
-          <a class="button button-secondary" href="app.html#families">Test families</a>
           <a class="button button-secondary" href="methodology.html">Explore methodology</a>
           <a class="button button-quiet" href="docs.html?doc=operating">How it works</a>
         </div>
         <p class="privacy-note"><span aria-hidden="true">◆</span> No backend · No telemetry · Your engagement stays on this device</p>
       </div>
-      <div class="hero-visual" role="group" aria-label="Example adaptive assessment flow">
+      <div class="hero-visual" role="group" aria-label="Example: a profile becomes an applicable test plan">
         <div class="signal-card signal-card-main">
-          <div class="signal-head"><span>ENGAGEMENT CONTEXT</span><span class="live-chip">LOCAL</span></div>
-          <div class="signal-row"><span>Delivery</span><strong>SPA + REST API</strong></div>
-          <div class="signal-row"><span>Identity</span><strong>JWT · multi-role</strong></div>
+          <div class="signal-head"><span>APPLICATION PROFILE</span><span class="live-chip">LOCAL</span></div>
+          <div class="signal-row"><span>Type</span><strong>SPA + REST API</strong></div>
+          <div class="signal-row"><span>Identity</span><strong>JWT · several roles</strong></div>
           <div class="signal-row"><span>Features</span><strong>Multi-tenant</strong></div>
           <div class="context-result">
             <span class="context-icon" aria-hidden="true">✓</span>
-            <span><strong>Authorization suite boosted</strong><small>Tenant isolation and BOLA move up next</small></span>
+            <span><strong>Authorization added to the plan</strong><small>IDOR/BOLA, JWT, and API tests now listed</small></span>
           </div>
         </div>
         <div class="signal-card signal-card-back" aria-hidden="true">
-          <span>WAPT-AUTHZ-014</span>
+          <span>WAPT-AUTHZ-003</span>
           <strong>Object-level authorization</strong>
         </div>
         <div class="grid-decoration" aria-hidden="true"></div>
@@ -93,7 +91,7 @@
         <p>The workspace carries each engagement from scoping through evidence, reporting, and retesting.</p>
       </div>
       <ol class="pipeline">
-        <li><strong>Scope</strong><span>Authorization, context, accounts, safety.</span></li>
+        <li><strong>Scope</strong><span>Type, authentication, features.</span></li>
         <li><strong>Discover</strong><span>Recon, assets, routes, attack surface.</span></li>
         <li><strong>Prioritize</strong><span>Applicability and deterministic next steps.</span></li>
         <li><strong>Test &amp; validate</strong><span>Controlled procedure, evidence, false positives.</span></li>
@@ -120,9 +118,9 @@
       <div class="feature-grid">
         <article class="feature-card">
           <span class="feature-number">01</span>
-          <h3>Page playbooks</h3>
-          <p>Answer what you are testing. The assessment lists every matching surface — not one page type — each with named variants and copyable payloads. Share the plan as a link (scope only).</p>
-          <a href="app.html#playbooks">Open page playbooks <span aria-hidden="true">→</span></a>
+          <h3>Context-driven plan</h3>
+          <p>Set application type, authentication, and features. The workspace lists only the tests that apply — Host Header, CSP, JWT, IDOR — each with variants and copyable payloads.</p>
+          <a href="app.html#dashboard">Start testing <span aria-hidden="true">→</span></a>
         </article>
         <article class="feature-card">
           <span class="feature-number">02</span>
