@@ -2,7 +2,7 @@
   "name": "WAPT Checklist",
   "version": "1.0.0",
   "cache_version": "1.0.0-r8",
-  "release_date": "2026-08-18",
+  "release_date": "2026-08-20",
   "status": "release-candidate",
   "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
   "item_schema_version": "1.0.0",
@@ -18,7 +18,7 @@
     "workflow_template": "docs/workflows/deploy.yml",
     "status": "active",
     "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
-    "verified_at": "2026-08-18",
-    "note": "GitHub Pages is active; PR #3 merged and deployed on 2026-08-18. The release remains a candidate until browser and visual QA sign-off is recorded."
+    "verified_at": "2026-08-20",
+    "note": "GitHub Pages is active; PR #8 merged and deployed the r8 product, performance, accessibility, and public-navigation correction pass on 2026-08-20. The release remains a candidate until manual cross-browser visual sign-off is recorded."
   }
 }

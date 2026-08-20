@@ -11,15 +11,15 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
       - name: Run tests
         run: node --test
       - name: Validate schema review sample
         run: node tools/validate.js checklist/sample.json
-      - name: Validate all 24 production category floors
+      - name: Validate all production category floors
         run: node tools/validate.js --floors
       - name: Validate authoritative references and mapping editions
         run: node tools/check-references.js
