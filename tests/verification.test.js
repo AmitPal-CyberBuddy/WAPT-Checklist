@@ -292,7 +292,8 @@ test('data consistency: release, manifest, files, UI, and documentation agree', 
   assert.ok(methodology.includes('<strong>623</strong>'));
   assert.ok(methodology.includes('<strong>25</strong>'));
   assert.ok(read('docs.html') === undefined || true);
-  assert.match(read('js/ui/docs-page.js'), /25-CATEGORY MODEL/);
+  assert.match(read('js/ui/docs-page.js'), /OPERATOR GUIDE/);
+  assert.match(read('js/ui/docs-page.js'), /FINDINGS \/ VERDICTS \/ COVERAGE/);
   assert.match(read('README.md'), /623 validated production items/);
   assert.match(read('README.md'), /all 25 categories/);
   assert.doesNotMatch(read('index.html'), /608|609/);

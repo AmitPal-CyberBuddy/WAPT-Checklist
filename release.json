@@ -1,7 +1,7 @@
 {
   "name": "WAPT Checklist",
   "version": "1.0.0",
-  "cache_version": "1.0.0-r8",
+  "cache_version": "1.0.0-r9",
   "release_date": "2026-08-20",
   "status": "release-candidate",
   "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
@@ -19,6 +19,6 @@
     "status": "active",
     "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
     "verified_at": "2026-08-20",
-    "note": "GitHub Pages is active; PR #8 merged and deployed the r8 product, performance, accessibility, and public-navigation correction pass on 2026-08-20. The release remains a candidate until manual cross-browser visual sign-off is recorded."
+    "note": "GitHub Pages is active; the r9 pass delivers the unified design system, motion language, expanded filters, and public-documentation cleanup."
   }
 }

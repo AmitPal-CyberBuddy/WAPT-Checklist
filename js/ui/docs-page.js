@@ -1,29 +1,20 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r8';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r8';
+import { initializeTheme } from './theme.js?v=1.0.0-r9';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r9';
 
+// Public documentation map. Only operator-facing documents are served here;
+// project-management material (QA reports, phase notes, release runbooks,
+// architecture write-ups) stays in the repository for maintainers.
 const DOCUMENTS = Object.freeze({
   operating: { title: 'How to run an engagement', kicker: 'OPERATOR GUIDE', summary: 'Quick start, the coverage vocabulary, the family contract, keyboard model, outputs, and the honest limits of this workspace.', file: 'docs/OPERATING.md' },
   security: { title: 'Security policy', kicker: 'RESPONSIBLE DISCLOSURE', summary: 'How to report a vulnerability in WAPT Checklist privately, what is in scope, and which versions receive fixes.', file: 'SECURITY.md' },
-  contributing: { title: 'Contributing', kicker: 'BUILD WITH RIGOR', summary: 'Content quality, code architecture, safety, testing, attribution, and pull-request expectations.', file: 'CONTRIBUTING.md' },
-  'content-guide': { title: 'Content standard', kicker: 'DECISION-GRADE METHODOLOGY', summary: 'The editorial and safety contract every production checklist item must satisfy.', file: 'docs/CONTENT-GUIDE.md' },
-  architecture: { title: 'Architecture', kicker: 'STATIC-FIRST SYSTEM', summary: 'Runtime boundaries, data flow, state, applicability, security controls, and delivery decisions.', file: 'docs/ARCHITECTURE.md' },
-  taxonomy: { title: 'Taxonomy and IDs', kicker: '25-CATEGORY MODEL', summary: 'Stable item identifiers, controlled context vocabulary, category ownership, mappings, and workflow order.', file: 'docs/TAXONOMY.md' },
-  engine: { title: 'Adaptive engine', kicker: 'PURE POLICY MODULES', summary: 'Context normalization, applicability, priority scoring, and immutable local state.', file: 'docs/ENGINE.md' },
-  'browser-qa': { title: 'Browser QA', kicker: 'MANUAL RELEASE MATRIX', summary: 'Pages, wizard, workspace, accessibility, responsiveness, persistence, and print smoke checks.', file: 'docs/QA.md' },
-  responsive: { title: 'Responsive QA', kicker: 'PHONE TO WIDE MONITOR', summary: 'Intended screen compositions, structural protections, automated assertions, and manual sign-off sizes.', file: 'docs/RESPONSIVE-QA.md' },
-  'reference-qa': { title: 'Reference QA', kicker: 'AUTHORITATIVE TRACEABILITY', summary: 'WSTG, ASVS, CWE, Top 10, live-source snapshots, and mapping corrections.', file: 'docs/REFERENCE-QA.md' },
-  'content-qa': { title: 'Content QA report', kicker: 'ZERO UNRESOLVED WARNINGS', summary: 'Duplication, terminology, evidence depth, safety, payload, and content-quality audit results.', file: 'docs/CONTENT-QA-REPORT.md' },
   'evidence-workflow': { title: 'Evidence & retest workflow', kicker: 'FINDINGS / VERDICTS / COVERAGE', summary: 'How observations become reportable findings, how evidence packs and retest verdicts work, and how coverage confidence is computed.', file: 'docs/EVIDENCE-WORKFLOW.md' },
-  'feature-verification': { title: 'Feature verification', kicker: 'FULL FUNCTIONALITY VERIFICATION', summary: 'The complete feature matrix: what was exercised, what was fixed, what passed, and what remains manual browser sign-off.', file: 'docs/FEATURE-VERIFICATION.md' },
-  libraries: { title: 'Connected libraries', kicker: 'CHAINS / PAYLOADS / BURP', summary: 'Attack-chain graphs, contextual references, REVIEW-ONLY behavior, and safe tool workflows.', file: 'docs/PHASE7-LIBRARIES.md' },
-  release: { title: 'Release and deployment', kicker: 'VERSION 1.0.0', summary: 'Quality gates, GitHub Pages setup, maintainer actions, publication, and rollback.', file: 'docs/RELEASE.md' },
   license: { title: 'Apache License 2.0', kicker: 'OPEN SOURCE LICENSE', summary: 'Terms for using, modifying, and distributing the project’s original software and content.', file: 'LICENSE', plain: true }
 });
 
 async function loadDocument() {
   initializeTheme();
-  const requested = new URLSearchParams(location.search).get('doc') || 'security';
-  const key = Object.hasOwn(DOCUMENTS, requested) ? requested : 'security';
+  const requested = new URLSearchParams(location.search).get('doc') || 'operating';
+  const key = Object.hasOwn(DOCUMENTS, requested) ? requested : 'operating';
   const documentInfo = DOCUMENTS[key];
   document.title = `${documentInfo.title} — WAPT Checklist`;
   document.querySelector('[data-doc-title]').textContent = documentInfo.title;

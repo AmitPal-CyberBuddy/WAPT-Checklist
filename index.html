@@ -4,14 +4,17 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="A practical, page-first VAPT operator console with prioritized tests, payloads, tools, evidence, and local-only engagement progress.">
-  <meta name="theme-color" content="#07090d">
+  <meta name="theme-color" content="#090d13">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>WAPT Checklist — Practical VAPT operator console</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r8"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r8">
-  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r8">
-  <script type="module" src="js/ui/home.js?v=1.0.0-r8"></script>
+  <link rel="preload" href="assets/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="prefetch" href="app.html" as="document">
+  <script src="js/ui/theme-boot.js?v=1.0.0-r9"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r9">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r9">
+  <script type="module" src="js/ui/home.js?v=1.0.0-r9"></script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>
@@ -21,7 +24,7 @@
   </div>
   <header class="site-header">
     <a class="brand" href="index.html" aria-label="WAPT Checklist home">
-      <img src="assets/logo.svg" width="42" height="42" alt="">
+      <img src="assets/logo.svg" width="40" height="40" alt="">
       <span><strong>WAPT</strong> Checklist</span>
     </a>
     <nav class="header-nav" aria-label="Primary navigation">
@@ -79,15 +82,15 @@
     <section class="stats-band product-proof" aria-labelledby="proof-title">
       <h2 class="sr-only" id="proof-title">Built for practical testing</h2>
       <div class="project-metrics shell" aria-live="polite">
-        <div class="project-metric"><strong data-project-metric="production_items">—</strong><span>Guided security tests</span></div>
-        <div class="project-metric"><strong>16</strong><span>Page &amp; function plans</span></div>
-        <div class="project-metric"><strong data-project-metric="attack_chains">—</strong><span>Connected attack paths</span></div>
+        <div class="project-metric"><strong data-project-metric="production_items" data-count-up>—</strong><span>Guided security tests</span></div>
+        <div class="project-metric"><strong data-count-up>16</strong><span>Page &amp; function plans</span></div>
+        <div class="project-metric"><strong data-project-metric="attack_chains" data-count-up>—</strong><span>Connected attack paths</span></div>
         <div class="project-metric"><strong data-stat="tested">0</strong><span>Completed on this device</span></div>
         <div class="project-metric"><strong data-stat="findings">0</strong><span>Findings on this device</span></div>
       </div>
     </section>
 
-    <section class="section shell" aria-labelledby="workflow-title">
+    <section class="section shell" aria-labelledby="workflow-title" data-reveal>
       <div class="section-heading">
         <p class="eyebrow">FROM SCOPE TO RETEST</p>
         <h2 id="workflow-title">One deliberate assessment loop</h2>
@@ -103,7 +106,7 @@
       </ol>
     </section>
 
-    <section class="section shell" aria-labelledby="chains-title">
+    <section class="section shell" aria-labelledby="chains-title" data-reveal>
       <div class="section-heading">
         <p class="eyebrow">ATTACK PATHS</p>
         <h2 id="chains-title">Connected attack hypotheses</h2>
@@ -112,7 +115,7 @@
       <div class="chain-preview" data-chain-preview aria-live="polite"><span class="sr-only">Loading attack chains…</span><div class="skeleton-stack" aria-hidden="true"><span class="skeleton wide"></span><span class="skeleton"></span><span class="skeleton short"></span></div></div>
     </section>
 
-    <section class="section shell" aria-labelledby="product-title">
+    <section class="section shell" aria-labelledby="product-title" data-reveal>
       <div class="section-heading">
         <p class="eyebrow">A METHODOLOGY, NOT A PAYLOAD DUMP</p>
         <h2 id="product-title">Built for the full assessment loop</h2>
@@ -140,7 +143,7 @@
       </div>
     </section>
 
-    <section class="section principles-section">
+    <section class="section principles-section" data-reveal>
       <div class="shell principles-layout">
         <div>
           <p class="eyebrow">OPERATING PRINCIPLES</p>
@@ -155,10 +158,12 @@
     </section>
   </main>
 
-  <footer class="site-footer shell">
-    <div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div>
-    <p>Original methodology mapped to OWASP WSTG 4.2, ASVS 5.0.0, API Security Top 10, CWE, and primary specifications.</p>
-    <nav aria-label="Footer"><a href="app.html#dashboard">Testing plans</a><a href="app.html#chains">Attack paths</a><a href="app.html#payloads">Tools &amp; payloads</a><a href="docs.html?doc=operating">Help</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
+  <footer class="site-footer">
+    <div class="shell site-footer-grid">
+      <div class="brand footer-brand"><img src="assets/logo.svg" width="36" height="36" alt=""><span><strong>WAPT</strong> Checklist</span></div>
+      <p>Original methodology mapped to OWASP WSTG 4.2, ASVS 5.0.0, API Security Top 10, CWE, and primary specifications.</p>
+      <nav aria-label="Footer"><a href="app.html#dashboard">Testing plans</a><a href="app.html#chains">Attack paths</a><a href="app.html#payloads">Tools &amp; payloads</a><a href="docs.html?doc=operating">Help</a><a href="docs.html?doc=security">Security</a><a href="docs.html?doc=license">Apache-2.0</a></nav>
+    </div>
   </footer>
 </body>
 </html>

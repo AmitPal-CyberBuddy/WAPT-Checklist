@@ -1,4 +1,4 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r8';
+import { initializeTheme } from './theme.js?v=1.0.0-r9';
 
 const STORAGE_KEY = 'wapt.state.v1';
 
@@ -47,16 +47,48 @@ function renderStats() {
   }
 }
 
+// Quiet count-up once the metric band is on screen; instant under reduced motion.
+function animateCountUp(node, target) {
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || target <= 0) { node.textContent = target.toLocaleString(); return; }
+  const duration = 900;
+  const start = performance.now();
+  const step = (now) => {
+    const progress = Math.min(1, (now - start) / duration);
+    const eased = 1 - (1 - progress) ** 3;
+    node.textContent = Math.round(target * eased).toLocaleString();
+    if (progress < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+}
+
+function observeCountUps(apply) {
+  const band = document.querySelector('.product-proof');
+  if (!band || !('IntersectionObserver' in window)) { apply(); return; }
+  const observer = new IntersectionObserver((entries) => {
+    if (!entries.some(({ isIntersecting }) => isIntersecting)) return;
+    observer.disconnect();
+    apply();
+  }, { rootMargin: '120px' });
+  observer.observe(band);
+}
+
 async function renderProductProof() {
   try {
     const response = await fetch('release.json', { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const release = await response.json();
-    for (const key of ['production_items', 'categories', 'attack_chains', 'payload_references', 'burp_workflows']) {
-      const value = release[key];
-      const node = document.querySelector(`[data-project-metric="${key}"]`);
-      if (node && Number.isFinite(Number(value))) node.textContent = Number(value).toLocaleString();
-    }
+    observeCountUps(() => {
+      for (const key of ['production_items', 'categories', 'attack_chains', 'payload_references', 'burp_workflows']) {
+        const value = Number(release[key]);
+        const node = document.querySelector(`[data-project-metric="${key}"]`);
+        if (node && Number.isFinite(value)) animateCountUp(node, value);
+      }
+      document.querySelectorAll('[data-count-up]').forEach((node) => {
+        const value = Number.parseInt(node.textContent.replace(/[^\d]/g, ''), 10);
+        if (Number.isFinite(value) && value > 0 && !node.dataset.projectMetric) animateCountUp(node, value);
+      });
+    });
   } catch (error) {
     console.error('Could not load product summary.', error);
   }
@@ -74,10 +106,11 @@ async function renderChainPreview() {
       if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
       return result.json();
     }));
-    root.replaceChildren(...chains.map((chain) => {
+    root.replaceChildren(...chains.map((chain, index) => {
       const link = document.createElement('a');
       link.className = 'chain-preview-card';
       link.href = 'app.html#chains';
+      link.style.setProperty('--reveal-delay', `${index * 0.06}s`);
       const id = document.createElement('span');
       id.className = 'chip id-chip';
       id.textContent = chain.id;
@@ -96,9 +129,30 @@ async function renderChainPreview() {
   }
 }
 
+// Sections rise in as they enter the viewport; without observer support (or under
+// reduced motion) everything is simply visible.
+function initializeReveals() {
+  const targets = document.querySelectorAll('[data-reveal]');
+  if (!targets.length) return;
+  const reduced = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+  if (reduced || !('IntersectionObserver' in window)) {
+    targets.forEach((node) => node.classList.add('is-revealed'));
+    return;
+  }
+  const observer = new IntersectionObserver((entries) => {
+    for (const entry of entries) {
+      if (!entry.isIntersecting) continue;
+      entry.target.classList.add('is-revealed');
+      observer.unobserve(entry.target);
+    }
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0.05 });
+  targets.forEach((node) => observer.observe(node));
+}
+
 initializeTheme();
 renderStats();
 renderProductProof();
+initializeReveals();
 
 const chainRoot = document.querySelector('[data-chain-preview]');
 if (chainRoot && 'IntersectionObserver' in window) {

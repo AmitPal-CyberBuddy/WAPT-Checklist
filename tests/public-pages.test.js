@@ -17,9 +17,9 @@ test('all user-facing pages share policy, branding, theme, and responsive viewpo
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
     assert.ok(html.includes('assets/logo.svg'));
     assert.ok(html.includes('css/styles.css?v=1.0.0'));
-    assert.ok(html.includes('css/polish.css?v=1.0.0-r8'), `${page} shared product polish`);
-    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r8"/);
-    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r8'), `${page} early theme boot`);
+    assert.ok(html.includes('css/polish.css?v=1.0.0-r9'), `${page} shared product polish`);
+    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r9"/);
+    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r9'), `${page} early theme boot`);
     assert.ok(html.indexOf('theme-boot.js') < html.indexOf('css/styles.css'), `${page} applies theme before CSS`);
   }
 });
@@ -34,12 +34,19 @@ test('public navigation never sends users directly to raw Markdown or license te
 test('documentation renderer uses a controlled document map and text-safe rendering', () => {
   const page = read('js/ui/docs-page.js');
   const markdown = read('js/ui/markdown.js');
-  for (const key of ['security', 'contributing', 'content-guide', 'architecture', 'responsive', 'release', 'license']) assert.ok(page.includes(`${key}:`) || page.includes(`'${key}':`), key);
+  for (const key of ['operating', 'security', 'evidence-workflow', 'license']) assert.ok(page.includes(`${key}:`) || page.includes(`'${key}':`), key);
   assert.match(page, /Object\.hasOwn\(DOCUMENTS, requested\)/);
-  for (const raw of ['SECURITY.md', 'CONTRIBUTING.md', 'docs/ARCHITECTURE.md', 'docs/TAXONOMY.md', 'docs/QA.md']) assert.ok(markdown.includes(`'${raw}'`) || markdown.includes(`${raw}:`), raw);
+  for (const raw of ['SECURITY.md', 'docs/OPERATING.md', 'docs/EVIDENCE-WORKFLOW.md', 'LICENSE']) assert.ok(markdown.includes(`'${raw}'`) || markdown.includes(`${raw}:`), raw);
   assert.match(markdown, /docs\.html\?doc=\$\{key\}/);
   assert.doesNotMatch(markdown, /innerHTML|insertAdjacentHTML|document\.write/);
   assert.match(markdown, /textContent/);
+});
+
+test('maintainer-only material never resolves on the public documentation page', () => {
+  const combined = `${read('js/ui/docs-page.js')}\n${read('js/ui/markdown.js')}`;
+  for (const internal of ['QA.md', 'RESPONSIVE-QA.md', 'REFERENCE-QA.md', 'CONTENT-QA-REPORT.md', 'PHASE1', 'PHASE4', 'PHASE5', 'PHASE6', 'PHASE7', 'RELEASE.md', 'FEATURE-VERIFICATION.md', 'ARCHITECTURE.md', 'ENGINE.md', 'TAXONOMY.md', 'CONTENT-GUIDE.md', 'CONTRIBUTING.md', 'browser-qa', 'content-qa', 'feature-verification', 'content-guide']) {
+    assert.ok(!combined.includes(internal), `${internal} must stay out of the public documentation map`);
+  }
 });
 
 test('methodology page is manifest-driven and exposes real workflow content', () => {

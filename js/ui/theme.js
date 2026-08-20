@@ -35,8 +35,12 @@ function updateThemeControls(theme) {
     button.setAttribute('title', `Switch to ${nextTheme} theme`);
     button.setAttribute('aria-pressed', String(theme === 'light'));
   });
+  // Keep the pre-paint canvas color in sync with the active theme.
+  const root = document.documentElement;
+  root.style.backgroundColor = theme === 'light' ? '#f7f9fc' : '#090d13';
+  root.style.colorScheme = theme;
   const themeColor = document.querySelector('meta[name="theme-color"]');
-  if (themeColor) themeColor.content = theme === 'light' ? '#f4f7fb' : '#07090d';
+  if (themeColor) themeColor.content = theme === 'light' ? '#f7f9fc' : '#090d13';
 }
 
 export function initializeTheme() {

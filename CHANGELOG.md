@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Design-system, motion, filters, and public-surface cleanup pass — r9)
+
+- **One product design system.** Replaced the accumulated polish overrides with a single cohesive layer: shared color/type/spacing/shadow tokens, one component vocabulary (buttons, chips, cards, panels, forms, tables, dialogs), full-width glass chrome, and consistent footer structure across the homepage, console, methodology, docs, and workflow pages.
+- **Modern motion language.** Scroll reveals on public sections, animated product metrics, staggered attack-path cards, hover micro-interactions, a top-of-page route progress hairline, and smooth in-app view changes — all disabled under `prefers-reduced-motion`.
+- **Better filters.** Checklist and search gain one-tap status quick-filters with live counts, a sort control (severity, progress, difficulty, ID, title), a standard-mapping filter (WSTG, ASVS, Top 10, API Top 10, CWE, PortSwigger), an active-filter count on Reset, and debounced text input so results no longer rebuild on every keystroke. Family-board search is debounced as well.
+- **Better scope questions.** Each wizard step now sits under a section label (Approach, Delivery, Identity & Access, Interfaces, Environment, Business features, Edges & jobs) and states what the answer shapes in the plan, making “Unknown” a conscious choice.
+- **Navigation feel.** Cross-document shared-element transitions, app prefetch from the homepage, preloaded fonts, and a branded boot screen replace the bare-skeleton first paint; every new view starts at the top of the page.
+- **Performance.** Bulk list animations removed, filter re-renders debounced, long surfaces keep content-visibility, and secondary dashboard tables still render only when the reporting drawer opens.
+- **Public surface cleanup.** The documentation page now serves only operator-facing material (operator guide, evidence & retest workflow, security policy, license); QA reports, phase notes, release runbooks, architecture, and other maintainer documents no longer resolve on the site. Internal phrasing ("operator guide has not been added yet", maturity jargon, phase labels) rewritten into user-facing language.
+- Bumped browser assets to `1.0.0-r9` so hosted clients receive the redesign immediately.
+
 ### Changed (Product polish, navigation, and performance)
 
 - Unified the homepage, operator console, methodology, help, and workflow pages under one spacing, typography, surface, form, focus, and responsive design system.

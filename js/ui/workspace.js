@@ -1,22 +1,22 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r8';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r8';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r8';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r8';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r8';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r8';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r8';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r8';
-import { EMPTY_FILTERS, filterItems, itemStatus } from './filters.js?v=1.0.0-r8';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r8';
-import { createChainStore } from './chains.js?v=1.0.0-r8';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r8';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r8';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r8';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r8';
-import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r8';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r8';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r8';
-import { renderProfile } from './profile.js?v=1.0.0-r8';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r9';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r9';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r9';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r9';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r9';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r9';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r9';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r9';
+import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r9';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r9';
+import { createChainStore } from './chains.js?v=1.0.0-r9';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r9';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r9';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r9';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r9';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r9';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r9';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r9';
+import { renderProfile } from './profile.js?v=1.0.0-r9';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -39,16 +39,52 @@ function effectiveRecord(item, state, context) {
   return { item, rawApplicability: raw, applicability: raw };
 }
 
+function debounce(fn, wait = 160) {
+  let timer = 0;
+  return (...args) => {
+    clearTimeout(timer);
+    timer = setTimeout(() => fn(...args), wait);
+  };
+}
+
+const QUICK_FILTERS = Object.freeze([
+  ['open', 'qf-open', 'Not started', 'not_tested'],
+  ['progress', 'qf-progress', 'In progress', 'in_progress'],
+  ['findings', 'qf-findings', 'Findings', 'potential_finding'],
+  ['blocked', 'qf-blocked', 'Blocked', 'blocked'],
+  ['na', 'qf-na', 'N/A', 'na']
+]);
+
+function renderQuickFilters(root, filters, onChange, counts = {}) {
+  const bar = element('div', 'quick-filters');
+  bar.setAttribute('role', 'group');
+  bar.setAttribute('aria-label', 'Quick status filters');
+  for (const [id, className, label, statusValue] of QUICK_FILTERS) {
+    const pressed = filters.status === statusValue;
+    const button = element('button', `quick-filter ${className}`);
+    button.type = 'button';
+    button.setAttribute('aria-pressed', String(pressed));
+    const count = id === 'findings' ? (counts.potential_finding || 0) + (counts.confirmed_finding || 0) : counts[statusValue] || 0;
+    button.append(element('span', 'qf-dot', ''), document.createTextNode(`${label} `), element('span', 'qf-count', String(count)));
+    button.addEventListener('click', () => onChange({ ...filters, status: pressed ? '' : statusValue }, 'status'));
+    bar.append(button);
+  }
+  root.append(bar);
+}
+
 function renderFilters(root, manifest, filters, onChange, options = {}) {
   root.replaceChildren();
+  if (options.counts) renderQuickFilters(root, filters, onChange, options.counts);
   const grid = element('div', 'filter-grid filter-grid-primary');
   const advancedGrid = element('div', 'filter-grid filter-grid-advanced');
-  const primaryFields = new Set(['query', 'category', 'severity', 'status']);
+  const primaryFields = new Set(['query', 'category', 'severity', 'status', 'sort']);
   const fields = [
     ['query', 'Search', 'search', 'CORS, JWT, BOLA, objective…'],
     ['category', 'Category', 'select', ''], ['severity', 'Severity', 'select', ''],
-    ['difficulty', 'Difficulty', 'select', ''], ['status', 'Status', 'select', ''],
+    ['status', 'Status', 'select', ''], ['sort', 'Sort by', 'select', ''],
+    ['difficulty', 'Difficulty', 'select', ''],
     ['mode', 'Mode', 'select', ''], ['applicability', 'Applicability', 'select', ''],
+    ['standard', 'Mapped to', 'select', ''],
     ['technology', 'Technology', 'text', 'java, graphql, cookie…'],
     ['tool', 'Tool', 'text', 'Burp Repeater…'], ['tag', 'Tag', 'text', 'idor…'],
     ['testId', 'Test ID', 'text', 'WAPT-AUTHZ-003']
@@ -58,8 +94,10 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     severity: ['critical', 'high', 'medium', 'low', 'informational'].map((value) => [value, value]),
     difficulty: ['low', 'medium', 'high'].map((value) => [value, value]),
     status: STATUS_OPTIONS,
+    sort: [['severity', 'Severity'], ['status', 'Progress'], ['difficulty', 'Difficulty'], ['id', 'Test ID'], ['title', 'Title']],
     mode: [['manual', 'manual'], ['automated', 'automated']],
-    applicability: [[APPLICABILITY.ACTIVE, 'Active'], [APPLICABILITY.CONFIRM, 'Confirm'], [APPLICABILITY.NA_CONTEXT, 'N/A (context)']]
+    applicability: [[APPLICABILITY.ACTIVE, 'Active'], [APPLICABILITY.CONFIRM, 'Confirm'], [APPLICABILITY.NA_CONTEXT, 'N/A (context)']],
+    standard: STANDARD_OPTIONS
   };
   for (const [key, label, type, placeholder] of fields) {
     if (options.fixedCategory && key === 'category') continue;
@@ -68,7 +106,7 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     let input;
     if (type === 'select') {
       input = document.createElement('select');
-      input.append(new Option(`All ${label.toLocaleLowerCase('en-US')}`, ''));
+      input.append(new Option(key === 'sort' ? 'Catalog order' : `All ${label.toLocaleLowerCase('en-US')}`, ''));
       for (const [value, text] of choices[key]) input.append(new Option(text, value));
     } else {
       input = document.createElement('input');
@@ -77,11 +115,21 @@ function renderFilters(root, manifest, filters, onChange, options = {}) {
     }
     input.name = key;
     input.value = filters[key] || '';
-    input.addEventListener(type === 'search' || type === 'text' ? 'input' : 'change', () => onChange({ ...filters, [key]: input.value }, key));
+    if (type === 'search' || type === 'text') {
+      // Typing re-renders results after a short pause instead of on every keystroke.
+      const commit = debounce(() => onChange({ ...filters, [key]: input.value }, key));
+      input.addEventListener('input', () => {
+        filters = { ...filters, [key]: input.value };
+        commit();
+      });
+    } else {
+      input.addEventListener('change', () => onChange({ ...filters, [key]: input.value }, key));
+    }
     group.append(input);
     (primaryFields.has(key) ? grid : advancedGrid).append(group);
   }
-  const reset = element('button', 'button button-quiet filter-reset', 'Reset filters');
+  const activeCount = Object.entries(filters).filter(([key, value]) => value && value.length && !(options.fixedCategory && key === 'category')).length;
+  const reset = element('button', 'button button-quiet filter-reset', activeCount ? `Reset · ${activeCount}` : 'Reset');
   reset.type = 'button';
   reset.addEventListener('click', () => onChange({ ...EMPTY_FILTERS, category: options.fixedCategory || '' }));
   grid.append(reset);
@@ -598,10 +646,22 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     return groups;
   }
 
+  function statusCounts(sourceRecords) {
+    const state = getState();
+    const counts = {};
+    for (const { item } of sourceRecords) {
+      const status = itemStatus(item, state);
+      counts[status] = (counts[status] || 0) + 1;
+    }
+    return counts;
+  }
+
   function renderResults(root, summary, sourceRecords, filters, options = {}) {
     const filtered = filterItems(sourceRecords, filters, getState());
-    const visible = filters.applicability ? filtered : filtered.filter(({ applicability }) => applicability.state !== APPLICABILITY.NA_CONTEXT);
-    summary.textContent = `${visible.length} of ${sourceRecords.length} tests shown`;
+    const scoped = filters.applicability ? filtered : filtered.filter(({ applicability }) => applicability.state !== APPLICABILITY.NA_CONTEXT);
+    const visible = sortRecords(scoped, filters.sort, getState());
+    const sortNote = filters.sort ? ' · sorted' : '';
+    summary.textContent = `${visible.length} of ${sourceRecords.length} tests shown${sortNote}`;
     if (!visible.length) {
       root.replaceChildren(element('div', 'panel empty-panel', 'No tests match the current context and filters.'));
       return;
@@ -671,7 +731,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       });
     } else {
       filterRoot.hidden = false;
-      renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed });
+      renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed, counts: statusCounts(records) });
       // A single surface stays card-first for deep work; the whole catalog is a scan list.
       renderResults(resultRoot, summary, records, checklistFilters, fixed
         ? { groupByFamily: familyIndex.families.length > 0 }
@@ -688,7 +748,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
 
   function renderSearch() {
     const filterRoot = document.querySelector('[data-search-filters]');
-    renderFilters(filterRoot, manifest, searchFilters, (next, key) => { searchFilters = next; renderSearch(); restoreFilterFocus(filterRoot, key); });
+    renderFilters(filterRoot, manifest, searchFilters, (next, key) => { searchFilters = next; renderSearch(); restoreFilterFocus(filterRoot, key); }, { counts: statusCounts(records) });
     renderResults(document.querySelector('[data-search-results]'), document.querySelector('[data-search-summary]'), records, searchFilters, { compact: true });
   }
 

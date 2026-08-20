@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r8';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r8';
+import { initializeTheme } from './theme.js?v=1.0.0-r9';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r9';
 
 const TOOLS = Object.freeze({
   proxy: 'Proxy', repeater: 'Repeater', intruder: 'Intruder', scanner: 'Scanner',

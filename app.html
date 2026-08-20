@@ -4,16 +4,19 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="description" content="Page-first VAPT operator console with prioritized testing plans, practical variants, evidence, and local-only progress.">
-  <meta name="theme-color" content="#07090d">
+  <meta name="theme-color" content="#090d13">
   <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; frame-src 'none'; object-src 'none'; base-uri 'self'; form-action 'self'">
   <title>VAPT operator console — WAPT Checklist</title>
   <link rel="icon" href="assets/logo.svg" type="image/svg+xml">
-  <script src="js/ui/theme-boot.js?v=1.0.0-r8"></script>
-  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r8">
-  <link rel="stylesheet" href="css/operator-console.css?v=1.0.0-r8">
-  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r8">
-  <link rel="stylesheet" href="css/print.css?v=1.0.0-r8" media="print">
-  <script type="module" src="js/ui/app.js?v=1.0.0-r8"></script>
+  <link rel="preload" href="assets/fonts/sora-400.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/sora-600.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/ibm-plex-mono-400.woff2" as="font" type="font/woff2" crossorigin>
+  <script src="js/ui/theme-boot.js?v=1.0.0-r9"></script>
+  <link rel="stylesheet" href="css/styles.css?v=1.0.0-r9">
+  <link rel="stylesheet" href="css/operator-console.css?v=1.0.0-r9">
+  <link rel="stylesheet" href="css/polish.css?v=1.0.0-r9">
+  <link rel="stylesheet" href="css/print.css?v=1.0.0-r9" media="print">
+  <script type="module" src="js/ui/app.js?v=1.0.0-r9"></script>
 </head>
 <body class="app-body">
   <a class="skip-link" href="#workspace">Skip to workspace</a>
@@ -88,7 +91,7 @@
       <div class="route-progress" data-route-progress hidden aria-hidden="true"><span></span></div>
       <p class="sr-only" data-route-status role="status" aria-live="polite"></p>
 
-      <section class="view wizard-view" data-view="wizard" aria-labelledby="wizard-page-title">
+      <section class="view wizard-view" data-view="wizard" aria-labelledby="wizard-page-title" hidden>
         <div class="view-heading compact-heading wizard-heading">
           <div><p class="eyebrow">START A WAPT</p><h1 id="wizard-page-title">Build the right test plan</h1></div>
           <div class="wizard-heading-actions">
@@ -193,6 +196,15 @@
         <div class="view-heading"><div><p class="eyebrow">CONTEXTUAL REFERENCES</p><h1 id="payloads-title">Payload library</h1><p>Every value includes intended context, caveats, related tests, and a safety boundary. REVIEW-ONLY entries never auto-expand.</p></div></div>
         <div data-payload-browser><p class="loading-line">Loading payload references…</p></div>
       </section>
+
+      <div class="view app-boot" data-app-boot>
+        <div class="app-boot-card">
+          <img class="app-boot-logo" src="assets/logo.svg" width="64" height="64" alt="">
+          <p class="app-boot-title"><strong>WAPT</strong> operator console</p>
+          <div class="app-boot-bar" aria-hidden="true"><span></span></div>
+          <p class="app-boot-status">Preparing your local workspace…</p>
+        </div>
+      </div>
 
       <footer class="workspace-footer"><span>WAPT Checklist v1.0.0</span><span>Progress stays in this browser unless you export it.</span><button class="shortcut-hint" type="button" data-shortcuts-open>Shortcuts <kbd>?</kbd></button></footer>
     </main>

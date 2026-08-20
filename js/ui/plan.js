@@ -2,13 +2,13 @@
 // Export compatibility note: plan metadata still distinguishes “authored playbooks” from
 // “methodology-only” catalog entries, while the operator UI calls them Practical and
 // Methodology so internal content architecture never becomes navigation noise.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r8';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r8';
-import { shareHref } from '../engine/share.js?v=1.0.0-r8';
-import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r8';
-import { itemStatus } from './filters.js?v=1.0.0-r8';
-import { element } from './dom.js?v=1.0.0-r8';
-import { renderOperatorCheck } from './playbook.js?v=1.0.0-r8';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r9';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r9';
+import { shareHref } from '../engine/share.js?v=1.0.0-r9';
+import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r9';
+import { itemStatus } from './filters.js?v=1.0.0-r9';
+import { element } from './dom.js?v=1.0.0-r9';
+import { renderOperatorCheck } from './playbook.js?v=1.0.0-r9';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',
