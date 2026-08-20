@@ -1,0 +1,119 @@
+{
+  "schema_version": "1.0.0",
+  "lastmod": "2026-08-19",
+  "note": "Surface playbooks are the tester-facing working layer: every applicable check for a page type, with named variants and copyable payloads. They reference methodology items; they do not replace them.",
+  "playbooks": [
+    {
+      "id": "static-page",
+      "title": "Static / published page",
+      "file": "static-page.json",
+      "summary": "No login, no first-party API. TLS, headers, host, paths, disclosure, and client framing.",
+      "count": 39
+    },
+    {
+      "id": "login-page",
+      "title": "Login / identity page",
+      "file": "login-page.json",
+      "summary": "Credential transport, enumeration, lockout, Host-poisoned reset links, session fixation, and login injection.",
+      "count": 11
+    },
+    {
+      "id": "registration",
+      "title": "Registration / signup",
+      "file": "registration.json",
+      "summary": "Enumeration, mass-assigned roles, verify-skip, Host-poisoned activation mail, and signup CSRF.",
+      "count": 8
+    },
+    {
+      "id": "password-reset",
+      "title": "Password reset / recovery",
+      "file": "password-reset.json",
+      "summary": "Host-poisoned reset mail, token reuse, cross-account bind, MFA wipe, and reset flooding.",
+      "count": 6
+    },
+    {
+      "id": "account-profile",
+      "title": "Account / profile page",
+      "file": "account-profile.json",
+      "summary": "IDOR, mass assignment, stored XSS, password/email change, CSRF, and clickjacking.",
+      "count": 8
+    },
+    {
+      "id": "session",
+      "title": "Session / cookies",
+      "file": "session.json",
+      "summary": "Secure, HttpOnly, SameSite, fixation, logout, and session identifiers in URLs.",
+      "count": 6
+    },
+    {
+      "id": "file-upload",
+      "title": "File upload",
+      "file": "file-upload.json",
+      "summary": "Extension vs magic, executable content, SVG, filename traversal, download IDOR, ZIP Slip, XXE.",
+      "count": 8
+    },
+    {
+      "id": "search-page",
+      "title": "Search / listing",
+      "file": "search-page.json",
+      "summary": "Reflected and stored XSS, SQL / NoSQL / SSTI in q=, authorization on results, scrape limits.",
+      "count": 7
+    },
+    {
+      "id": "checkout",
+      "title": "Checkout / payments",
+      "file": "checkout.json",
+      "summary": "Price and quantity tamper, currency, coupons, payment binding, checkout races, CSRF.",
+      "count": 6
+    },
+    {
+      "id": "admin-panel",
+      "title": "Admin / privileged UI",
+      "file": "admin-panel.json",
+      "summary": "Unauthenticated and member access to admin routes, verb swaps, impersonation, CSRF, clickjacking.",
+      "count": 6
+    },
+    {
+      "id": "api-endpoint",
+      "title": "API endpoint",
+      "file": "api-endpoint.json",
+      "summary": "Auth, object/function authorization, verb/content-type swaps, mass assignment, and SSRF-shaped URL fields.",
+      "count": 8
+    },
+    {
+      "id": "graphql",
+      "title": "GraphQL endpoint",
+      "file": "graphql.json",
+      "summary": "Introspection, node(id:) BOLA, field/mutation authorization, batching, CSRF, and depth/cost.",
+      "count": 8
+    },
+    {
+      "id": "websocket",
+      "title": "WebSocket / realtime",
+      "file": "websocket.json",
+      "summary": "WSS, Origin allowlist, socket auth, per-message authorization, and subscription IDOR.",
+      "count": 5
+    },
+    {
+      "id": "oauth-sso",
+      "title": "OAuth / SSO / SAML",
+      "file": "oauth-sso.json",
+      "summary": "redirect_uri, state, PKCE, code reuse, token leakage, SAML signatures, RelayState.",
+      "count": 7
+    },
+    {
+      "id": "jwt-token",
+      "title": "JWT / bearer token",
+      "file": "jwt-token.json",
+      "summary": "alg=none, key confusion, kid/jku tricks, role claims, expiry, and tokens in URLs.",
+      "count": 7
+    },
+    {
+      "id": "spa-client",
+      "title": "SPA / client-side",
+      "file": "spa-client.json",
+      "summary": "DOM XSS, postMessage, browser storage, client-only authorization, secrets in the bundle, CORS.",
+      "count": 7
+    }
+  ]
+}

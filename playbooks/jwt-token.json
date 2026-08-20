@@ -1,0 +1,218 @@
+{
+  "schema_version": "1.0.0",
+  "id": "jwt-token",
+  "title": "JWT / bearer token",
+  "summary": "alg=none, key confusion, unverified signatures, kid/jku tricks, role claims, expiry, and tokens in URLs.",
+  "when": {
+    "auth_mechanism": [
+      "jwt"
+    ]
+  },
+  "also_when": {
+    "auth_mechanism": [
+      "mixed"
+    ]
+  },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "crypto",
+      "title": "Signature and algorithm",
+      "summary": "If the signature is not verified, nothing else matters.",
+      "checks": [
+        {
+          "id": "alg-none",
+          "title": "alg=none",
+          "item": "WAPT-JWT-003",
+          "related": [
+            "WAPT-JWT-002",
+            "WAPT-JWT-001"
+          ],
+          "severity": "critical",
+          "why": "The resource server accepts an unsecured JWT.",
+          "validate": "A token with alg=none and an empty signature is accepted as you.",
+          "variants": [
+            {
+              "name": "none with empty sig",
+              "kind": "note",
+              "payload": "Header: {\"alg\":\"none\",\"typ\":\"JWT\"}\\nPayload: copy a real token's claims, keep sub\\nSignature: (empty)",
+              "expect": "Authorization: Bearer <header>.<payload>.   — trailing dot, empty sig. Must 401."
+            },
+            {
+              "name": "None / NONE / nOnE",
+              "kind": "note",
+              "payload": "{\"alg\":\"None\"}\\n{\"alg\":\"NONE\"}\\n{\"alg\":\"nOnE\"}",
+              "expect": "Case tricks. Same 401 expectation."
+            }
+          ]
+        },
+        {
+          "id": "alg-confusion",
+          "title": "HS256 with the RSA public key",
+          "item": "WAPT-JWT-004",
+          "related": [
+            "WAPT-JWT-005"
+          ],
+          "severity": "critical",
+          "why": "The server is configured for RS256 but will verify HS256 using the PEM public key as the HMAC secret.",
+          "validate": "A token you signed with HS256 and the published public key is accepted. Use a test account.",
+          "variants": [
+            {
+              "name": "RS256 → HS256",
+              "kind": "note",
+              "payload": "Take the realm's public key (JWKS or TLS). Sign a test-account token with HS256 using that PEM as the secret.",
+              "expect": "Must 401. A 200 on /me as that account is the finding."
+            },
+            {
+              "name": "alg allowlist",
+              "kind": "note",
+              "payload": "Try alg=HS256, HS384, HS512 against an RS256 API, and EdDSA / PS256 if you have keys.",
+              "expect": "Only the configured algorithms may verify."
+            }
+          ]
+        },
+        {
+          "id": "no-verify",
+          "title": "Signature not checked",
+          "item": "WAPT-JWT-001",
+          "related": [
+            "WAPT-JWT-006"
+          ],
+          "severity": "critical",
+          "why": "Any well-formed three-part token is trusted.",
+          "validate": "A token with a garbage signature is accepted.",
+          "variants": [
+            {
+              "name": "Flip the last byte",
+              "kind": "note",
+              "payload": "Take a valid access token, change the last signature character, send it.",
+              "expect": "Must 401. If /me still returns you, signatures are not checked."
+            },
+            {
+              "name": "Empty payload claims only",
+              "kind": "note",
+              "payload": "Craft a token with sub= of another test account and a random signature.",
+              "expect": "Must 401. Do not target a real user."
+            }
+          ]
+        },
+        {
+          "id": "kid-jku",
+          "title": "kid / jku / x5u controlled keys",
+          "item": "WAPT-JWT-012",
+          "related": [
+            "WAPT-JWT-013"
+          ],
+          "severity": "critical",
+          "why": "kid is used as a path or SQL key, or jku/x5u fetches an attacker JWKS.",
+          "validate": "A token signed with a key you control is accepted, or kid triggers a callback / traversal.",
+          "variants": [
+            {
+              "name": "jku to your JWKS",
+              "kind": "note",
+              "payload": "{\"alg\":\"RS256\",\"jku\":\"https://unique.oast.example/jwks.json\",\"kid\":\"wapt\"}",
+              "expect": "An outbound fetch to your listener is a lead. Acceptance of a token signed by that key is the finding. Do not point jku at cloud metadata."
+            },
+            {
+              "name": "kid path / SQLi",
+              "kind": "note",
+              "payload": "{\"kid\":\"../../wapt-canary.txt\"}\\n{\"kid\":\"wapt' OR '1'='1\"}\\n{\"kid\":\"http://unique.oast.example/key\"}",
+              "expect": "Must be an allowlisted key id. A file read, SQL error, or callback is the finding."
+            },
+            {
+              "name": "embedded jwk",
+              "kind": "note",
+              "payload": "{\"alg\":\"RS256\",\"jwk\":{...your public key...}}",
+              "expect": "Embedded JWK must be ignored. A token signed by the matching private key must 401."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "claims",
+      "title": "Claims and transport",
+      "summary": "Roles, expiry, and where the token travels.",
+      "checks": [
+        {
+          "id": "claims-role",
+          "title": "Untrusted role / tenant claims",
+          "item": "WAPT-JWT-011",
+          "related": [
+            "WAPT-JWT-010",
+            "WAPT-AUTHZ-016"
+          ],
+          "severity": "critical",
+          "why": "The API trusts role, admin, or tenant_id inside a token the client can obtain or mint.",
+          "validate": "Raising a claim in a still-valid signature (or an accepted alg=none token) grants privilege.",
+          "variants": [
+            {
+              "name": "Raise role in a forged token",
+              "kind": "note",
+              "payload": "If alg=none or confusion worked, set role=admin / isAdmin=true / tenant_id of B and call an admin route.",
+              "expect": "Even if crypto held, try the same claims on a /me PATCH — mass assignment is the sibling finding."
+            },
+            {
+              "name": "azp / aud / typ mix-up",
+              "kind": "note",
+              "payload": "Replay an id_token as an access token, or an access token issued for a sibling API.",
+              "expect": "aud and typ must be checked. A 200 on the wrong audience is the finding."
+            }
+          ]
+        },
+        {
+          "id": "exp",
+          "title": "exp / nbf enforced",
+          "item": "WAPT-JWT-009",
+          "related": [
+            "WAPT-JWT-015",
+            "WAPT-JWT-016"
+          ],
+          "severity": "high",
+          "why": "An expired access token or a reused refresh token still works.",
+          "validate": "A token past exp is accepted, or a rotated refresh token is replayed.",
+          "variants": [
+            {
+              "name": "Expired access token",
+              "kind": "note",
+              "payload": "Save an access token, wait for exp (or edit exp if signatures are not checked), replay /me.",
+              "expect": "Must 401. Clock skew of a minute is normal; hours are not."
+            },
+            {
+              "name": "Refresh replay",
+              "kind": "note",
+              "payload": "Refresh once, then replay the old refresh token.",
+              "expect": "The family must die. A second access token is the finding."
+            }
+          ]
+        },
+        {
+          "id": "jwt-url",
+          "title": "JWT in the URL",
+          "item": "WAPT-JWT-017",
+          "related": [
+            "WAPT-JWT-018",
+            "WAPT-SESS-018"
+          ],
+          "severity": "high",
+          "why": "access_token= in a query, a hash fragment left in history, or a token in Referer.",
+          "validate": "A live token is observable in a URL, log, or Referer you are allowed to read.",
+          "variants": [
+            {
+              "name": "Token in query",
+              "kind": "request",
+              "payload": "GET /api/v1/me?access_token=<token> HTTP/1.1\nHost: api.example.com\nConnection: close",
+              "expect": "If it works, the token is now in logs and Referer. Prefer that it does not work."
+            },
+            {
+              "name": "Storage",
+              "kind": "note",
+              "payload": "DevTools → Application: localStorage / sessionStorage keys that hold a JWT.",
+              "expect": "A long-lived access token in localStorage is XSS→account takeover. Prefer memory or a cookie with the right flags."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

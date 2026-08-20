@@ -4,12 +4,13 @@ Operator documentation: what this tool is for, the working vocabulary, the loop 
 
 ## Quick start
 
-1. **Start a WAPT** — give the engagement a name and, optionally, the target URL. Nothing is ever sent to that target; the URL is stored locally for labelling and low-confidence hints only.
-2. **Scope it** — answer the adaptive questions or pick a preset. `Not confirmed yet` is a real answer: affected checks stay visible as *Confirm*, never silently dropped.
-3. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
-4. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
-5. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
-6. **Report** — export the Markdown report, the checklist, or the coverage CSV; keep evidence packs with their retest verdicts.
+1. **Start testing** — open the assessment workspace. Set **application type**, **authentication**, and **features**. Optionally add the target URL (never fetched).
+2. **Read the plan** — the dashboard lists every realistic test for that profile, grouped as TLS, Security Headers, HTTP / Server, Client-Side, and (when in scope) Authentication, Session, Authorization, API, JWT, upload, checkout. A static site hides login, IDOR, and privilege tests.
+3. **Run a test** — click it for Quick Test, numbered variants, copyable payloads, CHECK FOR, VALIDATE, and DO NOT REPORT. Methodology stays under Reporting and reference. **Copy share link** sends the scope as a URL (never findings). Advanced 18-question scope remains available.
+4. **Open Test families** — the board lists every attack surface, its coverage, and where work is open. Pick a family, or press **Continue this suite** on a surface.
+5. **Work the family** — read the Quick Test, run the checks, tick the Don't Miss variants, record coverage and any finding.
+6. **Follow the next test** — the family's *After this family* and *What else should I check?* panels, or the dashboard's *What should I test next?*.
+7. **Report** — export the Markdown report, the checklist, or the coverage CSV; keep evidence packs with their retest verdicts.
 
 The engagement is saved continuously in this browser only. Closing the tab is safe; the workspace reopens on the family you were last working.
 
@@ -59,6 +60,7 @@ Plus a boundary line: **NOT HERE** names the sibling families that own the rest 
 | --- | --- |
 | `/` | Search the methodology |
 | `g` `d` | Dashboard |
+| `g` `p` | Page playbooks |
 | `g` `t` | Test families |
 | `g` `c` | All tests |
 | `g` `f` | Findings |
@@ -71,6 +73,8 @@ Plus a boundary line: **NOT HERE** names the sibling families that own the rest 
 
 | Output | Use it for |
 | --- | --- |
+| **Copy share link** (assessment) | URL that rebuilds the same applicable plan from scope answers only |
+| **Copy plan Markdown** (assessment) | Paste-ready checklist of matching surfaces and tests |
 | **Copy coverage** (family header) | Markdown block for engagement notes, stand-ups, and status updates |
 | **Export coverage CSV** | Client trackers and retest matrices: one row per check, coverage state and finding in separate columns |
 | **Export checklist (Markdown)** | The engagement checklist with per-surface tested/N/A/blocked counts |

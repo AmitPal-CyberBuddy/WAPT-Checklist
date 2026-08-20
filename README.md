@@ -2,7 +2,7 @@
 
 A professional, context-aware Web Application Penetration Testing methodology, checklist, knowledge base, and local-first tester workspace for **authorized security assessments only**.
 
-[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start a WAPT](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#wizard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
+[Open the GitHub Pages site](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/) · [Start testing](https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html#dashboard) · [How to run an engagement](docs/OPERATING.md) · [Review the architecture](docs/ARCHITECTURE.md)
 
 > **Project status:** Version **1.0.0 release candidate**; Phases 1–10 implementation and QA are complete. The local-first adaptive workspace contains 623 validated production items across all 25 categories, five attack-chain graphs, 40 contextual payload references, and 12 Burp workflows. Deployed via GitHub Actions on 2026-08-18 (PR #3 merged, `9874987`); browser and visual QA sign-off remains pending.
 
@@ -22,6 +22,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings — results arrive as family-grouped one-line rows you can status directly, expanding into the full card in place.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips and a Testing/Coverage view toggle.
+- **Context-driven assessment:** Start testing, answer what the application is, and the dashboard is the result — every matching surface, not one page type. Share the plan as a URL (scope only) or as Markdown. Each test opens a Quick Test + variants + payloads + validation. Methodology stays under Reporting and reference.
 - **Test families as the working unit:** 196 validated families covering every one of the 623 checks. The families board shows tested/executable, blocked, N/A, confirmed, and don't-miss coverage per surface; a family workspace gives the authored Quick Test, a tickable Don't Miss list, dense check rows, "after this family", and "what else should I check?" without losing context.
 - **Honest coverage states:** tested (executed) · testing now · blocked · N/A (by scope or by tester) · not tested. N/A never counts as tested; blocked work stays in the denominator because it is still owed.
 - **Check ≠ coverage ≠ finding:** every check carries a coverage control and a separate finding verdict, so a completed checklist item never implies a vulnerability.
@@ -69,6 +70,7 @@ css/                       Independent design tokens, responsive UI, print
 js/ui/                     Browser rendering, wizard, storage adapter
 js/engine/                 Pure context, applicability, priority, state policy
 js/data/presets.mjs        Plain context mappings for quick starts
+playbooks/                 Page-type packs with named variants and copyable payloads
 checklist/manifest.json    Category metadata and honest production counts
 checklist/reconnaissance.json  Phase 4 production reconnaissance methodology
 checklist/http.json          Phase 4 HTTP and browser protocol methodology

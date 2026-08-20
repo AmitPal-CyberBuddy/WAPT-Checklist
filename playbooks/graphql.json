@@ -1,0 +1,250 @@
+{
+  "schema_version": "1.0.0",
+  "id": "graphql",
+  "title": "GraphQL endpoint",
+  "summary": "Introspection, suggestions, node(id:) BOLA, field/mutation authorization, batching, CSRF, and depth/cost.",
+  "when": {
+    "api_style": [
+      "graphql"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "schema",
+      "title": "Schema discovery",
+      "summary": "What the client never ships.",
+      "checks": [
+        {
+          "id": "introspect",
+          "title": "Introspection",
+          "item": "WAPT-GQL-002",
+          "related": [
+            "WAPT-GQL-001",
+            "WAPT-GQL-003"
+          ],
+          "severity": "medium",
+          "why": "Production introspection or field suggestions disclose the schema the client never ships.",
+          "validate": "__schema or a typo suggestion returns fields the public contract does not list.",
+          "variants": [
+            {
+              "name": "Classic introspection",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{__schema{types{name fields{name}}}}\"}",
+              "expect": "Disabled in production, or limited to an allowlisted consumer. A full dump is a lead plus any hidden mutations."
+            },
+            {
+              "name": "GET introspection",
+              "kind": "request",
+              "payload": "GET /graphql?query=%7B__schema%7Btypes%7Bname%7D%7D%7D HTTP/1.1\nHost: api.example.com\nConnection: close",
+              "expect": "Some stacks disable POST introspection and leave GET on."
+            },
+            {
+              "name": "Field suggestion",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{user{emial}}\"}",
+              "expect": "\"Did you mean email?\" confirms names even when introspection is off."
+            }
+          ]
+        },
+        {
+          "id": "hidden-ops",
+          "title": "Hidden mutations and fields",
+          "item": "WAPT-GQL-003",
+          "related": [
+            "WAPT-GQL-007",
+            "WAPT-API-023"
+          ],
+          "severity": "high",
+          "why": "A mutation or field exists that the public client never calls.",
+          "validate": "An undocumented operation executes or returns data.",
+          "variants": [
+            {
+              "name": "Common admin mutations",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { updateUserRole(id: 1, role: \\\"admin\\\") { id role } }\"}",
+              "expect": "Try names from introspection / suggestions: deleteUser, impersonate, setRole, inviteAdmin."
+            },
+            {
+              "name": "Typename probe",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"{ __type(name: \\\"Mutation\\\") { fields { name } } }\"}",
+              "expect": "Works when full __schema is off but __type is not."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "authz",
+      "title": "Authorization",
+      "summary": "node(id:), fields, mutations, and batches each need their own decision.",
+      "checks": [
+        {
+          "id": "bola-node",
+          "title": "node(id:) object authorization",
+          "item": "WAPT-GQL-004",
+          "related": [
+            "WAPT-API-001",
+            "WAPT-AUTHZ-009"
+          ],
+          "severity": "high",
+          "why": "node(id:) and aliases skip the authorization the REST path has.",
+          "validate": "A node belonging to another account is returned.",
+          "variants": [
+            {
+              "name": "node(id:) swap",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{node(id:\\\"T3JkZXI6MTAwMg==\\\"){... on Order{id total}}}\"}",
+              "expect": "Order 1002 is B's. Decode and recode other type prefixes too."
+            },
+            {
+              "name": "Aliased parallel reads",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{a:order(id:1001){id} b:order(id:1002){id total}}\"}",
+              "expect": "Each alias needs its own decision. b must not return B's order."
+            }
+          ]
+        },
+        {
+          "id": "field-authz",
+          "title": "Field-level authorization",
+          "item": "WAPT-GQL-005",
+          "related": [
+            "WAPT-GQL-015",
+            "WAPT-API-010"
+          ],
+          "severity": "high",
+          "why": "role, hashes, and PII fields are omitted by the default client query but still resolvable.",
+          "validate": "A field the matrix denies is returned.",
+          "variants": [
+            {
+              "name": "Sensitive field selection",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"{me{id email role passwordHash ssn taxId}}\"}",
+              "expect": "role, hashes, and internal fields must be absent or unauthorized."
+            },
+            {
+              "name": "Nested owner fields",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{order(id:1002){id user{email role}}}\"}",
+              "expect": "Even if the order is denied, a nested user leak is still a finding."
+            }
+          ]
+        },
+        {
+          "id": "mutation-authz",
+          "title": "Mutation authorization",
+          "item": "WAPT-GQL-007",
+          "related": [
+            "WAPT-GQL-006",
+            "WAPT-API-020"
+          ],
+          "severity": "critical",
+          "why": "A member can call an admin mutation or set a privileged input property.",
+          "validate": "A privileged write executes for a caller the matrix denies.",
+          "variants": [
+            {
+              "name": "Admin mutation as member",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { deleteUser(id: 42) { id } }\"}",
+              "expect": "Must be unauthorized. Confirm the user still exists."
+            },
+            {
+              "name": "Input property mass-assign",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"mutation { updateMe(input: { role: \\\"admin\\\", verified: true }) { role verified } }\"}",
+              "expect": "role/verified must be unchanged."
+            }
+          ]
+        },
+        {
+          "id": "batch-authz",
+          "title": "Batched operations",
+          "item": "WAPT-GQL-011",
+          "related": [
+            "WAPT-AUTHZ-031",
+            "WAPT-GQL-010"
+          ],
+          "severity": "high",
+          "why": "A batch mixes an allowed query with a denied one and the denied one still runs.",
+          "validate": "A denied operation in a batch returns data or changes state.",
+          "variants": [
+            {
+              "name": "JSON array batch",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n[{\"query\":\"{me{id}}\"},{\"query\":\"{order(id:1002){id total}}\"}]",
+              "expect": "Second element is B's order. Each member needs its own decision."
+            },
+            {
+              "name": "Alias flood / repeated fields",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{a1:me{id} a2:me{id} a3:me{id}}\"}",
+              "expect": "Aliases must count toward cost. This is a lead for the depth/cost check, not a finding by itself."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "protocol",
+      "title": "CSRF and cost",
+      "summary": "GET/urlencoded mutations and unbounded queries.",
+      "checks": [
+        {
+          "id": "csrf-gql",
+          "title": "GraphQL CSRF",
+          "item": "WAPT-GQL-013",
+          "related": [
+            "WAPT-CSRF-016",
+            "WAPT-CSRF-010"
+          ],
+          "severity": "high",
+          "why": "A simple-request mutation (GET or form POST) runs in the victim browser.",
+          "validate": "A cross-origin simple request changes state.",
+          "variants": [
+            {
+              "name": "GET mutation",
+              "kind": "request",
+              "payload": "GET /graphql?query=mutation%7BdeleteMe%7Bok%7D%7D HTTP/1.1\nHost: api.example.com\nCookie: session=<victim>",
+              "expect": "Mutations over GET must be rejected."
+            },
+            {
+              "name": "form-urlencoded mutation",
+              "kind": "html",
+              "payload": "<form action=\"https://api.example.com/graphql\" method=\"POST\">\n  <input name=\"query\" value=\"mutation { deleteMe { ok } }\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a custom content type + CSRF token / SameSite=Strict."
+            }
+          ]
+        },
+        {
+          "id": "depth-cost",
+          "title": "Depth and cost limits",
+          "item": "WAPT-GQL-008",
+          "related": [
+            "WAPT-GQL-009",
+            "WAPT-GQL-012"
+          ],
+          "severity": "medium",
+          "why": "A nested or aliased query is expensive enough to be a cheap DoS.",
+          "validate": "A bounded expensive query is rejected. Do not actually DoS; one nested probe is enough.",
+          "variants": [
+            {
+              "name": "Deep nesting",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{me{friends{friends{friends{friends{id}}}}}}\"}",
+              "expect": "Must 400 / cost-exceeded, not a multi-second 200. Stop after one demonstration."
+            },
+            {
+              "name": "Wide connection",
+              "kind": "request",
+              "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"query\":\"{users(first:10000){edges{node{id email}}}}\"}",
+              "expect": "page size must be capped. Do not page through the corpus."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

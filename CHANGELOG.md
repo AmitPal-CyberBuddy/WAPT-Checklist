@@ -4,6 +4,21 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Context-driven testing workspace)
+
+- **Start testing** opens a compact **application profile** (type · authentication · features), not 623 checks and not an 18-question wizard. The wizard remains as Advanced scope.
+- The dashboard is the **applicable test plan**, grouped as TLS / Security Headers / HTTP / Client-Side (and Auth, Session, Authorization, API, JWT, upload, checkout when the profile includes them). A static site lists the named practical tests (Host Header, methods, traversal, CSP, mixed content, DOM XSS, prototype pollution, postMessage, .git, …) and hides login/IDOR/privilege.
+- Clicking a test is a **practical playbook**: Quick Test, numbered variants with copyable payloads, CHECK FOR (including per-variant observe bullets), VALIDATE, DO NOT REPORT. Methodology stays under Reporting and reference.
+- **Share the plan:** Copy share link encodes answers only (`#share/…`). Copy plan Markdown is the paste-ready checklist.
+
+### Added (Page playbooks — reported: looking at a page type should show every applicable test with variants and payloads, not methodology prose)
+
+- **Page playbooks** (`#playbooks`, `#playbook/<id>`): tester-facing packs for the surface in front of you. Sixteen packs: static/published page, login, registration, password reset, account/profile, session/cookies, file upload, search, checkout, admin, REST API, GraphQL, WebSocket, OAuth/SSO/SAML, JWT, and SPA/client-side. Opening a pack lists **every applicable check** for that page type (static ≈ 180, login ≈ 300) — not a curated shortlist. Authored start-here probes keep the named variants (Host header arbitrary/duplicate/X-Forwarded-Host, CSP, testssl, BOLA, alg=none…); the rest of the catalog expands in place with copyable requests.
+- The playbook board groups packs as **Matches this scope** / **Also relevant** / **Other surfaces**. A SaaS scope lights up login + SPA + API + JWT + profile together; an e-commerce scope lights up checkout + upload + search + login.
+- Scoping a **static marketing site** lands on the static-page playbook. Every other finished wizard lands on the playbook board, not the dashboard. `g p` opens the board. The dashboard banner lists every matching surface.
+- Methodology cards that a playbook covers now surface the same variants under *Procedure & variants*.
+- `playbooks/*.json` is validated: IDs resolve, every check has at least two named variants, manifest counts match.
+
 ### Fixed (Layout density — reported: every scope question needed scrolling on a laptop)
 
 - **Scope wizard fits one screen.** The wizard spent 697 px of vertical chrome before the first option, so a 4-option question rendered a 974 px page against a ~650 px laptop viewport. Now 330 px of chrome and a 534 px page: compact heading, one-line intro (hidden below 720 px tall), the local-storage explanation collapsed into a `<details>` summary instead of a permanent block, the step counter merged into the question heading, denser option cards, and the removal of the fixed `min-height` on `.wizard-body` (including a 500 px phone rule).

@@ -115,7 +115,7 @@ export function createWizard(root, initialState, callbacks = {}) {
       <div class="wizard-question" data-focus-region>
         <span class="wizard-step-id">REVIEW / LOCAL-ONLY</span>
         <h2 tabindex="-1">Review your assessment context</h2>
-        <p>Completing scope keeps all existing item status and notes. You can rerun this wizard at any time.</p>
+        <p>Start testing opens every matching surface for this application — not one page type. You can share that plan as a link (scope only, no findings).</p>
         <div class="wizard-summary">
           <div class="summary-context">
             <div class="summary-row"><span>Engagement</span><strong>${escapeHtml(state.engagement.name || 'Unnamed')}</strong></div>
@@ -205,7 +205,7 @@ export function createWizard(root, initialState, callbacks = {}) {
       <div class="wizard-progress" aria-hidden="true"><progress max="100" value="${Math.round((index / (keys.length - 1)) * 100)}"></progress></div>
       <div class="wizard-meta"><span>STEP ${String(index + 1).padStart(2, '0')} OF ${String(keys.length).padStart(2, '0')}</span><span>${Math.round((index / (keys.length - 1)) * 100)}% scoped</span></div>
       <div class="wizard-body">${content}</div>
-      <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Save scope & open dashboard →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
+      <div class="wizard-footer"><button class="button button-quiet" type="button" data-wizard-back ${index === 0 ? 'disabled' : ''}>← Back</button><div class="wizard-footer-actions">${question ? '<button class="wizard-skip" type="button" data-wizard-skip>Use Unknown</button>' : ''}${isLast ? '<button class="button button-primary" type="button" data-wizard-finish>Start testing →</button>' : '<button class="button button-primary" type="button" data-wizard-next>Continue →</button>'}</div></div>`;
     attachEvents();
     if (manageFocus) {
       // Land on the question, not wherever the previous (possibly longer) step was scrolled to.

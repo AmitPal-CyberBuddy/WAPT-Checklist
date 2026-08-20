@@ -480,7 +480,67 @@ function validatePhase7(itemIds = new Set()) {
       }
     }
   }
-  return { errors, chainIds, memberships, payloadCount: payloadIds.size };
+  const playbooks = validatePlaybooks(itemIds);
+  errors.push(...playbooks.errors);
+
+  return { errors, chainIds, memberships, payloadCount: payloadIds.size, playbookCount: playbooks.playbookCount };
+}
+
+function validatePlaybooks(itemIds = new Set()) {
+  const errors = [];
+  const root = path.join(ROOT, 'playbooks');
+  const manifestPath = path.join(root, 'manifest.json');
+  if (!fs.existsSync(manifestPath)) {
+    errors.push('playbooks/manifest.json: missing');
+    return { errors, playbookCount: 0 };
+  }
+  const manifest = parseJson(manifestPath, errors);
+  const ids = new Set();
+  let playbookCount = 0;
+  if (!manifest || !Array.isArray(manifest.playbooks)) {
+    if (manifest) errors.push('playbooks/manifest.json.playbooks: must be an array');
+    return { errors, playbookCount: 0 };
+  }
+  for (const entry of manifest.playbooks) {
+    const at = `playbooks/manifest.json.${entry?.id || 'unknown'}`;
+    if (!/^[a-z0-9-]{4,40}$/.test(entry?.id || '')) errors.push(`${at}: invalid playbook id`);
+    if (ids.has(entry.id)) errors.push(`${at}: duplicate playbook id`);
+    ids.add(entry.id);
+    const document = parseJson(path.join(root, entry.file || ''), errors);
+    if (!document) continue;
+    playbookCount += 1;
+    if (document.id !== entry.id) errors.push(`${at}: document ID does not match manifest`);
+    if (!hasText(document.title) || !hasText(document.summary)) errors.push(`${at}: title and summary are required`);
+    if (!Array.isArray(document.groups) || document.groups.length === 0) errors.push(`${at}.groups: at least one group required`);
+    const checkIds = new Set();
+    let checks = 0;
+    for (const [gIndex, group] of (document.groups || []).entries()) {
+      const where = `playbooks/${entry.file}.groups[${gIndex}]`;
+      if (!/^[a-z0-9-]{2,40}$/.test(group?.id || '')) errors.push(`${where}.id: invalid`);
+      if (!hasText(group?.title)) errors.push(`${where}.title: required`);
+      if (!Array.isArray(group?.checks) || group.checks.length === 0) errors.push(`${where}.checks: required`);
+      for (const [cIndex, check] of (group?.checks || []).entries()) {
+        const spot = `${where}.checks[${cIndex}]`;
+        checks += 1;
+        if (!/^[a-z0-9-]{2,40}$/.test(check?.id || '')) errors.push(`${spot}.id: invalid`);
+        if (checkIds.has(check?.id)) errors.push(`${spot}.id: duplicate check id`);
+        checkIds.add(check?.id);
+        if (!hasText(check?.title) || !hasText(check?.why) || !hasText(check?.validate)) errors.push(`${spot}: title, why, and validate are required`);
+        if (check?.item && !itemIds.has(check.item)) errors.push(`${spot}.item: unresolved ${check.item}`);
+        for (const related of check?.related || []) {
+          if (!itemIds.has(related)) errors.push(`${spot}.related: unresolved ${related}`);
+        }
+        if (!Array.isArray(check?.variants) || check.variants.length < 2) errors.push(`${spot}.variants: at least two named variants required`);
+        for (const [vIndex, variant] of (check?.variants || []).entries()) {
+          const vAt = `${spot}.variants[${vIndex}]`;
+          if (!hasText(variant?.name) || !hasText(variant?.payload) || !hasText(variant?.expect)) errors.push(`${vAt}: name, payload, and expect are required`);
+          if (variant?.kind && !['request', 'command', 'html', 'note'].includes(variant.kind)) errors.push(`${vAt}.kind: invalid`);
+        }
+      }
+    }
+    if (typeof entry.count === 'number' && entry.count !== checks) errors.push(`${at}: manifest count ${entry.count} differs from ${checks} checks`);
+  }
+  return { errors, playbookCount };
 }
 
 function validateFiles(files, options = {}) {
@@ -666,9 +726,9 @@ function main() {
   else if (enforceCoreFloors) console.log('Phase 4 floors satisfied for core categories 01–10.');
   else if (enforcePresentFloors) console.log('Floors satisfied for every production category present.');
   else console.log('Category floors were not enforced.');
-  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), 12 Burp workflow(s), and ${result.families.familyCount} test families.`);
+  if (result.phase7) console.log(`Validated ${result.phase7.chainIds.size} attack chain(s), ${result.phase7.payloadCount} payload reference(s), ${result.phase7.playbookCount} playbook(s), 12 Burp workflow(s), and ${result.families.familyCount} test families.`);
 }
 
 if (require.main === module) main();
 
-module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, validateFamilies, referenceUrlAllowed };
+module.exports = { CATEGORIES, OPTIONS, validateFiles, validatePhase7, validateFamilies, validatePlaybooks, referenceUrlAllowed };

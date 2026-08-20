@@ -142,7 +142,7 @@ test('tester-first card: progressive disclosure with the knowledge base preserve
   assert.match(card, /test-objective/);
   assert.match(card, /test-validate/);
   assert.match(card, /'Procedure & variants'/);
-  assert.match(card, /'Detailed methodology'/);
+  assert.match(card, /'Reporting and reference information'/);
   assert.match(card, /'References & mappings'/);
   assert.match(card, /'Notes & evidence'/);
   assert.match(card, /section\('Steps', item\.steps, true\)/);

@@ -27,7 +27,7 @@ const FINDING_ID = /^find-[a-z0-9-]{4,100}$/;
 // Don't-miss variant keys are "<family-id>#<content-hash>" so a tick stays attached to the
 // reminder it was recorded against even if the family list is reordered.
 const VARIANT_KEY = /^[a-z0-9-]{2,64}#[a-z0-9]{1,12}$/;
-const POSITION_VIEWS = new Set(['dashboard', 'families', 'family', 'checklist', 'search', 'chains', 'payloads']);
+const POSITION_VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'checklist', 'search', 'chains', 'payloads']);
 const MAX_IMPORT_BYTES = 5_000_000;
 
 function isObject(value) {

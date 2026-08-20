@@ -1,0 +1,1608 @@
+{
+  "schema_version": "1.0.0",
+  "id": "static-page",
+  "title": "Static / published page",
+  "summary": "A published origin with no first-party login or API. Work TLS, browser policy, Host/authority, path serving, leftover files, and client framing \u2014 then stop. Auth, CSRF, business logic, and interpreter injection are out of scope unless reconnaissance proves a backend.",
+  "when": {
+    "app_type": [
+      "static"
+    ]
+  },
+  "also_when": {
+    "app_type": [
+      "server_rendered",
+      "spa",
+      "hybrid"
+    ]
+  },
+  "default_for": [
+    "static"
+  ],
+  "groups": [
+    {
+      "id": "transport",
+      "title": "TLS / transport",
+      "summary": "Certificate, protocol, cipher, and HTTP-to-HTTPS behaviour on the public host.",
+      "checks": [
+        {
+          "id": "ssl-config",
+          "title": "Check SSL config \u2014 testssl",
+          "item": "WAPT-RECON-007",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "high",
+          "tool": "testssl.sh",
+          "why": "Weak protocols, expired or mismatched certificates, or a broken chain on a public host.",
+          "validate": "A protocol, cipher, or certificate defect is reproduced by testssl or an equivalent client \u2014 not a scanner grade alone.",
+          "variants": [
+            {
+              "name": "Fast testssl scan",
+              "kind": "command",
+              "payload": "testssl.sh --fast --sneaky https://www.example.com",
+              "expect": "SSLv2/3, TLS 1.0/1.1, export/NULL/RC4/3DES, expired or hostname-mismatched cert, incomplete chain."
+            },
+            {
+              "name": "Protocol and cipher only",
+              "kind": "command",
+              "payload": "testssl.sh -p -E https://www.example.com",
+              "expect": "Which protocol versions and cipher suites the host actually offers."
+            },
+            {
+              "name": "Certificate and chain",
+              "kind": "command",
+              "payload": "testssl.sh -S https://www.example.com",
+              "expect": "SANs, validity window, issuer, and whether intermediates are served."
+            },
+            {
+              "name": "openssl s_client handshake",
+              "kind": "command",
+              "payload": "echo | openssl s_client -connect www.example.com:443 -servername www.example.com -tls1_0 2>/dev/null | openssl x509 -noout -dates -subject -ext subjectAltName",
+              "expect": "TLS 1.0 handshake succeeds (bad) or is refused (good). Repeat with -tls1_1 and -tls1_2."
+            }
+          ]
+        },
+        {
+          "id": "https-redirect",
+          "title": "HTTP \u2192 HTTPS redirect",
+          "item": "WAPT-HTTP-014",
+          "related": [
+            "WAPT-HDR-002"
+          ],
+          "severity": "medium",
+          "why": "Plain HTTP still serves content, cookies, or a redirect to the wrong host.",
+          "validate": "The first HTTP response is a redirect to the canonical HTTPS host and carries no Set-Cookie or body secrets.",
+          "variants": [
+            {
+              "name": "Plain GET on port 80",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "301/308 to https://www.example.com/\u2026 No body, no Set-Cookie."
+            },
+            {
+              "name": "HTTP with a path and query",
+              "kind": "request",
+              "payload": "GET /docs/index.html?ref=nav HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Redirect preserves a safe path and drops tokens if any were present."
+            },
+            {
+              "name": "HTTP Host mismatch",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: evil.example\nConnection: close",
+              "expect": "Reject or redirect to the canonical HTTPS host \u2014 never to https://evil.example/."
+            }
+          ]
+        },
+        {
+          "id": "deprecated-tls",
+          "title": "Deprecated TLS versions",
+          "item": "WAPT-RECON-007",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "high",
+          "tool": "testssl.sh",
+          "why": "SSLv2/3 and TLS 1.0/1.1 still offered on the public host.",
+          "validate": "A real client completes a handshake on a deprecated protocol. A scanner grade alone is not a finding.",
+          "variants": [
+            {
+              "name": "TLS 1.0 handshake",
+              "kind": "command",
+              "payload": "echo | openssl s_client -connect www.example.com:443 -servername www.example.com -tls1 2>/dev/null | head -n 20",
+              "expect": "Handshake refused (good) or completed (reportable if a browser or library can still negotiate it).",
+              "observe": [
+                "Handshake success vs alert",
+                "Certificate still presented on TLS 1.0"
+              ]
+            },
+            {
+              "name": "TLS 1.1 handshake",
+              "kind": "command",
+              "payload": "echo | openssl s_client -connect www.example.com:443 -servername www.example.com -tls1_1 2>/dev/null | head -n 20",
+              "expect": "Same as TLS 1.0. Repeat with -tls1_2 and -tls1_3 as the control.",
+              "observe": [
+                "Which protocol versions complete",
+                "ALPN / cipher on the deprecated handshake"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "weak-ciphers",
+          "title": "Weak cipher suites",
+          "item": "WAPT-RECON-007",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "high",
+          "tool": "testssl.sh",
+          "why": "NULL, export, RC4, 3DES, or anonymous DH suites are still offered.",
+          "validate": "testssl or openssl lists a weak suite that a client can actually negotiate \u2014 not a historic cipher in documentation.",
+          "variants": [
+            {
+              "name": "Cipher inventory",
+              "kind": "command",
+              "payload": "testssl.sh -E https://www.example.com",
+              "expect": "No NULL/EXPORT/RC4/3DES/anon. Prefer AEAD (AES-GCM / CHACHA20-POLY1305).",
+              "observe": [
+                "Offered suites",
+                "Whether a weak suite is selectable"
+              ]
+            },
+            {
+              "name": "Force a weak suite",
+              "kind": "command",
+              "payload": "echo | openssl s_client -connect www.example.com:443 -servername www.example.com -cipher \"RC4-SHA:DES-CBC3-SHA:NULL\" 2>/dev/null | head -n 15",
+              "expect": "Handshake must fail. Success is the finding.",
+              "observe": [
+                "Handshake result",
+                "Negotiated cipher name"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "certificate",
+          "title": "Certificate configuration",
+          "item": "WAPT-RECON-007",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "medium",
+          "tool": "testssl.sh",
+          "why": "Expired, hostname-mismatched, incomplete-chain, or wrong-SAN certificates break trust or enable look-alike hosts.",
+          "validate": "A real client rejects the chain, or a SAN does not cover the host users type. Do not report a missing CT log as a finding.",
+          "variants": [
+            {
+              "name": "Names and dates",
+              "kind": "command",
+              "payload": "echo | openssl s_client -connect www.example.com:443 -servername www.example.com 2>/dev/null | openssl x509 -noout -dates -subject -issuer -ext subjectAltName",
+              "expect": "NotBefore/NotAfter cover now. SAN includes www and the apex if users hit both.",
+              "observe": [
+                "Validity window",
+                "SAN vs Host users type",
+                "Issuer"
+              ]
+            },
+            {
+              "name": "Chain completeness",
+              "kind": "command",
+              "payload": "testssl.sh -S https://www.example.com",
+              "expect": "Intermediates are served. A leaf-only chain that still works via AIA is a lead, not always a finding.",
+              "observe": [
+                "Chain length",
+                "Trust in a stock browser"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "mixed-content",
+          "title": "Mixed content",
+          "item": "WAPT-HTTP-014",
+          "related": [
+            "WAPT-HDR-002",
+            "WAPT-CLIENT-023"
+          ],
+          "severity": "medium",
+          "why": "An HTTPS page still loads scripts, styles, or form actions over http://.",
+          "validate": "A script, stylesheet, or form target is fetched or submitted over HTTP on the live page. An http:// in a comment is not a finding.",
+          "variants": [
+            {
+              "name": "Active mixed content",
+              "kind": "note",
+              "payload": "View-source and DevTools Network on https://www.example.com/\nGrep: src=\"http://  href=\"http://  action=\"http://  url(http://",
+              "expect": "Any script/style/iframe/form over HTTP on an HTTPS page. Images are passive mixed content \u2014 lower impact.",
+              "observe": [
+                "http:// requests on an https document",
+                "Whether a script actually executed",
+                "Form action scheme"
+              ]
+            },
+            {
+              "name": "Upgrade-Insecure-Requests",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Content-Security-Policy: upgrade-insecure-requests is a control, not a substitute for fixing the URLs.",
+              "observe": [
+                "CSP upgrade-insecure-requests present?",
+                "Whether http:// URLs remain in markup"
+              ]
+            }
+          ]
+        }
+      ],
+      "surface": "tls"
+    },
+    {
+      "id": "headers",
+      "title": "Security headers",
+      "summary": "HSTS, CSP, framing, nosniff, referrer, and the missing-header baseline.",
+      "checks": [
+        {
+          "id": "missing-headers",
+          "title": "Missing security headers",
+          "item": "WAPT-HDR-001",
+          "related": [
+            "WAPT-HDR-022",
+            "WAPT-HDR-018"
+          ],
+          "severity": "medium",
+          "why": "A scanner lead is not a finding. Map each absent or weak header to a real browser exposure on this page.",
+          "validate": "Each reported gap is tied to a page that actually needs that policy, or is recorded as informational with no impact.",
+          "variants": [
+            {
+              "name": "Capture the live header set",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Record Strict-Transport-Security, Content-Security-Policy, X-Frame-Options, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, Cross-Origin-Opener-Policy, Cache-Control."
+            },
+            {
+              "name": "HTML vs asset vs error",
+              "kind": "request",
+              "payload": "GET /this-path-should-404 HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Error and static-asset responses often drop policies that the homepage has. Compare / , /404, and a .js / .css URL."
+            },
+            {
+              "name": "curl header dump",
+              "kind": "command",
+              "payload": "curl -sI https://www.example.com/",
+              "expect": "Same set as Repeater. A missing header is a lead \u2014 impact is proven on the specific check below."
+            }
+          ]
+        },
+        {
+          "id": "hsts",
+          "title": "Check HSTS enforcement",
+          "item": "WAPT-HDR-002",
+          "related": [
+            "WAPT-HTTP-014"
+          ],
+          "severity": "medium",
+          "why": "Without HSTS a network attacker can keep the victim on HTTP or strip the upgrade.",
+          "validate": "HTTPS responses on the real host send a long-lived HSTS policy, and HTTP does not serve the page.",
+          "variants": [
+            {
+              "name": "Read the HSTS policy",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Strict-Transport-Security: max-age=31536000; includeSubDomains (preload optional). max-age under 6 months is weak."
+            },
+            {
+              "name": "HSTS must not appear on HTTP",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "An HSTS header on a plaintext response is ignored by browsers. Confirm it is only set on HTTPS."
+            },
+            {
+              "name": "Apex vs www",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: example.com\nConnection: close",
+              "expect": "If users hit the apex, that host needs its own HSTS (or includeSubDomains from a parent that they actually visit first)."
+            },
+            {
+              "name": "preload readiness (informational)",
+              "kind": "note",
+              "payload": "Strict-Transport-Security: max-age=31536000; includeSubDomains; preload",
+              "expect": "Do not report missing preload. Report missing or short max-age, or HTTP still serving content."
+            }
+          ]
+        },
+        {
+          "id": "csp",
+          "title": "Check CSP",
+          "item": "WAPT-HDR-003",
+          "related": [
+            "WAPT-HDR-004",
+            "WAPT-HDR-005",
+            "WAPT-XSS-022"
+          ],
+          "severity": "medium",
+          "why": "A missing, report-only, or unsafe-inline CSP does not stop script the page already loads \u2014 but it is the impact-reduction control for XSS and unexpected script sources.",
+          "validate": "The enforced policy (not Report-Only) would block a script source the application does not intend. A missing CSP on a static brochure is informational unless a script sink exists.",
+          "variants": [
+            {
+              "name": "Read the enforced policy",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Content-Security-Policy (enforced) vs Content-Security-Policy-Report-Only. Report-Only is not protection.",
+              "observe": [
+                "Enforced vs Report-Only",
+                "unsafe-inline / unsafe-eval / wildcards",
+                "Missing directives that matter on this page"
+              ]
+            },
+            {
+              "name": "unsafe-inline / unsafe-eval / wildcards",
+              "kind": "note",
+              "payload": "Content-Security-Policy: default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' https: data: *",
+              "expect": "script-src with 'unsafe-inline', 'unsafe-eval', data:, https:, or * does not constrain script. object-src should be 'none'.",
+              "observe": [
+                "Enforced vs Report-Only",
+                "unsafe-inline / unsafe-eval / wildcards",
+                "Missing directives that matter on this page"
+              ]
+            },
+            {
+              "name": "Nonce or hash without unsafe fallback",
+              "kind": "note",
+              "payload": "Content-Security-Policy: script-src 'nonce-r4nd0m' 'unsafe-inline'",
+              "expect": "A nonce plus 'unsafe-inline' makes the nonce useless in supporting browsers. Hashes plus 'unsafe-inline' have the same problem.",
+              "observe": [
+                "Enforced vs Report-Only",
+                "unsafe-inline / unsafe-eval / wildcards",
+                "Missing directives that matter on this page"
+              ]
+            },
+            {
+              "name": "base-uri and form-action",
+              "kind": "note",
+              "payload": "Content-Security-Policy: default-src 'self'; base-uri 'self'; form-action 'self'; object-src 'none'; frame-ancestors 'none'",
+              "expect": "Missing base-uri allows <base href> to retarget relative URLs. Missing form-action allows form exfiltration.",
+              "observe": [
+                "Enforced vs Report-Only",
+                "unsafe-inline / unsafe-eval / wildcards",
+                "Missing directives that matter on this page"
+              ]
+            },
+            {
+              "name": "Duplicate or conflicting CSP",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Two Content-Security-Policy headers combine as an AND in modern browsers, but a CDN and origin can silently weaken each other. Record both raw values.",
+              "observe": [
+                "Enforced vs Report-Only",
+                "unsafe-inline / unsafe-eval / wildcards",
+                "Missing directives that matter on this page"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "clickjacking",
+          "title": "Clickjacking check",
+          "item": "WAPT-HDR-006",
+          "related": [
+            "WAPT-HDR-007",
+            "WAPT-CLIENT-008"
+          ],
+          "severity": "medium",
+          "why": "A third-party page can frame this origin and overlay or steal clicks if neither CSP frame-ancestors nor X-Frame-Options forbids it.",
+          "validate": "A cross-origin iframe of the real page either fails to load or the page has no sensitive control. A missing header on a brochure with no UI is informational.",
+          "variants": [
+            {
+              "name": "Read framing headers",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Content-Security-Policy: frame-ancestors 'none' (or an explicit allowlist). X-Frame-Options: DENY or SAMEORIGIN must not contradict CSP."
+            },
+            {
+              "name": "Cross-origin iframe",
+              "kind": "html",
+              "payload": "<!doctype html>\n<title>frame test</title>\n<iframe src=\"https://www.example.com/\" style=\"width:100%;height:100%\"></iframe>",
+              "expect": "The iframe stays blank / errors when frame-ancestors or XFO is set. If the page renders, framing is allowed."
+            },
+            {
+              "name": "sandbox + allow-from leftovers",
+              "kind": "html",
+              "payload": "<iframe src=\"https://www.example.com/\" sandbox=\"allow-scripts allow-forms\"></iframe>",
+              "expect": "X-Frame-Options: ALLOW-FROM is obsolete and ignored. sandbox on the attacker iframe is not a server defense."
+            },
+            {
+              "name": "XFO vs frame-ancestors conflict",
+              "kind": "note",
+              "payload": "X-Frame-Options: DENY\nContent-Security-Policy: frame-ancestors https://partner.example",
+              "expect": "CSP wins in modern browsers. Record which policy a real browser applied, not which header a scanner listed."
+            }
+          ]
+        },
+        {
+          "id": "nosniff-referrer",
+          "title": "nosniff, Referrer-Policy, Cache-Control",
+          "item": "WAPT-HDR-008",
+          "related": [
+            "WAPT-HDR-010",
+            "WAPT-HDR-015",
+            "WAPT-HTTP-006"
+          ],
+          "severity": "low",
+          "why": "User-controlled or downloadable files can be sniffed as HTML; referrers can leak tokens; HTML can be stored in a shared cache.",
+          "validate": "A realistic load context shows sniffing, referrer leakage, or shared-cache reuse \u2014 not just a missing header name.",
+          "variants": [
+            {
+              "name": "X-Content-Type-Options",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "X-Content-Type-Options: nosniff on HTML and on any user-influenced or downloadable body."
+            },
+            {
+              "name": "Referrer-Policy",
+              "kind": "note",
+              "payload": "Referrer-Policy: strict-origin-when-cross-origin",
+              "expect": "If any URL on this origin ever carries a token or internal path, a missing or unsafe-url policy leaks it cross-origin."
+            },
+            {
+              "name": "Cache-Control on HTML",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Public marketing HTML may be cacheable. Authenticated or personalized HTML must be private / no-store."
+            }
+          ]
+        },
+        {
+          "id": "x-content-type-options",
+          "title": "X-Content-Type-Options",
+          "item": "WAPT-HDR-008",
+          "related": [
+            "WAPT-HDR-001"
+          ],
+          "severity": "low",
+          "why": "User-influenced or downloadable bodies can be sniffed as HTML without nosniff.",
+          "validate": "A realistic content-type mismatch is executed as HTML, or a downloadable user file is sniffed. Missing nosniff on a brochure is informational.",
+          "variants": [
+            {
+              "name": "Read nosniff",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "X-Content-Type-Options: nosniff on HTML and on any user-influenced or downloadable body.",
+              "observe": [
+                "Header present on /",
+                "Header present on a .js / download URL"
+              ]
+            },
+            {
+              "name": "HTML vs download",
+              "kind": "request",
+              "payload": "GET /assets/app.js HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Assets and error pages often drop nosniff. Compare / , a .js, and a 404.",
+              "observe": [
+                "Content-Type",
+                "X-Content-Type-Options",
+                "Whether the body is user-influenced"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "referrer-policy",
+          "title": "Referrer Policy",
+          "item": "WAPT-HDR-010",
+          "related": [
+            "WAPT-HDR-001"
+          ],
+          "severity": "low",
+          "why": "Tokens or internal paths in the URL leak cross-origin via Referer.",
+          "validate": "A cross-origin navigation from a token-bearing URL actually sends the secret. Missing Referrer-Policy on a brochure with no secrets is informational.",
+          "variants": [
+            {
+              "name": "Read the policy",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Referrer-Policy: strict-origin-when-cross-origin or stricter. unsafe-url is the weak case.",
+              "observe": [
+                "Header value",
+                "Whether any URL on this origin carries a token"
+              ]
+            },
+            {
+              "name": "Meta vs header",
+              "kind": "note",
+              "payload": "<meta name=\"referrer\" content=\"no-referrer\">",
+              "expect": "A meta referrer can override or conflict with the header. Record which one a browser applied.",
+              "observe": [
+                "Header",
+                "Meta referrer",
+                "Actual Referer on a cross-origin click"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "permissions-policy",
+          "title": "Permissions Policy",
+          "item": "WAPT-HDR-011",
+          "related": [
+            "WAPT-HDR-001"
+          ],
+          "severity": "low",
+          "why": "Camera, geolocation, payment, and similar powerful features stay available to this origin or its iframes.",
+          "validate": "A powerful feature that this page does not need can be invoked, or an embedded frame inherits it. Absence on a static brochure is informational.",
+          "variants": [
+            {
+              "name": "Read Permissions-Policy",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Permissions-Policy (or Feature-Policy leftover). camera=(), geolocation=(), microphone=(), payment=() for pages that do not use them.",
+              "observe": [
+                "Which features are allowed",
+                "Whether an iframe inherits them"
+              ]
+            },
+            {
+              "name": "Feature-Policy leftover",
+              "kind": "note",
+              "payload": "Feature-Policy: camera 'none'; geolocation 'none'",
+              "expect": "Feature-Policy is obsolete. Browsers honour Permissions-Policy. Do not report a missing Feature-Policy.",
+              "observe": [
+                "Permissions-Policy vs Feature-Policy",
+                "Actual feature availability in DevTools"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "corp",
+          "title": "Cross-Origin Resource Policy",
+          "item": "WAPT-HDR-014",
+          "related": [
+            "WAPT-HDR-012",
+            "WAPT-HDR-013"
+          ],
+          "severity": "low",
+          "why": "Sensitive responses can be included cross-origin as no-cors resources without CORP.",
+          "validate": "A cross-origin no-cors read of a non-public body is possible. CORP missing on public marketing HTML is informational.",
+          "variants": [
+            {
+              "name": "Read CORP",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Cross-Origin-Resource-Policy: same-origin or same-site on responses that must not be embedded cross-origin.",
+              "observe": [
+                "CORP value",
+                "COOP / COEP companions",
+                "Whether the body is sensitive"
+              ]
+            },
+            {
+              "name": "no-cors embed",
+              "kind": "html",
+              "payload": "<script>fetch(\"https://www.example.com/private.json\", {mode:\"no-cors\"})</script>",
+              "expect": "Opaque success is not a finding. A readable non-public body is. Public HTML does not need CORP.",
+              "observe": [
+                "Opaque vs readable",
+                "Status",
+                "Body sensitivity"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cache-control",
+          "title": "Cache-Control",
+          "item": "WAPT-HDR-015",
+          "related": [
+            "WAPT-HTTP-020",
+            "WAPT-HTTP-021"
+          ],
+          "severity": "medium",
+          "why": "Personalized or authenticated HTML stored in a shared cache is served to the next user.",
+          "validate": "A shared cache or another browser session receives a personalized body. Public marketing HTML may be cacheable.",
+          "variants": [
+            {
+              "name": "Read caching headers",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Cache-Control, Pragma, Expires, Vary. Authenticated or personalized HTML must be private / no-store.",
+              "observe": [
+                "Cache-Control",
+                "Set-Cookie vs public",
+                "Vary"
+              ]
+            },
+            {
+              "name": "Shared vs private",
+              "kind": "note",
+              "payload": "Cache-Control: public, max-age=31536000",
+              "expect": "Fine on hashed static assets. A finding on HTML that differs per user or carries a session.",
+              "observe": [
+                "Is the body user-specific?",
+                "CDN cache hit on a second client"
+              ]
+            }
+          ]
+        }
+      ],
+      "surface": "headers"
+    },
+    {
+      "id": "host-authority",
+      "title": "Host / authority",
+      "summary": "Host header injection, forwarding headers, and absolute-form request targets.",
+      "checks": [
+        {
+          "id": "host-header",
+          "title": "Host Header Injection",
+          "item": "WAPT-HTTP-011",
+          "related": [
+            "WAPT-HTTP-010",
+            "WAPT-HTTP-012",
+            "WAPT-INJ-047",
+            "WAPT-INJ-049",
+            "WAPT-INJ-050"
+          ],
+          "severity": "high",
+          "why": "The edge or origin uses Host (or a forwarding header) to pick a vhost, build absolute URLs, or key a cache.",
+          "validate": "The injected authority appears in a Location, generated link, cache key, or a different virtual host \u2014 not only in an error page echo.",
+          "variants": [
+            {
+              "name": "Arbitrary Host",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: evil.example\nConnection: close",
+              "expect": "400/421/404, or the canonical site ignoring Host. Vulnerable if Location, asset URLs, or a password/reset-style link use evil.example.",
+              "observe": [
+                "Status",
+                "Location / generated links",
+                "Whether evil.example is trusted"
+              ]
+            },
+            {
+              "name": "Duplicate Host",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nHost: evil.example\nConnection: close",
+              "expect": "Which Host is processed? Redirect, routing, or cache disagreement between hops is the finding \u2014 not a 200 alone.",
+              "observe": [
+                "Which Host is processed",
+                "Front-end vs origin",
+                "Cache key"
+              ]
+            },
+            {
+              "name": "Duplicate Host reversed",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: evil.example\nHost: www.example.com\nConnection: close",
+              "expect": "Compare with the previous order. Front-end and origin must agree on first vs last Host.",
+              "observe": [
+                "Order sensitivity",
+                "Routing"
+              ]
+            },
+            {
+              "name": "Host normalization",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: EXAMPLE.COM\nConnection: close",
+              "expect": "Also try example.com. and example.com:443. Case, trailing dot, and default port must not change routing or generated URLs.",
+              "observe": [
+                "Case / trailing dot / :443 vs canonical"
+              ]
+            },
+            {
+              "name": "Host with port",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com:443\nConnection: close",
+              "expect": "Treated as the same host. Vulnerable if generated URLs become https://www.example.com:443@evil.example/ or similar parse tricks.",
+              "observe": [
+                "Generated URLs",
+                "Parse tricks"
+              ]
+            },
+            {
+              "name": "Absolute-form request target",
+              "kind": "request",
+              "payload": "GET https://evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Origin-form only, or the absolute URL is ignored. Vulnerable if routing or generated links follow evil.example.",
+              "observe": [
+                "Routing follows evil.example?",
+                "Generated links"
+              ]
+            },
+            {
+              "name": "X-Forwarded-Host",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nConnection: close",
+              "expect": "Ignored unless the hop is a trusted proxy that overwrites the value. Vulnerable if Location or links use evil.example.",
+              "observe": [
+                "Location / links use evil.example?",
+                "Trusted proxy?"
+              ]
+            },
+            {
+              "name": "X-Host / X-Forwarded-Server",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nX-Host: evil.example\nX-Forwarded-Server: evil.example\nConnection: close",
+              "expect": "Same as X-Forwarded-Host. Some Java and IIS stacks prefer these over Host.",
+              "observe": [
+                "Same as X-Forwarded-Host"
+              ]
+            },
+            {
+              "name": "Forwarded (RFC 7239)",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nForwarded: host=evil.example;proto=https\nConnection: close",
+              "expect": "Ignored unless the edge authenticates the hop. Vulnerable if proto or host is trusted for redirects or cookies.",
+              "observe": [
+                "host= and proto= trusted?"
+              ]
+            },
+            {
+              "name": "X-Forwarded-Proto downgrade",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nX-Forwarded-Proto: http\nX-Forwarded-Scheme: http\nConnection: close",
+              "expect": "Canonical https links stay https. Vulnerable if the app emits http://\u2026 cookies or redirects.",
+              "observe": [
+                "http:// cookies or redirects"
+              ]
+            },
+            {
+              "name": "Line-wrapped / padded Host",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nHost: www.example.com.evil.example\nConnection: close",
+              "expect": "Suffix and look-alike hosts must not match a substring allowlist (example.com inside attacker.example.com.evil.example).",
+              "observe": [
+                "Substring allowlist bypass"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "absolute-url",
+          "title": "Absolute URL injection",
+          "item": "WAPT-HTTP-010",
+          "related": [
+            "WAPT-HTTP-013",
+            "WAPT-CLIENT-004"
+          ],
+          "severity": "medium",
+          "why": "A path, parameter, or generated link accepts an absolute or protocol-relative URL and navigates or loads off-origin.",
+          "validate": "The browser or a Location header ends on an origin you control. Reflected text without navigation is not enough.",
+          "variants": [
+            {
+              "name": "Absolute HTTPS",
+              "kind": "request",
+              "payload": "GET /?next=https://evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "No 3xx to evil.example. Repeat for next, url, redirect, return, dest, continue, redir, target."
+            },
+            {
+              "name": "Protocol-relative",
+              "kind": "request",
+              "payload": "GET /?next=//evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Rejected or treated as a relative path. Vulnerable if Location becomes //evil.example/."
+            },
+            {
+              "name": "Backslash and encoded slash",
+              "kind": "request",
+              "payload": "GET /?next=/\\evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Some parsers treat /\\evil.example as a scheme-relative URL. Also try /%2f%2fevil.example/ and /%5cevil.example/."
+            },
+            {
+              "name": "javascript: and data:",
+              "kind": "request",
+              "payload": "GET /?next=javascript:alert(1) HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Must not become a navigable Location or an href. data:text/html,\u2026 is the same class."
+            },
+            {
+              "name": "Open-redirect in static HTML",
+              "kind": "note",
+              "payload": "<a href=\"//evil.example/\">continue</a>\n<meta http-equiv=\"refresh\" content=\"0;url=https://evil.example/\">",
+              "expect": "Grep published HTML and JS for // , https://, location.href, window.open, and meta refresh built from query or hash."
+            }
+          ]
+        },
+        {
+          "id": "http-methods",
+          "title": "HTTP method handling",
+          "item": "WAPT-HTTP-001",
+          "related": [
+            "WAPT-HTTP-002",
+            "WAPT-HTTP-003"
+          ],
+          "severity": "medium",
+          "why": "TRACE, PUT, DELETE, or method override changes behaviour the page did not intend.",
+          "validate": "An unexpected method returns a body, echoes input (TRACE), or changes state. OPTIONS listing a method is a lead, not a finding.",
+          "variants": [
+            {
+              "name": "OPTIONS",
+              "kind": "request",
+              "payload": "OPTIONS / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Allow / Access-Control-Allow-Methods. TRACE, PUT, DELETE on a static origin should not be live.",
+              "observe": [
+                "Allow header",
+                "Status",
+                "Body"
+              ]
+            },
+            {
+              "name": "TRACE",
+              "kind": "request",
+              "payload": "TRACE / HTTP/1.1\nHost: www.example.com\nX-WAPT: probe\nConnection: close",
+              "expect": "TRACE must not echo headers (XST). 405/501 is the secure case.",
+              "observe": [
+                "Status",
+                "Whether X-WAPT is reflected in the body"
+              ]
+            },
+            {
+              "name": "PUT / DELETE",
+              "kind": "request",
+              "payload": "PUT /wapt-method-probe.txt HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nContent-Length: 4\nConnection: close\n\nwapt",
+              "expect": "Must not store a file. Follow with GET of the same path. Stop after one confirmed write and delete the object.",
+              "observe": [
+                "PUT status",
+                "Follow-up GET",
+                "DELETE to clean up"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "open-redirect",
+          "title": "Open redirect",
+          "item": "WAPT-HTTP-013",
+          "related": [
+            "WAPT-HTTP-010",
+            "WAPT-CLIENT-004"
+          ],
+          "severity": "medium",
+          "why": "A parameter or generated link accepts an absolute or protocol-relative URL and navigates off-origin.",
+          "validate": "The browser or a Location header ends on an origin you control. Reflected text without navigation is not enough.",
+          "variants": [
+            {
+              "name": "Absolute HTTPS",
+              "kind": "request",
+              "payload": "GET /?next=https://evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "No 3xx to evil.example. Repeat for next, url, redirect, return, dest, continue, redir, target.",
+              "observe": [
+                "Location header",
+                "Status",
+                "Refresh / meta / JS navigation"
+              ]
+            },
+            {
+              "name": "Protocol-relative",
+              "kind": "request",
+              "payload": "GET /?next=//evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Rejected or treated as a relative path. Vulnerable if Location becomes //evil.example/.",
+              "observe": [
+                "Location",
+                "Whether the path is treated as relative"
+              ]
+            },
+            {
+              "name": "Backslash parse",
+              "kind": "request",
+              "payload": "GET /?next=/\\evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Some parsers treat /\\evil.example as scheme-relative. Also try /%2f%2fevil.example/.",
+              "observe": [
+                "Location",
+                "Browser vs server parse"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "request-smuggling",
+          "title": "HTTP request smuggling",
+          "item": "WAPT-SMUG-003",
+          "related": [
+            "WAPT-SMUG-001",
+            "WAPT-SMUG-004"
+          ],
+          "severity": "high",
+          "why": "Front-end and origin disagree on Content-Length vs Transfer-Encoding, so a second request can be prepended.",
+          "validate": "A desync is demonstrated with a harmless marker on an authorized target, then stopped. Do not desync production traffic. Mapping hops first is mandatory.",
+          "variants": [
+            {
+              "name": "Map the hops first",
+              "kind": "note",
+              "payload": "Record CDN / proxy / origin. Confirm a maintenance window. One paired probe at a time. Stop on queue anomalies.",
+              "expect": "Do not spray. WAPT-SMUG-001 is the prerequisite. This check is Confirm until hops are known.",
+              "observe": [
+                "Hops",
+                "HTTP/1.1 vs HTTP/2",
+                "Authorization to probe"
+              ]
+            },
+            {
+              "name": "CL.TE probe shape (authorized lab only)",
+              "kind": "request",
+              "payload": "POST / HTTP/1.1\nHost: www.example.com\nContent-Length: 6\nTransfer-Encoding: chunked\nConnection: close\n\n0\r\n\r\nX",
+              "expect": "A 400/timeout/desynced next response is a lead. Confirm with a single follow-up GET for a marker you placed. Never poison shared-user traffic.",
+              "observe": [
+                "Status of the probe",
+                "Behaviour of the next request",
+                "Whether to STOP"
+              ]
+            }
+          ]
+        }
+      ],
+      "surface": "http"
+    },
+    {
+      "id": "paths",
+      "title": "Paths and files",
+      "summary": "Directory enumeration, listing, traversal, leftovers, and well-known files.",
+      "checks": [
+        {
+          "id": "dir-enum",
+          "title": "Directory enumeration",
+          "item": "WAPT-RECON-011",
+          "related": [
+            "WAPT-INFO-006",
+            "WAPT-INFO-007",
+            "WAPT-INFO-008",
+            "WAPT-RECON-008",
+            "WAPT-RECON-010"
+          ],
+          "severity": "medium",
+          "why": "Predictable paths expose admin panels, backups, source, or environment files on a published origin.",
+          "validate": "A path returns non-public content (config, source, backup, listing, or an unexpected application). A 403 on /admin is a lead, not a finding.",
+          "variants": [
+            {
+              "name": "robots, sitemap, security.txt",
+              "kind": "request",
+              "payload": "GET /robots.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Disallow entries and sitemap URLs are leads. Also fetch /sitemap.xml and /.well-known/security.txt."
+            },
+            {
+              "name": "Common published leftovers",
+              "kind": "note",
+              "payload": "/.git/HEAD\n/.svn/entries\n/.env\n/.env.local\n/.env.production\n/web.config\n/WP-config.php.bak\n/backup.zip\n/backup.tar.gz\n/site.zip\n/www.zip\n/dump.sql\n/composer.json\n/package.json\n/server-status\n/server-info\n/.DS_Store\n/Thumbs.db\n/crossdomain.xml\n/clientaccesspolicy.xml",
+              "expect": "Any 200 with real content is in-scope disclosure. Confirm the body, do not assume from status alone."
+            },
+            {
+              "name": "Hidden and leftover indexes",
+              "kind": "note",
+              "payload": "/admin/\n/administrator/\n/login/\n/dashboard/\n/staging/\n/dev/\n/test/\n/old/\n/backup/\n/bak/\n/tmp/\n/private/\n/internal/\n/.well-known/openid-configuration\n/.well-known/change-password",
+              "expect": "A different application, default page, or auth wall that the scope document did not mention."
+            },
+            {
+              "name": "ffuf wordlist (authorized, low rate)",
+              "kind": "command",
+              "payload": "ffuf -u https://www.example.com/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -mc 200,204,301,302,307,401,403 -rate 20 -t 2",
+              "expect": "Keep rate low. Follow interesting hits by hand. A 403 is not a finding."
+            }
+          ]
+        },
+        {
+          "id": "dir-listing",
+          "title": "Directory listing",
+          "item": "WAPT-INFO-009",
+          "related": [
+            "WAPT-INFO-006"
+          ],
+          "severity": "medium",
+          "why": "An index-less directory prints names of backups, source maps, or objects that were never linked.",
+          "validate": "The response body is an autoindex (Index of /\u2026, S3 listing, or equivalent) and names objects that should not be public.",
+          "variants": [
+            {
+              "name": "Trailing-slash directory",
+              "kind": "request",
+              "payload": "GET /assets/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Index of /assets, or an S3/GCS XML listing. Repeat for /static/, /uploads/, /images/, /css/, /js/, /backup/."
+            },
+            {
+              "name": "Parent of a known file",
+              "kind": "request",
+              "payload": "GET /css/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "If /css/app.css exists, /css/ often lists maps, .bak, and old hashes."
+            },
+            {
+              "name": "Object-storage listing",
+              "kind": "request",
+              "payload": "GET /?prefix=&delimiter=/ HTTP/1.1\nHost: files.example.com\nConnection: close",
+              "expect": "S3-style ListBucketResult XML. Also try ?list-type=2 on the bucket hostname."
+            }
+          ]
+        },
+        {
+          "id": "path-traversal",
+          "title": "Path traversal",
+          "item": "WAPT-HTTP-007",
+          "related": [
+            "WAPT-HTTP-008",
+            "WAPT-INFO-006"
+          ],
+          "severity": "high",
+          "why": "The file server joins a user-influenced path onto a document root and does not canonicalize before read.",
+          "validate": "A traversal reads a file outside the intended directory. On production use a canary you placed, not /etc/passwd.",
+          "variants": [
+            {
+              "name": "Dot-dot slash",
+              "kind": "request",
+              "payload": "GET /assets/../../../wapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "The canary (or a known file above the alias) is returned. Stop after one confirmed read.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            },
+            {
+              "name": "URL-encoded separators",
+              "kind": "request",
+              "payload": "GET /assets/..%2f..%2f..%2fwapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Same as ../ after one decode. Also try %2e%2e/ and %2e%2e%2f.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            },
+            {
+              "name": "Double-encoded",
+              "kind": "request",
+              "payload": "GET /assets/..%252f..%252f..%252fwapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Edge decodes once, origin decodes again. Vulnerable if the second decode is after the path check.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            },
+            {
+              "name": "Nested-dot and backslash",
+              "kind": "request",
+              "payload": "GET /assets/....//....//wapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Also try ..\\..\\wapt-canary.txt and /assets/..%5c..%5cwapt-canary.txt on IIS/Windows origins.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            },
+            {
+              "name": "Null byte and semicolon (legacy)",
+              "kind": "request",
+              "payload": "GET /assets/..%00/../wapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "Rare on modern stacks. Also /assets/wapt-canary.txt%00.css and /assets/wapt-canary.txt;.css.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            },
+            {
+              "name": "Alias / off-by-slash",
+              "kind": "request",
+              "payload": "GET /static../wapt-canary.txt HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "nginx alias /static without a trailing slash can treat /static../ as outside the prefix. Also try /static../ and /static/../.",
+              "observe": [
+                "Status vs a control file",
+                "Body is the canary / outside the alias?",
+                "Normalization differences"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "backups-vcs",
+          "title": "Backups, VCS, and env files",
+          "item": "WAPT-INFO-006",
+          "related": [
+            "WAPT-INFO-007",
+            "WAPT-INFO-008"
+          ],
+          "severity": "high",
+          "why": "Editor swap files, old deploys, .git, and .env are the highest-value static-site findings.",
+          "validate": "The retrieved file contains source, credentials, or a complete tree \u2014 not an empty 200 or a generic error page.",
+          "variants": [
+            {
+              "name": "Git metadata",
+              "kind": "request",
+              "payload": "GET /.git/HEAD HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "ref: refs/heads/\u2026 confirms a repo. Do not mass-extract. Record HEAD, config, and that objects are reachable."
+            },
+            {
+              "name": "Environment file",
+              "kind": "request",
+              "payload": "GET /.env HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "KEY=value content. Also /.env.local, /.env.production, /config.json, /appsettings.json. Redact secrets in evidence."
+            },
+            {
+              "name": "Editor and deploy leftovers",
+              "kind": "note",
+              "payload": "/index.html.bak\n/index.html~\n/index.html.old\n/index.html.save\n/index.php.bak\n/app.js.map\n/main.js.map\n/dist.zip\n/release.tar.gz\n/web.config.bak",
+              "expect": "Pair each live file with .bak / ~ / .old / .map. A source map of first-party JS is a lead; secrets inside it are the finding."
+            }
+          ]
+        },
+        {
+          "id": "sensitive-files",
+          "title": "Sensitive file exposure",
+          "item": "WAPT-INFO-008",
+          "related": [
+            "WAPT-INFO-006",
+            "WAPT-INFO-011"
+          ],
+          "severity": "high",
+          "why": "Environment, config, or debug endpoints are published on the origin.",
+          "validate": "The retrieved file contains secrets or internals \u2014 not an empty 200 or a generic error page.",
+          "variants": [
+            {
+              "name": "Environment file",
+              "kind": "request",
+              "payload": "GET /.env HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "KEY=value content. Also /.env.local, /.env.production, /config.json, /appsettings.json. Redact secrets in evidence.",
+              "observe": [
+                "Status",
+                "Body looks like KEY=value?",
+                "Whether values are live"
+              ]
+            },
+            {
+              "name": "Debug and health",
+              "kind": "note",
+              "payload": "/server-status\n/server-info\n/phpinfo.php\n/actuator\n/metrics\n/debug\n/__debug__",
+              "expect": "A debug page or metrics with internals is in-scope. A public health 200 with no secrets is informational.",
+              "observe": [
+                "Status",
+                "Body content class",
+                "Secrets vs liveness"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "backup-files",
+          "title": "Backup file exposure",
+          "item": "WAPT-INFO-006",
+          "related": [
+            "WAPT-INFO-007"
+          ],
+          "severity": "high",
+          "why": "Editor swap files, old deploys, and archives sit next to live objects.",
+          "validate": "The retrieved file is a real backup or source tree, not an empty 200.",
+          "variants": [
+            {
+              "name": "Paired leftovers",
+              "kind": "note",
+              "payload": "/index.html.bak\n/index.html~\n/index.html.old\n/index.html.save\n/app.js.bak\n/dist.zip\n/release.tar.gz\n/backup.zip\n/www.zip\n/dump.sql",
+              "expect": "Pair each live file with .bak / ~ / .old / archives.",
+              "observe": [
+                "Status",
+                "Body is a real backup?",
+                "Secrets inside"
+              ]
+            },
+            {
+              "name": "Archive download",
+              "kind": "request",
+              "payload": "GET /backup.zip HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A 200 with a zip/tar body is the finding if it contains source or data. Confirm Content-Type and magic bytes.",
+              "observe": [
+                "Status",
+                "Magic bytes",
+                "Whether to stop after one confirmed archive"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "git-exposure",
+          "title": ".git exposure",
+          "item": "WAPT-INFO-007",
+          "related": [
+            "WAPT-INFO-006"
+          ],
+          "severity": "high",
+          "why": "A published .git tree lets an attacker reconstruct source and history.",
+          "validate": "HEAD confirms a repo and objects are reachable. Do not mass-extract. Record HEAD and that config/objects respond.",
+          "variants": [
+            {
+              "name": "HEAD",
+              "kind": "request",
+              "payload": "GET /.git/HEAD HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "ref: refs/heads/\u2026 confirms a repo. Follow with /.git/config \u2014 redact remotes if they contain tokens.",
+              "observe": [
+                "Status",
+                "Body starts with ref:",
+                "config reachable"
+              ]
+            },
+            {
+              "name": "Directory vs forbidden",
+              "kind": "request",
+              "payload": "GET /.git/ HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A listing is extra impact. A 403 on / .git/ with 200 on HEAD is still a finding if objects are reachable.",
+              "observe": [
+                "Listing vs 403",
+                "objects/pack or HEAD still 200"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "source-maps",
+          "title": "Source map exposure",
+          "item": "WAPT-INFO-004",
+          "related": [
+            "WAPT-CLIENT-026",
+            "WAPT-RECON-015"
+          ],
+          "severity": "medium",
+          "why": "Published maps reconstruct original source and sometimes embed secrets.",
+          "validate": "A live secret, internal URL, or non-public source tree is in the map. Readable client code alone is not a finding.",
+          "variants": [
+            {
+              "name": "Direct map URL",
+              "kind": "request",
+              "payload": "GET /assets/app.js.map HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "JSON source map with sourcesContent. Grep for secrets and internal hosts.",
+              "observe": [
+                "JSON map?",
+                "sourcesContent present?",
+                "Secrets / internal URLs"
+              ]
+            },
+            {
+              "name": "sourceMappingURL comment",
+              "kind": "note",
+              "payload": "//# sourceMappingURL=app.js.map",
+              "expect": "Follow every sourceMappingURL in published JS, including absolute CDN URLs.",
+              "observe": [
+                "Comment present",
+                "Fetched map body",
+                "Secrets inside"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cloud-storage",
+          "title": "Cloud storage exposure",
+          "item": "WAPT-CLOUD-002",
+          "related": [
+            "WAPT-CLOUD-001",
+            "WAPT-CLOUD-003"
+          ],
+          "severity": "high",
+          "why": "A public bucket, listing, or world-readable object sits behind a static origin or a sibling hostname.",
+          "validate": "An object you should not read is retrieved, or a listing names private keys. Do not write to the bucket.",
+          "variants": [
+            {
+              "name": "Guess the bucket host",
+              "kind": "note",
+              "payload": "files.example.com\ncdn.example.com\nstatic.example.com\nexample-prod.s3.amazonaws.com\nstorage.googleapis.com/example",
+              "expect": "Inventory from JS, DNS, and certificate SANs. Confirm with a GET of a known public object first.",
+              "observe": [
+                "Candidate hosts",
+                "DNS / cert SANs",
+                "Whether listing is enabled"
+              ]
+            },
+            {
+              "name": "Listing probe",
+              "kind": "request",
+              "payload": "GET /?list-type=2 HTTP/1.1\nHost: files.example.com\nConnection: close",
+              "expect": "S3 ListBucketResult or GCS XML. Also try ?prefix=&delimiter=/. A listing of private keys is the finding.",
+              "observe": [
+                "XML listing?",
+                "Object names",
+                "Whether a non-public object GETs"
+              ]
+            }
+          ]
+        }
+      ],
+      "surface": "http"
+    },
+    {
+      "id": "client",
+      "title": "Client and cache",
+      "summary": "Published JS, CORS on static assets, and cache-key confusion through a CDN.",
+      "checks": [
+        {
+          "id": "client-js",
+          "title": "Published JavaScript and source maps",
+          "item": "WAPT-INFO-003",
+          "related": [
+            "WAPT-INFO-004",
+            "WAPT-RECON-014",
+            "WAPT-CLIENT-026"
+          ],
+          "severity": "medium",
+          "why": "Bundles leak endpoints, feature flags, and occasionally real secrets. Maps reconstruct original source.",
+          "validate": "A live secret, internal URL, or non-public source tree is retrieved from a client-delivered asset.",
+          "variants": [
+            {
+              "name": "Grep first-party JS",
+              "kind": "note",
+              "payload": "api[_-]?key|secret|password|token|AKIA[0-9A-Z]{16}|sk_live_|ghp_|xox[baprs]-|Bearer [A-Za-z0-9._-]+",
+              "expect": "Confirm any hit is a live credential, not a public site key or a placeholder."
+            },
+            {
+              "name": "Source map",
+              "kind": "request",
+              "payload": "GET /assets/app.js.map HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "A JSON source map with sourcesContent. Readable client code is not a finding; embedded secrets or internal URLs are."
+            },
+            {
+              "name": "sourceMappingURL comment",
+              "kind": "note",
+              "payload": "//# sourceMappingURL=app.js.map",
+              "expect": "Follow every sourceMappingURL in published JS, including absolute CDN URLs."
+            }
+          ]
+        },
+        {
+          "id": "cors-static",
+          "title": "CORS on the published origin",
+          "item": "WAPT-HTTP-015",
+          "related": [
+            "WAPT-HTTP-016"
+          ],
+          "severity": "low",
+          "why": "A reflected ACAO on JSON or authenticated-looking responses lets another origin read them. Public HTML usually does not matter.",
+          "validate": "A controlled origin can read a non-public body. Wildcard ACAO on a brochure is not a finding.",
+          "variants": [
+            {
+              "name": "Reflected Origin",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nOrigin: https://evil.example\nConnection: close",
+              "expect": "Access-Control-Allow-Origin: https://evil.example is only a finding if the body is sensitive and credentials work."
+            },
+            {
+              "name": "null origin",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nOrigin: null\nConnection: close",
+              "expect": "ACAO: null is rarely justified on a public site. Still needs a readable sensitive body to report."
+            }
+          ]
+        },
+        {
+          "id": "cache-host",
+          "title": "Cache key vs Host / unkeyed headers",
+          "item": "WAPT-HTTP-022",
+          "related": [
+            "WAPT-INJ-049",
+            "WAPT-ADV-001"
+          ],
+          "severity": "high",
+          "why": "A CDN that keys on URL but not Host, or that caches a reflected header, will serve the poisoned page to other users.",
+          "validate": "A clean request for the canonical host receives the marker you injected on a different Host or unkeyed header. Use an isolated cache buster.",
+          "variants": [
+            {
+              "name": "Unkeyed X-Forwarded-Host into cache",
+              "kind": "request",
+              "payload": "GET /?wapt=1 HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nConnection: close",
+              "expect": "If the body or a redirect reflects evil.example, immediately replay GET /?wapt=1 with a clean Host and no extra headers."
+            },
+            {
+              "name": "Unkeyed X-Forwarded-Scheme",
+              "kind": "request",
+              "payload": "GET /?wapt=2 HTTP/1.1\nHost: www.example.com\nX-Forwarded-Scheme: nothttps\nConnection: close",
+              "expect": "Reflected into asset URLs or CSP? Replay clean. Purge the test key if it sticks."
+            },
+            {
+              "name": "Cache deception via path suffix",
+              "kind": "request",
+              "payload": "GET /index.html/wapt.css HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "On a static site this is usually a 404. Still check if the CDN caches an HTML 200 under a .css key."
+            }
+          ]
+        },
+        {
+          "id": "dom-xss",
+          "title": "DOM XSS",
+          "item": "WAPT-XSS-004",
+          "related": [
+            "WAPT-CLIENT-001",
+            "WAPT-XSS-010"
+          ],
+          "severity": "high",
+          "why": "hash, search, or a path segment is written into innerHTML, eval, or a javascript: URL.",
+          "validate": "A marker in the URL executes in the real page. A sink in a bundle that is never reached is not a finding.",
+          "variants": [
+            {
+              "name": "Hash to HTML",
+              "kind": "note",
+              "payload": "https://www.example.com/#<img src=x onerror=alert(1)>\nhttps://www.example.com/?q=<img src=x onerror=alert(1)>",
+              "expect": "Grep the bundle for location.hash, location.search, document.write, innerHTML, insertAdjacentHTML.",
+              "observe": [
+                "Sink in first-party JS",
+                "Marker executes",
+                "Encoding at the sink"
+              ]
+            },
+            {
+              "name": "javascript: navigation",
+              "kind": "note",
+              "payload": "https://www.example.com/#javascript:alert(1)\nhttps://www.example.com/?next=javascript:alert(1)",
+              "expect": "Must not become location.href / window.open. data:text/html is the same class.",
+              "observe": [
+                "Navigation sink",
+                "javascript: accepted?"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "dom-redirect",
+          "title": "DOM open redirect",
+          "item": "WAPT-CLIENT-004",
+          "related": [
+            "WAPT-HTTP-013",
+            "WAPT-XSS-011"
+          ],
+          "severity": "medium",
+          "why": "Client-side navigation (location, router, window.open) accepts an absolute or javascript: URL.",
+          "validate": "The page navigates off-origin or into a javascript: URL. A reflected string that is not used as a URL is not enough.",
+          "variants": [
+            {
+              "name": "Absolute next",
+              "kind": "note",
+              "payload": "https://www.example.com/?next=https://evil.example/\nhttps://www.example.com/?next=//evil.example/",
+              "expect": "Watch location.assign / href / replace / router.push after load.",
+              "observe": [
+                "Does the SPA navigate off-origin?",
+                "Which API was called"
+              ]
+            },
+            {
+              "name": "javascript: next",
+              "kind": "note",
+              "payload": "https://www.example.com/?next=javascript:alert(1)",
+              "expect": "Must be rejected. This is XSS, not just a redirect.",
+              "observe": [
+                "javascript: executed?",
+                "Sanitization"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "js-secrets",
+          "title": "Client-side secrets",
+          "item": "WAPT-CLIENT-027",
+          "related": [
+            "WAPT-INFO-003",
+            "WAPT-RECON-014"
+          ],
+          "severity": "critical",
+          "why": "The published bundle contains a live privileged secret, not a public site key.",
+          "validate": "A retrieved value authenticates as a privileged identity or signs a privileged request. A public Stripe pk_ or Mapbox token is not a finding.",
+          "variants": [
+            {
+              "name": "Grep the bundle",
+              "kind": "note",
+              "payload": "api[_-]?key|secret|password|token|AKIA[0-9A-Z]{16}|sk_live_|ghp_|xox[baprs]-|Bearer [A-Za-z0-9._-]+",
+              "expect": "Confirm any hit is a live credential.",
+              "observe": [
+                "Match in first-party JS",
+                "Does the value authenticate?",
+                "Public vs privileged"
+              ]
+            },
+            {
+              "name": "Inline and comments",
+              "kind": "note",
+              "payload": "View-source: <script> blocks, data- attributes, HTML comments.",
+              "expect": "Same validation as the bundle. Redact in evidence.",
+              "observe": [
+                "Inline script secrets",
+                "data-* attributes"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "prototype-pollution",
+          "title": "Prototype pollution",
+          "item": "WAPT-CLIENT-018",
+          "related": [
+            "WAPT-CLIENT-019"
+          ],
+          "severity": "high",
+          "why": "Query, hash, or JSON is merged into an object without blocking __proto__ / constructor / prototype.",
+          "validate": "A gadget you control changes application behaviour (XSS sink, bypass, or privilege). A silent merge into Object.prototype without impact is a weakness, not yet a reportable finding.",
+          "variants": [
+            {
+              "name": "Query gadget",
+              "kind": "note",
+              "payload": "https://www.example.com/?__proto__[polluted]=wapt\nhttps://www.example.com/?constructor[prototype][polluted]=wapt",
+              "expect": "After load, Object.prototype.polluted === \"wapt\" in the console is the weakness. Then hunt a gadget.",
+              "observe": [
+                "Object.prototype polluted?",
+                "Reachable gadget",
+                "Impact"
+              ]
+            },
+            {
+              "name": "JSON merge",
+              "kind": "note",
+              "payload": "{\"__proto__\": {\"polluted\": \"wapt\"}}",
+              "expect": "Any JSON.parse + recursive merge of user JSON (config, postMessage, storage) is in scope.",
+              "observe": [
+                "Merge utility in the bundle",
+                "User-controlled JSON",
+                "Gadget"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "postmessage",
+          "title": "postMessage security",
+          "item": "WAPT-CLIENT-009",
+          "related": [
+            "WAPT-CLIENT-010",
+            "WAPT-XSS-005"
+          ],
+          "severity": "high",
+          "why": "The page listens for message and trusts event.data without checking event.origin.",
+          "validate": "A page you control can drive a sink or an authenticated action. A listener that ignores unknown origins is not a finding.",
+          "variants": [
+            {
+              "name": "Listener inventory",
+              "kind": "note",
+              "payload": "addEventListener('message', \u2026)\nonmessage = \u2026",
+              "expect": "For each listener, record whether origin is compared to an exact allowlist (===, not indexOf).",
+              "observe": [
+                "Listeners",
+                "origin check",
+                "data used as HTML / nav / token"
+              ]
+            },
+            {
+              "name": "Drive from an opener",
+              "kind": "html",
+              "payload": "<script>const w = window.open('https://www.example.com/');\nsetTimeout(() => w.postMessage({type:'setToken', token:'wapt'}, '*'), 1500);</script>",
+              "expect": "Must be ignored. A token or HTML sink accepting this is the finding. Use a test account.",
+              "observe": [
+                "Was the message accepted?",
+                "Sink / action triggered"
+              ]
+            }
+          ]
+        },
+        {
+          "id": "third-party-js",
+          "title": "Third-party JavaScript",
+          "item": "WAPT-CLIENT-023",
+          "related": [
+            "WAPT-RECON-031",
+            "WAPT-HDR-003"
+          ],
+          "severity": "medium",
+          "why": "Analytics, widgets, and tag managers run with the origin's privileges.",
+          "validate": "A third-party script can read sensitive DOM or cookies, or a compromised supply-chain host would execute here. Presence of analytics is not a finding.",
+          "variants": [
+            {
+              "name": "Inventory",
+              "kind": "note",
+              "payload": "Document every script[src] host. Compare with CSP script-src.",
+              "expect": "Unexpected hosts, http:// scripts on https, or a tag manager that can inject arbitrary JS.",
+              "observe": [
+                "Script hosts",
+                "CSP allows them?",
+                "Whether they see authenticated DOM"
+              ]
+            },
+            {
+              "name": "SRI and CSP",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "integrity= on third-party scripts; CSP script-src pinning. Missing SRI on a static brochure is a lead.",
+              "observe": [
+                "integrity attributes",
+                "CSP script-src",
+                "Whether a host can be swapped"
+              ]
+            }
+          ]
+        }
+      ],
+      "surface": "client"
+    }
+  ]
+}

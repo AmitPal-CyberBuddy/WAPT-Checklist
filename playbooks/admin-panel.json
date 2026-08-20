@@ -1,0 +1,193 @@
+{
+  "schema_version": "1.0.0",
+  "id": "admin-panel",
+  "title": "Admin / privileged UI",
+  "summary": "Unauthenticated and member access to admin routes, verb swaps, hidden UI, impersonation, CSRF, and clickjacking.",
+  "when": {
+    "roles": [
+      "many"
+    ]
+  },
+  "also_when": {
+    "roles": [
+      "few"
+    ]
+  },
+  "default_for": [],
+  "groups": [
+    {
+      "id": "access",
+      "title": "Who can call it",
+      "summary": "Admin is a function, not a hidden link.",
+      "checks": [
+        {
+          "id": "unauth-admin",
+          "title": "Unauthenticated admin routes",
+          "item": "WAPT-AUTHZ-002",
+          "related": [
+            "WAPT-AUTH-017",
+            "WAPT-RECON-030"
+          ],
+          "severity": "critical",
+          "why": " /admin, /manage, or /internal answers without a session.",
+          "validate": "A privileged function executes with no credential.",
+          "variants": [
+            {
+              "name": "Common admin paths",
+              "kind": "request",
+              "payload": "GET /admin HTTP/1.1\nHost: www.example.com\nConnection: close",
+              "expect": "401/302 to login, not a dashboard. Repeat /administrator/, /manage/, /internal/, /console/, /debug/."
+            },
+            {
+              "name": "Admin host",
+              "kind": "request",
+              "payload": "GET / HTTP/1.1\nHost: admin.example.com\nConnection: close",
+              "expect": "A separate admin hostname still needs authentication. A 200 app is a lead, not yet a finding."
+            }
+          ]
+        },
+        {
+          "id": "bfla",
+          "title": "Member token on admin functions",
+          "item": "WAPT-AUTHZ-013",
+          "related": [
+            "WAPT-API-020",
+            "WAPT-AUTHZ-015"
+          ],
+          "severity": "critical",
+          "why": "Admin routes exist in the spec or the JS bundle, and a member session can call them.",
+          "validate": "A privileged function executes for a caller the matrix denies.",
+          "variants": [
+            {
+              "name": "Member session on /admin",
+              "kind": "request",
+              "payload": "GET /admin/users HTTP/1.1\nHost: www.example.com\nCookie: session=<member>",
+              "expect": "403/404, not a user list. Repeat /api/v1/admin/users and actions you saw in the bundle."
+            },
+            {
+              "name": "Hidden UI is not a control",
+              "kind": "request",
+              "payload": "POST /admin/users/42/role HTTP/1.1\nHost: www.example.com\nCookie: session=<member>\nContent-Type: application/json\n\n{\"role\":\"admin\"}",
+              "expect": "If the button is hidden but the route works, that is BFLA."
+            },
+            {
+              "name": "Version and alias",
+              "kind": "request",
+              "payload": "GET /api/v0/admin/users HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>",
+              "expect": "Older versions, trailing slashes, and case variants."
+            }
+          ]
+        },
+        {
+          "id": "verb-swap",
+          "title": "Verb and method override",
+          "item": "WAPT-AUTHZ-014",
+          "related": [
+            "WAPT-HTTP-003",
+            "WAPT-API-021"
+          ],
+          "severity": "high",
+          "why": "GET is allowed and DELETE is not — unless a method override reaches DELETE.",
+          "validate": "A member performs an admin mutation through an alternate verb.",
+          "variants": [
+            {
+              "name": "DELETE as member",
+              "kind": "request",
+              "payload": "DELETE /api/v1/users/42 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>",
+              "expect": "403, not a deleted user. Also PUT, PATCH, OPTIONS."
+            },
+            {
+              "name": "X-HTTP-Method-Override",
+              "kind": "request",
+              "payload": "POST /api/v1/users/42 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>\nX-HTTP-Method-Override: DELETE\nContent-Length: 0",
+              "expect": "Override must not reach a handler the real DELETE would refuse. Also try _method=DELETE."
+            }
+          ]
+        },
+        {
+          "id": "impersonation",
+          "title": "Impersonation / support access",
+          "item": "WAPT-AUTHZ-028",
+          "related": [
+            "WAPT-AUTHZ-023"
+          ],
+          "severity": "critical",
+          "why": "A support or admin impersonation action is callable by a member, or does not leave an audit trail.",
+          "validate": "A becomes B without being an eligible admin, or the action is not attributed.",
+          "variants": [
+            {
+              "name": "Member impersonate",
+              "kind": "request",
+              "payload": "POST /admin/users/1002/impersonate HTTP/1.1\nHost: www.example.com\nCookie: session=<member>",
+              "expect": "Must 403. Repeat /sudo, /act-as, /login-as."
+            },
+            {
+              "name": "Admin impersonate without step-up",
+              "kind": "note",
+              "payload": "As a real admin, impersonate your other test user and look for re-auth and an audit event.",
+              "expect": "Missing step-up or a missing audit row is the finding — do not impersonate a real customer."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "client",
+      "title": "CSRF and framing",
+      "summary": "Admin mutations are the highest-value CSRF and clickjacking targets.",
+      "checks": [
+        {
+          "id": "csrf-admin",
+          "title": "CSRF on admin actions",
+          "item": "WAPT-CSRF-002",
+          "related": [
+            "WAPT-CSRF-018",
+            "WAPT-CSRF-005"
+          ],
+          "severity": "high",
+          "why": "A cross-site POST creates a user, changes a role, or issues a refund.",
+          "validate": "A cross-origin form changes admin state in the victim admin session.",
+          "variants": [
+            {
+              "name": "Cross-site role change",
+              "kind": "html",
+              "payload": "<form action=\"https://www.example.com/admin/users/42/role\" method=\"POST\">\n  <input name=\"role\" value=\"admin\">\n</form>\n<script>document.forms[0].submit()</script>",
+              "expect": "Must fail without a valid CSRF token. Critical actions should also require step-up."
+            },
+            {
+              "name": "JSON as text/plain",
+              "kind": "request",
+              "payload": "POST /api/v1/admin/users HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<admin>\n\n{\"email\":\"attacker@example.com\",\"role\":\"admin\"}",
+              "expect": "Must not create a user."
+            }
+          ]
+        },
+        {
+          "id": "clickjacking-admin",
+          "title": "Clickjacking the admin UI",
+          "item": "WAPT-CLIENT-008",
+          "related": [
+            "WAPT-HDR-006"
+          ],
+          "severity": "medium",
+          "why": "A third-party page can frame /admin and steal a click on a destructive control.",
+          "validate": "A cross-origin iframe of the admin page either fails to load or there is no sensitive control.",
+          "variants": [
+            {
+              "name": "Read framing headers",
+              "kind": "request",
+              "payload": "GET /admin HTTP/1.1\nHost: www.example.com\nCookie: session=<admin>",
+              "expect": "frame-ancestors 'none' or an explicit allowlist. XFO DENY/SAMEORIGIN must not contradict CSP."
+            },
+            {
+              "name": "Cross-origin iframe",
+              "kind": "html",
+              "payload": "<!doctype html>\n<iframe src=\"https://www.example.com/admin\" style=\"width:100%;height:100%\"></iframe>",
+              "expect": "The iframe stays blank / errors when framing is denied."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
