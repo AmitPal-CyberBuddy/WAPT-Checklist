@@ -13,29 +13,50 @@ function loadPlaybooks() {
   return { manifest, documents };
 }
 
+function loadCatalog() {
+  const skip = new Set(['manifest.json', 'sample.json', 'families.json']);
+  return fs.readdirSync(path.join(ROOT, 'checklist'))
+    .filter((name) => name.endsWith('.json') && !skip.has(name))
+    .flatMap((name) => JSON.parse(fs.readFileSync(path.join(ROOT, 'checklist', name), 'utf8')).items);
+}
+
 test('static assessment is attack-surface families, not one page pack', async () => {
-  const [{ deriveContext }, { indexPlaybooks }, { buildAssessmentPlan, composeAssessmentMarkdown }, { PRESETS }] = await Promise.all([
+  const [{ deriveContext }, { indexPlaybooks }, { buildAssessmentPlan, composeAssessmentMarkdown }, { evaluateApplicability, APPLICABILITY }, { PRESETS }] = await Promise.all([
     import('../js/engine/context.js'),
     import('../js/engine/playbooks.js'),
     import('../js/engine/assessment.js'),
+    import('../js/engine/applicability.js'),
     import('../js/data/presets.mjs')
   ]);
   const { manifest, documents } = loadPlaybooks();
   const index = indexPlaybooks(manifest, documents);
+  const items = loadCatalog();
   const answers = PRESETS.static_marketing.answers;
-  const plan = buildAssessmentPlan(index, deriveContext(answers), answers);
+  const context = deriveContext(answers);
+  const catalogApplicable = items.filter((item) => {
+    const r = evaluateApplicability(item, context);
+    return r.state === APPLICABILITY.ACTIVE || r.state === APPLICABILITY.CONFIRM;
+  }).length;
+  const plan = buildAssessmentPlan(index, context, answers, items);
   const familyIds = plan.families.map(({ id }) => id);
   for (const id of ['http', 'headers', 'tls', 'client']) {
     assert.ok(familyIds.includes(id), `static missing family ${id}`);
   }
   assert.ok(!familyIds.includes('auth'));
   assert.ok(!familyIds.includes('authz'));
-  assert.ok(plan.checks.length >= 30, `static should list the named tests, got ${plan.checks.length}`);
+  // The dashboard number is the catalog Active+Confirm count, never the manifest overlay count.
+  assert.equal(plan.applicableCount, catalogApplicable);
+  assert.ok(plan.applicableCount >= 150, `static applicable count should be the catalog count, got ${plan.applicableCount}`);
+  assert.ok(plan.applicableCount !== 49, 'applicable count must not be the authored overlay count');
+  assert.ok(plan.methodologyCount > 0, 'static plan must include methodology-only catalog rows');
+  assert.ok(plan.authoredCount > 0, 'static plan must include full-playbook authored rows');
   const titles = plan.checks.map(({ title }) => title.toLowerCase());
   for (const needle of [
     'host header', 'http method', 'absolute url', 'directory enumeration', 'directory listing',
     'path traversal', 'clickjacking', 'csp', 'hsts', 'permissions policy',
-    'mixed content', 'dom xss', 'prototype pollution', 'postmessage', '.git'
+    'https redirect', 'dom xss', 'prototype pollution', 'postmessage', '.git',
+    'robots.txt', 'sitemap', 'well-known', 'dns records', 'certificate transparency',
+    'service worker', 'web storage', 'method override', 'normalization'
   ]) {
     assert.ok(titles.some((title) => title.includes(needle)), `static plan missing ${needle}`);
   }
@@ -44,13 +65,18 @@ test('static assessment is attack-surface families, not one page pack', async ()
     targetUrl: 'https://www.example.com',
     chips: ['Static website', 'No authentication'],
     families: plan.families,
-    hiddenFamilies: plan.hiddenFamilies
+    hiddenFamilies: plan.hiddenFamilies,
+    applicableCount: plan.applicableCount,
+    authoredCount: plan.authoredCount,
+    methodologyCount: plan.methodologyCount
   });
   assert.match(markdown, /HTTP \/ Server Configuration/);
   assert.match(markdown, /Security Headers/);
   assert.match(markdown, /TLS \/ Transport Security/);
   assert.match(markdown, /Client-Side Security/);
   assert.match(markdown, /Host Header/i);
+  assert.match(markdown, /Applicable tests: \d+ \(\d+ with playbooks · \d+ methodology-only\)/);
+  assert.equal(plan.applicableCount, plan.authoredCount + plan.methodologyCount);
   assert.doesNotMatch(markdown, /## Authentication/);
   assert.match(markdown, /Hidden until the profile includes them/);
 });
@@ -64,17 +90,46 @@ test('SaaS and e-commerce profiles add auth, API, and feature families', async (
   ]);
   const { manifest, documents } = loadPlaybooks();
   const index = indexPlaybooks(manifest, documents);
-  const saas = buildAssessmentPlan(index, deriveContext(PRESETS.saas_jwt_api.answers), PRESETS.saas_jwt_api.answers);
+  const items = loadCatalog();
+  const saas = buildAssessmentPlan(index, deriveContext(PRESETS.saas_jwt_api.answers), PRESETS.saas_jwt_api.answers, items);
   const saasIds = saas.families.map(({ id }) => id);
   for (const id of ['auth', 'jwt', 'api', 'client', 'authz']) {
     assert.ok(saasIds.includes(id), `SaaS missing ${id}, got ${saasIds.join(',')}`);
   }
-  const shop = buildAssessmentPlan(index, deriveContext(PRESETS.ecommerce.answers), PRESETS.ecommerce.answers);
+  const shop = buildAssessmentPlan(index, deriveContext(PRESETS.ecommerce.answers), PRESETS.ecommerce.answers, items);
   const shopIds = shop.families.map(({ id }) => id);
   for (const id of ['business', 'upload', 'auth']) {
     assert.ok(shopIds.includes(id), `e-commerce missing ${id}`);
   }
-  assert.ok(saas.checks.length > 40);
+  assert.ok(saas.applicableCount > 40);
+  assert.ok(saas.applicableCount > 200, 'SaaS applicable count should be catalog-scale');
+});
+
+test('catalog-only checks carry no synthesized variants; authored checks keep real ones', async () => {
+  const [{ deriveContext }, { indexPlaybooks }, { buildAssessmentPlan }, { PRESETS }] = await Promise.all([
+    import('../js/engine/context.js'),
+    import('../js/engine/playbooks.js'),
+    import('../js/engine/assessment.js'),
+    import('../js/data/presets.mjs')
+  ]);
+  const { manifest, documents } = loadPlaybooks();
+  const index = indexPlaybooks(manifest, documents);
+  const items = loadCatalog();
+  const plan = buildAssessmentPlan(index, deriveContext(PRESETS.static_marketing.answers), PRESETS.static_marketing.answers, items);
+  const catalogOnly = plan.checks.filter((check) => check.maturity === 'catalog-only');
+  const authored = plan.checks.filter((check) => check.maturity !== 'catalog-only');
+  assert.ok(catalogOnly.length > 0, 'catalog-only rows must exist');
+  assert.ok(catalogOnly.every((check) => (check.variants || []).length === 0), 'catalog-only checks must have ZERO synthesized variants');
+  assert.ok(authored.length > 0, 'authored rows must exist');
+  assert.ok(authored.every((check) => (check.variants || []).length >= 2), 'authored checks need real variants');
+  // Host header, path traversal, and CSP must be fully authored with why lines.
+  for (const id of ['host-header', 'path-traversal', 'csp']) {
+    const check = plan.checks.find((c) => c.id === id);
+    assert.ok(check, `missing ${id}`);
+    assert.equal(check.maturity, 'authored', `${id} should be AUTHORED`);
+    assert.ok(check.variants.length >= 2);
+    assert.ok(check.variants.every((v) => v.why && v.category), `${id} variants need why + category`);
+  }
 });
 
 test('compact profile maps onto engine answers', async () => {
@@ -124,11 +179,13 @@ test('workspace starts from the profile, not the category catalog', () => {
   assert.match(plan, /buildAssessmentPlan/);
   assert.doesNotMatch(plan, /plan-chips/);
   assert.match(plan, /export function featureChips/);
+  assert.match(plan, /authored playbooks/);
+  assert.match(plan, /methodology-only/);
   assert.match(profile, /Generate test plan/);
   assert.match(home, /app\.html#dashboard/);
   assert.match(home, /Start testing/);
   assert.match(playbookUi, /CHECK FOR/);
-  assert.match(playbookUi, /variant\.observe/);
+  assert.match(playbookUi, /variantWithMeta\.observe/);
 });
 
 test('homepage demo card uses a real object-level authorization item', () => {

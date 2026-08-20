@@ -52,6 +52,12 @@ The engine runs unchanged under `node --test`. It does not import browser global
 5. `priorities.js` scores only Active/Confirm, Not Tested items. Workflow order is the primary ordering signal; severity, met prerequisites, `priority_when`, and chain unlocks are bounded boosts. Item ID breaks ties, keeping output deterministic.
 6. UI updates item status and notes through immutable state helpers, replaces that record in the local portfolio, and persists the entire portfolio under `wapt.state.v1` so every engagement can resume independently.
 
+## Assessment plan and test maturity
+
+The assessment plan is **feature-aware, not page-type-primary**: `js/engine/assessment.js` builds it from the **applicable catalog items** for the profile (`js/engine/applicable.js` — items that evaluate as Active or Confirm), attaches authored playbook overlays where they exist, and groups the result by attack surface (`CATEGORY_SURFACE` in `surfaces.js`). Playbook matching still lights up the surfaces a scope implies, but the plan list is the catalog, so a static profile reports the real catalog count (≈ 183), not the authored-overlay count (49).
+
+Every check has an explicit maturity (`js/engine/maturity.js`): **AUTHORED** (named variants, payloads, a one-line Why per variant, CHECK FOR, VALIDATE, safety), **VARIANT-COMPLETE** (variants exist; per-variant why/class pending), or **CATALOG-ONLY** (methodology available, practical variants pending). Procedures are never synthesized from a title — a catalog-only row renders its maturity chip and opens the full methodology rather than a fabricated request. Variants carry a standardised taxonomy (`category` class, `why`, optional `observe[]`, optional `payload_ref` into a playbook-local `payloads` map). This is applied to every authored variant in every playbook, so all 16 authored packs are at AUTHORED maturity; only the expanded catalog-only remainder is methodology.
+
 ## Applicability semantics
 
 `applies` supports three conjunction groups:

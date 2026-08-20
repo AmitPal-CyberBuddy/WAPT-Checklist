@@ -32,19 +32,25 @@
               "name": "Taken vs fresh email",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"known.user@example.com\",\"password\":\"ChangeMe1!\"}",
-              "expect": "Compare with a never-used address. Diff status, Location, JSON code, and body length."
+              "expect": "Compare with a never-used address. Diff status, Location, JSON code, and body length.",
+              "category": "authentication-context",
+              "why": "'Taken' vs 'available' on registration enumerates the user base."
             },
             {
               "name": "Taken username",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nusername=admin&email=fresh%40example.com&password=ChangeMe1!",
-              "expect": "\"Username taken\" vs a generic failure. Also try Admin / ADMIN / admin@ vs the live account."
+              "expect": "\"Username taken\" vs a generic failure. Also try Admin / ADMIN / admin@ vs the live account.",
+              "category": "authentication-context",
+              "why": "Username availability leaks the same way email does."
             },
             {
               "name": "Canonicalization",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"Known.User+tag@example.com\",\"password\":\"ChangeMe1!\"}",
-              "expect": "Plus-tags, mixed case, and unicode homoglyphs must not create a second account for the same mailbox."
+              "expect": "Plus-tags, mixed case, and unicode homoglyphs must not create a second account for the same mailbox.",
+              "category": "encoding",
+              "why": "Email/username canonicalisation (dots, case, plus-addressing) can split one identity into many accounts."
             }
           ]
         },
@@ -64,13 +70,17 @@
               "name": "Common passwords",
               "kind": "note",
               "payload": "password\nPassword1\n12345678\nqwerty\nletmein\nWelcome1\nchangeme",
-              "expect": "Only a handful of tries against YOUR new test account. A success is the finding."
+              "expect": "Only a handful of tries against YOUR new test account. A success is the finding.",
+              "category": "mutation",
+              "why": "Rejecting common passwords is the first line against credential stuffing."
             },
             {
               "name": "Long password truncation",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"longpw@example.com\",\"password\":\"AAAAAAAAAA…(80 A)…BBBB\"}",
-              "expect": "Register with 80 As + BBBB, then log in with only the first 16/32/64 As. If that works, the secret was truncated."
+              "expect": "Register with 80 As + BBBB, then log in with only the first 16/32/64 As. If that works, the secret was truncated.",
+              "category": "parser-differential",
+              "why": "Truncating a long password to a prefix weakens it and can create password-equivalence."
             }
           ]
         },
@@ -90,13 +100,17 @@
               "name": "Hidden privilege fields",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\",\"role\":\"admin\",\"isAdmin\":true,\"verified\":true,\"tenant_id\":1}",
-              "expect": "Read /me after signup. role/isAdmin/verified/tenant_id must be the defaults, not these values."
+              "expect": "Read /me after signup. role/isAdmin/verified/tenant_id must be the defaults, not these values.",
+              "category": "parameter-variant",
+              "why": "A role or verified flag the client should not set can be supplied at signup."
             },
             {
               "name": "Nested wrapper",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"user\":{\"email\":\"tester2@example.com\",\"password\":\"ChangeMe1!\",\"role\":\"admin\"}}",
-              "expect": "Some binders take the nested object. Also try role[]=admin and role=admin as form fields."
+              "expect": "Some binders take the nested object. Also try role[]=admin and role=admin as form fields.",
+              "category": "parameter-variant",
+              "why": "A nested JSON wrapper can smuggle privilege fields past a flat filter."
             }
           ]
         }
@@ -122,13 +136,17 @@
               "name": "Use the app immediately",
               "kind": "note",
               "payload": "Complete signup, do not open the mail, then GET /app or GET /api/v1/me.",
-              "expect": "Must stay unverified / 403. A full session is the finding if the product claims verification is required."
+              "expect": "Must stay unverified / 403. A full session is the finding if the product claims verification is required.",
+              "category": "authentication-context",
+              "why": "Functioning features before email verification means verify is not enforced."
             },
             {
               "name": "Direct verify URL",
               "kind": "request",
               "payload": "GET /verify-email?token= HTTP/1.1\nHost: www.example.com\nCookie: session=<pre-verify-session>",
-              "expect": "Empty, reused, or another account's token must fail. Also try POST /verify with verified=true."
+              "expect": "Empty, reused, or another account's token must fail. Also try POST /verify with verified=true.",
+              "category": "parameter-variant",
+              "why": "A direct verify URL with a guessable or reusable token can be invoked out of flow."
             }
           ]
         },
@@ -148,19 +166,25 @@
               "name": "Arbitrary Host on register",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: evil.example\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\"}",
-              "expect": "The mail must still point at the canonical origin. If it points at evil.example, that is the finding."
+              "expect": "The mail must still point at the canonical origin. If it points at evil.example, that is the finding.",
+              "category": "header-variant",
+              "why": "A poisoned Host in the activation link sends the verify request to an attacker host."
             },
             {
               "name": "X-Forwarded-Host",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\",\"password\":\"ChangeMe1!\"}",
-              "expect": "Same check. Also try Forwarded: host=evil.example and duplicate Host."
+              "expect": "Same check. Also try Forwarded: host=evil.example and duplicate Host.",
+              "category": "header-variant",
+              "why": "An unauthenticated forwarding header can override the authority used to build the activation link."
             },
             {
               "name": "Invite accept",
               "kind": "request",
               "payload": "POST /invites HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nContent-Type: application/json\nAuthorization: Bearer <admin-token>\n\n{\"email\":\"new.user@example.com\"}",
-              "expect": "Invite mail is the same class as activation mail."
+              "expect": "Invite mail is the same class as activation mail.",
+              "category": "authorization-context",
+              "why": "An invite acceptance flow that trusts the invite URL alone can be replayed or reused."
             }
           ]
         },
@@ -180,13 +204,17 @@
               "name": "HTML in display name",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/json\n\n{\"email\":\"xss@example.com\",\"password\":\"ChangeMe1!\",\"name\":\"<img src=x onerror=alert(1)>\",\"company\":\"<svg/onload=alert(1)>\"}",
-              "expect": "View the profile as another user and in any admin queue. Execution or a dangling markup capture is the finding."
+              "expect": "View the profile as another user and in any admin queue. Execution or a dangling markup capture is the finding.",
+              "category": "browser-context",
+              "why": "A display name rendered as HTML executes in every profile viewer's session."
             },
             {
               "name": "Attribute breakout",
               "kind": "request",
               "payload": "POST /register HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nemail=xss2%40example.com&password=ChangeMe1!&name=%22%20onfocus%3Dalert(1)%20autofocus%3D%22",
-              "expect": "If the name lands in an attribute, a quote breakout executes. Confirm in the real page, not a raw JSON dump."
+              "expect": "If the name lands in an attribute, a quote breakout executes. Confirm in the real page, not a raw JSON dump.",
+              "category": "encoding",
+              "why": "An unescaped value in an attribute can be broken out into a script context."
             }
           ]
         },
@@ -206,13 +234,17 @@
               "name": "Cross-site signup form",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/register\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n  <input name=\"password\" value=\"ChangeMe1!\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Must fail without a valid CSRF token / SameSite=Strict. Impact needs a created account, not just a 200."
+              "expect": "Must fail without a valid CSRF token / SameSite=Strict. Impact needs a created account, not just a 200.",
+              "category": "browser-context",
+              "why": "A victim can be enrolled in an attacker-controlled account via cross-site signup."
             },
             {
               "name": "JSON as text/plain",
               "kind": "request",
               "payload": "POST /api/register HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\n\n{\"email\":\"attacker@example.com\",\"password\":\"ChangeMe1!\"}",
-              "expect": "A JSON-only handler that also parses text/plain is CSRF-simple. Must reject or require a custom header."
+              "expect": "A JSON-only handler that also parses text/plain is CSRF-simple. Must reject or require a custom header.",
+              "category": "browser-context",
+              "why": "A simple-request JSON signup can be CSRF'd unless a token is enforced."
             }
           ]
         },
@@ -231,13 +263,17 @@
               "name": "Ten signups, distinct mails",
               "kind": "note",
               "payload": "POST /register ten times with tester+1@example.com … tester+10@example.com and the same password.",
-              "expect": "Captcha, backoff, or 429. If all ten succeed, record the count and stop."
+              "expect": "Captcha, backoff, or 429. If all ten succeed, record the count and stop.",
+              "category": "race-concurrency",
+              "why": "A bounded batch tests whether signup is rate-limited without abuse."
             },
             {
               "name": "Same mail, many attempts",
               "kind": "note",
               "payload": "Repeat signup for one address after the first success or first pending-verify.",
-              "expect": "Must not create a second pending identity or resend mail without a limit."
+              "expect": "Must not create a second pending identity or resend mail without a limit.",
+              "category": "mutation",
+              "why": "Repeated attempts on one mail test deduplication and rate limiting."
             }
           ]
         }

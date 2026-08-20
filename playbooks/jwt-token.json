@@ -36,13 +36,18 @@
               "name": "none with empty sig",
               "kind": "note",
               "payload": "Header: {\"alg\":\"none\",\"typ\":\"JWT\"}\\nPayload: copy a real token's claims, keep sub\\nSignature: (empty)",
-              "expect": "Authorization: Bearer <header>.<payload>.   — trailing dot, empty sig. Must 401."
+              "expect": "Authorization: Bearer <header>.<payload>.   — trailing dot, empty sig. Must 401.",
+              "category": "mutation",
+              "why": "Signing an arbitrary payload with alg=none and an empty signature bypasses verification.",
+              "payload_ref": "jwt-none"
             },
             {
               "name": "None / NONE / nOnE",
               "kind": "note",
               "payload": "{\"alg\":\"None\"}\\n{\"alg\":\"NONE\"}\\n{\"alg\":\"nOnE\"}",
-              "expect": "Case tricks. Same 401 expectation."
+              "expect": "Case tricks. Same 401 expectation.",
+              "category": "encoding",
+              "why": "The alg check may be case-sensitive, so casing variants bypass an exact-string deny."
             }
           ]
         },
@@ -61,13 +66,17 @@
               "name": "RS256 → HS256",
               "kind": "note",
               "payload": "Take the realm's public key (JWKS or TLS). Sign a test-account token with HS256 using that PEM as the secret.",
-              "expect": "Must 401. A 200 on /me as that account is the finding."
+              "expect": "Must 401. A 200 on /me as that account is the finding.",
+              "category": "mutation",
+              "why": "Switching from RS256 to HS256 lets you sign with the public key as the HMAC secret."
             },
             {
               "name": "alg allowlist",
               "kind": "note",
               "payload": "Try alg=HS256, HS384, HS512 against an RS256 API, and EdDSA / PS256 if you have keys.",
-              "expect": "Only the configured algorithms may verify."
+              "expect": "Only the configured algorithms may verify.",
+              "category": "technology-specific",
+              "why": "A server that checks only the claimed alg but not a fixed allowlist is the confusion vector."
             }
           ]
         },
@@ -86,13 +95,17 @@
               "name": "Flip the last byte",
               "kind": "note",
               "payload": "Take a valid access token, change the last signature character, send it.",
-              "expect": "Must 401. If /me still returns you, signatures are not checked."
+              "expect": "Must 401. If /me still returns you, signatures are not checked.",
+              "category": "mutation",
+              "why": "A corrupted signature that is still accepted means verification is skipped."
             },
             {
               "name": "Empty payload claims only",
               "kind": "note",
               "payload": "Craft a token with sub= of another test account and a random signature.",
-              "expect": "Must 401. Do not target a real user."
+              "expect": "Must 401. Do not target a real user.",
+              "category": "parameter-variant",
+              "why": "Tokens carrying only benign claims are the cleanest test that no signature is required."
             }
           ]
         },
@@ -111,19 +124,25 @@
               "name": "jku to your JWKS",
               "kind": "note",
               "payload": "{\"alg\":\"RS256\",\"jku\":\"https://unique.oast.example/jwks.json\",\"kid\":\"wapt\"}",
-              "expect": "An outbound fetch to your listener is a lead. Acceptance of a token signed by that key is the finding. Do not point jku at cloud metadata."
+              "expect": "An outbound fetch to your listener is a lead. Acceptance of a token signed by that key is the finding. Do not point jku at cloud metadata.",
+              "category": "authentication-context",
+              "why": "Pointing jku at an attacker JWKS supplies the key the server uses to verify."
             },
             {
               "name": "kid path / SQLi",
               "kind": "note",
               "payload": "{\"kid\":\"../../wapt-canary.txt\"}\\n{\"kid\":\"wapt' OR '1'='1\"}\\n{\"kid\":\"http://unique.oast.example/key\"}",
-              "expect": "Must be an allowlisted key id. A file read, SQL error, or callback is the finding."
+              "expect": "Must be an allowlisted key id. A file read, SQL error, or callback is the finding.",
+              "category": "encoding",
+              "why": "kid is often used as a file path or SQL key, enabling path traversal or injection."
             },
             {
               "name": "embedded jwk",
               "kind": "note",
               "payload": "{\"alg\":\"RS256\",\"jwk\":{...your public key...}}",
-              "expect": "Embedded JWK must be ignored. A token signed by the matching private key must 401."
+              "expect": "Embedded JWK must be ignored. A token signed by the matching private key must 401.",
+              "category": "technology-specific",
+              "why": "A jwk embedded in the header can supply the verification key inline."
             }
           ]
         }
@@ -150,13 +169,18 @@
               "name": "Raise role in a forged token",
               "kind": "note",
               "payload": "If alg=none or confusion worked, set role=admin / isAdmin=true / tenant_id of B and call an admin route.",
-              "expect": "Even if crypto held, try the same claims on a /me PATCH — mass assignment is the sibling finding."
+              "expect": "Even if crypto held, try the same claims on a /me PATCH — mass assignment is the sibling finding.",
+              "category": "authorization-context",
+              "why": "A forged role/tenant claim that is honoured is an authorization bypass.",
+              "payload_ref": "jwt-role-claim"
             },
             {
               "name": "azp / aud / typ mix-up",
               "kind": "note",
               "payload": "Replay an id_token as an access token, or an access token issued for a sibling API.",
-              "expect": "aud and typ must be checked. A 200 on the wrong audience is the finding."
+              "expect": "aud and typ must be checked. A 200 on the wrong audience is the finding.",
+              "category": "parser-differential",
+              "why": "Mismatched audience/type fields are parsed differently by client and server."
             }
           ]
         },
@@ -176,13 +200,17 @@
               "name": "Expired access token",
               "kind": "note",
               "payload": "Save an access token, wait for exp (or edit exp if signatures are not checked), replay /me.",
-              "expect": "Must 401. Clock skew of a minute is normal; hours are not."
+              "expect": "Must 401. Clock skew of a minute is normal; hours are not.",
+              "category": "authentication-context",
+              "why": "An accepted expired token means expiry is not enforced."
             },
             {
               "name": "Refresh replay",
               "kind": "note",
               "payload": "Refresh once, then replay the old refresh token.",
-              "expect": "The family must die. A second access token is the finding."
+              "expect": "The family must die. A second access token is the finding.",
+              "category": "authentication-context",
+              "why": "Replaying a used refresh token means rotation is not enforced."
             }
           ]
         },
@@ -202,17 +230,41 @@
               "name": "Token in query",
               "kind": "request",
               "payload": "GET /api/v1/me?access_token=<token> HTTP/1.1\nHost: api.example.com\nConnection: close",
-              "expect": "If it works, the token is now in logs and Referer. Prefer that it does not work."
+              "expect": "If it works, the token is now in logs and Referer. Prefer that it does not work.",
+              "category": "protocol-variant",
+              "why": "A bearer in the query leaks into logs, caches, and Referer."
             },
             {
               "name": "Storage",
               "kind": "note",
               "payload": "DevTools → Application: localStorage / sessionStorage keys that hold a JWT.",
-              "expect": "A long-lived access token in localStorage is XSS→account takeover. Prefer memory or a cookie with the right flags."
+              "expect": "A long-lived access token in localStorage is XSS→account takeover. Prefer memory or a cookie with the right flags.",
+              "category": "browser-context",
+              "why": "A token stored in accessible browser storage is readable by any script on the origin."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "jwt-none": {
+      "id": "jwt-none",
+      "category": "mutation",
+      "context": "JWT header alg",
+      "encoding": "none",
+      "purpose": "Signing an arbitrary payload with alg=none and an empty signature bypasses verification.",
+      "safe": true,
+      "payload": "Header: {\"alg\":\"none\",\"typ\":\"JWT\"}\\nPayload: copy a real token's claims, keep sub\\nSignature: (empty)"
+    },
+    "jwt-role-claim": {
+      "id": "jwt-role-claim",
+      "category": "authorization-context",
+      "context": "JWT claims",
+      "encoding": "none",
+      "purpose": "A forged role/tenant claim that is honoured is an authorization bypass.",
+      "safe": true,
+      "payload": "If alg=none or confusion worked, set role=admin / isAdmin=true / tenant_id of B and call an admin route."
+    }
+  }
 }

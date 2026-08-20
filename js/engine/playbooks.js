@@ -1,10 +1,12 @@
 // Surface playbooks: page-type packs of named test variants and payloads.
 // Matching uses the same condition-map vocabulary as item.applies / variants.when.
 // Expansion adds EVERY applicable checklist item for that page type — authored
-// overlays first, then the rest of the catalog with synthesized payloads.
-import { contextHas, deriveContext } from './context.js?v=1.0.0-r6';
-import { APPLICABILITY, evaluateApplicability, evaluateConditionMap } from './applicability.js?v=1.0.0-r6';
-import { checkFromItem } from './probes.js?v=1.0.0-r6';
+// overlays first, then the catalog-only remainder (methodology available, practical
+// variants pending). Nothing is synthesized from a title.
+import { contextHas, deriveContext } from './context.js?v=1.0.0-r7';
+import { APPLICABILITY, evaluateApplicability, evaluateConditionMap } from './applicability.js?v=1.0.0-r7';
+import { checkFromItem } from './probes.js?v=1.0.0-r7';
+import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r7';
 
 const PAGE = Object.freeze([
   'reconnaissance', 'http', 'security-headers', 'information-disclosure',
@@ -236,7 +238,7 @@ export function expandPlaybook(playbook, items = [], familyIndex = null) {
       const item = items.find((candidate) => candidate.id === check.item);
       if (item) seen.add(item.id);
       for (const id of check.related || []) seen.add(id);
-      return item ? checkFromItem(item, check, path) : check;
+      return item ? checkFromItem(item, check, path) : { ...check, maturity: checkMaturity(check) };
     });
     return Object.freeze({ ...group, checks: Object.freeze(checks) });
   });
@@ -291,4 +293,22 @@ export function expandedCheckCount(playbook, items = []) {
   const applicable = applicableItemsForPlaybook(playbook, items);
   const extra = applicable.filter((item) => !authored.has(item.id)).length;
   return playbookChecks(playbook).length + extra;
+}
+
+// Split an expanded playbook's checks into authored (real variants) and catalog-only
+// (methodology available, practical variants pending). Variant-complete checks — variants
+// exist but per-variant why/class is incomplete — are still "authored" in the sense that
+// they have named variants and payloads; only catalog-only checks have no procedure.
+export function expandedMaturityCounts(playbook, items = []) {
+  let applicable = 0;
+  let authored = 0;
+  let methodology = 0;
+  const checks = items.length ? playbookChecks(expandPlaybook(playbook, items)) : playbookChecks(playbook);
+  for (const check of checks) {
+    applicable += 1;
+    const maturity = checkMaturity(check);
+    if (maturity === MATURITY.CATALOG_ONLY) methodology += 1;
+    else authored += 1;
+  }
+  return Object.freeze({ applicable, authored, methodology });
 }

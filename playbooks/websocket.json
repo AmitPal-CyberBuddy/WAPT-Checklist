@@ -35,13 +35,17 @@
               "name": "ws:// upgrade",
               "kind": "request",
               "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
-              "expect": "Must 4xx or redirect to wss. A 101 on port 80 is the finding if the socket is authenticated."
+              "expect": "Must 4xx or redirect to wss. A 101 on port 80 is the finding if the socket is authenticated.",
+              "category": "protocol-variant",
+              "why": "A ws:// upgrade lets an on-path attacker read or tamper with the socket."
             },
             {
               "name": "Page socket URL",
               "kind": "note",
               "payload": "In DevTools, look at the page's new WebSocket(...) argument.",
-              "expect": "Must be wss:// on an HTTPS page. A ws:// URL is mixed content and often blocked — still record it."
+              "expect": "Must be wss:// on an HTTPS page. A ws:// URL is mixed content and often blocked — still record it.",
+              "category": "baseline",
+              "why": "Reading the socket URL from the page shows whether it is wss and which host it targets."
             }
           ]
         },
@@ -60,13 +64,18 @@
               "name": "Arbitrary Origin",
               "kind": "request",
               "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://evil.example\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nCookie: session=<account-A>",
-              "expect": "Must reject. A 101 is the finding if the cookie is enough to authorize."
+              "expect": "Must reject. A 101 is the finding if the cookie is enough to authorize.",
+              "category": "header-variant",
+              "why": "An accepted arbitrary Origin means the socket allows cross-site connections.",
+              "payload_ref": "ws-origin"
             },
             {
               "name": "null / subdomain",
               "kind": "request",
               "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: null\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nCookie: session=<account-A>",
-              "expect": "null and https://evil.example.com.example must not match a substring allowlist."
+              "expect": "null and https://evil.example.com.example must not match a substring allowlist.",
+              "category": "encoding",
+              "why": "null and subdomain Origins test whether the allowlist is exact or substring."
             }
           ]
         },
@@ -86,13 +95,18 @@
               "name": "No cookie / no token",
               "kind": "request",
               "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
-              "expect": "Must 401. If 101, send a privileged subscribe next — an open handshake plus authorized data is the finding."
+              "expect": "Must 401. If 101, send a privileged subscribe next — an open handshake plus authorized data is the finding.",
+              "category": "authentication-context",
+              "why": "A 101 without any credential means the socket is unauthenticated.",
+              "payload_ref": "ws-no-auth"
             },
             {
               "name": "Token in the query string",
               "kind": "request",
               "payload": "GET /chat?access_token=<token> HTTP/1.1\nHost: www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13",
-              "expect": "If it works, the token is now in logs and Referer. Prefer a header or a post-open auth message."
+              "expect": "If it works, the token is now in logs and Referer. Prefer a header or a post-open auth message.",
+              "category": "protocol-variant",
+              "why": "A bearer in the socket URL leaks into logs and history."
             }
           ]
         }
@@ -118,13 +132,17 @@
               "name": "Cross-account send",
               "kind": "note",
               "payload": "{\"action\":\"message.send\",\"channel\":\"user:1002\",\"body\":\"wapt-marker\"}",
-              "expect": "A's socket must not deliver to B's inbox. Also try user_id, to, room."
+              "expect": "A's socket must not deliver to B's inbox. Also try user_id, to, room.",
+              "category": "authorization-context",
+              "why": "Sending as another user proves per-message authorization is absent."
             },
             {
               "name": "Admin action on member socket",
               "kind": "note",
               "payload": "{\"action\":\"user.delete\",\"id\":42}\\n{\"type\":\"admin.broadcast\",\"body\":\"x\"}",
-              "expect": "Must be unauthorized. Confirm the side effect did not happen."
+              "expect": "Must be unauthorized. Confirm the side effect did not happen.",
+              "category": "authorization-context",
+              "why": "A member invoking an admin action on the socket is a privilege gap."
             }
           ]
         },
@@ -144,17 +162,41 @@
               "name": "Subscribe to B's channel",
               "kind": "note",
               "payload": "{\"action\":\"subscribe\",\"channel\":\"orders:1002\"}\\n{\"type\":\"subscribe\",\"topic\":\"user/1002\"}",
-              "expect": "Must refuse or stay silent. An order-updated event for B is the finding."
+              "expect": "Must refuse or stay silent. An order-updated event for B is the finding.",
+              "category": "authorization-context",
+              "why": "Joining another user's channel is channel-level IDOR."
             },
             {
               "name": "Wildcard / broadcast",
               "kind": "note",
               "payload": "{\"action\":\"subscribe\",\"channel\":\"*\"}\\n{\"action\":\"subscribe\",\"channel\":\"orders:#\"}",
-              "expect": "Wildcards must not expand past the caller's objects."
+              "expect": "Wildcards must not expand past the caller's objects.",
+              "category": "mutation",
+              "why": "A wildcard or broadcast subscribe can read every channel."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "ws-origin": {
+      "id": "ws-origin",
+      "category": "header-variant",
+      "context": "WebSocket Origin header",
+      "encoding": "none",
+      "purpose": "An accepted arbitrary Origin means the socket allows cross-site connections.",
+      "safe": true,
+      "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://evil.example\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13\nCookie: session=<account-A>"
+    },
+    "ws-no-auth": {
+      "id": "ws-no-auth",
+      "category": "authentication-context",
+      "context": "WebSocket handshake",
+      "encoding": "none",
+      "purpose": "A 101 without any credential means the socket is unauthenticated.",
+      "safe": true,
+      "payload": "GET /chat HTTP/1.1\nHost: www.example.com\nOrigin: https://www.example.com\nUpgrade: websocket\nConnection: Upgrade\nSec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==\nSec-WebSocket-Version: 13"
+    }
+  }
 }

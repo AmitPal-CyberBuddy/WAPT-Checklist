@@ -1,12 +1,13 @@
 // Current Assessment: profile → attack-surface families → named practical tests.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r6';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r6';
-import { shareHref } from '../engine/share.js?v=1.0.0-r6';
-import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r6';
-import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r6';
-import { itemStatus } from './filters.js?v=1.0.0-r6';
-import { element, STATUS_GLYPHS } from './dom.js?v=1.0.0-r6';
-import { STATUS_LABELS } from './export.js?v=1.0.0-r6';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r7';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r7';
+import { shareHref } from '../engine/share.js?v=1.0.0-r7';
+import { profileIsScoped, answersToProfile } from '../engine/profile.js?v=1.0.0-r7';
+import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r7';
+import { checkMaturity, MATURITY, MATURITY_LABEL } from '../engine/maturity.js?v=1.0.0-r7';
+import { itemStatus } from './filters.js?v=1.0.0-r7';
+import { element, STATUS_GLYPHS } from './dom.js?v=1.0.0-r7';
+import { STATUS_LABELS } from './export.js?v=1.0.0-r7';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',
@@ -76,7 +77,8 @@ export function renderAssessmentPlan(root, context) {
     return;
   }
 
-  const plan = buildAssessmentPlan(index, derived, answers);
+  const items = records.map(({ item }) => item);
+  const plan = buildAssessmentPlan(index, derived, answers, items);
   const families = plan.families || [];
   if (!families.length) {
     root.append(element('p', 'empty-copy', 'No tests matched this profile. Adjust the type, authentication, or features.'));
@@ -102,7 +104,8 @@ export function renderAssessmentPlan(root, context) {
   hero.append(element('h2', '', title));
   const target = element('p', 'assessment-target');
   target.append(element('strong', '', engagement.targetUrl?.trim() || engagement.name?.trim() || 'No target URL set'));
-  target.append(document.createTextNode(` · ${checks.length} applicable tests`));
+  const applicableCount = typeof plan.applicableCount === 'number' ? plan.applicableCount : checks.length;
+  target.append(document.createTextNode(` · ${applicableCount} applicable tests`));
   hero.append(target);
   const chipRow = element('div', 'chip-row assessment-chips');
   for (const label of chips) chipRow.append(element('span', 'chip', label));
@@ -115,7 +118,11 @@ export function renderAssessmentPlan(root, context) {
     stat.append(element('span', '', label));
     stats.append(stat);
   };
-  add(checks.length, 'applicable tests');
+  const authoredCount = typeof plan.authoredCount === 'number' ? plan.authoredCount : 0;
+  const methodologyCount = typeof plan.methodologyCount === 'number' ? plan.methodologyCount : 0;
+  add(applicableCount, 'applicable tests');
+  add(authoredCount, 'authored playbooks');
+  add(methodologyCount, 'methodology-only');
   add(completed, 'completed');
   add(potential + confirmed, 'potential findings');
   add(naContext, 'not applicable');
@@ -125,7 +132,9 @@ export function renderAssessmentPlan(root, context) {
   const actions = element('p', 'assessment-actions');
   const first = checks[0];
   const start = element('a', 'button button-primary', first ? `Start ${first.title} →` : 'Open tests →');
-  start.href = first ? `#playbook/${first.playbookId}/${first.id}` : '#playbooks';
+  start.href = first
+    ? (first.playbookId ? `#playbook/${first.playbookId}/${first.id}` : `#checklist/${recordsById.get(first.item)?.item?.category || ''}`)
+    : '#playbooks';
   const shareLink = actionButton('button button-quiet', 'Copy share link', async () => {
     try {
       await copyText(shareHref({
@@ -176,11 +185,15 @@ export function renderAssessmentPlan(root, context) {
     const list = element('ul', 'assessment-check-list');
     for (const check of family.checks) {
       const status = checkStatus(check, recordsById, state);
-      const row = element('li', `assessment-check status-${status}`);
+      const maturity = checkMaturity(check);
+      const row = element('li', `assessment-check status-${status} maturity-${maturity}`);
       const link = element('a', '');
-      link.href = `#playbook/${check.playbookId}/${check.id}`;
+      link.href = check.playbookId
+        ? `#playbook/${check.playbookId}/${check.id}`
+        : `#checklist/${recordsById.get(check.item)?.item?.category || ''}`;
       link.append(element('span', 'assessment-mark', STATUS_GLYPHS[status] || '□'));
       link.append(element('strong', '', check.title));
+      link.append(element('span', 'chip maturity-chip', MATURITY_LABEL[maturity] || maturity));
       link.append(element('small', '', STATUS_LABELS[status] || status));
       row.append(link);
       list.append(row);

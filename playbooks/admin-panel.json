@@ -36,13 +36,17 @@
               "name": "Common admin paths",
               "kind": "request",
               "payload": "GET /admin HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "401/302 to login, not a dashboard. Repeat /administrator/, /manage/, /internal/, /console/, /debug/."
+              "expect": "401/302 to login, not a dashboard. Repeat /administrator/, /manage/, /internal/, /console/, /debug/.",
+              "category": "mutation",
+              "why": "Predictable /admin-style paths are reachable only if a route binds them; a 200 is the finding."
             },
             {
               "name": "Admin host",
               "kind": "request",
               "payload": "GET / HTTP/1.1\nHost: admin.example.com\nConnection: close",
-              "expect": "A separate admin hostname still needs authentication. A 200 app is a lead, not yet a finding."
+              "expect": "A separate admin hostname still needs authentication. A 200 app is a lead, not yet a finding.",
+              "category": "protocol-variant",
+              "why": "An admin vhost or host-routed control panel can be discovered through DNS and host headers."
             }
           ]
         },
@@ -62,19 +66,25 @@
               "name": "Member session on /admin",
               "kind": "request",
               "payload": "GET /admin/users HTTP/1.1\nHost: www.example.com\nCookie: session=<member>",
-              "expect": "403/404, not a user list. Repeat /api/v1/admin/users and actions you saw in the bundle."
+              "expect": "403/404, not a user list. Repeat /api/v1/admin/users and actions you saw in the bundle.",
+              "category": "authorization-context",
+              "why": "A member token reaching an admin function is a function-level authorization gap."
             },
             {
               "name": "Hidden UI is not a control",
               "kind": "request",
               "payload": "POST /admin/users/42/role HTTP/1.1\nHost: www.example.com\nCookie: session=<member>\nContent-Type: application/json\n\n{\"role\":\"admin\"}",
-              "expect": "If the button is hidden but the route works, that is BFLA."
+              "expect": "If the button is hidden but the route works, that is BFLA.",
+              "category": "browser-context",
+              "why": "A route hidden from the menu is still reachable if it has no server-side check."
             },
             {
               "name": "Version and alias",
               "kind": "request",
               "payload": "GET /api/v0/admin/users HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "Older versions, trailing slashes, and case variants."
+              "expect": "Older versions, trailing slashes, and case variants.",
+              "category": "technology-specific",
+              "why": "Versioned or aliased admin routes can bypass a path allowlist that matches only the canonical URL."
             }
           ]
         },
@@ -94,13 +104,17 @@
               "name": "DELETE as member",
               "kind": "request",
               "payload": "DELETE /api/v1/users/42 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>",
-              "expect": "403, not a deleted user. Also PUT, PATCH, OPTIONS."
+              "expect": "403, not a deleted user. Also PUT, PATCH, OPTIONS.",
+              "category": "authorization-context",
+              "why": "A member changing the effective verb to a destructive one on an admin object is the finding."
             },
             {
               "name": "X-HTTP-Method-Override",
               "kind": "request",
               "payload": "POST /api/v1/users/42 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>\nX-HTTP-Method-Override: DELETE\nContent-Length: 0",
-              "expect": "Override must not reach a handler the real DELETE would refuse. Also try _method=DELETE."
+              "expect": "Override must not reach a handler the real DELETE would refuse. Also try _method=DELETE.",
+              "category": "header-variant",
+              "why": "A header override lets a read-like request become a destructive verb the route would otherwise deny."
             }
           ]
         },
@@ -119,13 +133,17 @@
               "name": "Member impersonate",
               "kind": "request",
               "payload": "POST /admin/users/1002/impersonate HTTP/1.1\nHost: www.example.com\nCookie: session=<member>",
-              "expect": "Must 403. Repeat /sudo, /act-as, /login-as."
+              "expect": "Must 403. Repeat /sudo, /act-as, /login-as.",
+              "category": "authorization-context",
+              "why": "A non-privileged account requesting impersonation is a privilege escalation."
             },
             {
               "name": "Admin impersonate without step-up",
               "kind": "note",
               "payload": "As a real admin, impersonate your other test user and look for re-auth and an audit event.",
-              "expect": "Missing step-up or a missing audit row is the finding — do not impersonate a real customer."
+              "expect": "Missing step-up or a missing audit row is the finding — do not impersonate a real customer.",
+              "category": "authentication-context",
+              "why": "Impersonating another admin without re-authentication skips the intended step-up control."
             }
           ]
         }
@@ -152,13 +170,17 @@
               "name": "Cross-site role change",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/admin/users/42/role\" method=\"POST\">\n  <input name=\"role\" value=\"admin\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Must fail without a valid CSRF token. Critical actions should also require step-up."
+              "expect": "Must fail without a valid CSRF token. Critical actions should also require step-up.",
+              "category": "browser-context",
+              "why": "A cross-site POST that changes roles is a high-impact CSRF on a privileged action."
             },
             {
               "name": "JSON as text/plain",
               "kind": "request",
               "payload": "POST /api/v1/admin/users HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<admin>\n\n{\"email\":\"attacker@example.com\",\"role\":\"admin\"}",
-              "expect": "Must not create a user."
+              "expect": "Must not create a user.",
+              "category": "browser-context",
+              "why": "Simple-request JSON must still carry a token or it can be CSRF'd cross-site."
             }
           ]
         },
@@ -177,13 +199,17 @@
               "name": "Read framing headers",
               "kind": "request",
               "payload": "GET /admin HTTP/1.1\nHost: www.example.com\nCookie: session=<admin>",
-              "expect": "frame-ancestors 'none' or an explicit allowlist. XFO DENY/SAMEORIGIN must not contradict CSP."
+              "expect": "frame-ancestors 'none' or an explicit allowlist. XFO DENY/SAMEORIGIN must not contradict CSP.",
+              "category": "baseline",
+              "why": "The framing policy is read before any frame test so the expectation is grounded."
             },
             {
               "name": "Cross-origin iframe",
               "kind": "html",
               "payload": "<!doctype html>\n<iframe src=\"https://www.example.com/admin\" style=\"width:100%;height:100%\"></iframe>",
-              "expect": "The iframe stays blank / errors when framing is denied."
+              "expect": "The iframe stays blank / errors when framing is denied.",
+              "category": "browser-context",
+              "why": "An actual frame load confirms whether the admin UI can be clickjacked."
             }
           ]
         }

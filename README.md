@@ -22,7 +22,7 @@ A professional, context-aware Web Application Penetration Testing methodology, c
 - Explainable category rationale in the checklist view: why a suite is active, boosted, or waiting for scope confirmation.
 - Lazy category loading plus full-text search across IDs, objectives, steps, tags, tools, technologies, and mappings — results arrive as family-grouped one-line rows you can status directly, expanding into the full card in place.
 - Combined category, severity, difficulty, status, mode, applicability, technology, tool, tag, and ID filters, with removable active-filter chips and a Testing/Coverage view toggle.
-- **Context-driven assessment:** Start testing, answer what the application is, and the dashboard is the result — every matching surface, not one page type. Share the plan as a URL (scope only) or as Markdown. Each test opens a Quick Test + variants + payloads + validation. Methodology stays under Reporting and reference.
+- **Context-driven assessment:** Start testing, answer what the application is, and the dashboard is the result — every matching surface, not one page type. The **Applicable Test Count is catalog-derived**: it is how many of the 623 checklist items evaluate as Active or Confirm for the profile, not the authored-playbook overlay count, and it is shown alongside how many of those have authored playbooks vs are methodology-only. Share the plan as a URL (scope only) or as Markdown. Authored tests open a Quick Test, named attack hypotheses (tickable coverage, never findings) with a one-line Why, copyable payloads, CHECK FOR, VALIDATE, and DO NOT REPORT — applied across every playbook, not just the static surface. A catalog-only test shows its maturity chip and opens the full methodology instead of a fabricated request. Methodology stays under Reporting and reference.
 - **Test families as the working unit:** 196 validated families covering every one of the 623 checks. The families board shows tested/executable, blocked, N/A, confirmed, and don't-miss coverage per surface; a family workspace gives the authored Quick Test, a tickable Don't Miss list, dense check rows, "after this family", and "what else should I check?" without losing context.
 - **Honest coverage states:** tested (executed) · testing now · blocked · N/A (by scope or by tester) · not tested. N/A never counts as tested; blocked work stays in the denominator because it is still owed.
 - **Check ≠ coverage ≠ finding:** every check carries a coverage control and a separate finding verdict, so a completed checklist item never implies a vulnerability.
@@ -70,7 +70,7 @@ css/                       Independent design tokens, responsive UI, print
 js/ui/                     Browser rendering, wizard, storage adapter
 js/engine/                 Pure context, applicability, priority, state policy
 js/data/presets.mjs        Plain context mappings for quick starts
-playbooks/                 Page-type packs with named variants and copyable payloads
+playbooks/                 Page-type packs: authored named variants and payloads first, catalog-only methodology behind them
 checklist/manifest.json    Category metadata and honest production counts
 checklist/reconnaissance.json  Phase 4 production reconnaissance methodology
 checklist/http.json          Phase 4 HTTP and browser protocol methodology

@@ -8,7 +8,7 @@
       "title": "Static / published page",
       "file": "static-page.json",
       "summary": "No login, no first-party API. TLS, headers, host, paths, disclosure, and client framing.",
-      "count": 39
+      "count": 49
     },
     {
       "id": "login-page",

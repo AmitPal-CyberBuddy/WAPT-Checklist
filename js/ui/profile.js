@@ -1,7 +1,7 @@
 // Compact application profile: type · authentication · features.
 // This is the tester-facing scope. The 18-question wizard remains as Advanced.
-import { APP_TYPES, AUTH_OPTIONS, FEATURE_OPTIONS, answersToProfile, profileToAnswers, profileIsScoped } from '../engine/profile.js?v=1.0.0-r6';
-import { element } from './dom.js?v=1.0.0-r6';
+import { APP_TYPES, AUTH_OPTIONS, FEATURE_OPTIONS, answersToProfile, profileToAnswers, profileIsScoped } from '../engine/profile.js?v=1.0.0-r7';
+import { element } from './dom.js?v=1.0.0-r7';
 
 function optionButton(name, value, label, detail, checked, type = 'checkbox') {
   const wrap = element('label', `profile-option${checked ? ' is-on' : ''}`);

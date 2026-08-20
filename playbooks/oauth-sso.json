@@ -37,19 +37,26 @@
               "name": "Prefix / path suffix",
               "kind": "request",
               "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com.evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
-              "expect": "Must reject. Also try https://app.example.com/callback/../off and https://app.example.com%40evil.example/."
+              "expect": "Must reject. Also try https://app.example.com/callback/../off and https://app.example.com%40evil.example/.",
+              "category": "encoding",
+              "why": "A prefix-match allowlist can be bypassed with a suffix that still passes.",
+              "payload_ref": "oauth-redirect-suffix"
             },
             {
               "name": "Parameter pollution",
               "kind": "request",
               "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com/cb&redirect_uri=https://evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
-              "expect": "Duplicate redirect_uri must not pick the attacker value."
+              "expect": "Duplicate redirect_uri must not pick the attacker value.",
+              "category": "parameter-variant",
+              "why": "Duplicate redirect_uri parameters are parsed differently by the client and the server."
             },
             {
               "name": "Open redirect on the client",
               "kind": "request",
               "payload": "GET /login?next=https://evil.example/ HTTP/1.1\nHost: www.example.com\nConnection: close",
-              "expect": "Post-login next= is a second hop. Must not land off-origin after a good redirect_uri."
+              "expect": "Post-login next= is a second hop. Must not land off-origin after a good redirect_uri.",
+              "category": "browser-context",
+              "why": "If the redirect target itself redirects, a valid redirect_uri can still leak the code."
             }
           ]
         },
@@ -68,13 +75,17 @@
               "name": "Drop state",
               "kind": "request",
               "payload": "GET /callback?code=<code>&state= HTTP/1.1\nHost: www.example.com\nCookie: session=<pre-login>",
-              "expect": "Must fail. Also try omitting state entirely."
+              "expect": "Must fail. Also try omitting state entirely.",
+              "category": "authentication-context",
+              "why": "A missing state means the login response is not bound to the original request, enabling login CSRF."
             },
             {
               "name": "Replay someone else's state",
               "kind": "note",
               "payload": "Start login as A, capture state. Complete B's login with A's state (or a random string).",
-              "expect": "Must fail. nonce on the id_token must match the initiating session too."
+              "expect": "Must fail. nonce on the id_token must match the initiating session too.",
+              "category": "authentication-context",
+              "why": "Reusing another party's state proves the binding is not enforced."
             }
           ]
         },
@@ -93,13 +104,17 @@
               "name": "Omit PKCE on authorize",
               "kind": "request",
               "payload": "GET /authorize?client_id=<spa-id>&redirect_uri=https://app.example.com/cb&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
-              "expect": "A public client must be rejected without code_challenge=S256."
+              "expect": "A public client must be rejected without code_challenge=S256.",
+              "category": "authentication-context",
+              "why": "A public client that accepts authorize without code_challenge is not enforcing PKCE."
             },
             {
               "name": "Wrong verifier",
               "kind": "request",
               "payload": "POST /token HTTP/1.1\nHost: idp.example.com\nContent-Type: application/x-www-form-urlencoded\n\ngrant_type=authorization_code&code=<code>&redirect_uri=https://app.example.com/cb&client_id=<spa-id>&code_verifier=wrong",
-              "expect": "Must fail. A success means PKCE is not enforced."
+              "expect": "Must fail. A success means PKCE is not enforced.",
+              "category": "authentication-context",
+              "why": "Accepting a wrong verifier means the code challenge is not checked."
             }
           ]
         },
@@ -118,13 +133,17 @@
               "name": "Replay the code",
               "kind": "note",
               "payload": "Exchange the code once, then replay the same /token POST.",
-              "expect": "Second use must fail and should revoke the first grant."
+              "expect": "Second use must fail and should revoke the first grant.",
+              "category": "authentication-context",
+              "why": "An authorization code must be single-use; a replay is a session-hijack primitive."
             },
             {
               "name": "Code in Referer",
               "kind": "note",
               "payload": "Land on the redirect_uri that still has ?code= in the query, then load a third-party script/image.",
-              "expect": "The code must not appear in Referer. Prefer a form_post response mode or an immediate 302 that strips it."
+              "expect": "The code must not appear in Referer. Prefer a form_post response mode or an immediate 302 that strips it.",
+              "category": "browser-context",
+              "why": "A code leaked via Referer to a third-party resource can be replayed."
             }
           ]
         },
@@ -144,13 +163,17 @@
               "name": "Reject implicit",
               "kind": "request",
               "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com/cb&response_type=token&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close",
-              "expect": "Must refuse response_type=token / id_token for a confidential app. implicit is deprecated."
+              "expect": "Must refuse response_type=token / id_token for a confidential app. implicit is deprecated.",
+              "category": "protocol-variant",
+              "why": "A response_type that returns tokens in the URL should be rejected on non-browser clients."
             },
             {
               "name": "Token in query",
               "kind": "note",
               "payload": "After login, inspect the browser URL, any next= redirect, and the network log for access_token=.",
-              "expect": "Tokens belong in a POST body or a cookie, not a query string."
+              "expect": "Tokens belong in a POST body or a cookie, not a query string.",
+              "category": "protocol-variant",
+              "why": "A token in the query leaks into logs, history, and Referer."
             }
           ]
         }
@@ -177,13 +200,17 @@
               "name": "Drop the signature",
               "kind": "note",
               "payload": "Capture a test-IdP SAMLResponse, remove ds:Signature, and POST it to the ACS.",
-              "expect": "Must reject. Do this only with a test account and a test IdP."
+              "expect": "Must reject. Do this only with a test account and a test IdP.",
+              "category": "authentication-context",
+              "why": "An accepted unsigned SAML response means signature validation is missing."
             },
             {
               "name": "Change NameID with signature left intact",
               "kind": "note",
               "payload": "Alter the NameID of a test assertion without recomputing the signature.",
-              "expect": "Must reject. Signature wrapping (signed wrapper, unsigned inner assertion) is the same class."
+              "expect": "Must reject. Signature wrapping (signed wrapper, unsigned inner assertion) is the same class.",
+              "category": "parser-differential",
+              "why": "If the signed fields do not cover NameID, the identity can be swapped without invalidating the signature."
             }
           ]
         },
@@ -202,17 +229,32 @@
               "name": "Absolute RelayState",
               "kind": "request",
               "payload": "POST /sso/acs HTTP/1.1\nHost: www.example.com\nContent-Type: application/x-www-form-urlencoded\n\nSAMLResponse=<valid-test>&RelayState=https%3A%2F%2Fevil.example%2F",
-              "expect": "Must stay on-origin. Repeat for //evil.example/ and /\\evil.example/."
+              "expect": "Must stay on-origin. Repeat for //evil.example/ and /\\evil.example/.",
+              "category": "protocol-variant",
+              "why": "An absolute RelayState that redirects off-host is an open redirect after SSO."
             },
             {
               "name": "Protocol-relative",
               "kind": "note",
               "payload": "RelayState=//evil.example/ and RelayState=////evil.example/",
-              "expect": "Same check as any other open redirect. Confirm the final Location."
+              "expect": "Same check as any other open redirect. Confirm the final Location.",
+              "category": "encoding",
+              "why": "A protocol-relative RelayState can be coerced to the attacker's scheme."
             }
           ]
         }
       ]
     }
-  ]
+  ],
+  "payloads": {
+    "oauth-redirect-suffix": {
+      "id": "oauth-redirect-suffix",
+      "category": "encoding",
+      "context": "redirect_uri parameter",
+      "encoding": "none",
+      "purpose": "A prefix-match allowlist can be bypassed with a suffix that still passes.",
+      "safe": true,
+      "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com.evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close"
+    }
+  }
 }

@@ -1,5 +1,5 @@
-import { PRESET_LIST } from '../data/presets.mjs?v=1.0.0-r6';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r6';
+import { PRESET_LIST } from '../data/presets.mjs?v=1.0.0-r7';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r7';
 
 const UNKNOWN = 'unknown';
 

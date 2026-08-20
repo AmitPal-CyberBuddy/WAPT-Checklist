@@ -17,8 +17,8 @@ test('all user-facing pages share policy, branding, theme, and responsive viewpo
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
     assert.ok(html.includes('assets/logo.svg'));
     assert.ok(html.includes('css/styles.css?v=1.0.0'));
-    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r6"/);
-    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r6'), `${page} early theme boot`);
+    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r7"/);
+    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r7'), `${page} early theme boot`);
     assert.ok(html.indexOf('theme-boot.js') < html.indexOf('css/styles.css'), `${page} applies theme before CSS`);
   }
 });
