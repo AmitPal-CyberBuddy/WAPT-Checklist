@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Fixed (Control states and plan depth tagging — r11)
+
+- **Depth tiers now tag the category rows.** The Core / Extended / Specialized control was hiding every row under Core because category rows were rendered without their computed tier. Rows now carry the tier from the plan (Don't miss / High-value / Standard / Advanced), so the default Core pass shows its curated working set (for example 44 of 239 tests on a static black-box scope, 200 of 623 on a grey-box web app).
+- **Control-state styling.** Disabled controls (wizard Back on the first step, delete on the last engagement, the finding verdict while N/A) now read as disabled everywhere — no hover lift, no clickable look. Compact check rows show a chevron expander that turns with `aria-expanded`, including the open state.
+- **Status at a glance.** The coverage/finding pair on every row carries the live status as a colored accent and text tone (passed/confirmed green, potential/blocked amber, testing now blue, N/A struck-through muted), and the remaining summary-glyph states (testing now, blocked, N/A) on plan rows are color-coded to match.
+- Verified end-to-end in the new plan UI: Tested → Completed count and glyph update; Potential finding → “To validate” appears; Blocked and N/A update the row accent; N/A disables the finding verdict; resetting returns counts; category tabs and depth controls filter the same rows; notes persist. Bumped browser assets to `1.0.0-r11`.
+
 ### Changed (Hosting hygiene, clean URLs, and duplicate-content audit)
 
 - **Only the product is hosted.** The GitHub Pages deploy now builds an explicit publish tree instead of hosting the whole repository: tests, validation tooling, schemas, and maintainer documents (QA reports, phase notes, runbooks, architecture write-ups) stay in the repository and no longer resolve on the public site. Everything the running console needs (catalog, playbooks, payloads, attack chains, Burp workflows, the four operator-facing documents) is verified present by a dedicated publish test.

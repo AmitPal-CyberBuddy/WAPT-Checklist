@@ -206,3 +206,38 @@ details.probe-check{scroll-margin-top:165px}
   .summary-row{flex-direction:column;align-items:flex-start;gap:.15rem}
   .summary-row strong{max-width:100%;text-align:left}
 }
+
+/* ── Control states: scan the workspace at a glance ──────────────────────── */
+/* Disabled controls step back everywhere (wizard Back at step 1, delete on the
+   last engagement, finding verdict while N/A) — never hover-lift, never look
+   clickable. */
+.button:disabled,.icon-button:disabled,button:disabled,.plan-filter-clear:disabled,.wizard-skip:disabled{opacity:.38;cursor:not-allowed;transform:none!important;box-shadow:none}
+.button:disabled:hover,.icon-button:disabled:hover,button:disabled:hover{border-color:var(--line);background:var(--surface);transform:none}
+select:disabled,textarea:disabled,input:disabled{opacity:.42;cursor:not-allowed}
+
+/* Compact rows announce that they expand: a quiet chevron that turns with the
+   row's aria-expanded state. */
+.check-open::after{content:'▸';flex:0 0 auto;margin-left:.25rem;color:var(--faint);font-size:.62rem;transition:transform .15s ease}
+.check-open[aria-expanded='true']::after{content:'▾';color:var(--brand)}
+.check-open[aria-expanded='true'] .check-title{color:var(--ink)}
+
+/* The coverage/finding pair wears the live status as a left accent and glyph
+   color, so a long list can be scanned without reading either select. */
+.status-controls{position:relative}
+.status-controls::before{content:'';position:absolute;left:-6px;top:20%;bottom:20%;width:2px;border-radius:2px;background:transparent}
+.status-controls[data-status='passed']::before,.status-controls[data-status='confirmed_finding']::before{background:var(--low)}
+.status-controls[data-status='potential_finding']::before{background:var(--med)}
+.status-controls[data-status='in_progress']::before{background:var(--accent-2)}
+.status-controls[data-status='blocked']::before{background:var(--med)}
+.status-controls[data-status='na']::before{background:var(--line-strong)}
+.status-controls[data-status='passed'] .status-select,.status-controls[data-status='confirmed_finding'] .status-select{color:var(--low)}
+.status-controls[data-status='potential_finding'] .status-select,.status-controls[data-status='blocked'] .status-select{color:var(--med)}
+.status-controls[data-status='in_progress'] .status-select{color:var(--accent-2)}
+.status-controls[data-status='na'] .status-select{color:var(--muted);text-decoration:line-through}
+
+/* Remaining summary-glyph states on plan rows. */
+.probe-check-status.status-in_progress{color:var(--accent-2)}
+.probe-check-status.status-blocked{color:var(--med)}
+.probe-check-status.status-na{color:var(--muted)}
+.check-row.status-in_progress .check-title{color:var(--ink)}
+.check-row.status-blocked .check-title{color:var(--ink-2)}

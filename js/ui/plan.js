@@ -6,15 +6,15 @@
 // from “methodology-only” catalog entries, while the operator UI calls them
 // Practical and Methodology so internal content architecture never becomes
 // navigation noise.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r10';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r10';
-import { shareHref } from '../engine/share.js?v=1.0.0-r10';
-import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r10';
-import { surfaceRationale, roleLadderLabels } from '../engine/surfaces.js?v=1.0.0-r10';
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r10';
-import { itemStatus } from './filters.js?v=1.0.0-r10';
-import { element } from './dom.js?v=1.0.0-r10';
-import { renderOperatorCheck } from './playbook.js?v=1.0.0-r10';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r11';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r11';
+import { shareHref } from '../engine/share.js?v=1.0.0-r11';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r11';
+import { surfaceRationale, roleLadderLabels } from '../engine/surfaces.js?v=1.0.0-r11';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r11';
+import { itemStatus } from './filters.js?v=1.0.0-r11';
+import { element } from './dom.js?v=1.0.0-r11';
+import { renderOperatorCheck } from './playbook.js?v=1.0.0-r11';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',
@@ -279,6 +279,13 @@ export function renderAssessmentPlan(root, context) {
   controls.append(visibleLine);
   shell.append(controls);
 
+  // Depth tier per test: tiers are computed on plan.tiers, so map item → tier
+  // before rendering the category groups (families carry the checks untagged).
+  const tierByItem = new Map();
+  for (const tier of plan.tiers || []) {
+    for (const check of tier.checks) tierByItem.set(check.item, tier.id);
+  }
+
   // One collapsible category per attack surface, each explaining why it is here.
   // The first group starts open; everything else waits one click away.
   let groupIndex = 0;
@@ -317,7 +324,7 @@ export function renderAssessmentPlan(root, context) {
         currentPlaybookId: selectedSurfaceId || plan.currentSurface?.id || ''
       });
       node.dataset.planSurface = check.surface;
-      node.dataset.planTier = check.tier || 'standard';
+      node.dataset.planTier = tierByItem.get(check.item) || 'standard';
       list.append(node);
     }
     body.append(list);
