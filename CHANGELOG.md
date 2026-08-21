@@ -4,6 +4,12 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Practical-variant wave 1 continues: session management complete — r16)
+
+- **Session-management category is now 28/28 step-by-step** (66 named variants across 22 previously reference-only checks): token inventory and transport mapping, cookie Domain/Path scoping with sibling-acceptance and shadowing probes, persistent-lifetime policy, reference-token entropy and contents (decode, sensitive-value grep, canary), rotation on authentication (before/after compare, planted-id fixation, old-id replay) and on privilege change (step-up compare, old-elevation replay, mid-session role grants), session puzzling across token names, subdomain isolation (cross-host replay, scope evidence, cookie shadowing), account-switch adoption (carry-over, logout completeness, login-as hygiene), concurrent-session limits, user-facing session review/revoke with immediacy proof, server-enforced inactivity and absolute lifetime, server-side expiry against client-timer tampering, script-readable storage hygiene, disabled/deleted account replay, credential-change session termination, federated logout coordination, explicit-action session creation (login-phishing probes), revocation propagation windows, and rotated persistent-cookie families with reuse-revocation.
+- All schema, floor, content, and reference audits pass; a cookie-authenticated plan now renders the full session category practical (28 step-by-step of 43 in-plan rows).
+
+
 ### Added (Practical-variant wave 1: JWT and OAuth/OIDC/SAML — r15)
 
 - **JWT category is now 18/18 step-by-step.** Eleven previously reference-only checks gained named, pasteable variants: algorithm allowlist (HS256/RS256 confusion, alg=none, cross-family), HMAC secret strength (dictionary, offline openssl digest, crack-time evidence), issuer trust-set and prefix tricks, per-service audience, token type/purpose (ID-token-at-API, purpose confusion, typ swaps), subject/tenant claim binding (parameter overrides, cross-tenant sub, conflicting claims), replay limits (magic-link double spend, step-up reuse, lifetime), refresh-token families (rotated-token replay, parallel refresh race, unbounded lifetime), browser storage hygiene (sweep, readable-script proof, logout residue), jku/x5u/embedded-JWK rejection with out-of-band key-fetch detection, and kid rotation fallback probes.

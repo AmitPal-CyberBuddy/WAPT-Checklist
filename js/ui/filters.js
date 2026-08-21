@@ -1,4 +1,4 @@
-import { searchableText } from './catalog.js?v=1.0.0-r15';
+import { searchableText } from './catalog.js?v=1.0.0-r16';
 
 export const EMPTY_FILTERS = Object.freeze({
   query: '', category: '', severity: '', difficulty: '', status: '', mode: '',

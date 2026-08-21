@@ -1,6 +1,6 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r15';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r15';
-import { asset } from './paths.js?v=1.0.0-r15';
+import { initializeTheme } from './theme.js?v=1.0.0-r16';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r16';
+import { asset } from './paths.js?v=1.0.0-r16';
 
 const TOOLS = Object.freeze({
   proxy: 'Proxy', repeater: 'Repeater', intruder: 'Intruder', scanner: 'Scanner',

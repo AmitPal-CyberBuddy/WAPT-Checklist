@@ -1,6 +1,6 @@
-import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r15';
-import { importScope } from '../engine/scope-import.js?v=1.0.0-r15';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r15';
+import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r16';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r16';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r16';
 
 const UNKNOWN = 'unknown';
 const ROLE_DEFAULT_NAMES = Object.freeze({ admin: 'Administrator', privileged: 'Privileged user', support: 'Support / internal', standard: 'Standard user', custom: 'Custom role' });

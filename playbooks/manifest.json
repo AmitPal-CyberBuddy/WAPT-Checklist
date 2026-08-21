@@ -43,7 +43,7 @@
       "title": "Session / cookies",
       "file": "session.json",
       "summary": "Secure, HttpOnly, SameSite, fixation, logout, and session identifiers in URLs.",
-      "count": 6
+      "count": 28
     },
     {
       "id": "file-upload",

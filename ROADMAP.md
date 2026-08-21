@@ -79,15 +79,22 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. 🚧 Practical-variant authoring, wave 1 — **JWT and OAuth/OIDC/SAML complete**
-- **Progress (r15)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC secret
-  strength, jku/x5u/embedded-JWK rejection, kid rotation, issuer/audience/type
-  binding, subject–tenant binding, replay limits, refresh families, browser
-  storage) and OAuth/OIDC/SAML is 22/22 (nonce, mix-up, response pollution,
-  scope consent, legacy grants, refresh replay, token audience, client secrets,
-  redirect chains, and the six SAML checks: XSW, audience, request binding,
-  time conditions, attribute mapping, SLO). Remaining categories: session,
-  authorization, API, headers, client-side, upload, GraphQL, business logic.
+### 6. 🚧 Practical-variant authoring, wave 1 — **JWT, OAuth/SAML, and sessions complete**
+- **Progress (r15–r16)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC
+  secret strength, jku/x5u/embedded-JWK rejection, kid rotation,
+  issuer/audience/type binding, subject–tenant binding, replay limits, refresh
+  families, browser storage); OAuth/OIDC/SAML is 22/22 (nonce, mix-up, response
+  pollution, scope consent, legacy grants, refresh replay, token audience,
+  client secrets, redirect chains, and the six SAML checks: XSW, audience,
+  request binding, time conditions, attribute mapping, SLO); and session
+  management is 28/28 (token inventory, cookie scope and lifetime, entropy and
+  contents, rotation on auth/elevation, fixation, session puzzling, subdomain
+  isolation, account switching, concurrent limits, session review/revoke,
+  idle and absolute timeouts, server-side expiry, storage hygiene, disabled
+  and deleted account replay, credential-change termination, federated logout,
+  explicit session creation, revocation propagation, rotated cookie families).
+  Remaining categories: authorization, API, headers, client-side, upload,
+  GraphQL, business logic.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.
