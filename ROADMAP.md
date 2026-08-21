@@ -79,7 +79,15 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. ○ Practical-variant authoring, wave 1
+### 6. 🚧 Practical-variant authoring, wave 1 — **JWT and OAuth/OIDC/SAML complete**
+- **Progress (r15)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC secret
+  strength, jku/x5u/embedded-JWK rejection, kid rotation, issuer/audience/type
+  binding, subject–tenant binding, replay limits, refresh families, browser
+  storage) and OAuth/OIDC/SAML is 22/22 (nonce, mix-up, response pollution,
+  scope consent, legacy grants, refresh replay, token audience, client secrets,
+  redirect chains, and the six SAML checks: XSW, audience, request binding,
+  time conditions, attribute mapping, SLO). Remaining categories: session,
+  authorization, API, headers, client-side, upload, GraphQL, business logic.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "lastmod": "2026-08-19",
+  "lastmod": "2026-08-21",
   "note": "Surface playbooks are the tester-facing working layer: every applicable check for a page type, with named variants and copyable payloads. They reference methodology items; they do not replace them.",
   "playbooks": [
     {
@@ -99,14 +99,14 @@
       "title": "OAuth / SSO / SAML",
       "file": "oauth-sso.json",
       "summary": "redirect_uri, state, PKCE, code reuse, token leakage, SAML signatures, RelayState.",
-      "count": 7
+      "count": 22
     },
     {
       "id": "jwt-token",
       "title": "JWT / bearer token",
       "file": "jwt-token.json",
       "summary": "alg=none, key confusion, kid/jku tricks, role claims, expiry, and tokens in URLs.",
-      "count": 7
+      "count": 18
     },
     {
       "id": "spa-client",

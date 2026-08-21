@@ -245,6 +245,392 @@
           ]
         }
       ]
+    },
+    {
+      "id": "trust-and-keys",
+      "title": "Algorithms, secrets, and key sources",
+      "checks": [
+        {
+          "id": "alg-allowlist",
+          "title": "Server rejects unexpected JWT algorithms",
+          "item": "WAPT-JWT-002",
+          "severity": "critical",
+          "why": "Verification must pin the expected algorithm family from configuration, not read it from the token header.",
+          "validate": "Every token signed with an algorithm outside the configured set is rejected with 401, and the failure is logged.",
+          "variants": [
+            {
+              "name": "RS256 service, HS256 token",
+              "kind": "note",
+              "payload": "Take a valid RS256-issued token. Rebuild it with alg=HS256, signing the header.payload with the service RSA public key (the classic confusion probe).",
+              "expect": "Must 401. Acceptance means the verifier uses the header algorithm and trusts a public key as an HMAC secret.",
+              "category": "mutation",
+              "why": "The header now names both the algorithm family and, effectively, the key material."
+            },
+            {
+              "name": "Register an unsigned none token",
+              "kind": "note",
+              "payload": "Submit a token whose header is {\"alg\":\"none\"} with an empty signature segment, payload unchanged.",
+              "expect": "Must 401. No configuration accepts none in production.",
+              "category": "mutation",
+              "why": "alg=none removes integrity entirely; rejecting it is the oldest JWT rule."
+            },
+            {
+              "name": "Unexpected ECDSA alg",
+              "kind": "note",
+              "payload": "With ES256 configured, submit a valid RS256 token from the same issuer.",
+              "expect": "Must 401 with an algorithm-mismatch log line, not a generic decode error.",
+              "category": "technology-specific",
+              "why": "Algorithm allowlists also catch cross-family confusion between asymmetric schemes."
+            }
+          ]
+        },
+        {
+          "id": "hmac-secret-strength",
+          "title": "HMAC secrets resist guessing",
+          "item": "WAPT-JWT-005",
+          "severity": "critical",
+          "why": "A guessable HMAC secret turns token signing into an open door: anyone can mint valid tokens offline.",
+          "validate": "The token does not verify with any dictionary secret, and the secret length/entropy meets policy (>= 256 bits random).",
+          "variants": [
+            {
+              "name": "Documentation secrets",
+              "kind": "note",
+              "payload": "Verify the header.payload signature with the obvious candidates: secret, jwt-secret, your-256-bit-secret, <app-name>, changeme.",
+              "expect": "None verify. Any hit is critical: forge a benign sub=<test-account> token to confirm, then report.",
+              "category": "baseline",
+              "why": "Default and documentation secrets are the first thing an attacker tries."
+            },
+            {
+              "name": "Offline HMAC check",
+              "kind": "command",
+              "payload": "echo -n '<header>.<payload>' | openssl dgst -sha256 -hmac 'secret' — compare with the token's signature base64url-encoded.",
+              "expect": "Openssl output matches the signature only if that secret was used. Repeat per candidate.",
+              "category": "tool-assisted",
+              "why": "A local digest check proves which secret signed a captured token without touching the server."
+            },
+            {
+              "name": "Crack-time note",
+              "kind": "note",
+              "payload": "If the secret is not guessable, estimate cost: hashcat -m 16500 token.txt <wordlist> against your own captured test token, time-boxed.",
+              "expect": "A full wordlist run finds nothing in the engagement window; record the estimate as evidence of strength.",
+              "category": "tool-assisted",
+              "why": "Show the secret is outside dictionary space rather than asserting it."
+            }
+          ]
+        },
+        {
+          "id": "jku-x5u-keys",
+          "title": "jku, x5u, and embedded JWK headers rejected",
+          "item": "WAPT-JWT-013",
+          "severity": "critical",
+          "why": "Key-location headers let a token bring its own verification key — an attacker-signed token that verifies itself.",
+          "validate": "Tokens carrying jku, x5u, x5c, or jwk header parameters are rejected unless the value matches a pre-registered allowlist.",
+          "variants": [
+            {
+              "name": "jku to Collaborator",
+              "kind": "note",
+              "payload": "Re-sign your test token with a fresh keypair; set jku to a URL you control (Burp Collaborator) hosting the matching JWK set.",
+              "expect": "Must 401 AND no outbound fetch may hit the Collaborator URL — an SSRF-grade key fetch is itself reportable.",
+              "category": "out-of-band",
+              "why": "The verifier must never fetch keys from a URL named inside the token."
+            },
+            {
+              "name": "x5u certificate URL",
+              "kind": "note",
+              "payload": "Same probe with x5u pointing at your HTTPS endpoint serving a self-signed certificate chain.",
+              "expect": "Must 401 without fetching. Certificate-chain fetch from token input is the same flaw.",
+              "category": "out-of-band",
+              "why": "x5u is jku in certificate clothing."
+            },
+            {
+              "name": "Embedded jwk header",
+              "kind": "note",
+              "payload": "Place your public JWK directly in the header ({\"jwk\":{...}}) and sign with the paired private key.",
+              "expect": "Must 401. An embedded key that verifies its own token is self-signed trust.",
+              "category": "mutation",
+              "why": "Embedded keys are only acceptable when matched against a registered key set, never used blindly."
+            }
+          ]
+        },
+        {
+          "id": "kid-rotation",
+          "title": "Key rotation without unsafe fallback",
+          "item": "WAPT-JWT-014",
+          "severity": "high",
+          "why": "Rotation windows create fallback paths; a stale kid must never silently fall back to \"whatever key we have\".",
+          "validate": "An unknown kid, or a kid older than the rotation grace period, is rejected with a specific key-resolution error.",
+          "variants": [
+            {
+              "name": "Unknown kid",
+              "kind": "note",
+              "payload": "Submit an otherwise-valid token whose header kid does not exist in the current JWK set.",
+              "expect": "Must 401 with a key-resolution failure, not a signature retry against every key.",
+              "category": "mutation",
+              "why": "Try-all-keys fallback enables kid confusion and cross-tenant key abuse."
+            },
+            {
+              "name": "Pre-rotation key after grace",
+              "kind": "note",
+              "payload": "If a rotation is available or observed, keep a token signed with the retired key and replay it after the documented grace period.",
+              "expect": "Must 401 once the grace window closes; document the observed window.",
+              "category": "authorization-context",
+              "why": "Grace periods exist for clock skew, not for permanent dual-trust."
+            },
+            {
+              "name": "kid injection characters",
+              "kind": "note",
+              "payload": "Set kid to ../../rust-key or SQL-ish values and observe error handling.",
+              "expect": "Rejected as invalid key id; no path traversal, SQL, or LDAP-style resolution behaviour.",
+              "category": "encoding",
+              "why": "kid is untrusted input to a key lookup — it must be treated as an identifier, not an expression."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "binding-and-lifecycle",
+      "title": "Claims binding and token lifecycle",
+      "checks": [
+        {
+          "id": "iss-trust-set",
+          "title": "Issuer checked against a trust set",
+          "item": "WAPT-JWT-006",
+          "severity": "critical",
+          "why": "A correctly signed token from the wrong issuer (another environment, another tenant IdP) must not grant access here.",
+          "validate": "iss equals the single configured issuer exactly (scheme, host, port); everything else is a 401.",
+          "variants": [
+            {
+              "name": "Sibling environment issuer",
+              "kind": "note",
+              "payload": "Take a valid token from staging (or another tenant IdP) and use it against production.",
+              "expect": "Must 401. Cross-environment acceptance is a full auth bypass.",
+              "category": "authorization-context",
+              "why": "Signature validity is per-issuer; trust must be pinned per service."
+            },
+            {
+              "name": "iss prefix tricks",
+              "kind": "note",
+              "payload": "Edit iss to https://idp.example.com.evil.test or https://evil.test/idp.example.com and re-sign with a test key if the app owns a dev keypair.",
+              "expect": "Must 401 — exact match, not suffix or substring.",
+              "category": "parser-differential",
+              "why": "String-contains issuer checks fall to domain-lookalike values."
+            },
+            {
+              "name": "Missing iss",
+              "kind": "note",
+              "payload": "Remove iss entirely from a re-signed test token.",
+              "expect": "Must 401; absence of issuer is not \"default issuer\".",
+              "category": "mutation",
+              "why": "Optional-looking claims must still be required."
+            }
+          ]
+        },
+        {
+          "id": "aud-per-service",
+          "title": "Audience bound to this service",
+          "item": "WAPT-JWT-007",
+          "severity": "high",
+          "why": "Tokens are minted for an audience; a token for service A must not open doors in service B.",
+          "validate": "aud contains this service client id / resource id; anything else is 401.",
+          "variants": [
+            {
+              "name": "Cross-service token",
+              "kind": "note",
+              "payload": "Use an access token obtained for the profile API against the billing API (both first-party).",
+              "expect": "Billing must 401/403. Record which services share audiences.",
+              "category": "authorization-context",
+              "why": "Shared audiences quietly collapse service boundaries."
+            },
+            {
+              "name": "aud omitted",
+              "kind": "note",
+              "payload": "Re-sign a test token with aud removed.",
+              "expect": "Must 401; no aud means no proof the token was issued for you.",
+              "category": "mutation",
+              "why": "Missing-audience acceptance turns any issuer token into a master key."
+            },
+            {
+              "name": "aud array with extras",
+              "kind": "note",
+              "payload": "aud as an array containing your id plus unrelated values.",
+              "expect": "Acceptable only if policy allows; every listed audience must be known. Unknown value => 401.",
+              "category": "parameter-variant",
+              "why": "Array audiences widen blast radius when not constrained."
+            }
+          ]
+        },
+        {
+          "id": "typ-and-purpose",
+          "title": "Token type and purpose enforced",
+          "item": "WAPT-JWT-008",
+          "severity": "critical",
+          "why": "ID tokens, access tokens, refresh tokens, and email-verification tokens are not interchangeable.",
+          "validate": "Each endpoint accepts exactly one token type (typ header and/or token-use claim), rejecting the others.",
+          "variants": [
+            {
+              "name": "ID token at the API",
+              "kind": "note",
+              "payload": "Take the OIDC ID token from login and send it as Authorization: Bearer against a first-party API.",
+              "expect": "Must 401. ID tokens are for the client, not for APIs.",
+              "category": "authentication-context",
+              "why": "The classic OIDC confusion: ID tokens assert identity, not API access."
+            },
+            {
+              "name": "Access token at userinfo-as-email-verify",
+              "kind": "note",
+              "payload": "Use a normal access token where the app expects its email-verification or magic-link token.",
+              "expect": "Must fail; purpose-bound tokens carry a distinguishing use/purpose claim.",
+              "category": "authentication-context",
+              "why": "Purpose confusion lets a low-value token do a high-value job."
+            },
+            {
+              "name": "typ header swap",
+              "kind": "note",
+              "payload": "Re-sign with typ changed between JWT and at+jwt across endpoints.",
+              "expect": "Consistent behaviour: the server enforces the typ it documents, or rejects unknown typ.",
+              "category": "mutation",
+              "why": " typ is a cheap purpose tag; ignoring it removes the first line of separation."
+            }
+          ]
+        },
+        {
+          "id": "sub-tenant-binding",
+          "title": "Subject and tenant claims bound to authority",
+          "item": "WAPT-JWT-010",
+          "severity": "critical",
+          "why": "Identity must come from verified token claims, never from client-controlled parameters layered on top.",
+          "validate": "The acting identity equals the verified sub/oid, and tenant context derives from token claims only.",
+          "variants": [
+            {
+              "name": "Parameter identity override",
+              "kind": "note",
+              "payload": "With a valid token for account A on tenant 1, call the same endpoint with ?userId=<account-B>&tenantId=2 style overrides.",
+              "expect": "Responses must stay inside account A / tenant 1. Parameter-driven identity is an authorization bypass.",
+              "category": "authorization-context",
+              "why": "Token says who you are; the request must not get a vote."
+            },
+            {
+              "name": "Cross-tenant same-sub",
+              "kind": "note",
+              "payload": "Where sub ids are emails/GUIDs shared across tenants, use tenant-1 token against tenant-2 object ids.",
+              "expect": "Must 403 — tenant must come from the token, not the URL.",
+              "category": "authorization-context",
+              "why": "Global identifiers make tenant binding the only guardrail."
+            },
+            {
+              "name": "Conflicting claims",
+              "kind": "note",
+              "payload": "Craft (with the app-owned dev key) sub=A with oid/tenant claims of B.",
+              "expect": "Rejected or resolved consistently toward the authoritative identity claim per documented policy.",
+              "category": "mutation",
+              "why": "Conflicting identity claims must have a defined winner, not first-parsed."
+            }
+          ]
+        },
+        {
+          "id": "replay-limits",
+          "title": "Replay limited by token risk",
+          "item": "WAPT-JWT-015",
+          "severity": "high",
+          "why": "Bearer tokens replay by design within lifetime; one-time and step-up tokens must not.",
+          "validate": "One-time tokens (magic link, email verify, step-up) fail on second use; access tokens document an intended lifetime.",
+          "variants": [
+            {
+              "name": "Magic-link double spend",
+              "kind": "note",
+              "payload": "Use a magic-link JWT twice, in two sessions.",
+              "expect": "Second use must fail; the jti must be single-use server-side.",
+              "category": "race-concurrency",
+              "why": "A link that keeps giving is persistent access from one interception."
+            },
+            {
+              "name": "Step-up re-use after timeout",
+              "kind": "note",
+              "payload": "Complete a step-up (re-auth or MFA) flow, capture its short-lived confirmation token, replay after the documented window.",
+              "expect": "Must 401 once expired; window should be minutes.",
+              "category": "authentication-context",
+              "why": "Step-up assertions are the highest-value replay target."
+            },
+            {
+              "name": "Lifetime note",
+              "kind": "note",
+              "payload": "Record access-token lifetime (exp - iat) and whether revocation is claimed.",
+              "expect": "Lifetime matches policy (typically <= 60 min) or is documented; note revocation story for the report.",
+              "category": "baseline",
+              "why": "Replay risk is lifetime x revocability — measure both."
+            }
+          ]
+        },
+        {
+          "id": "refresh-families",
+          "title": "Refresh tokens rotate and revoke as families",
+          "item": "WAPT-JWT-016",
+          "severity": "critical",
+          "why": "Stolen refresh tokens are indefinite access; rotation plus family revocation on reuse is the control.",
+          "validate": "Each refresh use returns a new token, the old one dies, and reuse of a rotated token revokes the whole family.",
+          "variants": [
+            {
+              "name": "Rotated-token replay",
+              "kind": "note",
+              "payload": "Exchange refresh token R1 for R2, then present R1 again (from a \"stolen\" second client).",
+              "expect": "R1 must fail AND the family (R2) must be revoked; log the reuse event.",
+              "category": "authorization-context",
+              "why": "Reuse detection only helps if it burns the thief and owner alike, forcing re-auth."
+            },
+            {
+              "name": "Parallel refresh race",
+              "kind": "note",
+              "payload": "Fire two refresh calls with the same token simultaneously (Repeater parallel groups, 2-3 requests max).",
+              "expect": "At most one succeeds; the others fail and the loser path must not issue parallel families.",
+              "category": "race-concurrency",
+              "why": "Rotation under race must stay linearizable."
+            },
+            {
+              "name": "Unbounded lifetime",
+              "kind": "note",
+              "payload": "Inspect exp/absolute lifetime on refresh tokens and idle policy.",
+              "expect": "Refresh lifetime is bounded (e.g. 14-90 days absolute) or requires re-auth; immortal refresh tokens are a finding.",
+              "category": "baseline",
+              "why": "Long-lived bearer material needs a sunset."
+            }
+          ]
+        },
+        {
+          "id": "browser-storage",
+          "title": "Browser token storage matches authority",
+          "item": "WAPT-JWT-018",
+          "severity": "high",
+          "why": "Where the browser keeps tokens decides what XSS can reach: memory < httpOnly cookie < localStorage.",
+          "validate": "Short-lived access tokens only in memory or httpOnly; no long-lived or refresh tokens in web storage.",
+          "variants": [
+            {
+              "name": "Storage sweep",
+              "kind": "note",
+              "payload": "DevTools → Application: inventory localStorage, sessionStorage, and cookies on the authed app for tokens.",
+              "expect": "Access token in memory (or httpOnly cookie) only; refresh tokens never in web storage.",
+              "category": "browser-context",
+              "why": "A five-minute inventory that maps the XSS blast radius."
+            },
+            {
+              "name": "Readable-script check",
+              "kind": "note",
+              "payload": "In the console on the app origin, read the keys you found and decode any JWT-looking value.",
+              "expect": "Any stored token readable by script is reportable with its lifetime and scope.",
+              "category": "browser-context",
+              "why": "Demonstrates the exact primitive an XSS would use."
+            },
+            {
+              "name": "Logout residue",
+              "kind": "note",
+              "payload": "Log out fully, re-run the storage sweep.",
+              "expect": "All tokens removed; nothing persists for the next origin visitor or after session end.",
+              "category": "browser-context",
+              "why": "Logout that leaves bearer material is a common miss."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -266,5 +652,6 @@
       "safe": true,
       "payload": "If alg=none or confusion worked, set role=admin / isAdmin=true / tenant_id of B and call an admin route."
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

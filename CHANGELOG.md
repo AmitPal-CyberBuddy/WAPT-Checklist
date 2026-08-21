@@ -4,6 +4,25 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (Practical-variant wave 1: JWT and OAuth/OIDC/SAML — r15)
+
+- **JWT category is now 18/18 step-by-step.** Eleven previously reference-only checks gained named, pasteable variants: algorithm allowlist (HS256/RS256 confusion, alg=none, cross-family), HMAC secret strength (dictionary, offline openssl digest, crack-time evidence), issuer trust-set and prefix tricks, per-service audience, token type/purpose (ID-token-at-API, purpose confusion, typ swaps), subject/tenant claim binding (parameter overrides, cross-tenant sub, conflicting claims), replay limits (magic-link double spend, step-up reuse, lifetime), refresh-token families (rotated-token replay, parallel refresh race, unbounded lifetime), browser storage hygiene (sweep, readable-script proof, logout residue), jku/x5u/embedded-JWK rejection with out-of-band key-fetch detection, and kid rotation fallback probes.
+- **OAuth/OIDC/SAML category is now 22/22 step-by-step.** Fifteen new checks: nonce binding, authorization-server mix-up, response parameter pollution, scope/consent alignment, legacy grant shutdown (password/implicit probes + discovery), refresh replay and family revocation, access-token audience and delegation, client-secret exposure (bundle hunt, PKCE enforcement), redirect chains — plus the six SAML checks: signature wrapping (SAML Raider workflow), audience/recipient/destination/issuer, request binding and replay, time-condition skew, attribute/role mapping, and SLO coordination.
+- Every variant carries Why / payload / CHECK FOR in the house style, uses only tester-owned accounts and example hosts, and flags out-of-band detection where relevant. All schema, floor, content, and reference audits pass; 157 rows render practical in a JWT+OAuth+SAML plan.
+
+### Added (v1.1 wave two: named roles, custom checks, saved views, HTML report — r14)
+
+- **Named roles and privilege hierarchy (state schema v4).** The multi-role wizard step names the real accounts; the plan's cross-role matrix, the HTML report, and exports walk that named ladder (Admin → Manager → Analyst). Schema v1–v3 states migrate losslessly; role models are cleaned and capped.
+- **Custom local checks.** The plan gains a Custom checks category with an inline add form and per-row removal. WAPT-CUSTOM-nnn IDs flow through statuses, findings, notes, coverage, search, and every export; they never collide with the catalog and are always executable.
+- **Saved filter views.** Checklist and search save/recall/delete named filter sets per engagement; views ride in state and accept only known filter keys.
+- **HTML engagement report.** Export HTML report produces a single self-contained file (inline styles, zero external requests, offline-renderable) with coverage stats, the named role ladder, severity-sorted findings, evidence packs, custom checks, and the redaction reminder.
+
+### Added (Upgrade roadmap and scope import — r13)
+
+- **Scope import from API definitions.** The wizard and Edit-context editor read an OpenAPI 3 / Swagger 2 (JSON) definition or Postman v2.x collection and propose the assessment context — API style, auth mechanisms, login/registration/recovery paths, uploads, payments, search, webhooks — listing every detection for review. Parsing is local and file-read only; nothing applies without review.
+- **Upgrade roadmap (`ROADMAP.md`).** Prioritized v1.1/v1.2/v2.0 plan derived from the codebase with explicit non-goals; maintainer-only (excluded from the hosted publish tree). README links it.
+
+
 ### Changed (Visual identity — "Aurora console" — r12)
 
 - **A deliberate visual identity replaces the uniform bordered-box language.** A new `identity.css` layer (loaded last on every page) rebuilds the look around three ideas: depth without boxes, signal color, and typographic hierarchy.
