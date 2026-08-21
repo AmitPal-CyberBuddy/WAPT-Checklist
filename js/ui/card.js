@@ -8,11 +8,11 @@
 //
 // The family's Quick Test lives on the family header, not on every card, so a 14-check family
 // no longer repeats the same procedure fourteen times.
-import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r20';
-import { clearOverride, setItemNote, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r20';
-import { itemStatus } from './filters.js?v=1.0.0-r20';
-import { APP_LABELS, SEVERITY_GLYPHS, element, section, statusControls } from './dom.js?v=1.0.0-r20';
-import { renderItemProbes } from './playbook.js?v=1.0.0-r20';
+import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r21';
+import { clearOverride, setItemNote, setOverride, setRetestFlag } from '../engine/state.js?v=1.0.0-r21';
+import { itemStatus } from './filters.js?v=1.0.0-r21';
+import { APP_LABELS, SEVERITY_GLYPHS, element, section, statusControls } from './dom.js?v=1.0.0-r21';
+import { renderItemProbes } from './playbook.js?v=1.0.0-r21';
 
 export function renderCard(record, context) {
   const { getState, commit, familyIndex, categoryOf, renderEvidenceForm } = context;

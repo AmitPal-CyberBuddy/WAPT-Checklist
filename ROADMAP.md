@@ -157,12 +157,10 @@ tester's day shorter.
 - **Done when**: `audit-content.js` passes; each new variant carries Why / payload
   / CHECK FOR / VALIDATE; floors and reference audits stay green. **Size: L (content)**
 
-### 7. ○ Evidence attachments (local, capped)
+### 7. ✅ Evidence attachments (local, capped) — shipped in r21
 - **Why**: evidence packs are text-only; a redacted screenshot or request file is
   the artifact clients actually want attached.
-- **Sketch**: optional file attachments on evidence packs, stored as data URLs with
-  a hard size cap (e.g. 1.5 MB/pack, counted against the 5 MB state budget),
-  rendered inline in the pack and the HTML report.
+- **Shipped (r21)**: attachments staged in the evidence form (redaction reminder shown before choosing files) and attachable to existing packs; stored as data URLs with type allowlist (PNG/JPEG/WebP/GIF/text/JSON), 3 files/pack, ~400 KB/file, 2 MB engagement-wide budget enforced at set-state time; rendered inline in pack cards (image thumbnails, text previews) and embedded in the HTML report; import keeps only well-formed attachments.
 - **Done when**: caps enforced at set-state time; import rejects oversized state;
   redaction reminder shown before attach. **Size: M**
 

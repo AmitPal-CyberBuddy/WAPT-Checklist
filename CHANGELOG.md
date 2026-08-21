@@ -4,6 +4,14 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (v1.2: evidence attachments — r21)
+
+- **Evidence packs now carry redacted screenshots and request files — locally.** The evidence form gains an attachment stage with the redaction reminder shown before file selection, and every pack card gains "＋ Attach file". Files are read in-browser and stored as data URLs inside the local state: images (PNG/JPEG/WebP/GIF) or text/JSON, capped at 3 files per pack and ~400 KB per file, with a 2 MB engagement-wide budget enforced at set-state time — over-budget saves are refused with a clear error rather than silently growing local storage.
+- **Every attachment is validated at the state boundary**: type allowlist, base64 data-URL shape, per-file and per-pack caps, deduplicated ids, sanitized names — hostile imports keep only well-formed attachments (an HTML/script "attachment" is rejected by the cleaner, covered by tests).
+- **Rendering**: pack cards show image thumbnails and text previews inline with download links and per-attachment removal; the HTML engagement report embeds images as self-contained data URLs and decodes text attachments into collapsible <pre> blocks; the Markdown report lists attachment names, types, and sizes in the evidence table.
+- Bumped browser assets to `1.0.0-r21`.
+
+
 ### Added (Practical-variant wave 1 near-complete: headers, client-side, and file handling — r19)
 
 - **Security-headers category is now 24/24 step-by-step** (15 new checks): CSP nonce entropy and fallback hunting, base-uri/object-src/form-action constraint probes, XFO/frame-ancestors consistency, Content-Type strictness with sniff probes, COOP/COEP deployment decisions, Clear-Site-Data on logout/reset, safe Content-Disposition, version-disclosure minimization, obsolete header removal (X-XSS-Protection, HPKP, Expect-CT), route/status/origin policy consistency, duplicate and malformed header handling, and report-only honesty.

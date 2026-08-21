@@ -3,12 +3,12 @@
 // the catalog-only remainder behind them. Authored checks show named attack hypotheses
 // (tickable coverage, never findings) with a one-line Why; catalog-only checks show a
 // maturity chip and a methodology link — never a fabricated request.
-import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r20';
-import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r20';
-import { variantKey } from '../engine/families.js?v=1.0.0-r20';
-import { setVariantCovered } from '../engine/state.js?v=1.0.0-r20';
-import { itemStatus } from './filters.js?v=1.0.0-r20';
-import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r20';
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r21';
+import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r21';
+import { variantKey } from '../engine/families.js?v=1.0.0-r21';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r21';
+import { itemStatus } from './filters.js?v=1.0.0-r21';
+import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r21';
 
 function checkCount(playbook) {
   return (playbook.groups || []).reduce((sum, group) => sum + (group.checks || []).length, 0);

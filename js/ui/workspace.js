@@ -1,25 +1,25 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r20';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r20';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r20';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r20';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r20';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r20';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r20';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r20';
-import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r20';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeReportHtml, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r20';
-import { createChainStore } from './chains.js?v=1.0.0-r20';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r20';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r20';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r20';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r20';
-import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r20';
-import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r20';
-import { setCustomChecks, setSavedViews, nextCustomCheckId } from '../engine/state.js?v=1.0.0-r20';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r20';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r20';
-import { renderProfile } from './profile.js?v=1.0.0-r20';
-import { asset } from './paths.js?v=1.0.0-r20';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r21';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r21';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r21';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r21';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, setFindingAttachments, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES, ATTACHMENT_TYPES, MAX_ATTACHMENTS_PER_PACK, MAX_ATTACHMENT_BYTES } from '../engine/state.js?v=1.0.0-r21';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r21';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r21';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r21';
+import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r21';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeReportHtml, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r21';
+import { createChainStore } from './chains.js?v=1.0.0-r21';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r21';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r21';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r21';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r21';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r21';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r21';
+import { setCustomChecks, setSavedViews, nextCustomCheckId } from '../engine/state.js?v=1.0.0-r21';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r21';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r21';
+import { renderProfile } from './profile.js?v=1.0.0-r21';
+import { asset } from './paths.js?v=1.0.0-r21';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -214,6 +214,63 @@ function renderEvidenceForm(item, getState, onState) {
     grid.append(group);
     controls[key] = input;
   }
+  // Attachments: redacted screenshots / request files, staged locally as data
+  // URLs and cleaned/capped by the state layer on save.
+  const attachBlock = element('div', 'evidence-field evidence-wide evidence-attach');
+  const attachLabel = element('span', '', 'Attachments (redacted screenshots or request files)');
+  attachBlock.append(attachLabel);
+  const attachNote = element('small', 'evidence-attach-note', `Redact credentials, tokens, personal data, and tenant identifiers before attaching. Images (PNG/JPEG/WebP/GIF) or text/JSON; up to ${MAX_ATTACHMENTS_PER_PACK} files, ~400 KB each — everything stays in this browser.`);
+  attachBlock.append(attachNote);
+  const attachRow = element('div', 'evidence-attach-row');
+  const attachInput = document.createElement('input');
+  attachInput.type = 'file';
+  attachInput.multiple = true;
+  attachInput.accept = [...ATTACHMENT_TYPES].join(',');
+  attachInput.dataset.evidenceAttach = 'true';
+  const attachButton = element('span', 'evidence-attach-button', '＋ Choose files');
+  attachButton.setAttribute('role', 'button');
+  attachButton.tabIndex = 0;
+  attachRow.append(attachButton, attachInput);
+  attachInput.hidden = true;
+  const stagedList = element('ul', 'evidence-attach-list');
+  const attachStatus = element('small', 'evidence-attach-status');
+  attachBlock.append(attachRow, stagedList, attachStatus);
+  const staged = [];
+  const paintStaged = () => {
+    stagedList.replaceChildren(...staged.map((attachment, index) => {
+      const item = element('li', 'evidence-attach-item');
+      const icon = element('span', 'evidence-attach-kind', attachment.type.startsWith('image/') ? '🖼' : '📄');
+      const label = element('span', 'evidence-attach-name', `${attachment.name} · ${(attachment.size / 1024).toFixed(1)} KB`);
+      const remove = element('button', 'evidence-attach-remove', '×');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `Remove ${attachment.name}`);
+      remove.addEventListener('click', () => { staged.splice(index, 1); paintStaged(); });
+      item.append(icon, label, remove);
+      return item;
+    }));
+  };
+  attachButton.addEventListener('click', () => attachInput.click());
+  attachButton.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); attachInput.click(); } });
+  attachInput.addEventListener('change', async () => {
+    attachStatus.textContent = '';
+    const files = [...attachInput.files || []];
+    attachInput.value = '';
+    for (const file of files) {
+      if (staged.length >= MAX_ATTACHMENTS_PER_PACK) { attachStatus.textContent = `Limit: ${MAX_ATTACHMENTS_PER_PACK} attachments per pack.`; break; }
+      if (!ATTACHMENT_TYPES.includes(file.type)) { attachStatus.textContent = `${file.name}: type ${file.type || 'unknown'} not allowed (images, text, JSON only).`; continue; }
+      if (file.size > MAX_ATTACHMENT_BYTES) { attachStatus.textContent = `${file.name}: larger than the ~400 KB per-file cap — crop or redact it down.`; continue; }
+      const data = await new Promise((resolve) => {
+        const reader = new (globalThis.FileReader || window.FileReader)();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+      if (!data) { attachStatus.textContent = `${file.name}: could not be read.`; continue; }
+      staged.push({ id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, type: file.type, size: file.size, data });
+    }
+    paintStaged();
+  });
+
   const exploitLabel = element('label', 'evidence-field');
   exploitLabel.append(element('span', '', 'Exploitability'));
   const exploit = document.createElement('select');
@@ -226,6 +283,7 @@ function renderEvidenceForm(item, getState, onState) {
   reportable.name = 'reportable';
   reportableLabel.append(reportable, document.createTextNode(' Reportable finding'));
   grid.append(exploitLabel, reportableLabel);
+  grid.append(attachBlock);
   body.append(grid);
 
   const stage = element('p', 'evidence-stage');
@@ -249,7 +307,8 @@ function renderEvidenceForm(item, getState, onState) {
       exploitability: exploit.value,
       reportable: reportable.checked,
       cleanup_performed: controls.cleanup_performed.value,
-      root_cause: controls.root_cause.value
+      root_cause: controls.root_cause.value,
+      attachments: staged
     };
   }
   function refreshStage() {
@@ -338,7 +397,70 @@ function renderEvidencePacks(root, itemList, getState, onState) {
     details.append(body);
     card.append(details);
 
+    if (pack.attachments?.length) {
+      const gallery = element('div', 'evidence-attachment-gallery');
+      for (const attachment of pack.attachments) {
+        const figure = element('figure', 'evidence-attachment');
+        if (attachment.type.startsWith('image/')) {
+          const image = document.createElement('img');
+          image.src = attachment.data;
+          image.alt = attachment.name;
+          image.loading = 'lazy';
+          figure.append(image);
+        } else {
+          const pre = element('pre', 'evidence-attachment-text');
+          try {
+            pre.textContent = new TextDecoder().decode(Uint8Array.from(atob(attachment.data.split(',')[1] || ''), (c) => c.charCodeAt(0))).slice(0, 2000);
+          } catch { pre.textContent = `${attachment.name} (${attachment.type})`; }
+          figure.append(pre);
+        }
+        const caption = element('figcaption');
+        const link = document.createElement('a');
+        link.href = attachment.data;
+        link.download = attachment.name;
+        link.textContent = `${attachment.name} · ${(attachment.size / 1024).toFixed(1)} KB`;
+        caption.append(link);
+        const removeAttachment = element('button', 'evidence-attach-remove', '×');
+        removeAttachment.type = 'button';
+        removeAttachment.title = 'Remove attachment';
+        removeAttachment.setAttribute('aria-label', `Remove attachment ${attachment.name}`);
+        removeAttachment.addEventListener('click', () => {
+          onState(setFindingAttachments(getState(), pack.id, pack.attachments.filter((candidate) => candidate.id !== attachment.id)));
+        });
+        caption.append(removeAttachment);
+        figure.append(caption);
+        gallery.append(figure);
+      }
+      card.append(gallery);
+    }
+
     const controls = element('div', 'evidence-controls');
+    const attachMore = element('label', 'evidence-attach-more');
+    const attachMoreInput = document.createElement('input');
+    attachMoreInput.type = 'file';
+    attachMoreInput.multiple = true;
+    attachMoreInput.accept = [...ATTACHMENT_TYPES].join(',');
+    attachMoreInput.hidden = true;
+    attachMoreInput.addEventListener('change', async () => {
+      const files = [...attachMoreInput.files || []];
+      attachMoreInput.value = '';
+      const current = getState().findings.find(({ id }) => id === pack.id)?.attachments || [];
+      const next = [...current];
+      for (const file of files) {
+        if (next.length >= MAX_ATTACHMENTS_PER_PACK) break;
+        if (!ATTACHMENT_TYPES.includes(file.type) || file.size > MAX_ATTACHMENT_BYTES) continue;
+        const data = await new Promise((resolve) => {
+          const reader = new (globalThis.FileReader || window.FileReader)();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+        if (data) next.push({ id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, type: file.type, size: file.size, data });
+      }
+      if (next.length !== current.length) onState(setFindingAttachments(getState(), pack.id, next));
+    });
+    attachMore.append(attachMoreInput, document.createTextNode('＋ Attach file'));
+    attachMore.title = 'Redact before attaching — files stay in this browser only';
     const verdictLabel = element('label', 'evidence-field');
     verdictLabel.append(element('span', '', 'Retest verdict'));
     const verdict = document.createElement('select');
@@ -347,7 +469,7 @@ function renderEvidencePacks(root, itemList, getState, onState) {
     verdict.setAttribute('aria-label', `Retest verdict for ${pack.id}`);
     verdict.addEventListener('change', () => onState(setRetestVerdict(getState(), pack.id, verdict.value, pack.retest_note)));
     verdictLabel.append(verdict);
-    controls.append(verdictLabel);
+    controls.append(attachMore, verdictLabel);
     if (pack.retest_verdict !== 'pending') controls.append(element('p', 'evidence-verdict-guide', RETEST_GUIDANCE[pack.retest_verdict]));
     const noteLabel = element('label', 'evidence-field evidence-wide');
     noteLabel.append(element('span', '', 'Retest note'));

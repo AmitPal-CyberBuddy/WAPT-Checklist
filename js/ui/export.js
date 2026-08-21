@@ -1,5 +1,5 @@
-import { serializeState } from '../engine/state.js?v=1.0.0-r20';
-import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r20';
+import { serializeState } from '../engine/state.js?v=1.0.0-r21';
+import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r21';
 
 export const STATUS_LABELS = Object.freeze({
   not_tested: 'Not tested', in_progress: 'Testing now', passed: 'Tested — not vulnerable',
@@ -86,6 +86,7 @@ export function composeReportMarkdown(items, state, categoryNames = {}) {
       lines.push(`| ${pack.id} | ${pack.item_id} | ${cell(pack.title) || '—'} | ${pack.severity} | ${cell(pack.endpoint) || '—'} | ${cell(pack.method) || '—'} | ${pack.exploitability} | ${pack.reportable ? 'Yes' : 'No'} | ${pack.retest_verdict} |`);
       if (pack.observed_behavior) lines.push(`| | | Observed: ${cell(pack.observed_behavior)} | | | | | | |`);
       if (pack.cleanup_performed) lines.push(`| | | Cleanup: ${cell(pack.cleanup_performed)} | | | | | | |`);
+      for (const attachment of pack.attachments || []) lines.push(`| | | Attachment: ${cell(attachment.name)} (${(attachment.size / 1024).toFixed(1)} KB, ${attachment.type}) | | | | | | |`);
     }
   }
   lines.push('', '## Retest matrix', '', '| ID | Finding | Retest requested | Verdict | Residual risk / guidance |', '|---|---|---|---|---|');
@@ -214,6 +215,15 @@ export function composeFamilyCoverageBlock(family, coverage, state, categoryName
 // responsibility (the same redaction reminder is printed on the report).
 const REPORT_SEVERITY_RANK = Object.freeze({ critical: 0, high: 1, medium: 2, low: 3, informational: 4 });
 
+function decodeAttachmentText(attachment) {
+  try {
+    const base64 = String(attachment.data || '').split(',')[1] || '';
+    return atob(base64).slice(0, 4000);
+  } catch {
+    return `${attachment.name} (${attachment.type})`;
+  }
+}
+
 function reportEsc(value) {
   return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
 }
@@ -253,6 +263,9 @@ export function composeReportHtml(items, state, categoryNames = {}) {
         ${pack.observed_behavior ? `<p><strong>Observed.</strong> ${reportEsc(pack.observed_behavior)}</p>` : ''}
         ${pack.cleanup_performed ? `<p><strong>Cleanup.</strong> ${reportEsc(pack.cleanup_performed)}</p>` : ''}
         ${pack.root_cause ? `<p><strong>Root cause.</strong> ${reportEsc(pack.root_cause)}</p>` : ''}
+        ${(pack.attachments || []).length ? `<div class="attachments">${pack.attachments.map((attachment) => attachment.type.startsWith('image/')
+          ? `<figure class="attachment"><img src="${attachment.data}" alt="${reportEsc(attachment.name)}"><figcaption>${reportEsc(attachment.name)} · ${(attachment.size / 1024).toFixed(1)} KB</figcaption></figure>`
+          : `<details class="attachment-text"><summary>${reportEsc(attachment.name)} · ${(attachment.size / 1024).toFixed(1)} KB</summary><pre>${reportEsc(decodeAttachmentText(attachment))}</pre></details>`).join('')}</div>` : ''}
       </section>`).join('') || '<p class="empty">No structured evidence packs recorded.</p>';
   const customRows = custom.map((item) => `<li><span class="mono">${reportEsc(item.id)}</span> ${reportEsc(item.title)} <em>(${reportEsc(STATUS_LABELS[statusOf(item, state)] || 'not tested')})</em></li>`).join('');
 
@@ -294,6 +307,13 @@ export function composeReportHtml(items, state, categoryNames = {}) {
   .pack dd{margin:0;font-size:13px}
   .pack p{margin:6px 0 0;font-size:13px}
   .empty{color:#5c6672;text-align:center;padding:18px}
+  .attachments{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .attachment{margin:0;max-width:280px}
+  .attachment img{max-width:280px;max-height:200px;border:1px solid #d9e1ec;border-radius:8px;display:block}
+  .attachment figcaption{font-size:11px;color:#5c6672;margin-top:4px}
+  .attachment-text{width:100%}
+  .attachment-text summary{font-size:12px;color:#344054;cursor:pointer}
+  .attachment-text pre{background:#f4f7fb;border:1px solid #d9e1ec;border-radius:8px;padding:10px;font:400 11px/1.5 ui-monospace,Menlo,monospace;overflow:auto;white-space:pre-wrap}
   .note{margin-top:36px;padding:12px 16px;border:1px dashed #d9e1ec;border-radius:10px;color:#5c6672;font-size:12px}
   ul.custom{background:#fff;border:1px solid #d9e1ec;border-radius:12px;padding:14px 14px 14px 30px;font-size:13px}
   @media print{body{background:#fff}main{padding:0}.stats,.pack,table{border-color:#ccc}}

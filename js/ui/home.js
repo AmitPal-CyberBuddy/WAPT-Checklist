@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r20';
-import { asset } from './paths.js?v=1.0.0-r20';
+import { initializeTheme } from './theme.js?v=1.0.0-r21';
+import { asset } from './paths.js?v=1.0.0-r21';
 
 const STORAGE_KEY = 'wapt.state.v1';
 

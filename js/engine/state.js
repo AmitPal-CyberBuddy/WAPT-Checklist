@@ -17,6 +17,16 @@ export const FINDING_SEVERITIES = Object.freeze(['critical', 'high', 'medium', '
 export const EXPLOITABILITY_LEVELS = Object.freeze(['not_demonstrated', 'likely', 'proven']);
 export const RETEST_VERDICTS = Object.freeze(['pending', 'pass', 'partial', 'fail']);
 export const MAX_FINDINGS = 200;
+// Evidence attachments: redacted screenshots and request files, stored locally
+// as data URLs inside the pack. Caps keep the local-only state honest — per
+// file, per pack, and across the whole engagement.
+export const ATTACHMENT_TYPES = Object.freeze(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'application/json']);
+export const MAX_ATTACHMENTS_PER_PACK = 3;
+export const MAX_ATTACHMENT_BYTES = 400_000;
+export const MAX_ATTACHMENT_TOTAL_BYTES = 2_000_000;
+const ATTACHMENT_ID = /^att-[a-z0-9-]{4,64}$/;
+const ATTACHMENT_NAME_MAX = 120;
+const DATA_URL = /^data:(image\/(?:png|jpeg|webp|gif)|text\/plain|application\/json);base64,[A-Za-z0-9+/=]+$/;
 export const ROLE_TIERS = Object.freeze(['admin', 'privileged', 'support', 'standard', 'custom']);
 export const MAX_ROLES = 8;
 export const MAX_CUSTOM_CHECKS = 100;
@@ -196,6 +206,32 @@ function cleanRetests(value, statuses) {
   return output;
 }
 
+// One attachment: { id, name, type, size, data }. Everything is validated —
+// type allowlist, base64 data URL shape, byte cap — because the whole state
+// file must survive a hostile import unchanged in shape.
+function cleanAttachments(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  for (const entry of value.slice(0, MAX_ATTACHMENTS_PER_PACK)) {
+    if (!isObject(entry) || !ATTACHMENT_ID.test(entry.id || '') || !ATTACHMENT_TYPES.includes(entry.type)) continue;
+    const data = typeof entry.data === 'string' ? entry.data : '';
+    if (!DATA_URL.test(data) || data.length > MAX_ATTACHMENT_BYTES) continue;
+    if (output.some(({ id }) => id === entry.id)) continue;
+    output.push({
+      id: entry.id,
+      name: cleanText(entry.name, ATTACHMENT_NAME_MAX).trim() || 'evidence',
+      type: entry.type,
+      size: Number.isInteger(entry.size) && entry.size >= 0 ? entry.size : Math.floor(data.length * 0.75),
+      data
+    });
+  }
+  return output;
+}
+
+function attachmentTotalBytes(findings = []) {
+  return findings.reduce((sum, finding) => sum + (finding.attachments || []).reduce((inner, attachment) => inner + attachment.data.length, 0), 0);
+}
+
 function cleanFinding(value) {
   if (!isObject(value) || typeof value.id !== 'string' || !FINDING_ID.test(value.id.trim())) return null;
   if (!ITEM_ID.test(value.item_id || '')) return null;
@@ -218,6 +254,7 @@ function cleanFinding(value) {
     root_cause: cleanText(value.root_cause, 2_000),
     retest_verdict: cleanEnum(value.retest_verdict, VERDICT_SET, 'pending'),
     retest_note: cleanText(value.retest_note, 2_000),
+    attachments: cleanAttachments(value.attachments),
     created_at: isoOrNull(value.created_at),
     updated_at: isoOrNull(value.updated_at)
   };
@@ -434,7 +471,7 @@ function makeFindingId(existing) {
 const FINDING_FIELDS = Object.freeze([
   'title', 'severity', 'endpoint', 'method', 'parameter', 'auth_context', 'precondition',
   'baseline_request', 'test_request', 'observed_behavior', 'exploitability', 'reportable',
-  'cleanup_performed', 'root_cause'
+  'cleanup_performed', 'root_cause', 'attachments'
 ]);
 
 function findingFieldValue(field, value) {
@@ -452,6 +489,7 @@ function findingFieldValue(field, value) {
   if (field === 'reportable') return cleanBoolean(value);
   if (field === 'cleanup_performed') return cleanText(value, 2_000);
   if (field === 'root_cause') return cleanText(value, 2_000);
+  if (field === 'attachments') return cleanAttachments(value);
   return undefined;
 }
 
@@ -467,6 +505,10 @@ export function addFinding(state, fields, now) {
   }
   const patch = isObject(fields) ? fields : {};
   const timestamp = nowIso(now);
+  const stagedAttachments = cleanAttachments(patch.attachments);
+  if (stagedAttachments.length && attachmentTotalBytes(current.findings) + stagedAttachments.reduce((sum, a) => sum + a.data.length, 0) > MAX_ATTACHMENT_TOTAL_BYTES) {
+    throw new RangeError('Attachment budget exceeded: keep total evidence attachments under 2 MB per engagement.');
+  }
   const finding = {
     id: makeFindingId(new Set(current.findings.map(({ id }) => id))),
     item_id: itemId,
@@ -486,6 +528,7 @@ export function addFinding(state, fields, now) {
     root_cause: cleanText(patch.root_cause, 2_000),
     retest_verdict: 'pending',
     retest_note: '',
+    attachments: stagedAttachments,
     created_at: timestamp,
     updated_at: timestamp
   };
@@ -506,6 +549,22 @@ export function updateFinding(state, id, patch, now) {
   const findings = [...current.findings];
   findings[index] = updated;
   return touch(current, { findings }, timestamp);
+}
+
+// Replace one pack's attachments wholesale (UI owns staging and removal).
+// Enforces the engagement-wide attachment budget on growth.
+export function setFindingAttachments(state, id, attachments, now) {
+  const current = normalizeState(state);
+  const index = current.findings.findIndex(({ id: existing }) => existing === id);
+  if (index < 0) throw new TypeError('Unknown evidence pack ID.');
+  const next = cleanAttachments(attachments);
+  const others = attachmentTotalBytes(current.findings.filter((_, position) => position !== index));
+  if (others + next.reduce((sum, a) => sum + a.data.length, 0) > MAX_ATTACHMENT_TOTAL_BYTES) {
+    throw new RangeError('Attachment budget exceeded: keep total evidence attachments under 2 MB per engagement.');
+  }
+  const findings = [...current.findings];
+  findings[index] = { ...findings[index], attachments: next, updated_at: nowIso(now) };
+  return touch(current, { findings }, now);
 }
 
 export function setRetestVerdict(state, id, verdict, note, now) {
