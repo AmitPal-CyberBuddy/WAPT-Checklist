@@ -71,7 +71,7 @@
       "title": "Admin / privileged UI",
       "file": "admin-panel.json",
       "summary": "Unauthenticated and member access to admin routes, verb swaps, impersonation, CSRF, clickjacking.",
-      "count": 6
+      "count": 41
     },
     {
       "id": "api-endpoint",

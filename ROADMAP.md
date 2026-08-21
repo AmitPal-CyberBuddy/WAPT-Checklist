@@ -79,7 +79,7 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. 🚧 Practical-variant authoring, wave 1 — **JWT, OAuth/SAML, and sessions complete**
+### 6. 🚧 Practical-variant authoring, wave 1 — **JWT, OAuth/SAML, sessions, and authorization complete**
 - **Progress (r15–r16)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC
   secret strength, jku/x5u/embedded-JWK rejection, kid rotation,
   issuer/audience/type binding, subject–tenant binding, replay limits, refresh
@@ -93,8 +93,18 @@ tester's day shorter.
   idle and absolute timeouts, server-side expiry, storage hygiene, disabled
   and deleted account replay, credential-change termination, federated logout,
   explicit session creation, revocation propagation, rotated cookie families).
-  Remaining categories: authorization, API, headers, client-side, upload,
-  GraphQL, business logic.
+  Authorization is 43/43 as of r17 (role-permission matrix, horizontal
+  delete and bulk per-member checks, collection filtering, nested-resource
+  chains, opaque references, media/report/async-job artifacts, hidden-UI
+  probes, ownership-reassignment mass assignment, field-level read/write
+  permissions, state-change rechecks, display-attribute independence, error
+  and metadata representations, audit views, tenant binding and isolation,
+  tenant switch and invitations, group membership, delegated access scope,
+  workflow transitions, separation of duties, revocation freshness, stale
+  role claims, batched requests, existence oracles, signed URLs, realtime
+  channel authorization, confused-deputy integrations, deny-by-default,
+  admin layering, and API-version consistency). Remaining categories: API,
+  headers, client-side, upload, GraphQL, business logic.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.

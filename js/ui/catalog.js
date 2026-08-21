@@ -1,4 +1,4 @@
-import { asset } from './paths.js?v=1.0.0-r16';
+import { asset } from './paths.js?v=1.0.0-r17';
 
 const ITEM_ID = /^WAPT-[A-Z]+-\d{3}$/;
 

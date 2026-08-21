@@ -1,6 +1,6 @@
 // Compact application profile — the tester-facing scope.
 // Maps onto the existing 18-answer engine so applicability, families, and playbooks stay valid.
-import { normalizeScopeAnswers } from './context.js?v=1.0.0-r16';
+import { normalizeScopeAnswers } from './context.js?v=1.0.0-r17';
 
 export const APP_TYPES = Object.freeze([
   ['static', 'Static website', 'Published files. No first-party runtime backend.'],

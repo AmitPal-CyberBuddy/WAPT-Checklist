@@ -4,12 +4,12 @@
 //
 // The board answers "where is work left?", the family workspace answers "what do I do now,
 // what have I covered, what must I not forget, and what comes next?" — without losing context.
-import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r16';
-import { familyBoundary, familyContract, familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies, surfaceSuites } from '../engine/families.js?v=1.0.0-r16';
-import { setVariantCovered } from '../engine/state.js?v=1.0.0-r16';
-import { itemStatus } from './filters.js?v=1.0.0-r16';
-import { contractRow, element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r16';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r16';
+import { APPLICABILITY } from '../engine/applicability.js?v=1.0.0-r17';
+import { familyBoundary, familyContract, familyCoverage, familyGaps, familyVariants, nextInFamily, relatedFamilies, surfaceSuites } from '../engine/families.js?v=1.0.0-r17';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r17';
+import { itemStatus } from './filters.js?v=1.0.0-r17';
+import { contractRow, element, statRow, coverageBar, STATUS_GLYPHS } from './dom.js?v=1.0.0-r17';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r17';
 
 function familyRecordMap(records, familyIndex) {
   const map = new Map();

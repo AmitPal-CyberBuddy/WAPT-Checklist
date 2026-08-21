@@ -1,5 +1,5 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r16';
-import { asset } from './paths.js?v=1.0.0-r16';
+import { initializeTheme } from './theme.js?v=1.0.0-r17';
+import { asset } from './paths.js?v=1.0.0-r17';
 
 async function renderCategories() {
   initializeTheme();
