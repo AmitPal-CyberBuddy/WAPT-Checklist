@@ -1,7 +1,7 @@
 {
   "name": "WAPT Checklist",
   "version": "1.0.0",
-  "cache_version": "1.0.0-r18",
+  "cache_version": "1.0.0-r19",
   "release_date": "2026-08-20",
   "status": "release-candidate",
   "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
@@ -19,6 +19,6 @@
     "status": "active",
     "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
     "verified_at": "2026-08-20",
-    "note": "GitHub Pages is active; the r18 pass completes practical step-by-step variants for the API-security and GraphQL categories."
+    "note": "GitHub Pages is active; the r19 pass completes practical step-by-step variants for headers, client-side, and file handling."
   }
 }

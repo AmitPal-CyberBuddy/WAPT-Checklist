@@ -79,7 +79,7 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. 🚧 Practical-variant authoring, wave 1 — **identity, session, authorization, and API surfaces complete**
+### 6. 🚧 Practical-variant authoring, wave 1 — **headers, client-side, upload, API, identity, and authorization complete**
 - **Progress (r15–r16)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC
   secret strength, jku/x5u/embedded-JWK rejection, kid rotation,
   issuer/audience/type binding, subject–tenant binding, replay limits, refresh
@@ -115,8 +115,23 @@ tester's day shorter.
   programs, and consumed-API trust: validation, resilience, TLS, and
   credentials). GraphQL is 15/15 (per-transport baselines, mutation input
   authorization, cost analysis, alias counting, pagination bounds,
-  subscription event-time authorization, error hygiene). Remaining
-  categories: headers, client-side, upload, business logic.
+  subscription event-time authorization, error hygiene). Security headers
+  are 24/24 and file handling 26/26 as of r19 (policy depth: CSP nonce
+  quality and navigation constraints, XFO consistency, content-type
+  strictness, COOP/COEP decisions, Clear-Site-Data, Content-Disposition,
+  version/obsolete-header hygiene, route/status/origin consistency,
+  malformed-header handling, report-only honesty; upload depth: acceptance
+  contracts, filename normalization, isolated delivery origin, collision
+  and overwrite, symlink escape, zip-bomb bounds, quotas, image dimension
+  bombs, normalization, polyglot parsers, AV-as-depth, attachment
+  authorization, traversal ladders, LFI/RFI/SSTI, disposition encoding,
+  temp/quarantine access, privileged preview, generated-output validation).
+  Client-side is 37/63 (DOM source-sink maps, eval removal, HTML/CSS
+  injection impact, resource URL manipulation, CORS behavior, postMessage
+  targets, storage trust, IndexedDB partitioning, service-worker cache
+  privacy, worker/broadcast boundaries, prototype gadgets, DOM clobbering,
+  window.name, tabnabbing, SRI, XSSI, source-map review, Web Crypto, XS
+  leaks, bfcache). Remaining: business logic (+race), client-side tail.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.

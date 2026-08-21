@@ -6,11 +6,11 @@
 // attaches authored playbook overlays where they exist, and groups by attack surface.
 // Playbook matching still lights up (SaaS → login + SPA + API + JWT + profile), but the
 // dashboard list IS the catalog, grouped by surface.
-import { classifyPlaybook, playbookChecks, suggestedPlaybook } from './playbooks.js?v=1.0.0-r18';
-import { SURFACES, surfaceForItem, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r18';
-import { applicableItems } from './applicable.js?v=1.0.0-r18';
-import { checkFromItem } from './probes.js?v=1.0.0-r18';
-import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r18';
+import { classifyPlaybook, playbookChecks, suggestedPlaybook } from './playbooks.js?v=1.0.0-r19';
+import { SURFACES, surfaceForItem, surfaceMeta, isHiddenSurface } from './surfaces.js?v=1.0.0-r19';
+import { applicableItems } from './applicable.js?v=1.0.0-r19';
+import { checkFromItem } from './probes.js?v=1.0.0-r19';
+import { checkMaturity, MATURITY } from './maturity.js?v=1.0.0-r19';
 
 // Best authored overlay for an item across every testing plan. Only a check that owns the
 // catalog item can supply its practical procedure; related IDs remain recommendation edges.
@@ -115,10 +115,13 @@ export function tierAssessmentChecks(checks = [], { surfaceId = '' } = {}) {
   if (surfaceId === 'static-page') {
     for (const id of STATIC_DONT_MISS) if (checks.some(({ item }) => item === id)) dontMiss.add(id);
   } else {
-    // Every attack-surface tab gets a small Don't Miss pass. Authored and high-impact work
-    // wins, with a strict cap so a large catalog never turns the entry tier into a wall.
+    // Every attack-surface tab gets a small Don't Miss pass. High-impact work only
+    // (critical/high severity): as authored coverage grows, medium-severity practical
+    // checks belong in Extended, not in the senior-tester first pass. Strict cap so a
+    // large catalog never turns the entry tier into a wall.
     const bySurface = new Map();
     for (const check of checks) {
+      if (!['critical', 'high'].includes(check.severity)) continue;
       const list = bySurface.get(check.surface) || [];
       list.push(check);
       bySurface.set(check.surface, list);
@@ -129,21 +132,22 @@ export function tierAssessmentChecks(checks = [], { surfaceId = '' } = {}) {
   }
 
   const highValue = new Set();
-  // Core stays usable: keep practical high-impact work, every critical item, and only the
-  // first four methodology-only high-severity checks per attack-surface tab. The remaining
-  // high-severity breadth is still present under Standard — it is never discarded.
+  // Core stays usable: every critical item, plus the top five high-severity checks per
+  // attack-surface tab — practical (authored) work sorts first, so authored-high wins the
+  // slots as coverage grows without flooding the tier. The remaining high-severity breadth
+  // is still present under Standard — it is never discarded.
   for (const check of checks) {
-    if (check.severity === 'critical' || (check.authored && check.severity === 'high')) highValue.add(check.item);
+    if (check.severity === 'critical') highValue.add(check.item);
   }
   const highBySurface = new Map();
   for (const check of checks) {
-    if (check.authored || check.severity !== 'high' || dontMiss.has(check.item)) continue;
+    if (check.severity !== 'high' || dontMiss.has(check.item) || highValue.has(check.item)) continue;
     const list = highBySurface.get(check.surface) || [];
     list.push(check);
     highBySurface.set(check.surface, list);
   }
   for (const members of highBySurface.values()) {
-    for (const check of [...members].sort(priorityOrder).slice(0, 4)) highValue.add(check.item);
+    for (const check of [...members].sort(priorityOrder).slice(0, 5)) highValue.add(check.item);
   }
 
   const buckets = new Map(PLAN_TIERS.map(({ id }) => [id, []]));
