@@ -3,9 +3,10 @@
 // tester evolve the same context as the target is learned — add a discovered auth
 // mechanism, WebSocket, file upload, or role tier — while every status, note, and
 // finding is preserved.
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r21';
-import { importScope } from '../engine/scope-import.js?v=1.0.0-r21';
-import { element } from './dom.js?v=1.0.0-r21';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r22';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r22';
+import { diffAnswers, categoryImpact } from '../engine/scopediff.js?v=1.0.0-r22';
+import { element } from './dom.js?v=1.0.0-r22';
 
 function list(value) {
   return Array.isArray(value) ? value : value ? [value] : [];
@@ -114,7 +115,7 @@ function contextChips(answers = {}) {
 }
 
 export function renderProfile(root, context) {
-  const { answers = {}, engagement = {}, onApply, playbooks = [], currentSurface, onSurfaceSelect } = context;
+  const { answers = {}, engagement = {}, onApply, playbooks = [], currentSurface, onSurfaceSelect, scopeHistory } = context;
   root.replaceChildren();
   const assessment = matchAssessment(answers);
   const chips = contextChips(answers);
@@ -201,6 +202,83 @@ export function renderProfile(root, context) {
       block.append(roleRow);
     }
     body.append(block);
+  }
+
+  // Scope history: snapshots + diff, so "why did the plan grow" has an answer.
+  if (scopeHistory) {
+    const history = element('section', 'scope-history');
+    history.dataset.scopeHistory = 'true';
+    history.append(element('p', 'micro-label', 'SCOPE HISTORY — SHOW WHAT CHANGED AND WHY THE PLAN FOLLOWED'));
+    const actionsRow = element('div', 'scope-history-actions');
+    const save = element('button', 'scope-snapshot-save', '＋ Snapshot current scope');
+    save.type = 'button';
+    save.dataset.snapshotSave = 'true';
+    save.addEventListener('click', () => scopeHistory.onSnapshot());
+    actionsRow.append(save);
+    const chips = element('div', 'scope-history-actions');
+    const snapshots = scopeHistory.snapshots || [];
+    if (!snapshots.length) {
+      chips.append(element('p', 'scope-diff-empty', 'No snapshots yet — take one now, and later changes will explain themselves.'));
+    }
+    let selected = snapshots.length ? snapshots[snapshots.length - 1] : null;
+    const diffRoot = element('div', 'scope-diff');
+    const paintDiff = () => {
+      diffRoot.replaceChildren();
+      if (!selected) return;
+      const changes = diffAnswers(selected.answers, answers);
+      const impact = scopeHistory.items ? categoryImpact(scopeHistory.items, selected.answers, answers, engagement.targetUrl || '') : [];
+      if (!changes.length && !impact.length) {
+        diffRoot.append(element('p', 'scope-diff-empty', `No scope changes against “${selected.label}”.`));
+        return;
+      }
+      if (changes.length) {
+        const list = element('ul', 'scope-diff-answers');
+        for (const change of changes) {
+          const item = element('li');
+          item.append(element('span', `dir ${change.direction}`, change.direction));
+          item.append(element('strong', '', change.label));
+          item.append(element('span', 'from', change.from));
+          item.append(element('span', 'arrow', '→'));
+          item.append(element('span', '', change.to));
+          list.append(item);
+        }
+        diffRoot.append(list);
+      }
+      if (impact.length) {
+        const cats = element('ul', 'scope-diff-categories');
+        for (const entry of impact.slice(0, 14)) {
+          const item = element('li', entry.direction);
+          item.append(element('span', '', (scopeHistory.categoryNames?.[entry.category] || entry.category).replace(/-/g, ' ')));
+          item.append(element('span', 'delta', `${entry.before}→${entry.after}`));
+          cats.append(item);
+        }
+        diffRoot.append(cats);
+      }
+    };
+    for (const snapshot of [...snapshots].reverse()) {
+      const chip = element('button', 'scope-snapshot-chip');
+      chip.type = 'button';
+      chip.dataset.snapshotId = snapshot.id;
+      chip.setAttribute('aria-pressed', String(selected?.id === snapshot.id));
+      chip.append(document.createTextNode(`${snapshot.label} · ${String(snapshot.taken_at || '').slice(0, 10)}`));
+      const remove = element('span', 'snap-remove', '×');
+      remove.setAttribute('role', 'button');
+      remove.setAttribute('aria-label', `Delete snapshot ${snapshot.label}`);
+      remove.addEventListener('click', (event) => {
+        event.stopPropagation();
+        scopeHistory.onSnapshotRemove(snapshot.id);
+      });
+      chip.append(remove);
+      chip.addEventListener('click', () => {
+        selected = snapshot;
+        history.querySelectorAll('[data-snapshot-id]').forEach((node) => node.setAttribute('aria-pressed', String(node.dataset.snapshotId === snapshot.id)));
+        paintDiff();
+      });
+      chips.append(chip);
+    }
+    history.append(actionsRow, chips, diffRoot);
+    paintDiff();
+    body.append(history);
   }
 
   const actions = element('p', 'app-profile-actions');

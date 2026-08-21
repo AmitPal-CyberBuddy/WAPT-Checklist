@@ -1,6 +1,6 @@
 // Attack-surface families are the tester-facing grouping.
 // Page playbooks stay as packs; the assessment regroups their authored tests by surface.
-import { contextHas, contextIsUnknown } from './context.js?v=1.0.0-r21';
+import { contextHas, contextIsUnknown } from './context.js?v=1.0.0-r22';
 
 export const SURFACES = Object.freeze([
   Object.freeze({ id: 'tls', title: 'TLS / Transport Security', summary: 'Protocols, ciphers, certificates, HTTP→HTTPS, mixed content.' }),

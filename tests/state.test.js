@@ -10,7 +10,7 @@ test('new state has the complete v4 local-only shape', async () => {
   const { STATE_KEY, STATE_SCHEMA_VERSION, createState } = await stateModule;
   const state = createState();
   assert.equal(STATE_KEY, 'wapt.state.v1');
-  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'variants', 'position', 'findings', 'custom_checks', 'saved_views', 'updated_at']);
+  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'variants', 'position', 'findings', 'custom_checks', 'saved_views', 'scope_snapshots', 'updated_at']);
   assert.equal(state.schema_version, 4);
   assert.equal(STATE_SCHEMA_VERSION, 4);
   assert.deepEqual(state.variants, {});

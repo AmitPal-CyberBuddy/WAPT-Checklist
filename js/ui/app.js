@@ -1,11 +1,12 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r21';
-import { createWizard } from './wizard.js?v=1.0.0-r21';
-import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r21';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r21';
-import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r21';
-import { createCatalog } from './catalog.js?v=1.0.0-r21';
-import { createWorkspace } from './workspace.js?v=1.0.0-r21';
-import { asset } from './paths.js?v=1.0.0-r21';
+import { initializeTheme } from './theme.js?v=1.0.0-r22';
+import { createWizard } from './wizard.js?v=1.0.0-r22';
+import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r22';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r22';
+import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r22';
+import { createCatalog } from './catalog.js?v=1.0.0-r22';
+import { createWorkspace } from './workspace.js?v=1.0.0-r22';
+import { saveTemplate, deleteTemplate, createEngagementFromTemplate } from '../engine/portfolio.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 
@@ -23,6 +24,10 @@ function initialHash(current) {
 function loadPortfolio() {
   try { return normalizePortfolio(JSON.parse(localStorage.getItem(STATE_KEY))); }
   catch { return normalizePortfolio(null); }
+}
+
+function refreshTemplateBridge() {
+  window.__waptTemplates = portfolio.templates || [];
 }
 
 function savePortfolio() {
@@ -289,6 +294,17 @@ function initializeShell() {
   });
   workspace.bindActions();
 
+  // Templates are portfolio-scoped; the wizard (module-scoped) reads them through
+  // this small bridge set by the shell that owns the portfolio.
+  window.__waptTemplates = portfolio.templates || [];
+  window.__waptApplyTemplate = (templateId) => {
+    try {
+      activatePortfolio(createEngagementFromTemplate(portfolio, templateId), 'dashboard');
+    } catch (error) {
+      console.warn('Template could not be applied.', error);
+    }
+  };
+
   wizard = createWizard(document.querySelector('#wizard-root'), state, {
     onChange(nextState) {
       setActiveState(nextState);
@@ -311,6 +327,44 @@ function initializeShell() {
       activatePortfolio(removeEngagement(portfolio, portfolio.active_id));
     }
   });
+  document.querySelector('[data-save-template]')?.addEventListener('click', (event) => {
+    if (event.shiftKey) {
+      document.querySelector('[data-manage-templates]')?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      return;
+    }
+    const label = window.prompt('Name this scope template (answers + target only — never progress)', state.engagement.name.trim() || 'New template');
+    if (label === null) return;
+    try {
+      portfolio = saveTemplate(portfolio, label);
+      refreshTemplateBridge();
+      savePortfolio();
+      flashTemplateButton('Saved ✓');
+    } catch (error) {
+      flashTemplateButton(error instanceof RangeError ? 'Template limit reached' : 'Could not save');
+    }
+  });
+  document.querySelector('[data-manage-templates]')?.addEventListener('click', () => {
+    const templates = portfolio.templates || [];
+    if (!templates.length) {
+      window.alert('No scope templates yet. Set up an engagement scope, then use "Save template" in the header.');
+      return;
+    }
+    const message = templates.map((template, index) => `${index + 1}. ${template.name}${template.created_at ? ` (${String(template.created_at).slice(0, 10)})` : ''}`).join('\n');
+    const choice = window.prompt(`Scope templates — enter a number to DELETE it:\n\n${message}\n\n(Cancel to close)`);
+    if (choice === null) return;
+    const index = Number.parseInt(choice, 10) - 1;
+    if (!Number.isInteger(index) || index < 0 || index >= templates.length) return;
+    portfolio = deleteTemplate(portfolio, templates[index].id);
+    refreshTemplateBridge();
+    savePortfolio();
+  });
+  function flashTemplateButton(label) {
+    const button = document.querySelector('[data-save-template]');
+    if (!button) return;
+    const previous = button.textContent;
+    button.textContent = label;
+    setTimeout(() => { button.textContent = previous; }, 1600);
+  }
   document.querySelector('[data-wizard-reset]').addEventListener('click', () => {
     if (window.confirm('Reset scope answers? Existing item statuses, findings, and notes in this engagement will be retained.')) resetWizard();
   });

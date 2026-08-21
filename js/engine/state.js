@@ -1,4 +1,5 @@
 import { normalizeScopeAnswers } from './context.js';
+import { cleanScopeSnapshots, snapshotScope, MAX_SCOPE_SNAPSHOTS } from './scopediff.js?v=1.0.0-r22';
 
 export const STATE_KEY = 'wapt.state.v1';
 export const STATE_SCHEMA_VERSION = 4;
@@ -287,6 +288,7 @@ export function createState() {
     findings: [],
     custom_checks: [],
     saved_views: [],
+    scope_snapshots: [],
     updated_at: null
   };
 }
@@ -328,7 +330,8 @@ export function normalizeState(candidate, options = {}) {
     ...normalizeFields(candidate),
     findings: cleanFindings(candidate.findings),
     custom_checks: cleanCustomChecks(candidate.custom_checks),
-    saved_views: cleanSavedViews(candidate.saved_views)
+    saved_views: cleanSavedViews(candidate.saved_views),
+    scope_snapshots: cleanScopeSnapshots(candidate.scope_snapshots)
   };
 }
 
@@ -362,6 +365,20 @@ export function setAnswers(state, patch, now) {
 }
 
 // Replace the engagement's custom checks (UI owns ID generation and editing).
+// Push a scope checkpoint (ring buffer of the latest ten).
+export function pushScopeSnapshot(state, label, now = new Date().toISOString()) {
+  const current = normalizeState(state);
+  const snapshot = snapshotScope(current.answers, label, now);
+  const scope_snapshots = [...current.scope_snapshots.filter(({ id }) => id !== snapshot.id), snapshot].slice(-MAX_SCOPE_SNAPSHOTS);
+  return touch(current, { scope_snapshots }, now);
+}
+
+export function removeScopeSnapshot(state, id, now) {
+  const current = normalizeState(state);
+  if (!current.scope_snapshots.some(({ id: existing }) => existing === id)) throw new TypeError('Unknown scope snapshot ID.');
+  return touch(current, { scope_snapshots: current.scope_snapshots.filter(({ id: existing }) => existing !== id) }, now);
+}
+
 export function setCustomChecks(state, checks, now) {
   const current = normalizeState(state);
   return touch(current, { custom_checks: cleanCustomChecks(checks) }, now);

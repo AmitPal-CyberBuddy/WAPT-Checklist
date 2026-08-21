@@ -1,25 +1,26 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r21';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r21';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r21';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r21';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, setFindingAttachments, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES, ATTACHMENT_TYPES, MAX_ATTACHMENTS_PER_PACK, MAX_ATTACHMENT_BYTES } from '../engine/state.js?v=1.0.0-r21';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r21';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r21';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r21';
-import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r21';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeReportHtml, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r21';
-import { createChainStore } from './chains.js?v=1.0.0-r21';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r21';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r21';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r21';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r21';
-import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r21';
-import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r21';
-import { setCustomChecks, setSavedViews, nextCustomCheckId } from '../engine/state.js?v=1.0.0-r21';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r21';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r21';
-import { renderProfile } from './profile.js?v=1.0.0-r21';
-import { asset } from './paths.js?v=1.0.0-r21';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r22';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r22';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r22';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r22';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, setFindingAttachments, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES, ATTACHMENT_TYPES, MAX_ATTACHMENTS_PER_PACK, MAX_ATTACHMENT_BYTES } from '../engine/state.js?v=1.0.0-r22';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r22';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r22';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r22';
+import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r22';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeReportHtml, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r22';
+import { createChainStore } from './chains.js?v=1.0.0-r22';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r22';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r22';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r22';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r22';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r22';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r22';
+import { pushScopeSnapshot, removeScopeSnapshot } from '../engine/state.js?v=1.0.0-r22';
+import { setCustomChecks, setSavedViews, nextCustomCheckId } from '../engine/state.js?v=1.0.0-r22';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r22';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r22';
+import { renderProfile } from './profile.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -1145,6 +1146,13 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
         engagement: state.engagement,
         playbooks: playbookIndex.playbooks,
         currentSurface: selectedSurface,
+        scopeHistory: {
+          snapshots: state.scope_snapshots || [],
+          items: records.length ? records.map(({ item }) => item) : [],
+          categoryNames: Object.fromEntries(manifest.categories.map(({ slug, name }) => [slug, name])),
+          onSnapshot: () => commit(pushScopeSnapshot(getState(), state.engagement.name.trim() || 'Checkpoint')),
+          onSnapshotRemove: (id) => commit(removeScopeSnapshot(getState(), id))
+        },
         onSurfaceSelect({ surfaceId, engagement }) { selectSurface(surfaceId, engagement); },
         onApply({ answers, engagement }) {
           let next = getState();

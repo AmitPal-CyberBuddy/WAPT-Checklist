@@ -1,6 +1,7 @@
-import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r21';
-import { importScope } from '../engine/scope-import.js?v=1.0.0-r21';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r21';
+import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r22';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r22';
+import { createEngagementFromTemplate } from '../engine/portfolio.js?v=1.0.0-r22';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r22';
 
 const UNKNOWN = 'unknown';
 const ROLE_DEFAULT_NAMES = Object.freeze({ admin: 'Administrator', privileged: 'Privileged user', support: 'Support / internal', standard: 'Standard user', custom: 'Custom role' });
@@ -207,6 +208,11 @@ export function createWizard(root, initialState, callbacks = {}) {
           <input type="file" accept="application/json,.json" data-scope-file hidden>
         </div>
         <div class="scope-import-result" data-scope-result hidden></div>
+        ${window.__waptTemplates?.length ? `
+        <div class="scope-templates" data-template-row>
+          <p class="micro-label">START FROM A SAVED SCOPE TEMPLATE</p>
+          <div class="scope-template-row">${window.__waptTemplates.map((template) => `<button class="scope-template-chip" type="button" data-template="${template.id}" title="Created ${String(template.created_at || '').slice(0, 10)} — ${escapeHtml(template.engagement?.name || template.name)}">${escapeHtml(template.name)}</button>`).join('')}</div>
+        </div>` : ''}
         <div class="preset-grid" aria-label="Assessment presets">${ASSESSMENT_LIST.map((preset) => {
           const pressed = selected?.id === preset.id || (preset.askEverything && appliedPreset?.askEverything);
           return `<button class="preset-card" type="button" data-preset="${preset.id}" aria-pressed="${pressed}"><em>${preset.askEverything ? 'BUILD FROM SCRATCH' : 'ASSESSMENT PRESET'}</em><strong>${preset.title}</strong><span>${preset.blurb}</span><i class="preset-glyph" aria-hidden="true">${preset.glyph || '◇'}</i></button>`;
@@ -352,6 +358,10 @@ export function createWizard(root, initialState, callbacks = {}) {
         scopeImport = null;
       });
     });
+    root.querySelectorAll('[data-template]').forEach((button) => button.addEventListener('click', () => {
+      const apply = window.__waptApplyTemplate;
+      if (apply) apply(button.dataset.template);
+    }));
     root.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
       const preset = presetById(button.dataset.preset);
       if (preset) applyPreset(preset);

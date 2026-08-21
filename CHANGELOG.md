@@ -4,6 +4,13 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Added (v1.2: engagement templates + scope diff — r22)
+
+- **Scope templates.** "★ Template" in the workspace header freezes the active engagement's scope — answers and target only, never progress, findings, or evidence — as a named template (capped at 12; Shift+click manages and deletes). Saved templates appear as one-click chips on the wizard's first step; clicking one creates a fresh engagement with the full context applied and lands directly on the dashboard plan.
+- **Scope snapshots + diff.** The Edit-context editor gains a Scope history block: "＋ Snapshot current scope" records a labeled checkpoint (ring buffer of ten), and selecting any snapshot diffs it against the current scope. The diff names every added, removed, and changed scope decision in plain language, and lists every checklist category that gained or lost applicable tests (e.g. "jwt 0→18 on", "graphql 15→0 off") — computed with the same applicability engine the plan itself uses, so the story the client hears can never disagree with the plan they see.
+- Portfolio documents validate templates on load (hostile files keep only well-formed entries); snapshots validate through state normalization like every other collection. 318 tests green including the new suite.
+
+
 ### Added (v1.2: evidence attachments — r21)
 
 - **Evidence packs now carry redacted screenshots and request files — locally.** The evidence form gains an attachment stage with the redaction reminder shown before file selection, and every pack card gains "＋ Attach file". Files are read in-browser and stored as data URLs inside the local state: images (PNG/JPEG/WebP/GIF) or text/JSON, capped at 3 files per pack and ~400 KB per file, with a 2 MB engagement-wide budget enforced at set-state time — over-budget saves are refused with a clear error rather than silently growing local storage.

@@ -164,13 +164,10 @@ tester's day shorter.
 - **Done when**: caps enforced at set-state time; import rejects oversized state;
   redaction reminder shown before attach. **Size: M**
 
-### 8. ○ Engagement templates + scope diff
+### 8. ✅ Engagement templates + scope diff — shipped in r22
 - **Why**: repeat clients reuse scope; showing what changed between two checkpoints
   ("we added WebSocket after week 1") explains plan growth to the client.
-- **Sketch**: "Save as template" per engagement; scope snapshots with a diff view
-  (added/removed answers and the categories they switched on).
-- **Done when**: templates create engagements in one click; diff names the context
-  answers and affected categories both ways. **Size: M**
+- **Shipped (r22)**: "★ Template" in the header freezes the active scope (answers + target only — never progress, findings, or evidence; capped at 12, hostile portfolio documents keep only well-formed entries); the wizard lists saved templates as one-click starts that land straight on the dashboard plan; Shift+click manages/deletes templates. Scope history lives in the Edit-context editor: "＋ Snapshot current scope" checkpoints (ring of ten, label + date), and selecting any snapshot diffs it against the current scope — naming every added/removed/changed answer and every category that gained or lost applicable tests, computed with the same applicability engine the plan uses so the diff can never disagree with the plan.
 
 ### 9. ○ Attack-chain library growth
 - **Why**: 5 chains seed the idea; chains are how juniors learn sequencing.
