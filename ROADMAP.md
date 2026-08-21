@@ -1,0 +1,158 @@
+# WAPT Checklist — Upgrade Roadmap
+
+This roadmap is derived from the current codebase and tester workflows, not from a
+generic template. Each item names the gap it closes, a concrete sketch, and the
+acceptance bar. It is a maintainer document: it lives in the repository and is
+deliberately **not** part of the hosted site (the publish allowlist excludes it).
+
+Status legend: ✅ shipped · 🚧 in progress · ○ planned
+
+---
+
+## Where the project stands
+
+- **623 production checks** across 25 categories, 196 coverage families, 5 attack
+  chains, 40 payload references, 12 Burp workflow guides — all reference-validated.
+- **Assessment-first flow**: scenario presets → relevant follow-ups → categorized
+  plan with per-category signal hues and inclusion reasons; context stays editable
+  mid-engagement without losing progress.
+- **Local-only by design**: state in `wapt.state.v1`, no telemetry, no target
+  requests, share links carry scope only.
+- **Hosting**: clean URLs from an explicit public allowlist; maintainer material
+  stays in the repository.
+- **Quality gates**: 300 unit tests, schema/floor/reference/content audits, and a
+  jsdom functional suite (53 checks + 19 tester-audit checks) run on every push.
+
+The single biggest lever remaining is **practical depth**: only 16 authored
+playbooks (≈19 named variants) exist, so most rows open as methodology
+references. Everything below orbits that, plus the workflow features that make a
+tester's day shorter.
+
+---
+
+## v1.1 — Now (high value, small-to-medium efforts)
+
+### 1. ✅ Scope import from API definitions
+- **Why**: testers already have an OpenAPI file or Postman collection; typing its
+  implications into the wizard is wasted minutes and a correctness risk.
+- **Sketch**: `js/engine/scope-import.js` parses OpenAPI 3 / Swagger 2 (JSON) and
+  Postman v2.x collections locally — proposing `app_type`, `api_style`,
+  `auth_mechanism`, registration/identity hints, uploads/payments/search/webhooks
+  — with every detection listed for review. Wired into the wizard and the Edit
+  context editor.
+- **Done when**: import proposes only what the document states; every detection is
+  auditable; nothing applies without review; parser has unit tests with fixtures.
+
+### 2. ○ Role names and privilege hierarchy (state schema v4)
+- **Why**: the multi-role preset records tiers but not names; "Admin → Manager →
+  Standard" as real names makes the cross-role matrix and exports report-ready.
+- **Sketch**: engagement gains `role_model: [{ name, tier }]`; wizard multi-role
+  step gains a small inline editor; plan matrix and Markdown exports use the names;
+  strict v3 → v4 migration mirrors the existing v1/v2 path.
+- **Done when**: names survive export/import; matrix pairs read like the target's
+  real roles; old state files migrate losslessly. **Size: M**
+
+### 3. ○ Custom local tests
+- **Why**: every engagement has 5–10 target-specific checks that no catalog can
+  predict; testers currently keep them in another note.
+- **Sketch**: engagement-scoped `custom_checks: [{ id: WAPT-CUSTOM-nnn, title,
+  objective, category-hint }]` rendered inside the matching plan category (or a
+  "Custom" group), with the same status/finding/notes controls and exports.
+- **Done when**: custom rows behave like catalog rows everywhere except reference
+  lookups; they never collide with catalog IDs; they export/import cleanly. **Size: M**
+
+### 4. ○ Saved filter views
+- **Why**: "high severity + not started + JWT" is retyped many times per engagement.
+- **Sketch**: name-and-persist the current filter set per engagement; recall from a
+  chip row in checklist/search and the plan's filter bar.
+- **Done when**: views persist, carry across views, and export with state. **Size: S**
+
+### 5. ○ HTML engagement report
+- **Why**: Markdown report exists; clients increasingly want a single styled HTML
+  file with severity ordering and coverage visuals.
+- **Sketch**: extend `js/ui/export.js` with a self-contained `report.html` writer
+  (inline CSS from existing tokens, no external requests, CSP-safe).
+- **Done when**: report renders offline from `file://`, includes findings,
+  evidence (redacted fields), coverage, and the cross-role matrix. **Size: M**
+
+---
+
+## v1.2 — Next (the practical-depth program)
+
+### 6. ○ Practical-variant authoring, wave 1
+- **Why**: the hero feature of this console is pasteable procedures; today only
+  static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
+  sessions are where testers spend their time.
+- **Sketch**: author 8–12 variants per category for the top 10 categories by usage
+  (JWT, OAuth, authorization, session, API, headers, client-side, upload, GraphQL,
+  business logic), following the existing playbook overlay schema and safety rules
+  (safe payloads flagged, REVIEW-ONLY guarded, do-not-report boundaries).
+- **Done when**: `audit-content.js` passes; each new variant carries Why / payload
+  / CHECK FOR / VALIDATE; floors and reference audits stay green. **Size: L (content)**
+
+### 7. ○ Evidence attachments (local, capped)
+- **Why**: evidence packs are text-only; a redacted screenshot or request file is
+  the artifact clients actually want attached.
+- **Sketch**: optional file attachments on evidence packs, stored as data URLs with
+  a hard size cap (e.g. 1.5 MB/pack, counted against the 5 MB state budget),
+  rendered inline in the pack and the HTML report.
+- **Done when**: caps enforced at set-state time; import rejects oversized state;
+  redaction reminder shown before attach. **Size: M**
+
+### 8. ○ Engagement templates + scope diff
+- **Why**: repeat clients reuse scope; showing what changed between two checkpoints
+  ("we added WebSocket after week 1") explains plan growth to the client.
+- **Sketch**: "Save as template" per engagement; scope snapshots with a diff view
+  (added/removed answers and the categories they switched on).
+- **Done when**: templates create engagements in one click; diff names the context
+  answers and affected categories both ways. **Size: M**
+
+### 9. ○ Attack-chain library growth
+- **Why**: 5 chains seed the idea; chains are how juniors learn sequencing.
+- **Sketch**: add 8–10 chains over the newly authored variants (token reuse →
+  privilege escalation; upload → stored XSS → session theft; SSRF → cloud
+  metadata → tenant keys).
+- **Done when**: every node resolves to an applicable item; unlock hints verified
+  against real statuses. **Size: M (content)**
+
+---
+
+## v2.0 — Later (platform moves)
+
+### 10. ○ Offline-first PWA
+- Service worker + installable shell; the app is already local-only, so caching
+  is a natural fit. Cache-first assets, version-keyed by `cache_version`.
+
+### 11. ○ Per-endpoint plans from definitions
+- Extend scope import to enumerate endpoints and let the tester focus the plan on
+  a route group (auth vs billing), reusing the existing focus view machinery.
+
+### 12. ○ Portfolio view across engagements
+- One dashboard over all local engagements: coverage, findings counts, retests
+  pending — the freelancer's week at a glance. Pure local aggregation.
+
+### 13. ○ CI upgrades
+- Run the jsdom functional suite in CI (dependency install step), add Lighthouse
+  budgets and Playwright screenshot diffs for the identity layer.
+
+### 14. ○ Web-worker applicability at scale
+- Move catalog applicability scoring off the main thread when the catalog passes
+  ~1,500 items; the engine is already DOM-free by design.
+
+---
+
+## Non-goals (deliberate)
+
+- **Cloud sync / accounts** — the local-only stance is a feature, not a limitation.
+- **Telemetry of any kind** — including anonymized usage counters.
+- **Automated exploitation** — the console validates and proves, never weaponizes.
+- **Auto-generated fake procedures** — a catalog-only row says so honestly; no
+  synthesized "Repeater requests" from titles.
+
+---
+
+## Contributing to this roadmap
+
+Items move up when a real engagement blocks on them and move down when a workaround
+is good enough. Content waves (6, 9) pair engineering with authoring review — see
+`docs/CONTENT-GUIDE.md` for the authoring contract before writing variants.

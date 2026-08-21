@@ -1,7 +1,7 @@
 {
   "name": "WAPT Checklist",
   "version": "1.0.0",
-  "cache_version": "1.0.0-r12",
+  "cache_version": "1.0.0-r13",
   "release_date": "2026-08-20",
   "status": "release-candidate",
   "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
@@ -19,6 +19,6 @@
     "status": "active",
     "pages_url": "https://amitpal-cyberbuddy.github.io/WAPT-Checklist/",
     "verified_at": "2026-08-20",
-    "note": "GitHub Pages is active; the r12 pass ships the Aurora identity layer \u2014 ambient canvas, gradient hero, bento metrics, category signal hues, redesigned preset tiles."
+    "note": "GitHub Pages is active; the r13 pass adds scope import from API definitions and the upgrade roadmap."
   }
 }

@@ -150,6 +150,10 @@ This repository's original software and content are licensed under the [Apache L
 
 ## Roadmap
 
+The completed build-out lives below. For what ships next and why, see the prioritized [upgrade roadmap](ROADMAP.md) — v1.1 adds role hierarchies, custom local tests, saved views, and the HTML report; v1.2 is the practical-variant authoring program; v2.0 covers offline PWA, per-endpoint plans, and portfolio view.
+
+### Completed build-out
+
 1. ~~Architecture, taxonomy, schema, and 20-item sample~~
 2. ~~Repository shell, responsive UI, scoping wizard, presets, and Pages workflow templates~~
 3. ~~Pure adaptive engine with derivation and scenario tests~~

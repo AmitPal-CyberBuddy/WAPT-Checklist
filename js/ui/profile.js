@@ -3,8 +3,9 @@
 // tester evolve the same context as the target is learned — add a discovered auth
 // mechanism, WebSocket, file upload, or role tier — while every status, note, and
 // finding is preserved.
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r12';
-import { element } from './dom.js?v=1.0.0-r12';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r13';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r13';
+import { element } from './dom.js?v=1.0.0-r13';
 
 function list(value) {
   return Array.isArray(value) ? value : value ? [value] : [];
@@ -162,6 +163,22 @@ export function renderProfile(root, context) {
   head.append(element('p', '', 'Change anything you have learned — a new mechanism, API, upload, or role tier expands the plan automatically. Completed tests, findings, and notes are always preserved.'));
   body.append(head);
 
+  const importRow = element('div', 'scope-import compact');
+  const importOpen = element('button', 'scope-import-button', '⤓ Import from API definition');
+  importOpen.type = 'button';
+  importOpen.dataset.scopeOpen = 'true';
+  const importHint = element('small', '', 'OpenAPI / Swagger JSON or Postman collection — parsed locally; ticks the matching boxes for you to review.');
+  const importFile = document.createElement('input');
+  importFile.type = 'file';
+  importFile.accept = 'application/json,.json';
+  importFile.hidden = true;
+  importFile.dataset.scopeFile = 'true';
+  importRow.append(importOpen, importHint, importFile);
+  body.append(importRow);
+  const importResult = element('div', 'scope-import-result');
+  importResult.hidden = true;
+  body.append(importResult);
+
   for (const group of CONTEXT_GROUPS) {
     const block = element('fieldset', 'app-profile-set context-group');
     block.dataset.contextGroup = group.id;
@@ -221,6 +238,48 @@ export function renderProfile(root, context) {
     paint();
   });
 
+  let importedScalars = null;
+  importOpen.addEventListener('click', () => importFile.click());
+  importFile.addEventListener('change', async () => {
+    const file = importFile.files?.[0];
+    importFile.value = '';
+    if (!file) return;
+    let parsed;
+    try { parsed = importScope(JSON.parse(await file.text())); }
+    catch { parsed = { ok: false, error: 'The file is not valid JSON.' }; }
+    if (!parsed.ok) {
+      importResult.hidden = false;
+      importResult.className = 'scope-import-result scope-import-error';
+      importResult.replaceChildren(element('p', '', `Could not import. ${parsed.error}`));
+      return;
+    }
+    // Tick the editor boxes the definition actually supports; scalar answers ride
+    // along and merge on Update, where the tester still sees and controls them.
+    for (const group of ['auth_mechanism', 'identity_features', 'api_style', 'features', 'role_types']) {
+      const values = parsed.answers[group];
+      if (!Array.isArray(values)) continue;
+      shell.querySelectorAll(`input[name="${group}"]`).forEach((input) => { input.checked = values.includes(input.value); });
+    }
+    const { auth_mechanism, identity_features, api_style, features, role_types, ...scalars } = parsed.answers;
+    importedScalars = scalars;
+    paint();
+    importResult.hidden = false;
+    importResult.className = 'scope-import-result';
+    importResult.replaceChildren(
+      element('p', 'micro-label', `PROPOSED CONTEXT FROM ${parsed.meta.kind.toLocaleUpperCase('en-US')}`),
+      element('p', 'scope-import-title', `${parsed.meta.title || file.name} · ${parsed.meta.endpoints} paths · ${parsed.meta.operations} operations`),
+      element('ul', 'preset-assumptions', ''),
+    );
+    const list = importResult.querySelector('ul');
+    for (const line of parsed.meta.detections) {
+      const item = element('li', '', `✓ ${line}`);
+      list.append(item);
+    }
+    const note = element('p', 'preset-note', 'Boxes below are pre-ticked from the definition. Review them, then Update testing plan.');
+    importResult.append(note);
+    importResult.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  });
+
   apply.addEventListener('click', () => {
     const selected = (groupName) => [...shell.querySelectorAll(`input[name="${groupName}"]:checked`)].map((node) => node.value);
     const patch = {};
@@ -243,9 +302,11 @@ export function renderProfile(root, context) {
     if (roleTypes.length) patch.role_types = roleTypes;
     const rolesSelect = shell.querySelector('select[name="roles"]');
     if (rolesSelect) patch.roles = rolesSelect.value;
+    const merged = importedScalars ? { ...importedScalars, ...patch } : patch;
+    importedScalars = null;
     onApply?.({
-      answers: { ...answers, ...patch },
-      engagement: { name: name.value, targetUrl: url.value }
+      answers: { ...answers, ...merged },
+      engagement: { name: name.value.trim() || engagement.name || '', targetUrl: url.value }
     });
   });
 

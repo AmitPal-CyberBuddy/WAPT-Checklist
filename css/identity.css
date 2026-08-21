@@ -277,3 +277,23 @@ body.app-body::before{ /* drifting aurora: two blobs, one animation */
   .preset-card,.option-card,.playbook-card,.family-row{transition:none}
 }
 @media print{body.app-body::before{display:none}}
+
+/* ── 15. Scope import — a definition the tester trusts proposes context ──── */
+.scope-import{display:flex;flex-wrap:wrap;align-items:center;gap:.4rem .7rem;margin:.6rem 0 .2rem}
+.scope-import.compact{margin:.1rem 0 .5rem}
+.scope-import small{flex-basis:100%;color:var(--faint);font-size:.6rem;line-height:1.5}
+.scope-import-button{display:inline-flex;align-items:center;gap:.45rem;min-height:34px;padding:.35rem .8rem;
+  border:1px dashed rgba(69,224,192,.45);border-radius:100px;background:rgba(69,224,192,.06);
+  color:var(--brand);font:500 .66rem var(--font-mono);cursor:pointer;transition:all .16s var(--ease)}
+.scope-import-button:hover{border-style:solid;background:rgba(69,224,192,.12);box-shadow:0 0 18px -8px rgba(69,224,192,.6)}
+:root[data-theme='light'] .scope-import-button{border-color:rgba(8,122,109,.45);background:rgba(8,122,109,.06);color:var(--brand)}
+.scope-import-result{margin:.5rem 0 .2rem;padding:.7rem .85rem;border-radius:12px;border:1px solid transparent;
+  background:linear-gradient(180deg,rgba(69,224,192,.06),transparent 65%) padding-box,
+  linear-gradient(135deg,rgba(69,224,192,.35),rgba(151,165,255,.14)) border-box}
+.scope-import-error{background:var(--high-bg) padding-box,linear-gradient(135deg,var(--high-line),transparent) border-box}
+.scope-import-error p{margin:0;color:var(--high);font-size:.7rem}
+.scope-import-title{margin:.15rem 0 .4rem;color:var(--ink-2);font-size:.72rem}
+.scope-import-title span{color:var(--faint);font:400 .6rem var(--font-mono)}
+.scope-import-actions{display:flex;flex-wrap:wrap;gap:.5rem;margin-top:.55rem}
+.scope-import-actions .button{min-height:34px;padding:.35rem .8rem;font-size:.68rem}
+@media (pointer:coarse){.scope-import-button{min-height:44px}}

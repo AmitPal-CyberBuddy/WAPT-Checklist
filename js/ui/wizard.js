@@ -1,5 +1,6 @@
-import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r12';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r12';
+import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r13';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r13';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r13';
 
 const UNKNOWN = 'unknown';
 
@@ -135,6 +136,8 @@ export function createWizard(root, initialState, callbacks = {}) {
   // from the preset's focus list plus questions revealed by earlier answers.
   let appliedPreset = matchAssessment(state.answers || {});
   let presetAdjusted = false;
+  // A parsed API definition waiting for review (scope import).
+  let scopeImport = null;
   // Questions that became relevant because of an earlier answer (e.g. login appears
   // → identity questions open up), or that the tester chose to revisit from Review.
   const extraSteps = new Set();
@@ -197,6 +200,12 @@ export function createWizard(root, initialState, callbacks = {}) {
           <div class="field-group"><label for="target-url">Target URL <span>(optional)</span></label><input id="target-url" name="target-url" type="url" inputmode="url" autocomplete="off" maxlength="2048" value="${escapeHtml(state.engagement.targetUrl)}" placeholder="https://app.example.com"><small>Stored only in <code>wapt.state.v1</code> on this device.</small></div>
         </div>
         <ul class="hint-list" data-url-hints>${hints.map((hint) => `<li>${HINT_LABELS[hint]} · low confidence</li>`).join('')}</ul>
+        <div class="scope-import">
+          <button class="scope-import-button" type="button" data-scope-open>⤓ Import from API definition</button>
+          <small>OpenAPI / Swagger JSON or a Postman collection — parsed on this device only, never uploaded. Proposes the matching follow-up answers for you to review.</small>
+          <input type="file" accept="application/json,.json" data-scope-file hidden>
+        </div>
+        <div class="scope-import-result" data-scope-result hidden></div>
         <div class="preset-grid" aria-label="Assessment presets">${ASSESSMENT_LIST.map((preset) => {
           const pressed = selected?.id === preset.id || (preset.askEverything && appliedPreset?.askEverything);
           return `<button class="preset-card" type="button" data-preset="${preset.id}" aria-pressed="${pressed}"><em>${preset.askEverything ? 'BUILD FROM SCRATCH' : 'ASSESSMENT PRESET'}</em><strong>${preset.title}</strong><span>${preset.blurb}</span><i class="preset-glyph" aria-hidden="true">${preset.glyph || '◇'}</i></button>`;
@@ -281,6 +290,47 @@ export function createWizard(root, initialState, callbacks = {}) {
         item.textContent = `${HINT_LABELS[hint]} · low confidence`;
         return item;
       }));
+    });
+    root.querySelector('[data-scope-open]')?.addEventListener('click', () => root.querySelector('[data-scope-file]')?.click());
+    root.querySelector('[data-scope-file]')?.addEventListener('change', async (event) => {
+      const panel = root.querySelector('[data-scope-result]');
+      const file = event.target.files?.[0];
+      event.target.value = '';
+      if (!file || !panel) return;
+      let parsed;
+      try { parsed = importScope(JSON.parse(await file.text())); }
+      catch { parsed = { ok: false, error: 'The file is not valid JSON.' }; }
+      if (!parsed.ok) {
+        panel.hidden = false;
+        panel.className = 'scope-import-result scope-import-error';
+        panel.innerHTML = `<p><strong>Could not import.</strong> ${escapeHtml(parsed.error)}</p>`;
+        return;
+      }
+      scopeImport = parsed;
+      panel.hidden = false;
+      panel.className = 'scope-import-result';
+      panel.innerHTML = `
+        <p class="micro-label">PROPOSED CONTEXT FROM ${escapeHtml(parsed.meta.kind.toLocaleUpperCase('en-US'))}</p>
+        <p class="scope-import-title"><strong>${escapeHtml(parsed.meta.title || file.name)}</strong>${parsed.meta.version ? ` <span>· ${escapeHtml(parsed.meta.version)}</span>` : ''} <span>· ${parsed.meta.endpoints} paths · ${parsed.meta.operations} operations</span></p>
+        <ul class="preset-assumptions">${parsed.meta.detections.map((line) => `<li>✓ ${escapeHtml(line)}</li>`).join('')}</ul>
+        <p class="preset-note">Review the proposal — Continue applies it to the open questions; anything you answer yourself always wins later.</p>
+        <div class="scope-import-actions"><button class="button button-primary" type="button" data-scope-apply>Apply to assessment →</button><button class="button button-quiet" type="button" data-scope-dismiss>Dismiss</button></div>`;
+      root.querySelector('[data-scope-apply]')?.addEventListener('click', () => {
+        if (!scopeImport) return;
+        appliedPreset = appliedPreset && !appliedPreset.askEverything ? appliedPreset : null;
+        presetAdjusted = true;
+        updateState({
+          answers: normalizeScopeAnswers({ ...state.answers, ...scopeImport.answers }),
+          engagement: { ...state.engagement, name: state.engagement.name.trim() || scopeImport.meta.title || '' }
+        });
+        panel.hidden = true;
+        scopeImport = null;
+        render(false);
+      });
+      root.querySelector('[data-scope-dismiss]')?.addEventListener('click', () => {
+        panel.hidden = true;
+        scopeImport = null;
+      });
     });
     root.querySelectorAll('[data-preset]').forEach((button) => button.addEventListener('click', () => {
       const preset = presetById(button.dataset.preset);
