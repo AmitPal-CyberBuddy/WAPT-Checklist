@@ -65,7 +65,7 @@ test('schema v1 portfolio records upgrade in place without data loss', async () 
   };
   const portfolio = normalizePortfolio(legacyPortfolio);
   const state = activeEngagement(portfolio);
-  assert.equal(state.schema_version, 3);
+  assert.equal(state.schema_version, 4);
   assert.deepEqual(state.findings, []);
   assert.equal(state.engagement.name, 'V1 engagement');
   assert.equal(state.statuses['WAPT-AUTHZ-001'], 'passed');

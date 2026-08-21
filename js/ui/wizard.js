@@ -1,8 +1,9 @@
-import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r13';
-import { importScope } from '../engine/scope-import.js?v=1.0.0-r13';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r13';
+import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r14';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r14';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r14';
 
 const UNKNOWN = 'unknown';
+const ROLE_DEFAULT_NAMES = Object.freeze({ admin: 'Administrator', privileged: 'Privileged user', support: 'Support / internal', standard: 'Standard user', custom: 'Custom role' });
 
 export const QUESTIONS = Object.freeze([
   { key: 'mode', title: 'What assessment mode are you using?', description: 'This shapes how much implementation knowledge and internal evidence the plan can assume.', options: [['black_box', 'Black-box', 'External behavior only'], ['grey_box', 'Grey-box', 'Limited knowledge or test access'], ['white_box', 'White-box', 'Source, configuration, and implementation access'], [UNKNOWN, 'Not confirmed yet', 'Keep mode-dependent work visible']] },
@@ -236,7 +237,26 @@ export function createWizard(root, initialState, callbacks = {}) {
             <span class="option-control" aria-hidden="true"></span>
             <span class="option-copy"><strong>${label}</strong><small>${detail}</small></span>
           </label>`).join('')}</div>
+        ${question.key === 'role_types' ? renderRoleNames(selected) : ''}
       </fieldset>`;
+  }
+
+  // Name the real roles once the tiers are picked — the plan's cross-role matrix
+  // and the exports use these names instead of generic tier labels.
+  function renderRoleNames(selectedTiers) {
+    const existing = new Map((state.engagement.role_model || []).map(({ name, tier }) => [tier, name]));
+    const tiers = selectedTiers.filter((tier) => tier !== 'unknown' && tier !== 'none' && ROLE_DEFAULT_NAMES[tier]);
+    if (!tiers.length) return '';
+    const rows = tiers.map((tier) => `
+      <label class="role-name-row"><span>${ROLE_DEFAULT_NAMES[tier]}${tier === 'custom' ? 's' : ''}</span>
+        <input type="text" data-role-tier="${tier}" maxlength="48" value="${escapeHtml(existing.get(tier) || '')}" placeholder="Name on the target (optional)">
+      </label>`).join('');
+    return `
+      <div class="role-name-editor" data-role-editor>
+        <p class="micro-label">NAME THESE ROLES (OPTIONAL) — POWERS THE CROSS-ROLE MATRIX</p>
+        <div class="role-name-grid">${rows}</div>
+        <p class="preset-note">Example: Admin → Manager → Analyst. Use the labels real accounts use; the testing plan walks every direction of this ladder.</p>
+      </div>`;
   }
 
   function renderReview() {
@@ -336,6 +356,12 @@ export function createWizard(root, initialState, callbacks = {}) {
       const preset = presetById(button.dataset.preset);
       if (preset) applyPreset(preset);
     }));
+    root.querySelectorAll('[data-role-editor] input[data-role-tier]').forEach((input) => input.addEventListener('input', () => {
+      const roleModel = [...root.querySelectorAll('[data-role-editor] input[data-role-tier]')]
+        .map((node) => ({ tier: node.dataset.roleTier, name: node.value }))
+        .filter(({ name }) => name.trim());
+      updateState({ engagement: { ...state.engagement, role_model: roleModel } });
+    }));
     root.querySelectorAll('[data-goto]').forEach((button) => button.addEventListener('click', () => {
       const key = button.dataset.goto;
       if (!QUESTIONS.some(({ key: candidate }) => candidate === key)) return;
@@ -359,6 +385,14 @@ export function createWizard(root, initialState, callbacks = {}) {
         let values = inputs.filter(({ checked }) => checked).map(({ value: option }) => option);
         if (!values.length) values = [UNKNOWN];
         updateAnswers({ [question.key]: values });
+        // Role tiers change the name editor below the options — repaint so it
+        // appears, grows, or clears with the selection. The step stays pinned:
+        // an answered question drops out of the open list, but the tester is
+        // still working on it.
+        if (question.key === 'role_types') {
+          forcedSteps.add('role_types');
+          render(false);
+        }
       }
       // Answering the question closes it; Move on to the next open question.
       if (!question.multi) {
@@ -378,6 +412,7 @@ export function createWizard(root, initialState, callbacks = {}) {
   }
 
   function navigate(direction) {
+    forcedSteps.delete(currentKey);
     const keys = stepKeys();
     const next = Math.max(0, Math.min(keys.length - 1, currentIndex() + direction));
     currentKey = keys[next];

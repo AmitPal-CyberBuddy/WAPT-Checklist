@@ -305,7 +305,7 @@ async function run() {
   doc.querySelector('[data-export-json]').click();
   await waitFor(() => exports.some((e) => e.filename.endsWith('-state.json')), 3000, 'state export');
   const exportedState = exports.find((e) => e.filename.endsWith('-state.json')).text;
-  record('Export: state JSON produced', exportedState.includes('"schema_version": 3') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
+  record('Export: state JSON produced', exportedState.includes('"schema_version": 4') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
 
   // Reload simulation + import
   const dom2 = await boot('reloaded', dom.window.localStorage.getItem('wapt.state.v1'));

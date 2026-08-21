@@ -1,6 +1,6 @@
 // Shareable assessment scope. The URL carries answers and the engagement label only —
 // never statuses, notes, findings, or evidence. Opening it builds the same plan locally.
-import { normalizeScopeAnswers } from './context.js?v=1.0.0-r13';
+import { normalizeScopeAnswers } from './context.js?v=1.0.0-r14';
 
 export const SHARE_VERSION = 1;
 const TOKEN_MAX = 8000;

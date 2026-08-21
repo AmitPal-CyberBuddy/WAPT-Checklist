@@ -6,15 +6,15 @@
 // from “methodology-only” catalog entries, while the operator UI calls them
 // Practical and Methodology so internal content architecture never becomes
 // navigation noise.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r13';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r13';
-import { shareHref } from '../engine/share.js?v=1.0.0-r13';
-import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r13';
-import { surfaceRationale, roleLadderLabels } from '../engine/surfaces.js?v=1.0.0-r13';
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r13';
-import { itemStatus } from './filters.js?v=1.0.0-r13';
-import { element } from './dom.js?v=1.0.0-r13';
-import { renderOperatorCheck } from './playbook.js?v=1.0.0-r13';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r14';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r14';
+import { shareHref } from '../engine/share.js?v=1.0.0-r14';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r14';
+import { surfaceRationale, roleLadderLabels, roleModelLadder } from '../engine/surfaces.js?v=1.0.0-r14';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r14';
+import { itemStatus } from './filters.js?v=1.0.0-r14';
+import { element } from './dom.js?v=1.0.0-r14';
+import { renderOperatorCheck } from './playbook.js?v=1.0.0-r14';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',
@@ -91,11 +91,12 @@ function openContextEditor() {
 
 // Privilege ladder + the directions to walk, shown inside Authorization when the
 // context carries more than one role tier.
-function roleMatrixBlock(answers) {
+function roleMatrixBlock(answers, roleModel = []) {
   const roleTypes = list(answers.role_types).filter((value) => value !== 'none' && value !== 'unknown');
   const multiRole = ['few', 'many'].includes(answers.roles);
-  if (!multiRole && roleTypes.length < 2) return null;
-  const ladder = roleTypes.length ? roleLadderLabels(roleTypes) : ['Privileged user', 'Standard user'];
+  const named = roleModelLadder(roleModel);
+  if (!multiRole && roleTypes.length < 2 && !named) return null;
+  const ladder = named || (roleTypes.length ? roleLadderLabels(roleTypes) : ['Privileged user', 'Standard user']);
   const block = element('div', 'plan-role-matrix');
   block.append(element('p', 'micro-label', 'CROSS-ROLE MATRIX'));
   const ladderLine = element('p', 'plan-role-ladder');
@@ -106,7 +107,7 @@ function roleMatrixBlock(answers) {
 }
 
 export function renderAssessmentPlan(root, context) {
-  const { index, answers = {}, engagement = {}, records = [], getState, coverage, familyIndex } = context;
+  const { index, answers = {}, engagement = {}, records = [], getState, coverage, familyIndex, onCustomAdd, onCustomRemove } = context;
   // Groups the tester expanded survive re-renders (e.g. after ticking a check).
   const previouslyOpen = new Set([...root.querySelectorAll('details.plan-group[open]')].map((node) => node.dataset.planGroup));
   root.replaceChildren();
@@ -154,8 +155,9 @@ export function renderAssessmentPlan(root, context) {
   const target = element('p', 'assessment-target');
   target.append(element('strong', '', engagement.targetUrl?.trim() || 'No target URL set'));
   heroCopy.append(target);
+  const customCount = (getState?.().custom_checks || []).length;
   const contextLine = element('p', 'assessment-context-chips');
-  contextLine.textContent = chips.join(' · ');
+  contextLine.textContent = customCount ? `${chips.join(' · ')} · +${customCount} custom` : chips.join(' · ');
   heroCopy.append(contextLine);
   heroTop.append(heroCopy);
   const change = actionButton('button button-quiet', 'Edit context', openContextEditor);
@@ -305,7 +307,7 @@ export function renderAssessmentPlan(root, context) {
 
     const body = element('div', 'plan-group-body');
     if (family.id === 'authz') {
-      const matrix = roleMatrixBlock(answers);
+      const matrix = roleMatrixBlock(answers, engagement.role_model);
       if (matrix) body.append(matrix);
     }
     const list = element('div', 'operator-check-list');
@@ -325,12 +327,76 @@ export function renderAssessmentPlan(root, context) {
       });
       node.dataset.planSurface = check.surface;
       node.dataset.planTier = tierByItem.get(check.item) || 'standard';
+      if (check.category === 'custom' && onCustomRemove) {
+        const remove = element('button', 'custom-remove', '×');
+        remove.type = 'button';
+        remove.title = 'Remove this custom check (statuses and notes go with it)';
+        remove.setAttribute('aria-label', `Remove custom check ${check.id}`);
+        remove.addEventListener('click', (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onCustomRemove(check.item);
+        });
+        node.querySelector('.probe-check-summary')?.append(remove);
+      }
       list.append(node);
     }
     body.append(list);
     group.append(body);
     shell.append(group);
     groupIndex += 1;
+  }
+
+  // Target-specific checks live in their own group above; this is the manager
+  // for adding and removing them. IDs are WAPT-CUSTOM-nnn so statuses, notes,
+  // findings, and exports treat them like any other check.
+  const customState = () => getState?.().custom_checks || [];
+  if (onCustomAdd || customState().length) {
+    const customBar = element('section', 'plan-custom-bar');
+    const label = element('span', 'micro-label', 'CUSTOM CHECKS — TARGET-SPECIFIC WORK THIS ENGAGEMENT');
+    customBar.append(label);
+    const addToggle = actionButton('button button-quiet', '＋ Add a custom check', () => {
+      form.hidden = !form.hidden;
+      if (!form.hidden) form.querySelector('input')?.focus();
+    });
+    customBar.append(addToggle);
+    const form = element('form', 'plan-custom-form');
+    form.hidden = true;
+    const title = document.createElement('input');
+    title.type = 'text';
+    title.maxLength = 120;
+    title.placeholder = 'Example: Tenant export caps at the boundary';
+    title.setAttribute('aria-label', 'Custom check title');
+    const objective = document.createElement('input');
+    objective.type = 'text';
+    objective.maxLength = 300;
+    objective.placeholder = 'What to verify (optional)';
+    objective.setAttribute('aria-label', 'Custom check objective');
+    const severity = document.createElement('select');
+    severity.setAttribute('aria-label', 'Custom check severity');
+    for (const value of ['high', 'medium', 'low', 'critical', 'informational']) severity.append(new Option(value, value));
+    severity.value = 'medium';
+    const surface = document.createElement('select');
+    surface.setAttribute('aria-label', 'Custom check category');
+    for (const family of families) surface.append(new Option(family.title, family.id));
+    surface.append(new Option('Custom checks', 'custom'));
+    surface.value = 'custom';
+    const save = actionButton('button button-primary', 'Add to plan', (event) => {
+      event.preventDefault();
+      if (!title.value.trim()) {
+        title.focus();
+        return;
+      }
+      onCustomAdd?.({ title: title.value, objective: objective.value, severity: severity.value, surface: surface.value });
+      form.hidden = true;
+      title.value = '';
+      objective.value = '';
+    });
+    save.type = 'submit';
+    form.append(title, objective, severity, surface, save);
+    form.addEventListener('submit', (event) => event.preventDefault());
+    customBar.append(form);
+    shell.append(customBar);
   }
 
   if (plan.hiddenFamilies?.length) {

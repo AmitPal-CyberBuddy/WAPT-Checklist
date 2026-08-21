@@ -35,7 +35,7 @@ tester's day shorter.
 ### 1. ✅ Scope import from API definitions
 - **Why**: testers already have an OpenAPI file or Postman collection; typing its
   implications into the wizard is wasted minutes and a correctness risk.
-- **Sketch**: `js/engine/scope-import.js` parses OpenAPI 3 / Swagger 2 (JSON) and
+- **Shipped**: `js/engine/scope-import.js` parses OpenAPI 3 / Swagger 2 (JSON) and
   Postman v2.x collections locally — proposing `app_type`, `api_style`,
   `auth_mechanism`, registration/identity hints, uploads/payments/search/webhooks
   — with every detection listed for review. Wired into the wizard and the Edit
@@ -43,7 +43,7 @@ tester's day shorter.
 - **Done when**: import proposes only what the document states; every detection is
   auditable; nothing applies without review; parser has unit tests with fixtures.
 
-### 2. ○ Role names and privilege hierarchy (state schema v4)
+### 2. ✅ Role names and privilege hierarchy (state schema v4)
 - **Why**: the multi-role preset records tiers but not names; "Admin → Manager →
   Standard" as real names makes the cross-role matrix and exports report-ready.
 - **Sketch**: engagement gains `role_model: [{ name, tier }]`; wizard multi-role
@@ -52,7 +52,7 @@ tester's day shorter.
 - **Done when**: names survive export/import; matrix pairs read like the target's
   real roles; old state files migrate losslessly. **Size: M**
 
-### 3. ○ Custom local tests
+### 3. ✅ Custom local tests
 - **Why**: every engagement has 5–10 target-specific checks that no catalog can
   predict; testers currently keep them in another note.
 - **Sketch**: engagement-scoped `custom_checks: [{ id: WAPT-CUSTOM-nnn, title,
@@ -61,13 +61,13 @@ tester's day shorter.
 - **Done when**: custom rows behave like catalog rows everywhere except reference
   lookups; they never collide with catalog IDs; they export/import cleanly. **Size: M**
 
-### 4. ○ Saved filter views
+### 4. ✅ Saved filter views
 - **Why**: "high severity + not started + JWT" is retyped many times per engagement.
 - **Sketch**: name-and-persist the current filter set per engagement; recall from a
   chip row in checklist/search and the plan's filter bar.
 - **Done when**: views persist, carry across views, and export with state. **Size: S**
 
-### 5. ○ HTML engagement report
+### 5. ✅ HTML engagement report
 - **Why**: Markdown report exists; clients increasingly want a single styled HTML
   file with severity ordering and coverage visuals.
 - **Sketch**: extend `js/ui/export.js` with a self-contained `report.html` writer

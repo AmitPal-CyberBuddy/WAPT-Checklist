@@ -1,6 +1,6 @@
 // Attack-surface families are the tester-facing grouping.
 // Page playbooks stay as packs; the assessment regroups their authored tests by surface.
-import { contextHas, contextIsUnknown } from './context.js?v=1.0.0-r13';
+import { contextHas, contextIsUnknown } from './context.js?v=1.0.0-r14';
 
 export const SURFACES = Object.freeze([
   Object.freeze({ id: 'tls', title: 'TLS / Transport Security', summary: 'Protocols, ciphers, certificates, HTTP→HTTPS, mixed content.' }),
@@ -17,7 +17,8 @@ export const SURFACES = Object.freeze([
   Object.freeze({ id: 'oauth', title: 'OAuth / SSO / SAML', summary: 'redirect_uri, state, PKCE, code reuse, SAML signatures.' }),
   Object.freeze({ id: 'websocket', title: 'WebSocket / Realtime', summary: 'WSS, Origin, socket auth, per-message authorization.' }),
   Object.freeze({ id: 'business', title: 'Business Logic', summary: 'Checkout, races, coupons, workflow invariants.' }),
-  Object.freeze({ id: 'ai', title: 'AI / LLM', summary: 'Prompt injection, tool calls, retrieval authorization.' })
+  Object.freeze({ id: 'ai', title: 'AI / LLM', summary: 'Prompt injection, tool calls, retrieval authorization.' }),
+  Object.freeze({ id: 'custom', title: 'Custom checks', summary: 'Target-specific tests you added for this engagement.' })
 ]);
 
 const GROUP_SURFACE = Object.freeze({
@@ -106,7 +107,8 @@ export const CATEGORY_SURFACE = Object.freeze({
   'cloud-storage': 'http',
   'rate-limiting': 'http',
   advanced: 'http',
-  'ai-llm-security': 'ai'
+  'ai-llm-security': 'ai',
+  custom: 'custom'
 });
 
 // Surface for a catalog item: an authored overlay's own surface, then the overlay's
@@ -157,7 +159,8 @@ const SURFACE_RULES = Object.freeze([
   { id: 'oauth', key: 'auth_mechanism', values: ['oauth', 'saml'], label: 'OAuth / SSO federation was selected.', fallback: 'Federation is still to confirm.' },
   { id: 'websocket', key: 'api_style', values: ['websocket'], label: 'WebSocket channels were selected.', fallback: 'Realtime channels are still to confirm.' },
   { id: 'business', key: 'features', values: ['payments', 'chat', 'other', 'search'], label: 'Business workflows (commerce, user content, or transactions) were selected.', fallback: 'Business workflows are still to confirm.' },
-  { id: 'ai', key: 'features', values: ['ai_llm'], label: 'AI / LLM features were selected.', fallback: 'AI features are still to confirm.' }
+  { id: 'ai', key: 'features', values: ['ai_llm'], label: 'AI / LLM features were selected.', fallback: 'AI features are still to confirm.' },
+  { id: 'custom', key: null, label: 'You added these target-specific checks for this engagement.' }
 ]);
 
 export function surfaceRationale(surfaceId, context) {
@@ -176,6 +179,21 @@ export function surfaceRationale(surfaceId, context) {
 // Privilege ladder for cross-role testing: the order testers should walk when
 // several role tiers exist. Custom roles slot beside standard users.
 export const ROLE_LADDER = Object.freeze(['admin', 'privileged', 'support', 'standard', 'custom']);
+
+// The real ladder when the tester named the roles: entries ordered by tier
+// (admin > privileged > support > standard > custom), falling back to tier labels.
+export function roleModelLadder(roleModel = []) {
+  const present = roleModel
+    .map(({ tier }) => ({ tier, rank: ROLE_LADDER.indexOf(tier) }))
+    .filter(({ rank }) => rank >= 0)
+    .sort((left, right) => left.rank - right.rank);
+  if (!present.length) return null;
+  const byTier = new Map();
+  for (const { tier } of present) {
+    byTier.set(tier, [...(byTier.get(tier) || []), ...roleModel.filter((role) => role.tier === tier).map(({ name }) => name)]);
+  }
+  return ROLE_LADDER.filter((tier) => byTier.has(tier)).flatMap((tier) => byTier.get(tier));
+}
 
 export function roleLadderLabels(roleTypes = []) {
   const present = ROLE_LADDER.filter((tier) => roleTypes.includes(tier));

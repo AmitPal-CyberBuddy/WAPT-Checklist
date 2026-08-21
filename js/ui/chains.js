@@ -1,4 +1,4 @@
-import { asset } from './paths.js?v=1.0.0-r13';
+import { asset } from './paths.js?v=1.0.0-r14';
 
 const STATUS_SHORT = Object.freeze({
   not_tested: 'Pending', in_progress: 'Active', passed: 'Secure',

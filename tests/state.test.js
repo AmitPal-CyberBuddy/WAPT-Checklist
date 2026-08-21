@@ -6,13 +6,13 @@ const assert = require('node:assert/strict');
 const stateModule = import('../js/engine/state.js');
 const NOW = '2026-08-17T10:00:00.000Z';
 
-test('new state has the complete v3 local-only shape', async () => {
+test('new state has the complete v4 local-only shape', async () => {
   const { STATE_KEY, STATE_SCHEMA_VERSION, createState } = await stateModule;
   const state = createState();
   assert.equal(STATE_KEY, 'wapt.state.v1');
-  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'variants', 'position', 'findings', 'updated_at']);
-  assert.equal(state.schema_version, 3);
-  assert.equal(STATE_SCHEMA_VERSION, 3);
+  assert.deepEqual(Object.keys(state), ['schema_version', 'engagement', 'answers', 'statuses', 'notes', 'overrides', 'retests', 'variants', 'position', 'findings', 'custom_checks', 'saved_views', 'updated_at']);
+  assert.equal(state.schema_version, 4);
+  assert.equal(STATE_SCHEMA_VERSION, 4);
   assert.deepEqual(state.variants, {});
   assert.deepEqual(state.position, { view: '', family: '', category: '', item: '', updated_at: null });
   assert.deepEqual(state.findings, []);
@@ -31,15 +31,15 @@ test('legacy schema v1 and v2 states migrate transparently to v3', async () => {
     overrides: {}, retests: {}, updated_at: '2026-08-17T00:00:00.000Z'
   };
   const migrated = normalizeState(legacy);
-  assert.equal(migrated.schema_version, 3);
+  assert.equal(migrated.schema_version, 4);
   assert.deepEqual(migrated.variants, {});
   assert.deepEqual(migrated.findings, []);
   assert.equal(migrated.engagement.name, 'Legacy portal');
   assert.equal(migrated.statuses['WAPT-AUTHZ-001'], 'passed');
   assert.equal(importState(JSON.stringify(legacy)).engagement.name, 'Legacy portal');
-  assert.equal(JSON.parse(serializeState(migrated)).schema_version, 3);
+  assert.equal(JSON.parse(serializeState(migrated)).schema_version, 4);
   const v2 = normalizeState({ ...legacy, schema_version: 2, findings: [] });
-  assert.equal(v2.schema_version, 3);
+  assert.equal(v2.schema_version, 4);
   assert.equal(v2.statuses['WAPT-AUTHZ-001'], 'passed');
 });
 
@@ -82,7 +82,7 @@ test('JSON export and import round-trip preserves valid engagement data', async 
 test('strict import rejects invalid versions, invalid JSON, and oversized input', async () => {
   const { importState } = await stateModule;
   assert.throws(() => importState('{bad'), /not valid JSON/);
-  assert.throws(() => importState('{"schema_version":9}'), /schema_version 3/);
+  assert.throws(() => importState('{"schema_version":9}'), /schema_version 4/);
   assert.throws(() => importState(' '.repeat(5_000_001)), /5 MB/);
 });
 
@@ -198,4 +198,70 @@ test('coverage CSV is spreadsheet-safe and separates coverage from finding', asy
   assert.match(block, /Blocked: 1 · N\/A: 1/);
   assert.match(block, /Variants still open:/);
   assert.match(block, /- \[ \] WAPT-AUTHZ-005 — Blocked/);
+});
+
+// ── schema v4: role model, custom checks, saved views ──────────────────────
+
+test('v4 role model cleans names, tiers, duplicates, and caps length', async () => {
+  const { normalizeState, setEngagement, createState } = await stateModule;
+  const state = setEngagement(createState(), { role_model: [
+    { name: 'Root Admin', tier: 'admin' },
+    { name: '  Manager  ', tier: 'nope' },
+    { name: 'root admin', tier: 'privileged' },
+    { name: '', tier: 'support' },
+    { name: 'Support', tier: 'support' }
+  ] });
+  const roles = normalizeState(state).engagement.role_model;
+  assert.equal(roles.length, 3);
+  assert.deepEqual(roles[0], { name: 'Root Admin', tier: 'admin' });
+  assert.equal(roles[1].tier, 'standard');
+  assert.equal(roles[1].name, 'Manager');
+});
+
+test('v4 custom checks validate ids, surfaces, and fields', async () => {
+  const { setCustomChecks, nextCustomCheckId, normalizeState, createState } = await stateModule;
+  let state = createState();
+  assert.equal(nextCustomCheckId(state), 'WAPT-CUSTOM-001');
+  state = setCustomChecks(state, [
+    { id: 'WAPT-CUSTOM-001', title: 'Verify tenant export caps', surface: 'authz', severity: 'high', objective: 'Exports must cap at tenant boundary.' },
+    { id: 'WAPT-CATALOG-001', title: 'collision attempt' },
+    { id: 'WAPT-CUSTOM-002', title: '' }
+  ]);
+  const checks = normalizeState(state).custom_checks;
+  assert.equal(checks.length, 1);
+  assert.equal(checks[0].surface, 'authz');
+  assert.equal(checks[0].category, 'custom');
+  assert.equal(nextCustomCheckId(state), 'WAPT-CUSTOM-002');
+});
+
+test('v4 saved views keep only known filter keys and stable ids', async () => {
+  const { setSavedViews, normalizeState, createState } = await stateModule;
+  const state = setSavedViews(createState(), [
+    { id: 'view-jwt-open', name: 'JWT open', filters: { query: 'jwt', severity: 'high', evil: 'nope', sort: 'severity' } },
+    { id: 'bad id!', name: 'x', filters: {} }
+  ]);
+  const views = normalizeState(state).saved_views;
+  assert.equal(views.length, 1);
+  assert.deepEqual(views[0].filters, { query: 'jwt', severity: 'high', sort: 'severity' });
+});
+
+test('v3 state migrates to v4 with data intact', async () => {
+  const { normalizeState } = await stateModule;
+  const contextModule = await import('../js/engine/context.js');
+  const v3 = {
+    schema_version: 3,
+    engagement: { name: 'Old engagement', targetUrl: 'https://x.test', started_at: '2026-01-01T00:00:00.000Z' },
+    answers: contextModule.normalizeScopeAnswers({ app_type: 'spa' }),
+    statuses: { 'WAPT-JWT-001': 'passed' },
+    notes: {}, overrides: {}, retests: {}, variants: {},
+    position: { view: 'dashboard', family: '', category: '', item: '', updated_at: null },
+    findings: []
+  };
+  const migrated = normalizeState(v3);
+  assert.equal(migrated.schema_version, 4);
+  assert.equal(migrated.engagement.name, 'Old engagement');
+  assert.equal(migrated.statuses['WAPT-JWT-001'], 'passed');
+  assert.deepEqual(migrated.engagement.role_model, []);
+  assert.deepEqual(migrated.custom_checks, []);
+  assert.deepEqual(migrated.saved_views, []);
 });
