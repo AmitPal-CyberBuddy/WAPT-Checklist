@@ -220,6 +220,1477 @@
           ]
         }
       ]
+    },
+    {
+      "id": "workflow-invariants",
+      "title": "Workflow states and invariants",
+      "checks": [
+        {
+          "id": "state-map",
+          "title": "Server-side workflow states mapped",
+          "item": "WAPT-BL-001",
+          "severity": "informational",
+          "why": "Every business-logic finding is a state the server should not allow — the map of states and transitions is the oracle.",
+          "validate": "A written state machine per workflow (states, legal transitions, guards, side effects) confirmed with the owner.",
+          "variants": [
+            {
+              "name": "State inventory",
+              "kind": "note",
+              "payload": "From docs, UI behavior, and owner confirmation, write each workflow as: states → allowed transitions → guards (who/when) → irreversible effects.",
+              "expect": "Owner-confirmed map; every later probe cites the transition it attacks.",
+              "category": "baseline",
+              "why": "The oracle precedes the attack."
+            },
+            {
+              "name": "Effect ledger",
+              "kind": "note",
+              "payload": "For each transition, list side effects (emails, charges, inventory, permissions) and whether reversible.",
+              "expect": "Effects marked reversible/irreversible — irreversible ones get the strictest probes.",
+              "category": "baseline",
+              "why": "Irreversibility defines the blast radius."
+            },
+            {
+              "name": "Hidden states",
+              "kind": "note",
+              "payload": "Probe for states the UI never shows (draft, pending-review, soft-deleted) via id fields and API responses.",
+              "expect": "Hidden states mapped — they often carry weaker guards.",
+              "category": "protocol-variant",
+              "why": "Dark states have dark policies."
+            }
+          ]
+        },
+        {
+          "id": "skip-steps",
+          "title": "Mandatory steps cannot be skipped",
+          "item": "WAPT-BL-002",
+          "severity": "high",
+          "why": "Calling step 4 directly (checkout without payment, publish without review) bypasses every check living in steps 1-3.",
+          "validate": "Every step validates the full prerequisite chain server-side; direct calls to later steps fail closed.",
+          "variants": [
+            {
+              "name": "Deep-link step call",
+              "kind": "note",
+              "payload": "Identify the workflow API endpoints per step; call the final step directly on a fresh object with no prior steps.",
+              "expect": "Refused — prerequisite chain verified server-side, not by UI flow.",
+              "category": "authorization-context",
+              "why": "The classic: one request, zero steps."
+            },
+            {
+              "name": "Out-of-shape step",
+              "kind": "note",
+              "payload": "Call step N with the payload shape of step N-1 (or empty).",
+              "expect": "Rejected with a state error; no partial advancement.",
+              "category": "parameter-variant",
+              "why": "Wrong-shape acceptance reveals absent guards."
+            },
+            {
+              "name": "Step result forgery",
+              "kind": "note",
+              "payload": "Submit step N carrying client-attested proof of step N-1 (paid=true, verified=true fields).",
+              "expect": "Server re-derives prerequisites from authoritative state; client claims ignored.",
+              "category": "parameter-variant",
+              "why": "Client-attested state is storytelling."
+            }
+          ]
+        },
+        {
+          "id": "transition-order",
+          "title": "Out-of-order transitions rejected",
+          "item": "WAPT-BL-003",
+          "severity": "high",
+          "why": "State machines enforce order; APIs without order checks accept transitions that make no sense and break invariants.",
+          "validate": "Only legal transitions per the state map succeed; illegal ones are refused with clear state errors.",
+          "variants": [
+            {
+              "name": "Reverse walk",
+              "kind": "note",
+              "payload": "Execute the workflow backwards: cancel after completion, unapprove after payout, reopen after close.",
+              "expect": "Each illegal transition refused; no resurrection of terminal states.",
+              "category": "mutation",
+              "why": "Running the film backwards finds missing guards."
+            },
+            {
+              "name": "Sibling hop",
+              "kind": "note",
+              "payload": "From one state, fire transitions only legal from a different state.",
+              "expect": "Refused — transition legality bound to current state.",
+              "category": "parameter-variant",
+              "why": "Transitions have addresses; test the wrong ones."
+            },
+            {
+              "name": "Terminal immutability",
+              "kind": "note",
+              "payload": "On terminal states (completed, refunded, deleted), attempt every mutating operation.",
+              "expect": "Terminal is terminal — full refusal set verified.",
+              "category": "authorization-context",
+              "why": "Dead objects must not write."
+            }
+          ]
+        },
+        {
+          "id": "action-replay",
+          "title": "Completed actions cannot be replayed",
+          "item": "WAPT-BL-004",
+          "severity": "high",
+          "why": "Replaying a completed action (approval, redemption, vote) double-spends its effect even without a race.",
+          "validate": "One-time actions are single-use with server-side consumption; replay returns the original result or a clear error.",
+          "variants": [
+            {
+              "name": "Sequential replay",
+              "kind": "note",
+              "payload": "Complete a one-time action; immediately repeat the identical request.",
+              "expect": "Second call fails (or is idempotent by design) — never a second effect.",
+              "category": "baseline",
+              "why": "The polite version before the racing version."
+            },
+            {
+              "name": "Cross-session replay",
+              "kind": "note",
+              "payload": "Replay the action from a second session/context of the same account.",
+              "expect": "Still single-use — consumption is server-global, not per-session.",
+              "category": "authentication-context",
+              "why": "Session boundaries do not reset one-time semantics."
+            },
+            {
+              "name": "Modified replay",
+              "kind": "note",
+              "payload": "Replay with minor variations (same id, different amount or target).",
+              "expect": "Variations treated as new requests requiring full validation — no id-based shortcut.",
+              "category": "mutation",
+              "why": "Idempotency keys must bind the whole action."
+            }
+          ]
+        },
+        {
+          "id": "token-binding",
+          "title": "Workflow tokens bound to account and object",
+          "item": "WAPT-BL-005",
+          "severity": "high",
+          "why": "Action tokens (approve links, quote ids, edit keys) used on other objects or accounts are privilege by confusion.",
+          "validate": "Every workflow token is bound to exactly one account, object, action, and expiry; cross-use is refused.",
+          "variants": [
+            {
+              "name": "Token transplant",
+              "kind": "note",
+              "payload": "Take a valid token for object A (yours); present it for object B (also yours) through the same endpoint.",
+              "expect": "Refused — the token names its object.",
+              "category": "authorization-context",
+              "why": "Two honest objects, one dishonest combination."
+            },
+            {
+              "name": "Cross-account token",
+              "kind": "note",
+              "payload": "Capture a token from account A; use it against the same object id visible to account B.",
+              "expect": "Refused — account binding enforced.",
+              "category": "authorization-context",
+              "why": "Token theft is the threat model; binding is the control."
+            },
+            {
+              "name": "Expired-token replay",
+              "kind": "note",
+              "payload": "Use the token after its documented validity.",
+              "expect": "Refused; expiry enforced server-side.",
+              "category": "authentication-context",
+              "why": "Token lifetime is a server decision."
+            }
+          ]
+        },
+        {
+          "id": "account-prerequisites",
+          "title": "Account-state prerequisites for sensitive flows",
+          "item": "WAPT-BL-028",
+          "severity": "high",
+          "why": "Unverified, suspended, closed, and recovery-pending accounts must not perform sensitive actions.",
+          "validate": "Sensitive flows check current account state at execution time; blocked states fail closed.",
+          "variants": [
+            {
+              "name": "State matrix",
+              "kind": "note",
+              "payload": "Owner-assisted: put your test account in each state (unverified, locked, closed) and attempt the sensitive flow.",
+              "expect": "Each blocked state refuses the flow; matrix documented.",
+              "category": "authorization-context",
+              "why": "The matrix is the deliverable."
+            },
+            {
+              "name": "Mid-flow state change",
+              "kind": "note",
+              "payload": "Start the flow healthy; owner-assisted suspend the account mid-flow; complete it.",
+              "expect": "Completion re-checks account state — suspended mid-flow dies.",
+              "category": "race-concurrency",
+              "why": "TOCTOU on account state."
+            },
+            {
+              "name": "Backdoor state fields",
+              "kind": "note",
+              "payload": "Attempt to influence the account-state check via request fields (status, verified flags).",
+              "expect": "Client fields never change authoritative account state.",
+              "category": "parameter-variant",
+              "why": "State comes from the server, always."
+            }
+          ]
+        },
+        {
+          "id": "trusted-time",
+          "title": "Time windows validated with server time",
+          "item": "WAPT-BL-031",
+          "severity": "high",
+          "why": "Client clocks, timezone fields, and date parameters that influence windows (auctions, bookings, offers) are free forgery.",
+          "validate": "All window logic uses trusted server time; client-supplied times are advisory at most.",
+          "variants": [
+            {
+              "name": "Date-field forgery",
+              "kind": "note",
+              "payload": "Submit booking/auction/offer requests with date fields shifted to exploit the window (past start, after end, cross-timezone).",
+              "expect": "Window decisions use server time; forged dates ignored or validated.",
+              "category": "parameter-variant",
+              "why": "The client's watch is not the server's clock."
+            },
+            {
+              "name": "Timezone confusion",
+              "kind": "note",
+              "payload": "Boundary cases across timezones (UTC vs local) on window open/close.",
+              "expect": "One authoritative timezone; boundaries unambiguous.",
+              "category": "encoding",
+              "why": "Timezone bugs are logic bugs."
+            },
+            {
+              "name": "Clock-skew boundary",
+              "kind": "note",
+              "payload": "Requests just inside and just outside the window boundary (measured against server responses).",
+              "expect": "Boundary enforced exactly; document the observed edge behavior.",
+              "category": "baseline",
+              "why": "Boundaries are where money changes hands."
+            }
+          ]
+        },
+        {
+          "id": "consent-preservation",
+          "title": "Consent and disclosure decisions preserved",
+          "item": "WAPT-BL-034",
+          "severity": "high",
+          "why": "Terms, risk acknowledgements, and regulatory disclosures that can be skipped or reset expose the business legally.",
+          "validate": "Consent states bind to the workflow version and account; they cannot be skipped, replayed away, or silently reset.",
+          "variants": [
+            {
+              "name": "Consent-skip probe",
+              "kind": "note",
+              "payload": "Proceed through the workflow without accepting required consents (direct API calls).",
+              "expect": "Refused — consent is a prerequisite like any step.",
+              "category": "authorization-context",
+              "why": "The regulatory version of step-skipping."
+            },
+            {
+              "name": "Consent reset",
+              "kind": "note",
+              "payload": "Attempt to reset/clear consent flags via profile updates or replays.",
+              "expect": "Consent history immutable for users; resets require the documented path.",
+              "category": "mutation",
+              "why": "Rewriting history is a compliance finding."
+            },
+            {
+              "name": "Version binding",
+              "kind": "note",
+              "payload": "If terms version changes mid-flow, check which version the completed action records.",
+              "expect": "Consent bound to a specific version; ambiguity documented.",
+              "category": "baseline",
+              "why": "Which terms did they actually accept?"
+            }
+          ]
+        },
+        {
+          "id": "adjacent-channels",
+          "title": "Business rules verified across adjacent channels",
+          "item": "WAPT-BL-035",
+          "severity": "medium",
+          "why": "A fix in the web UI that misses the mobile API or batch path is no fix — adjacent channels carry the old logic.",
+          "validate": "Every business rule tested on the primary channel is repeated on adjacent channels (mobile, API, batch, webhook-triggered).",
+          "variants": [
+            {
+              "name": "Channel matrix",
+              "kind": "note",
+              "payload": "Take the three strongest findings/probes from this engagement; repeat each on every channel that reaches the same flow.",
+              "expect": "Same enforcement everywhere; misses documented as channel gaps.",
+              "category": "protocol-variant",
+              "why": "The remediation test, pre-written."
+            },
+            {
+              "name": "Batch/backdoor channel",
+              "kind": "note",
+              "payload": "Import, bulk, and integration paths that create the same objects bypassing the interactive flow.",
+              "expect": "Batch paths enforce the same invariants.",
+              "category": "parameter-variant",
+              "why": "Imports are the classic rules bypass."
+            },
+            {
+              "name": "Webhook-triggered path",
+              "kind": "note",
+              "payload": "Where webhooks drive workflow transitions, replay/forge webhook shapes that trigger the rule-bearing action.",
+              "expect": "Webhook-driven transitions validate like human-driven ones.",
+              "category": "out-of-band",
+              "why": "Machines skip consent screens too."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "money-and-value",
+      "title": "Money, coupons, and stored value",
+      "checks": [
+        {
+          "id": "numeric-validation",
+          "title": "Numeric ranges and signs as business values",
+          "item": "WAPT-BL-006",
+          "severity": "high",
+          "why": "Quantities, amounts, and counts carry business meaning: negative quantities move money backwards; zeros and floats break invariants.",
+          "validate": "Numerics validated as business values (range, sign, precision, step) not just as types.",
+          "variants": [
+            {
+              "name": "Sign flip",
+              "kind": "note",
+              "payload": "Negative quantity/amount on orders, transfers, refunds, and ratings (own account).",
+              "expect": "Rejected — negatives refused where they make no business sense.",
+              "category": "parameter-variant",
+              "why": "The oldest logic flaw: arithmetic without policy."
+            },
+            {
+              "name": "Precision and overflow",
+              "kind": "note",
+              "payload": "Amounts with many decimals, huge values (1e308), NaN/Infinity strings where parsers accept them.",
+              "expect": "Rejected by precision/scale rules; no overflow behavior.",
+              "category": "encoding",
+              "why": "Money is decimal, not float — prove it."
+            },
+            {
+              "name": "Zero and step abuse",
+              "kind": "note",
+              "payload": "Zero quantities, sub-step values (0.5 seats), and boundary values ±1 of limits.",
+              "expect": "Business floors/ceilings enforced (minimums, lot sizes).",
+              "category": "parameter-variant",
+              "why": "Boundaries are business rules in numeric clothing."
+            }
+          ]
+        },
+        {
+          "id": "currency-binding",
+          "title": "Currency bound to trusted price context",
+          "item": "WAPT-BL-009",
+          "severity": "critical",
+          "why": "Price in USD paid in JPY at face value, or item priced in context A bought in context B, is a money printer.",
+          "validate": "Currency and price come from the server-side catalog/quote; client-supplied currency or price is ignored.",
+          "variants": [
+            {
+              "name": "Currency parameter swap",
+              "kind": "note",
+              "payload": "Change currency in cart/checkout requests (own cart); observe totals and charge.",
+              "expect": "Totals re-derived server-side per currency; client currency ignored for pricing.",
+              "category": "parameter-variant",
+              "why": "One parameter, direct loss."
+            },
+            {
+              "name": "Price-field replay",
+              "kind": "note",
+              "payload": "Capture a quoted price; change cart contents; resubmit the old price with new contents.",
+              "expect": "Server re-prices; stale quotes rejected or revalidated.",
+              "category": "parameter-variant",
+              "why": "Stale quotes are old news worth money."
+            },
+            {
+              "name": "Cross-market confusion",
+              "kind": "note",
+              "payload": "Where markets/regions have different prices, order from market B at market A pricing via mixed parameters.",
+              "expect": "Market-bound pricing enforced end to end.",
+              "category": "authorization-context",
+              "why": "Region pricing is business logic attackers arbitrage."
+            }
+          ]
+        },
+        {
+          "id": "server-recalc",
+          "title": "Tax, fees, and discounts recalculated server-side",
+          "item": "WAPT-BL-010",
+          "severity": "high",
+          "why": "Totals accepted from the client let the shopper set their own price; every derived number must be server-owned.",
+          "validate": "All derived amounts (tax, shipping, fees, discounts, totals) are computed server-side from authoritative inputs.",
+          "variants": [
+            {
+              "name": "Total tamper",
+              "kind": "note",
+              "payload": "Modify total/grand_total in the checkout request (own cart) to 1 unit.",
+              "expect": "Charge uses the server-computed total; client totals ignored.",
+              "category": "parameter-variant",
+              "why": "The one-field price cut."
+            },
+            {
+              "name": "Discount stacking",
+              "kind": "note",
+              "payload": "Apply discount fields directly (discount=90%) or stack coupons beyond policy.",
+              "expect": "Server validates discount eligibility and stacking rules.",
+              "category": "parameter-variant",
+              "why": "Generosity must be server-side."
+            },
+            {
+              "name": "Fee omission",
+              "kind": "note",
+              "payload": "Remove optional fee fields (shipping, handling, service fee) from the payload.",
+              "expect": "Fees re-derived from fulfillment data; omitted fees return.",
+              "category": "parameter-variant",
+              "why": "Free shipping by deletion."
+            }
+          ]
+        },
+        {
+          "id": "coupon-limits",
+          "title": "Coupon usage and stacking limits enforced",
+          "item": "WAPT-BL-012",
+          "severity": "high",
+          "why": "Coupons without usage accounting are free money: one code, infinite redemptions, stacked discounts.",
+          "validate": "Coupons enforce per-user, per-code, and global limits plus stacking rules server-side.",
+          "variants": [
+            {
+              "name": "Redemption cap",
+              "kind": "note",
+              "payload": "Redeem a test coupon to its documented per-user cap (own account).",
+              "expect": "Cap enforced at exactly the limit; overage refused.",
+              "category": "baseline",
+              "why": "The polite count before the racing count (see race checks)."
+            },
+            {
+              "name": "Stacking ladder",
+              "kind": "note",
+              "payload": "Combine the coupon with itself via different case/whitespace forms, and with other promos against policy.",
+              "expect": "Same-code variants deduplicated; stacking rules enforced.",
+              "category": "encoding",
+              "why": "CASE variants defeat naive per-code counters."
+            },
+            {
+              "name": "Expired and premature",
+              "kind": "note",
+              "payload": "Redeem before start and after expiry dates.",
+              "expect": "Window enforced with server time.",
+              "category": "parameter-variant",
+              "why": "Time windows are usage limits too."
+            }
+          ]
+        },
+        {
+          "id": "stored-value",
+          "title": "Gift cards, credits, and points protected",
+          "item": "WAPT-BL-013",
+          "severity": "critical",
+          "why": "Stored value is money with worse auditing — balance tamper, transfer abuse, and redemption races hit directly.",
+          "validate": "Balance mutations are server-authoritative, logged, and bound to identity; transfers and redemptions enforce limits.",
+          "variants": [
+            {
+              "name": "Balance-field tamper",
+              "kind": "note",
+              "payload": "Include balance/points fields in profile updates, redemptions, and transfers (own account).",
+              "expect": "Balance fields ignored — server ledger only.",
+              "category": "parameter-variant",
+              "why": "The client proposes; the ledger disposes."
+            },
+            {
+              "name": "Self-transfer",
+              "kind": "note",
+              "payload": "Transfer credits to your own second account repeatedly to farm bonuses or dodge limits.",
+              "expect": "Self-transfers blocked or correctly accounted; bonus abuse bounded.",
+              "category": "authorization-context",
+              "why": "Two honest accounts, one dishonest loop."
+            },
+            {
+              "name": "Negative redemption",
+              "kind": "note",
+              "payload": "Redeem negative amounts (adding credit) or zero-cost conversions.",
+              "expect": "Signs validated as business values; negative redemption refused.",
+              "category": "parameter-variant",
+              "why": "Arithmetic direction is policy."
+            }
+          ]
+        },
+        {
+          "id": "payment-binding",
+          "title": "Checkout bound to verified payment state",
+          "item": "WAPT-BL-014",
+          "severity": "critical",
+          "why": "Marking an order paid without a verified provider confirmation (or before it settles) ships free goods.",
+          "validate": "Order completion requires provider-verified payment state via server-side confirmation (webhook with signature or verified API check).",
+          "variants": [
+            {
+              "name": "Client-confirmed probe",
+              "kind": "note",
+              "payload": "Complete checkout with client-side payment-success signals (success flags, redirects) manipulated.",
+              "expect": "No fulfillment without server-verified payment.",
+              "category": "parameter-variant",
+              "why": "The UI is not the payment provider."
+            },
+            {
+              "name": "Webhook forgery",
+              "kind": "note",
+              "payload": "Replay/forge the payment-success webhook with tampered amounts or order ids (your own order).",
+              "expect": "Signature verified; amounts and order binding checked; forgeries refused.",
+              "category": "protocol-variant",
+              "why": "Webhooks are unauthenticated input until signed."
+            },
+            {
+              "name": "Pending-to-paid race",
+              "kind": "note",
+              "payload": "Fulfill at the moment payment is pending (before capture) if the flow allows.",
+              "expect": "Fulfillment gated on captured/settled state per policy.",
+              "category": "race-concurrency",
+              "why": "Pending is not paid."
+            }
+          ]
+        },
+        {
+          "id": "refund-limits",
+          "title": "Refund and reversal limits enforced",
+          "item": "WAPT-BL-016",
+          "severity": "critical",
+          "why": "Refund above the paid amount, double refunds, and refunds after reversal are direct money extraction.",
+          "validate": "Refunds are bounded by original payment, single-execution, and lifetime limits, with reversals paired atomically.",
+          "variants": [
+            {
+              "name": "Over-refund",
+              "kind": "note",
+              "payload": "Request a refund larger than the payment (own test order).",
+              "expect": "Refused — bounded by the original amount.",
+              "category": "parameter-variant",
+              "why": "Refund is not a withdrawal."
+            },
+            {
+              "name": "Double refund",
+              "kind": "note",
+              "payload": "Request the same refund twice sequentially, then via two channels if present.",
+              "expect": "Second refund refused; single execution per payment.",
+              "category": "baseline",
+              "why": "Sequential first; the racing twin lives in race checks."
+            },
+            {
+              "name": "Refund-after-use",
+              "kind": "note",
+              "payload": "Refund after consumption/fulfillment where policy forbids it.",
+              "expect": "Refund gated on order state per policy.",
+              "category": "authorization-context",
+              "why": "State gates refunds too."
+            }
+          ]
+        },
+        {
+          "id": "cancellation-boundary",
+          "title": "Cancellation constrained after irreversible states",
+          "item": "WAPT-BL-017",
+          "severity": "high",
+          "why": "Cancelling after shipment/payout reverses irreversible effects on paper while goods are gone.",
+          "validate": "Cancellation rules follow the state map; irreversible states refuse or route to the returns process.",
+          "variants": [
+            {
+              "name": "Late cancellation",
+              "kind": "note",
+              "payload": "Attempt cancellation after each irreversible milestone (payment, shipment, activation).",
+              "expect": "Refused per policy; only documented post-states allow it.",
+              "category": "authorization-context",
+              "why": "The map says where the cliff is."
+            },
+            {
+              "name": "Cancellation-reversal mismatch",
+              "kind": "note",
+              "payload": "Cancel one side of a two-sided transaction (cancel order but keep payout running).",
+              "expect": "Paired effects cancelled together; no orphaned money flows.",
+              "category": "mutation",
+              "why": "Two-ledger systems cancel twice or not at all."
+            },
+            {
+              "name": "Refund-via-cancel loop",
+              "kind": "note",
+              "payload": "Alternate cancel and re-order to farm refund bonuses or trials.",
+              "expect": "Loop abuse bounded by usage limits.",
+              "category": "parameter-variant",
+              "why": "Loops are policies repeated."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limits-and-entitlements",
+      "title": "Limits, entitlements, and inventory",
+      "checks": [
+        {
+          "id": "subscription-lifecycle",
+          "title": "Subscription and trial lifecycle rules",
+          "item": "WAPT-BL-018",
+          "severity": "high",
+          "why": "Trials that never end, downgrades that keep features, and date tampering are entitlement theft by calendar.",
+          "validate": "Trials are once-per-identity with server-side dates; plan changes apply exact entitlement deltas immediately.",
+          "variants": [
+            {
+              "name": "Trial rebirth",
+              "kind": "note",
+              "payload": "End a trial; start another with the same account (then with a second account + same payment identity if in scope).",
+              "expect": "One trial per identity per policy; rebirth blocked.",
+              "category": "authorization-context",
+              "why": "Identity is the dedup key for generosity."
+            },
+            {
+              "name": "Downgrade retention",
+              "kind": "note",
+              "payload": "Downgrade from premium to free; immediately use premium features.",
+              "expect": "Entitlements cut at downgrade; no grace beyond policy.",
+              "category": "authorization-context",
+              "why": "Downgrades must actually descend."
+            },
+            {
+              "name": "Date-field tamper",
+              "kind": "note",
+              "payload": "Extend trial/subscription by editing date fields in requests or profile payloads.",
+              "expect": "Server-authoritative dates; client fields ignored.",
+              "category": "parameter-variant",
+              "why": "Calendars are server-side assets."
+            }
+          ]
+        },
+        {
+          "id": "usage-limits",
+          "title": "Per-user and global usage limits",
+          "item": "WAPT-BL-019",
+          "severity": "high",
+          "why": "Quotas on messages, exports, seats, and votes bound cost and abuse; per-request checks without accounting are theater.",
+          "validate": "Usage counters are server-side, per-identity, and enforced at execution with clear errors at the cap.",
+          "variants": [
+            {
+              "name": "Cap walk",
+              "kind": "note",
+              "payload": "Use the metered feature to its documented cap; one more.",
+              "expect": "Refused exactly at the cap with a clear error.",
+              "category": "baseline",
+              "why": "Find the wall, cite it."
+            },
+            {
+              "name": "Counter-reset hunt",
+              "kind": "note",
+              "payload": "Look for counter resets via logout, device change, cache purge, or id rotation.",
+              "expect": "Counters bind to identity, not sessions or devices.",
+              "category": "authentication-context",
+              "why": "The counter must outlive the session."
+            },
+            {
+              "name": "Concurrent accounting",
+              "kind": "note",
+              "payload": "Two parallel uses at the cap boundary.",
+              "expect": "Counter is atomic; no over-spend by interleaving (see race checks for the hammer).",
+              "category": "race-concurrency",
+              "why": "Sequential caps first; concurrency later."
+            }
+          ]
+        },
+        {
+          "id": "limit-evasion",
+          "title": "Limit reset through alternate identities blocked",
+          "item": "WAPT-BL-020",
+          "severity": "high",
+          "why": "Case-variants, aliases, and throwaway identities reset naive limits; per-identity means per-human per policy.",
+          "validate": "Limit identity resolution covers aliases (case, plus-addressing, multiple emails, guest/auth switches) per documented policy.",
+          "variants": [
+            {
+              "name": "Alias spray",
+              "kind": "note",
+              "payload": "Test with your own email aliases/plus-addresses and case variants against a per-user limit.",
+              "expect": "Aliases canonicalized; limits bind to the canonical identity.",
+              "category": "encoding",
+              "why": "user+1@example is still user@example to a good limiter."
+            },
+            {
+              "name": "Guest-to-auth switch",
+              "kind": "note",
+              "payload": "Use the feature as guest, then authenticated with the same underlying identity.",
+              "expect": "Guest and authed usage merged per policy.",
+              "category": "authentication-context",
+              "why": "The same human through two doors."
+            },
+            {
+              "name": "Channel split",
+              "kind": "note",
+              "payload": "Use web quota, then API quota, for the same underlying resource.",
+              "expect": "Cross-channel accounting unified.",
+              "category": "protocol-variant",
+              "why": "Channels share the meter."
+            }
+          ]
+        },
+        {
+          "id": "downgrade-confusion",
+          "title": "Plan and entitlement downgrade confusion prevented",
+          "item": "WAPT-BL-030",
+          "severity": "high",
+          "why": "Changing plan ids or feature flags in requests retains higher-tier features without payment — entitlement by typo.",
+          "validate": "Entitlements derive from server-side subscription state; plan/flag fields in client payloads change nothing.",
+          "variants": [
+            {
+              "name": "Plan-id swap",
+              "kind": "note",
+              "payload": "Submit plan/tier/package ids of a higher plan in downgrade or update calls (own account).",
+              "expect": "Server derives entitlements from its own records; ids are not upgrades.",
+              "category": "parameter-variant",
+              "why": "Naming a plan is not buying it."
+            },
+            {
+              "name": "Feature-flag carryover",
+              "kind": "note",
+              "payload": "After downgrade, probe previously-premium endpoints and UI-gated functions.",
+              "expect": "Access cut to current-plan features exactly.",
+              "category": "authorization-context",
+              "why": "Yesterday's features are not today's."
+            },
+            {
+              "name": "Mid-cycle flip",
+              "kind": "note",
+              "payload": "Upgrade then downgrade rapidly to confuse proration or access windows.",
+              "expect": "Proration and access changes are atomic and audited.",
+              "category": "race-concurrency",
+              "why": "Rapid flips stress entitlement sync."
+            }
+          ]
+        },
+        {
+          "id": "inventory-hoarding",
+          "title": "Reservation and inventory hoarding prevented",
+          "item": "WAPT-BL-032",
+          "severity": "high",
+          "why": "Unbounded holds let one account freeze inventory forever — a denial-of-service on the business itself.",
+          "validate": "Reservations are capped per identity, time-boxed with expiry, and released on abandonment.",
+          "variants": [
+            {
+              "name": "Hold cap",
+              "kind": "note",
+              "payload": "Create reservations/holds to the documented per-user cap; attempt more.",
+              "expect": "Capped per identity; beyond refused.",
+              "category": "baseline",
+              "why": "Cap first, expiry second."
+            },
+            {
+              "name": "Expiry reality",
+              "kind": "note",
+              "payload": "Hold an item; wait past the documented hold window (or owner-assisted trigger).",
+              "expect": "Hold released automatically; inventory returned.",
+              "category": "authentication-context",
+              "why": "Every hold needs an hourglass."
+            },
+            {
+              "name": "Abandon-release",
+              "kind": "note",
+              "payload": "Close the session mid-hold; verify release on abandonment.",
+              "expect": "Abandoned holds return to inventory without manual cleanup.",
+              "category": "browser-context",
+              "why": "Closed tabs must not own stock."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abuse-and-approvals",
+      "title": "Invitations, approvals, and tenant invariants",
+      "checks": [
+        {
+          "id": "invitation-rules",
+          "title": "Invitation and referral rules enforced",
+          "item": "WAPT-BL-021",
+          "severity": "high",
+          "why": "Self-referral, link reuse, and inviter-editing turn growth programs into ATMs.",
+          "validate": "Inviter identity is server-derived; referral bonuses bound per identity; links single-use within expiry.",
+          "variants": [
+            {
+              "name": "Self-referral",
+              "kind": "note",
+              "payload": "Invite your own second account; complete the referral loop.",
+              "expect": "Self-referral detected and refused per policy.",
+              "category": "authorization-context",
+              "why": "Two honest accounts, the classic loop."
+            },
+            {
+              "name": "Inviter edit",
+              "kind": "note",
+              "payload": "Modify inviter/referrer fields after signup (own accounts).",
+              "expect": "Inviter immutable post-binding.",
+              "category": "parameter-variant",
+              "why": "Reattributing referrals reattributes money."
+            },
+            {
+              "name": "Bonus velocity",
+              "kind": "note",
+              "payload": "Complete referrals to the documented cap; one more.",
+              "expect": "Caps enforced; velocity rules engaged.",
+              "category": "baseline",
+              "why": "Generosity has a budget."
+            }
+          ]
+        },
+        {
+          "id": "independent-reviewers",
+          "title": "Approvals bound to eligible independent reviewers",
+          "item": "WAPT-BL-022",
+          "severity": "critical",
+          "why": "If the requester approves their own request or picks their approver, the control is theater.",
+          "validate": "Approver must differ from requester, hold eligibility for the object, and be selected server-side from eligible sets.",
+          "variants": [
+            {
+              "name": "Self-approval",
+              "kind": "note",
+              "payload": "Request as A; approve as A.",
+              "expect": "Refused — independence enforced server-side.",
+              "category": "authorization-context",
+              "why": "The direct probe."
+            },
+            {
+              "name": "Approver nomination",
+              "kind": "note",
+              "payload": "Requester-nominated approver fields (approver_id in the request payload).",
+              "expect": "Server ignores nominations; approver chosen from eligible set.",
+              "category": "parameter-variant",
+              "why": "Choosing your own judge."
+            },
+            {
+              "name": "Ineligible approver",
+              "kind": "note",
+              "payload": "Route approval to a role/account without object eligibility.",
+              "expect": "Eligibility verified at approval execution, not display.",
+              "category": "authorization-context",
+              "why": "Title without jurisdiction."
+            }
+          ]
+        },
+        {
+          "id": "maker-checker-survival",
+          "title": "Maker-checker separation survives reassignment",
+          "item": "WAPT-BL-023",
+          "severity": "high",
+          "why": "Reassigning ownership mid-approval can put both sides of the control in one pair of hands.",
+          "validate": "Reassignment preserves separation: a maker cannot become checker on their own request; audit records both sides.",
+          "variants": [
+            {
+              "name": "Reassign-to-self",
+              "kind": "note",
+              "payload": "Reassign the request to yourself (or your alias) after submitting.",
+              "expect": "Refused; maker identity pinned at creation.",
+              "category": "mutation",
+              "why": "The subtlest path to self-approval."
+            },
+            {
+              "name": "Swap dance",
+              "kind": "note",
+              "payload": "A submits, B approves; attempt to make B the maker of a modification that A then approves for the same effect.",
+              "expect": "Modified requests re-enter maker-checker as new work.",
+              "category": "authorization-context",
+              "why": "Modifications are new requests."
+            },
+            {
+              "name": "Resign-approve",
+              "kind": "note",
+              "payload": "If makers can cancel/withdraw, attempt withdraw-then-approve chains.",
+              "expect": "Withdrawn requests are dead; no zombie approvals.",
+              "category": "mutation",
+              "why": "Withdrawal is not a hallway pass."
+            }
+          ]
+        },
+        {
+          "id": "client-integrity-fields",
+          "title": "Client-side integrity fields not trusted",
+          "item": "WAPT-BL-024",
+          "severity": "high",
+          "why": "Hidden hashes, signatures, totals, and checksums computed in the browser protect only honest users.",
+          "validate": "Integrity values are recomputed server-side or signed with server-held keys; client values are never authoritative.",
+          "variants": [
+            {
+              "name": "Field-strip test",
+              "kind": "note",
+              "payload": "Remove integrity fields (hash, sig, mac) from requests; observe acceptance.",
+              "expect": "Server recomputes or rejects — absence is not success.",
+              "category": "parameter-variant",
+              "why": "Optional integrity is decorative."
+            },
+            {
+              "name": "Value tamper",
+              "kind": "note",
+              "payload": "Modify the protected payload and re-submit the old integrity value (and vice versa).",
+              "expect": "Mismatch rejected; integrity covers the exact bytes.",
+              "category": "mutation",
+              "why": "The signature must care about the content."
+            },
+            {
+              "name": "Algorithm inspection",
+              "kind": "note",
+              "payload": "Reverse the client-side integrity computation from the bundle.",
+              "expect": "Client-computed values treated as hints only; findings assume attacker recomputation.",
+              "category": "technology-specific",
+              "why": "If the browser can compute it, so can anyone."
+            }
+          ]
+        },
+        {
+          "id": "search-notification-abuse",
+          "title": "Search and notification abuse detected",
+          "item": "WAPT-BL-033",
+          "severity": "high",
+          "why": "Search, contact, and messaging features double as scraping, spam, and harassment infrastructure.",
+          "validate": "High-reach features carry abuse controls: rate limits, recipient caps, content filters, and enumeration resistance.",
+          "variants": [
+            {
+              "name": "Enumeration resistance",
+              "kind": "note",
+              "payload": "Search for your own account as a needle (canary strings) via wildcard/prefix; measure what an attacker could enumerate.",
+              "expect": "Results bounded; enumeration cost documented; no silent full-dump.",
+              "category": "baseline",
+              "why": "Search that returns everyone is a database leak."
+            },
+            {
+              "name": "Recipient flood shape",
+              "kind": "note",
+              "payload": "Messaging/contact features: target counts, send velocity on your own accounts.",
+              "expect": "Per-recipient and velocity caps engaged per policy.",
+              "category": "race-concurrency",
+              "why": "Spam is a business-logic abuse with a budget."
+            },
+            {
+              "name": "Content-filter bypass",
+              "kind": "note",
+              "payload": "Benign canary variants of filtered content shapes (spacing, homoglyphs) in your own messages.",
+              "expect": "Filters resist trivial obfuscation; findings cite the specific bypass.",
+              "category": "encoding",
+              "why": "Test with canaries, never real abuse."
+            }
+          ]
+        },
+        {
+          "id": "tenant-invariants",
+          "title": "Tenant-specific business invariants enforced",
+          "item": "WAPT-BL-029",
+          "severity": "high",
+          "why": "Cross-tenant plans, catalogs, discounts, and workflows mixing is data corruption with compliance consequences.",
+          "validate": "Business objects cannot mix tenants: plan, catalog, pricing, and workflow references are tenant-bound.",
+          "variants": [
+            {
+              "name": "Cross-tenant composition",
+              "kind": "note",
+              "payload": "Build a cart/request referencing objects from two tenants you hold.",
+              "expect": "Refused — composition is tenant-pure.",
+              "category": "authorization-context",
+              "why": "The shopping-cart border check."
+            },
+            {
+              "name": "Tenant plan confusion",
+              "kind": "note",
+              "payload": "Apply tenant-1 plan/pricing to tenant-2 purchases via plan fields.",
+              "expect": "Plans are tenant-scoped; cross-application refused.",
+              "category": "parameter-variant",
+              "why": "B2B pricing is per-contract."
+            },
+            {
+              "name": "Workflow cross-tenant",
+              "kind": "note",
+              "payload": "Trigger tenant-1 workflow steps on tenant-2 objects.",
+              "expect": "Workflow and object tenants must match at every step.",
+              "category": "authorization-context",
+              "why": "Approval chains stay in-house."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "async-and-integrity",
+      "title": "Async effects and duplicate prevention",
+      "checks": [
+        {
+          "id": "callback-binding",
+          "title": "Async callbacks bound to original transactions",
+          "item": "WAPT-BL-025",
+          "severity": "critical",
+          "why": "Webhooks and status callbacks that update another transaction or replay are privilege: the caller writes your ledger.",
+          "validate": "Callbacks are signature-verified and bound to the exact transaction id/amount; replay and cross-binding refused.",
+          "variants": [
+            {
+              "name": "Cross-binding attempt",
+              "kind": "note",
+              "payload": "Replay a valid callback shape for transaction A against transaction B (both yours).",
+              "expect": "Refused — the callback names its transaction.",
+              "category": "parameter-variant",
+              "why": "The honest version of the attack."
+            },
+            {
+              "name": "Amount swap",
+              "kind": "note",
+              "payload": "Valid callback with modified amount/status fields.",
+              "expect": "Signature fails; field tamper detected.",
+              "category": "mutation",
+              "why": "Amount lives inside the signature."
+            },
+            {
+              "name": "Replay window",
+              "kind": "note",
+              "payload": "Replay the valid callback within and beyond the documented window.",
+              "expect": "Single-use or timestamp-bounded per policy.",
+              "category": "authentication-context",
+              "why": "Old news must stop being news."
+            }
+          ]
+        },
+        {
+          "id": "async-state-sync",
+          "title": "Async jobs within current account and object state",
+          "item": "WAPT-BL-026",
+          "severity": "high",
+          "why": "Queued work executes later with worker authority — account suspended or object deleted by then?",
+          "validate": "Jobs re-validate account state, object existence, and permissions at execution time.",
+          "variants": [
+            {
+              "name": "State-change-during-queue",
+              "kind": "note",
+              "payload": "Enqueue a job; owner-assisted suspend the account or delete the object; let the job run.",
+              "expect": "Job aborts on state re-validation; no post-suspension effects.",
+              "category": "authorization-context",
+              "why": "The worker wakes up in a changed world."
+            },
+            {
+              "name": "Permission-change-during-queue",
+              "kind": "note",
+              "payload": "Lose the underlying permission after enqueue; fetch results.",
+              "expect": "Results withheld; job re-authorized before output.",
+              "category": "authorization-context",
+              "why": "Jobs inherit current authority, not old."
+            },
+            {
+              "name": "Object-mutation race",
+              "kind": "note",
+              "payload": "Enqueue; modify the object before execution.",
+              "expect": "Job operates on validated current state or aborts; no stale-writes.",
+              "category": "race-concurrency",
+              "why": "Workers must read fresh truth."
+            }
+          ]
+        },
+        {
+          "id": "retry-duplication",
+          "title": "Duplicate effects across retries prevented",
+          "item": "WAPT-BL-027",
+          "severity": "high",
+          "why": "Networks retry; each retry without idempotency duplicates orders, grants, and messages.",
+          "validate": "Retry-safe design (idempotency keys, dedup windows, or naturally idempotent operations) on every mutating flow.",
+          "variants": [
+            {
+              "name": "Exact retry",
+              "kind": "note",
+              "payload": "Send the identical create twice sequentially (client-retry shape).",
+              "expect": "One effect; duplicate detected or idempotent response returned.",
+              "category": "baseline",
+              "why": "The honest retry, no race needed."
+            },
+            {
+              "name": "Key-free duplicate",
+              "kind": "note",
+              "payload": "Where idempotency keys are optional, retry without them.",
+              "expect": "Server dedups by business identity anyway (or the gap is the finding).",
+              "category": "parameter-variant",
+              "why": "Optional keys are missing keys."
+            },
+            {
+              "name": "Multi-tab duplicate",
+              "kind": "note",
+              "payload": "Submit the same action from two tabs of the same session seconds apart.",
+              "expect": "Duplicate suppressed; one canonical result.",
+              "category": "browser-context",
+              "why": "Real users do this by accident daily."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "value-races",
+      "title": "Races on value and one-time semantics",
+      "checks": [
+        {
+          "id": "redemption-race",
+          "title": "Duplicate redemption of single-use value",
+          "item": "WAPT-RACE-001",
+          "severity": "critical",
+          "why": "N parallel requests each pass the not-yet-redeemed check before any commits — one coupon, N discounts.",
+          "validate": "Single-use consumption is atomic (row lock, unique constraint, or compare-and-set); parallel redemption yields exactly one success.",
+          "variants": [
+            {
+              "name": "Last-byte sync",
+              "kind": "note",
+              "payload": "In Burp Repeater, send the same redemption in a parallel group of 4-8 with single-packet/last-byte release.",
+              "expect": "Exactly one succeeds; the rest get consumed/refused — never two successes.",
+              "category": "race-concurrency",
+              "why": "Synchronized release is the whole technique; keep groups small."
+            },
+            {
+              "name": "Two-identity check",
+              "kind": "note",
+              "payload": "Race the same code across two of your own accounts if per-user limits differ from global.",
+              "expect": "Global counter still exact — account separation must not split the counter.",
+              "category": "authorization-context",
+              "why": "Limits have scopes; races find the seams."
+            },
+            {
+              "name": "Redeem-and-spend chain",
+              "kind": "note",
+              "payload": "After a successful race attempt, spend/transfer what succeeded; verify consistency of the ledger.",
+              "expect": "Ledger consistent; no phantom balances survive reconciliation.",
+              "category": "baseline",
+              "why": "Follow the money after the race, not just the status codes."
+            }
+          ]
+        },
+        {
+          "id": "inventory-race",
+          "title": "Inventory double allocation under concurrency",
+          "item": "WAPT-RACE-003",
+          "severity": "high",
+          "why": "Parallel purchases of the last unit each see stock=1 and both ship — inventory is money in storage.",
+          "validate": "Stock decrements are atomic; parallel allocation of the last unit succeeds exactly once.",
+          "variants": [
+            {
+              "name": "Last-unit race",
+              "kind": "note",
+              "payload": "Set stock to 1 (your own test inventory or sandbox item); race 4-6 parallel purchases.",
+              "expect": "One allocation; the rest fail with out-of-stock — never negative or double stock.",
+              "category": "race-concurrency",
+              "why": "The textbook TOCTOU, demonstrated safely on your own item."
+            },
+            {
+              "name": "Cart-plus-direct",
+              "kind": "note",
+              "payload": "Race an add-to-cart path against a direct purchase path for the same last unit.",
+              "expect": "Different paths share one atomic counter.",
+              "category": "protocol-variant",
+              "why": "Two doors, one inventory."
+            },
+            {
+              "name": "Oversell arithmetic",
+              "kind": "note",
+              "payload": "After races, inspect reported stock and sold counts for consistency.",
+              "expect": "Stock >= 0 at all times; sold <= allocated; any negative is the finding.",
+              "category": "baseline",
+              "why": "The numbers after the race are the evidence."
+            }
+          ]
+        },
+        {
+          "id": "balance-atomicity",
+          "title": "Balance and quota checks enforced atomically",
+          "item": "WAPT-RACE-004",
+          "severity": "critical",
+          "why": "Check-then-act on balances lets parallel debits each pass a stale check — the account spends money twice.",
+          "validate": "Debits/credits are atomic against current balance (locking or compare-and-set); concurrent debits cannot overdraw.",
+          "variants": [
+            {
+              "name": "Parallel debit",
+              "kind": "note",
+              "payload": "With a small balance you hold, race 4-6 debits that each individually fit the balance.",
+              "expect": "Exactly the affordable number succeed; balance never negative.",
+              "category": "race-concurrency",
+              "why": "Classic concurrent-overdraw, on your own funds."
+            },
+            {
+              "name": "Debit-credit interleave",
+              "kind": "note",
+              "payload": "Race debits against a credit/top-up in flight.",
+              "expect": "Final balance consistent with serialized order; no lost updates (write-write conflict handled).",
+              "category": "race-concurrency",
+              "why": "Lost-update is the quieter sibling of overdraft."
+            },
+            {
+              "name": "Quota parity",
+              "kind": "note",
+              "payload": "Repeat with usage quotas (messages, exports) if present.",
+              "expect": "Same atomicity for counts, not just currency.",
+              "category": "parameter-variant",
+              "why": "Quotas are balances with worse PR."
+            }
+          ]
+        },
+        {
+          "id": "token-atomicity",
+          "title": "One-time tokens consumed atomically",
+          "item": "WAPT-RACE-005",
+          "severity": "critical",
+          "why": "Racing an OTP/reset/invitation token before consumption multiplies a single-use credential into several.",
+          "validate": "Token consumption is atomic; parallel redemption yields exactly one outcome.",
+          "variants": [
+            {
+              "name": "OTP parallel verify",
+              "kind": "note",
+              "payload": "Race the same OTP submission in parallel at the verify endpoint (own account).",
+              "expect": "One verification succeeds; others refused after consumption.",
+              "category": "race-concurrency",
+              "why": "The code is single-use — prove it under race."
+            },
+            {
+              "name": "Reset-token races",
+              "kind": "note",
+              "payload": "Race password-reset token usage (reset + login in quick succession, parallel where possible).",
+              "expect": "One reset; parallel reuse refused; sessions from the old token invalidated.",
+              "category": "authentication-context",
+              "why": "Reset races are account-takeover races."
+            },
+            {
+              "name": "Invite-accept race",
+              "kind": "note",
+              "payload": "Race invitation acceptance from two sessions (two of your accounts where policy allows).",
+              "expect": "One acceptance binds; the loser gets a clean expiry error.",
+              "category": "authorization-context",
+              "why": "Invitations mint membership — atomically."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "state-races",
+      "title": "Races on state, workflow, and delivery",
+      "checks": [
+        {
+          "id": "authz-state-race",
+          "title": "Authorization and state in one atomic operation",
+          "item": "WAPT-RACE-006",
+          "severity": "critical",
+          "why": "Permissions checked, then state changes, then the action runs — an interleaved permission revocation lands in the gap.",
+          "validate": "Authorization decisions and the protected mutation commit atomically; revocation between check and use is impossible.",
+          "variants": [
+            {
+              "name": "Revoke-between",
+              "kind": "note",
+              "payload": "Owner-assisted: fire a privileged action; revoke the permission at the same moment (parallel group with the revoke request if an API exists).",
+              "expect": "Action either completes-before or fails-after; never completes-after revocation.",
+              "category": "race-concurrency",
+              "why": "The TOCTOU definition, staged politely."
+            },
+            {
+              "name": "Object-state flip",
+              "kind": "note",
+              "payload": "Race a state transition (lock/close) against an action on the same object.",
+              "expect": "No post-transition effects; interleavings fail closed.",
+              "category": "race-concurrency",
+              "why": "State races are authorization races with calendars."
+            },
+            {
+              "name": "Checker-version note",
+              "kind": "note",
+              "payload": "Note the enforcement mechanism if visible (optimistic concurrency, row versions).",
+              "expect": "Mechanism documented; absence correlated with observed races.",
+              "category": "baseline",
+              "why": "Explaining the fix earns the finding respect."
+            }
+          ]
+        },
+        {
+          "id": "workflow-concurrency",
+          "title": "Workflow transitions with concurrency control",
+          "item": "WAPT-RACE-007",
+          "severity": "high",
+          "why": "Parallel transitions on one workflow instance create impossible states — approved and rejected at once.",
+          "validate": "Workflow transitions serialize (optimistic locking or pessimistic locks); impossible states never persist.",
+          "variants": [
+            {
+              "name": "Approve-reject race",
+              "kind": "note",
+              "payload": "Race approve and reject of the same request from two eligible sessions (your accounts).",
+              "expect": "Exactly one transition lands; the other gets a state conflict; final state consistent.",
+              "category": "race-concurrency",
+              "why": "Two honest reviewers, one request, one truth."
+            },
+            {
+              "name": "Same-transition storm",
+              "kind": "note",
+              "payload": "Race identical transitions (approve x4).",
+              "expect": "One effect; the rest idempotent-refused — no multiplied side effects (emails, notifications).",
+              "category": "race-concurrency",
+              "why": "Duplicate approvals spam and double-count."
+            },
+            {
+              "name": "Cross-node split",
+              "kind": "note",
+              "payload": "If multi-region, race transitions via two regional endpoints.",
+              "expect": "Global serialization; regions cannot land conflicting states.",
+              "category": "protocol-variant",
+              "why": "Geography is not a locking strategy."
+            }
+          ]
+        },
+        {
+          "id": "idempotency-binding",
+          "title": "Idempotency keys bound atomically",
+          "item": "WAPT-RACE-008",
+          "severity": "high",
+          "why": "Two different requests racing under one idempotency key, or one request under two keys, defeats the whole contract.",
+          "validate": "Key binding is atomic: first writer wins; same key+payload replays return the stored result; mismatches error.",
+          "variants": [
+            {
+              "name": "Key collision race",
+              "kind": "note",
+              "payload": "Race two different payloads under the same idempotency key.",
+              "expect": "One wins; the other gets a key-conflict error — never both execute.",
+              "category": "race-concurrency",
+              "why": "The race that breaks the race protector."
+            },
+            {
+              "name": "Same-payload parallel",
+              "kind": "note",
+              "payload": "Race identical requests under the same key.",
+              "expect": "One execution; all callers get the same response.",
+              "category": "race-concurrency",
+              "why": "Retry storms are this test in the wild."
+            },
+            {
+              "name": "Key-rotation trick",
+              "kind": "note",
+              "payload": "Retry a failed request with a fresh key after partial completion.",
+              "expect": "Partial states cleaned up or refused; new keys do not resurrect dead operations.",
+              "category": "parameter-variant",
+              "why": "Fresh keys are not time machines."
+            }
+          ]
+        },
+        {
+          "id": "processing-publish-race",
+          "title": "File-processing and publish races",
+          "item": "WAPT-RACE-009",
+          "severity": "critical",
+          "why": "Replace a file while validation/scanning runs and the published artifact never saw the checks — TOCTOU on content.",
+          "validate": "Publish/serve uses the exact validated artifact version (immutable refs, hash checks, or copy-before-validate).",
+          "variants": [
+            {
+              "name": "Swap-during-scan",
+              "kind": "note",
+              "payload": "Upload benign file; race the replace/overwrite request against the processing-complete window (your own file).",
+              "expect": "Published content is the validated version; swap never bypasses checks.",
+              "category": "race-concurrency",
+              "why": "The scan guards bytes that already left."
+            },
+            {
+              "name": "Publish-vs-delete",
+              "kind": "note",
+              "payload": "Race publish against deletion of the underlying object.",
+              "expect": "No publish of dead content; no zombie references; consistent state either way.",
+              "category": "race-concurrency",
+              "why": "Lifecycle races corrupt catalogs."
+            },
+            {
+              "name": "Hash-verification probe",
+              "kind": "note",
+              "payload": "Where artifacts carry hashes/version ids, verify served content matches its recorded digest after the race attempts.",
+              "expect": "Digests match; any mismatch is a direct finding.",
+              "category": "baseline",
+              "why": "The digest is the referee."
+            }
+          ]
+        },
+        {
+          "id": "construction-race",
+          "title": "Partial object construction races",
+          "item": "WAPT-RACE-010",
+          "severity": "high",
+          "why": "Parallel creates that each partially initialize produce objects readable before complete — or with conflicting halves.",
+          "validate": "Object creation is atomic: parallel creates yield independent complete objects; partial states never visible.",
+          "variants": [
+            {
+              "name": "Create-read interleave",
+              "kind": "note",
+              "payload": "Race object creation against immediate reads (fresh session reading the new id).",
+              "expect": "Readers see complete objects or 404 — never half-built records.",
+              "category": "race-concurrency",
+              "why": "The half-born user is a half-broken feature."
+            },
+            {
+              "name": "Duplicate-create race",
+              "kind": "note",
+              "payload": "Race identical creates with the same business key (email, username you own).",
+              "expect": "Exactly one wins; uniqueness enforced under race.",
+              "category": "race-concurrency",
+              "why": "Unique constraints are race controls — prove it."
+            },
+            {
+              "name": "Step-chain create",
+              "kind": "note",
+              "payload": "On multi-step creation flows, race later steps before earlier complete.",
+              "expect": "Later steps wait or fail; no shortcut to complete state.",
+              "category": "parameter-variant",
+              "why": "Wizards are workflows; races skip steps too."
+            }
+          ]
+        },
+        {
+          "id": "sync-delivery",
+          "title": "Synchronized race delivery without flooding",
+          "item": "WAPT-RACE-011",
+          "severity": "informational",
+          "why": "A race you cannot deliver cleanly tests nothing: one synchronized packet beats a hundred flailing requests.",
+          "validate": "Tests use minimal synchronized bursts (last-byte release, single packet) with strict request caps and cleanup.",
+          "variants": [
+            {
+              "name": "Single-packet setup",
+              "kind": "note",
+              "payload": "Use Repeater group send with last-byte sync (or a 2-3 request script with a shared barrier) for every race test.",
+              "expect": "Requests land within one processing window; caps documented per test.",
+              "category": "tool-assisted",
+              "why": "Technique, not volume — four synchronized beats forty sprayed."
+            },
+            {
+              "name": "Barrier script",
+              "kind": "note",
+              "payload": "For HTTP/2 targets, a tiny script sends streams with simultaneous END_STREAM; keep total requests <= 10.",
+              "expect": "Delivery verified by server timestamps/log correlation where owner-assisted.",
+              "category": "tool-assisted",
+              "why": "HTTP/2 multiplexing is the modern last-byte."
+            },
+            {
+              "name": "Cleanup discipline",
+              "kind": "note",
+              "payload": "After each race: verify state, undo/complete test objects, and record final counts.",
+              "expect": "No residue; repeated runs give consistent results.",
+              "category": "baseline",
+              "why": "Repeatable races are reportable races."
+            }
+          ]
+        },
+        {
+          "id": "adjacent-race-paths",
+          "title": "Race remediation across adjacent paths",
+          "item": "WAPT-RACE-012",
+          "severity": "high",
+          "why": "The fixed endpoint keeps its lock; the mobile twin, batch importer, and webhook path never got it.",
+          "validate": "Concurrency controls verified on every path that reaches the same state: web, API, mobile, batch, webhooks.",
+          "variants": [
+            {
+              "name": "Path matrix rerun",
+              "kind": "note",
+              "payload": "Repeat your two strongest races on every adjacent path that mutates the same value.",
+              "expect": "Same atomicity everywhere; weak twins documented as findings.",
+              "category": "protocol-variant",
+              "why": "Remediation testing, pre-staged."
+            },
+            {
+              "name": "Webhook-vs-user race",
+              "kind": "note",
+              "payload": "Race a user-driven mutation against the webhook-driven mutation of the same object (own data).",
+              "expect": "Both paths serialize against each other; no split-brain state.",
+              "category": "out-of-band",
+              "why": "Machine and human paths share one truth."
+            },
+            {
+              "name": "Retry-vs-retry",
+              "kind": "note",
+              "payload": "Race client-retry patterns on two channels simultaneously.",
+              "expect": "Idempotency holds under cross-channel retries.",
+              "category": "race-concurrency",
+              "why": "Real traffic retries from everywhere."
+            }
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "lastmod": "2026-08-21"
 }

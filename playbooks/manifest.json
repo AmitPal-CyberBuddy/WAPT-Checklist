@@ -64,7 +64,7 @@
       "title": "Checkout / payments",
       "file": "checkout.json",
       "summary": "Price and quantity tamper, currency, coupons, payment binding, checkout races, CSRF.",
-      "count": 6
+      "count": 48
     },
     {
       "id": "admin-panel",

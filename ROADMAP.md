@@ -79,7 +79,7 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. 🚧 Practical-variant authoring, wave 1 — **headers, client-side, upload, API, identity, and authorization complete**
+### 6. ✅ Practical-variant authoring, wave 1 — COMPLETE (r15–r20)
 - **Progress (r15–r16)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC
   secret strength, jku/x5u/embedded-JWK rejection, kid rotation,
   issuer/audience/type binding, subject–tenant binding, replay limits, refresh
@@ -131,7 +131,22 @@ tester's day shorter.
   targets, storage trust, IndexedDB partitioning, service-worker cache
   privacy, worker/broadcast boundaries, prototype gadgets, DOM clobbering,
   window.name, tabnabbing, SRI, XSSI, source-map review, Web Crypto, XS
-  leaks, bfcache). Remaining: business logic (+race), client-side tail.
+  leaks, bfcache). Business logic is 35/35 and race conditions 12/12 as of
+  r20 (workflow state maps, step-skip and replay probes, token binding,
+  numeric/currency validation, server-side recalculation, coupon and
+  stored-value protection, payment binding, refund and cancellation
+  limits, subscription lifecycle, usage limits and alias-reset evasion,
+  inventory hoarding, invitation and maker-checker integrity, client
+  integrity fields, tenant invariants, async callback binding and state
+  sync, retry duplication; and the race program: last-byte redemption and
+  inventory races, atomic balance and one-time-token consumption,
+  authorization/state TOCTOU, workflow concurrency, idempotency binding,
+  processing-vs-publish races, construction races, synchronized delivery,
+  adjacent-path remediation). Wave-1 result: 354 of 623 catalog items
+  (57%) carry named variants across 11 complete categories; remaining
+  categories (authentication, injection, XSS, recon, CSRF, SSRF,
+  smuggling, cloud, rate-limiting, info-disclosure, websocket, advanced,
+  AI) are wave 2.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.
