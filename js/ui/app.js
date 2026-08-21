@@ -1,11 +1,11 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r11';
-import { createWizard } from './wizard.js?v=1.0.0-r11';
-import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r11';
-import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r11';
-import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r11';
-import { createCatalog } from './catalog.js?v=1.0.0-r11';
-import { createWorkspace } from './workspace.js?v=1.0.0-r11';
-import { asset } from './paths.js?v=1.0.0-r11';
+import { initializeTheme } from './theme.js?v=1.0.0-r12';
+import { createWizard } from './wizard.js?v=1.0.0-r12';
+import { STATE_KEY, createState, setAnswers, setEngagement, setPosition } from '../engine/state.js?v=1.0.0-r12';
+import { activeEngagement, addEngagement, normalizePortfolio, removeEngagement, selectEngagement, updateActiveEngagement } from '../engine/portfolio.js?v=1.0.0-r12';
+import { engagementIsBlank, parseShareHash } from '../engine/share.js?v=1.0.0-r12';
+import { createCatalog } from './catalog.js?v=1.0.0-r12';
+import { createWorkspace } from './workspace.js?v=1.0.0-r12';
+import { asset } from './paths.js?v=1.0.0-r12';
 
 const VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'wizard', 'checklist', 'search', 'chains', 'payloads']);
 

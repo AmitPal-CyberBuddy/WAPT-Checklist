@@ -1,5 +1,5 @@
-import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r11';
-import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r11';
+import { ASSESSMENT_LIST, matchAssessment } from '../data/presets.mjs?v=1.0.0-r12';
+import { deriveUrlHints, normalizeScopeAnswers } from '../engine/context.js?v=1.0.0-r12';
 
 const UNKNOWN = 'unknown';
 
@@ -199,7 +199,7 @@ export function createWizard(root, initialState, callbacks = {}) {
         <ul class="hint-list" data-url-hints>${hints.map((hint) => `<li>${HINT_LABELS[hint]} · low confidence</li>`).join('')}</ul>
         <div class="preset-grid" aria-label="Assessment presets">${ASSESSMENT_LIST.map((preset) => {
           const pressed = selected?.id === preset.id || (preset.askEverything && appliedPreset?.askEverything);
-          return `<button class="preset-card" type="button" data-preset="${preset.id}" aria-pressed="${pressed}"><em>${preset.askEverything ? 'BUILD FROM SCRATCH' : 'ASSESSMENT PRESET'}</em><strong>${preset.title}</strong><span>${preset.blurb}</span></button>`;
+          return `<button class="preset-card" type="button" data-preset="${preset.id}" aria-pressed="${pressed}"><em>${preset.askEverything ? 'BUILD FROM SCRATCH' : 'ASSESSMENT PRESET'}</em><strong>${preset.title}</strong><span>${preset.blurb}</span><i class="preset-glyph" aria-hidden="true">${preset.glyph || '◇'}</i></button>`;
         }).join('')}</div>
         ${selected ? `
         <div class="preset-context" data-preset-context>

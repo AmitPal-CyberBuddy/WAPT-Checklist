@@ -4,6 +4,17 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ## [Unreleased]
 
+### Changed (Visual identity — "Aurora console" — r12)
+
+- **A deliberate visual identity replaces the uniform bordered-box language.** A new `identity.css` layer (loaded last on every page) rebuilds the look around three ideas: depth without boxes, signal color, and typographic hierarchy.
+- **Ambient canvas.** The console floats on a slowly drifting aurora wash (mint / azure / violet) over the fine reference grid — disabled under `prefers-reduced-motion` and on phones where it cannot be appreciated, purely decorative and pointer-transparent.
+- **One gradient, reserved meaning.** The brand gradient (mint → azure → violet) is reserved for identity moments — primary actions (with a light sweep on hover), the selected assessment preset, gradient eyebrows and step pills, and the first numeral of each stat strip — so it always means "this is the way forward".
+- **Assessment presets are now tiles with character**: scenario glyph plate, gradient side-rail on hover, and a gradient seal on the selected tile; the assumed-context panel carries a gradient hairline with branded ✓ rows.
+- **Mission hero.** The dashboard hero trades its flat card for a gradient-hairline briefing band with an accent rail; the Applicable/Completed/Remaining numbers become one connected segmented strip of oversized mono numerals; the reporting drawer's six metrics merge into a single bento slab with internal seams instead of six identical cards.
+- **Category signal hues.** Every attack-surface category owns a hue (TLS blue, headers violet, HTTP amber, client pink, auth coral, session teal, authz green, upload gold, API cyan, GraphQL magenta, JWT purple, OAuth indigo, websocket turquoise, business gold, AI lime) that colors its rail, count pill, open-glow, and row hover — the plan becomes scannable by color before reading. Light theme gets a hand-tuned darker set of the same hues.
+- **Micro-craft.** Gradient text is progressive (`@supports`-guarded, never invisible), focus rings glow, glass header gains a signal hairline, sidebar active items glow, empty states get a dashed gradient ring, and print/reduced-motion are handled explicitly.
+- Bumped browser assets to `1.0.0-r12`.
+
 ### Fixed (Control states and plan depth tagging — r11)
 
 - **Depth tiers now tag the category rows.** The Core / Extended / Specialized control was hiding every row under Core because category rows were rendered without their computed tier. Rows now carry the tier from the plan (Don't miss / High-value / Standard / Advanced), so the default Core pass shows its curated working set (for example 44 of 239 tests on a static black-box scope, 200 of 623 on a grey-box web app).

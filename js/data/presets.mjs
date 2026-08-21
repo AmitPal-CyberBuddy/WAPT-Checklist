@@ -91,6 +91,7 @@ const U = 'unknown';
 export const ASSESSMENTS = Object.freeze([
   Object.freeze({
     id: 'static_black_box',
+    glyph: '▤',
     title: 'Static Website — Black Box Testing',
     blurb: 'Public-facing site with no authentication or internal access.',
     assumptions: Object.freeze([
@@ -110,6 +111,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'web_black_box',
+    glyph: '◇',
     title: 'Web Application — Black Box Testing',
     blurb: 'Test the application from an external attacker perspective.',
     assumptions: Object.freeze([
@@ -128,6 +130,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'web_grey_box',
+    glyph: '◈',
     title: 'Web Application — Grey Box Testing',
     blurb: 'Authenticated access with available test accounts.',
     assumptions: Object.freeze([
@@ -146,6 +149,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'grey_box_multi_role',
+    glyph: '⇅',
     title: 'Grey Box Testing with Multiple User Roles',
     blurb: 'Authorization, privilege boundaries, and cross-user access.',
     assumptions: Object.freeze([
@@ -164,6 +168,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'public_login_registration',
+    glyph: '⊕',
     title: 'Public-Facing Application with Login and Registration',
     blurb: 'Account creation, authentication, and session flows.',
     assumptions: Object.freeze([
@@ -182,6 +187,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'api_security',
+    glyph: '⊞',
     title: 'API Security Testing',
     blurb: 'REST, GraphQL, or other exposed APIs with test credentials.',
     assumptions: Object.freeze([
@@ -200,6 +206,7 @@ export const ASSESSMENTS = Object.freeze([
   }),
   Object.freeze({
     id: 'custom',
+    glyph: '✦',
     title: 'Custom Assessment',
     blurb: 'Build the testing context manually, question by question.',
     assumptions: Object.freeze([]),

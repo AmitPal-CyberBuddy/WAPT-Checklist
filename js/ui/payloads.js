@@ -1,4 +1,4 @@
-import { asset } from './paths.js?v=1.0.0-r11';
+import { asset } from './paths.js?v=1.0.0-r12';
 
 const WORKFLOWS = [
   ['proxy', 'Proxy'], ['repeater', 'Repeater'], ['intruder', 'Intruder'], ['scanner', 'Scanner'],

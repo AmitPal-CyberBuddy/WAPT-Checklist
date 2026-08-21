@@ -1,6 +1,6 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r11';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r11';
-import { asset } from './paths.js?v=1.0.0-r11';
+import { initializeTheme } from './theme.js?v=1.0.0-r12';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r12';
+import { asset } from './paths.js?v=1.0.0-r12';
 
 // Public documentation map. Only operator-facing documents are served here;
 // project-management material (QA reports, phase notes, release runbooks,
