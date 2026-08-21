@@ -1,22 +1,26 @@
-import { deriveContext } from '../engine/context.js?v=1.0.0-r9';
-import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r9';
-import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r9';
-import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r9';
-import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES } from '../engine/state.js?v=1.0.0-r9';
-import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r9';
-import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r9';
-import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r9';
-import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r9';
-import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r9';
-import { createChainStore } from './chains.js?v=1.0.0-r9';
-import { createPayloadStore } from './payloads.js?v=1.0.0-r9';
-import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r9';
-import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r9';
-import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r9';
-import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r9';
-import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r9';
-import { renderAssessmentPlan } from './plan.js?v=1.0.0-r9';
-import { renderProfile } from './profile.js?v=1.0.0-r9';
+import { deriveContext } from '../engine/context.js?v=1.0.0-r22';
+import { APPLICABILITY, evaluateApplicability } from '../engine/applicability.js?v=1.0.0-r22';
+import { suggestedNext } from '../engine/priorities.js?v=1.0.0-r22';
+import { categoryRationale } from '../engine/rationale.js?v=1.0.0-r22';
+import { clearOverride, importState, setPosition, setAnswers, setEngagement, setRetestVerdict, setVariantCovered, setFindingAttachments, addFinding, removeFinding, RETEST_VERDICTS, EXPLOITABILITY_LEVELS, FINDING_SEVERITIES, ATTACHMENT_TYPES, MAX_ATTACHMENTS_PER_PACK, MAX_ATTACHMENT_BYTES } from '../engine/state.js?v=1.0.0-r22';
+import { computeCoverage, retestQueue } from '../engine/coverage.js?v=1.0.0-r22';
+import { familyCoverage, familyVariants, indexFamilies, nextInFamily, relatedFamilies } from '../engine/families.js?v=1.0.0-r22';
+import { classifyReportability, STAGE_LABELS, RETEST_GUIDANCE, suggestedRetestTargets } from '../engine/reportability.js?v=1.0.0-r22';
+import { EMPTY_FILTERS, STANDARD_OPTIONS, filterItems, itemStatus, sortRecords } from './filters.js?v=1.0.0-r22';
+import { STATUS_LABELS, composeChecklistMarkdown, composeCoverageCsv, composeFamilyCoverageBlock, composeReportMarkdown, composeReportHtml, composeStateJson, downloadText, findingItems } from './export.js?v=1.0.0-r22';
+import { createChainStore } from './chains.js?v=1.0.0-r22';
+import { createPayloadStore } from './payloads.js?v=1.0.0-r22';
+import { SEVERITY_GLYPHS, STATUS_GLYPHS, element, statRow } from './dom.js?v=1.0.0-r22';
+import { renderCard, renderCheckRow } from './card.js?v=1.0.0-r22';
+import { buildFamilyRecords, renderCategoryCoverage, renderFamilyBoard, renderFamilyGaps, renderFamilyWorkspace } from './family-view.js?v=1.0.0-r22';
+import { indexPlaybooks, matchPlaybooks, PLAYBOOK_SURFACES, suggestedPlaybook } from '../engine/playbooks.js?v=1.0.0-r22';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r22';
+import { pushScopeSnapshot, removeScopeSnapshot } from '../engine/state.js?v=1.0.0-r22';
+import { setCustomChecks, setSavedViews, nextCustomCheckId } from '../engine/state.js?v=1.0.0-r22';
+import { renderPlaybookBanner, renderPlaybookBoard, renderPlaybookWorkspace } from './playbook.js?v=1.0.0-r22';
+import { renderAssessmentPlan } from './plan.js?v=1.0.0-r22';
+import { renderProfile } from './profile.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 const STATUS_OPTIONS = Object.entries(STATUS_LABELS);
 const EMPTY_INDEX = indexFamilies({ families: [] });
@@ -75,6 +79,7 @@ function renderQuickFilters(root, filters, onChange, counts = {}) {
 function renderFilters(root, manifest, filters, onChange, options = {}) {
   root.replaceChildren();
   if (options.counts) renderQuickFilters(root, filters, onChange, options.counts);
+  if (options.views) renderSavedViews(root, filters, onChange, options.views);
   const grid = element('div', 'filter-grid filter-grid-primary');
   const advancedGrid = element('div', 'filter-grid filter-grid-advanced');
   const primaryFields = new Set(['query', 'category', 'severity', 'status', 'sort']);
@@ -210,6 +215,63 @@ function renderEvidenceForm(item, getState, onState) {
     grid.append(group);
     controls[key] = input;
   }
+  // Attachments: redacted screenshots / request files, staged locally as data
+  // URLs and cleaned/capped by the state layer on save.
+  const attachBlock = element('div', 'evidence-field evidence-wide evidence-attach');
+  const attachLabel = element('span', '', 'Attachments (redacted screenshots or request files)');
+  attachBlock.append(attachLabel);
+  const attachNote = element('small', 'evidence-attach-note', `Redact credentials, tokens, personal data, and tenant identifiers before attaching. Images (PNG/JPEG/WebP/GIF) or text/JSON; up to ${MAX_ATTACHMENTS_PER_PACK} files, ~400 KB each — everything stays in this browser.`);
+  attachBlock.append(attachNote);
+  const attachRow = element('div', 'evidence-attach-row');
+  const attachInput = document.createElement('input');
+  attachInput.type = 'file';
+  attachInput.multiple = true;
+  attachInput.accept = [...ATTACHMENT_TYPES].join(',');
+  attachInput.dataset.evidenceAttach = 'true';
+  const attachButton = element('span', 'evidence-attach-button', '＋ Choose files');
+  attachButton.setAttribute('role', 'button');
+  attachButton.tabIndex = 0;
+  attachRow.append(attachButton, attachInput);
+  attachInput.hidden = true;
+  const stagedList = element('ul', 'evidence-attach-list');
+  const attachStatus = element('small', 'evidence-attach-status');
+  attachBlock.append(attachRow, stagedList, attachStatus);
+  const staged = [];
+  const paintStaged = () => {
+    stagedList.replaceChildren(...staged.map((attachment, index) => {
+      const item = element('li', 'evidence-attach-item');
+      const icon = element('span', 'evidence-attach-kind', attachment.type.startsWith('image/') ? '🖼' : '📄');
+      const label = element('span', 'evidence-attach-name', `${attachment.name} · ${(attachment.size / 1024).toFixed(1)} KB`);
+      const remove = element('button', 'evidence-attach-remove', '×');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', `Remove ${attachment.name}`);
+      remove.addEventListener('click', () => { staged.splice(index, 1); paintStaged(); });
+      item.append(icon, label, remove);
+      return item;
+    }));
+  };
+  attachButton.addEventListener('click', () => attachInput.click());
+  attachButton.addEventListener('keydown', (event) => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); attachInput.click(); } });
+  attachInput.addEventListener('change', async () => {
+    attachStatus.textContent = '';
+    const files = [...attachInput.files || []];
+    attachInput.value = '';
+    for (const file of files) {
+      if (staged.length >= MAX_ATTACHMENTS_PER_PACK) { attachStatus.textContent = `Limit: ${MAX_ATTACHMENTS_PER_PACK} attachments per pack.`; break; }
+      if (!ATTACHMENT_TYPES.includes(file.type)) { attachStatus.textContent = `${file.name}: type ${file.type || 'unknown'} not allowed (images, text, JSON only).`; continue; }
+      if (file.size > MAX_ATTACHMENT_BYTES) { attachStatus.textContent = `${file.name}: larger than the ~400 KB per-file cap — crop or redact it down.`; continue; }
+      const data = await new Promise((resolve) => {
+        const reader = new (globalThis.FileReader || window.FileReader)();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => resolve('');
+        reader.readAsDataURL(file);
+      });
+      if (!data) { attachStatus.textContent = `${file.name}: could not be read.`; continue; }
+      staged.push({ id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, type: file.type, size: file.size, data });
+    }
+    paintStaged();
+  });
+
   const exploitLabel = element('label', 'evidence-field');
   exploitLabel.append(element('span', '', 'Exploitability'));
   const exploit = document.createElement('select');
@@ -222,6 +284,7 @@ function renderEvidenceForm(item, getState, onState) {
   reportable.name = 'reportable';
   reportableLabel.append(reportable, document.createTextNode(' Reportable finding'));
   grid.append(exploitLabel, reportableLabel);
+  grid.append(attachBlock);
   body.append(grid);
 
   const stage = element('p', 'evidence-stage');
@@ -245,7 +308,8 @@ function renderEvidenceForm(item, getState, onState) {
       exploitability: exploit.value,
       reportable: reportable.checked,
       cleanup_performed: controls.cleanup_performed.value,
-      root_cause: controls.root_cause.value
+      root_cause: controls.root_cause.value,
+      attachments: staged
     };
   }
   function refreshStage() {
@@ -334,7 +398,70 @@ function renderEvidencePacks(root, itemList, getState, onState) {
     details.append(body);
     card.append(details);
 
+    if (pack.attachments?.length) {
+      const gallery = element('div', 'evidence-attachment-gallery');
+      for (const attachment of pack.attachments) {
+        const figure = element('figure', 'evidence-attachment');
+        if (attachment.type.startsWith('image/')) {
+          const image = document.createElement('img');
+          image.src = attachment.data;
+          image.alt = attachment.name;
+          image.loading = 'lazy';
+          figure.append(image);
+        } else {
+          const pre = element('pre', 'evidence-attachment-text');
+          try {
+            pre.textContent = new TextDecoder().decode(Uint8Array.from(atob(attachment.data.split(',')[1] || ''), (c) => c.charCodeAt(0))).slice(0, 2000);
+          } catch { pre.textContent = `${attachment.name} (${attachment.type})`; }
+          figure.append(pre);
+        }
+        const caption = element('figcaption');
+        const link = document.createElement('a');
+        link.href = attachment.data;
+        link.download = attachment.name;
+        link.textContent = `${attachment.name} · ${(attachment.size / 1024).toFixed(1)} KB`;
+        caption.append(link);
+        const removeAttachment = element('button', 'evidence-attach-remove', '×');
+        removeAttachment.type = 'button';
+        removeAttachment.title = 'Remove attachment';
+        removeAttachment.setAttribute('aria-label', `Remove attachment ${attachment.name}`);
+        removeAttachment.addEventListener('click', () => {
+          onState(setFindingAttachments(getState(), pack.id, pack.attachments.filter((candidate) => candidate.id !== attachment.id)));
+        });
+        caption.append(removeAttachment);
+        figure.append(caption);
+        gallery.append(figure);
+      }
+      card.append(gallery);
+    }
+
     const controls = element('div', 'evidence-controls');
+    const attachMore = element('label', 'evidence-attach-more');
+    const attachMoreInput = document.createElement('input');
+    attachMoreInput.type = 'file';
+    attachMoreInput.multiple = true;
+    attachMoreInput.accept = [...ATTACHMENT_TYPES].join(',');
+    attachMoreInput.hidden = true;
+    attachMoreInput.addEventListener('change', async () => {
+      const files = [...attachMoreInput.files || []];
+      attachMoreInput.value = '';
+      const current = getState().findings.find(({ id }) => id === pack.id)?.attachments || [];
+      const next = [...current];
+      for (const file of files) {
+        if (next.length >= MAX_ATTACHMENTS_PER_PACK) break;
+        if (!ATTACHMENT_TYPES.includes(file.type) || file.size > MAX_ATTACHMENT_BYTES) continue;
+        const data = await new Promise((resolve) => {
+          const reader = new (globalThis.FileReader || window.FileReader)();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => resolve('');
+          reader.readAsDataURL(file);
+        });
+        if (data) next.push({ id: `att-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`, name: file.name, type: file.type, size: file.size, data });
+      }
+      if (next.length !== current.length) onState(setFindingAttachments(getState(), pack.id, next));
+    });
+    attachMore.append(attachMoreInput, document.createTextNode('＋ Attach file'));
+    attachMore.title = 'Redact before attaching — files stay in this browser only';
     const verdictLabel = element('label', 'evidence-field');
     verdictLabel.append(element('span', '', 'Retest verdict'));
     const verdict = document.createElement('select');
@@ -343,7 +470,7 @@ function renderEvidencePacks(root, itemList, getState, onState) {
     verdict.setAttribute('aria-label', `Retest verdict for ${pack.id}`);
     verdict.addEventListener('change', () => onState(setRetestVerdict(getState(), pack.id, verdict.value, pack.retest_note)));
     verdictLabel.append(verdict);
-    controls.append(verdictLabel);
+    controls.append(attachMore, verdictLabel);
     if (pack.retest_verdict !== 'pending') controls.append(element('p', 'evidence-verdict-guide', RETEST_GUIDANCE[pack.retest_verdict]));
     const noteLabel = element('label', 'evidence-field evidence-wide');
     noteLabel.append(element('span', '', 'Retest note'));
@@ -457,6 +584,14 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   const names = () => categoryMap(manifest);
   const context = () => deriveContext(getState().answers, getState().engagement.targetUrl);
   const makeRecords = (items) => items.map((item) => effectiveRecord(item, getState(), context()));
+  // Target-specific checks the tester added (WAPT-CUSTOM-nnn). They are always
+  // executable and flow through the same statuses, notes, findings, and exports.
+  const customRecords = () => (getState().custom_checks || []).map((item) => ({
+    item,
+    rawApplicability: { state: APPLICABILITY.ACTIVE, blocked: false, reasons: [] },
+    applicability: { state: APPLICABILITY.ACTIVE, blocked: false, reasons: [] }
+  }));
+  const withCustom = () => [...records, ...customRecords()];
   const itemsById = () => new Map(records.map(({ item }) => [item.id, item]));
 
   function categoryOf(id) {
@@ -467,7 +602,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   async function loadFamilies() {
     if (familiesLoaded) return familyIndex;
     try {
-      const response = await fetch('checklist/families.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('checklist/families.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       familyIndex = indexFamilies(await response.json());
     } catch (error) {
@@ -480,11 +615,11 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   async function loadPlaybooks() {
     if (playbooksLoaded) return playbookIndex;
     try {
-      const response = await fetch('playbooks/manifest.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('playbooks/manifest.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const manifest = await response.json();
       const documents = await Promise.all((manifest.playbooks || []).map(async (entry) => {
-        const result = await fetch(`playbooks/${entry.file}`, { headers: { Accept: 'application/json' } });
+        const result = await fetch(asset(`playbooks/${entry.file}`), { headers: { Accept: 'application/json' } });
         if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
         return result.json();
       }));
@@ -535,7 +670,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     if (activeView === 'families') renderBoard();
     if (activeView === 'family') renderFamily();
     if (activeView === 'dashboard') {
-      const scoped = getState().answers?.app_type && getState().answers.app_type !== 'unknown';
+      const scoped = answersCarryContext(getState().answers);
       if (!records.length && scoped) void show('dashboard');
       else renderDashboard();
     } else if (activeView === 'playbooks') renderPlaybooks();
@@ -646,6 +781,10 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     return groups;
   }
 
+  function viewRecords() {
+    return withCustom();
+  }
+
   function statusCounts(sourceRecords) {
     const state = getState();
     const counts = {};
@@ -718,6 +857,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     const filterRoot = document.querySelector('[data-checklist-filters]');
     const resultRoot = document.querySelector('[data-checklist-results]');
     const summary = document.querySelector('[data-checklist-summary]');
+    const state = getState();
     const fixed = activeCategory && manifest.categories.some(({ slug }) => slug === activeCategory) ? activeCategory : '';
     checklistFilters = { ...checklistFilters, category: fixed };
     document.querySelectorAll('[data-checklist-mode]').forEach((button) => {
@@ -727,13 +867,13 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       filterRoot.hidden = true;
       summary.textContent = '';
       renderCategoryCoverage(resultRoot, {
-        category: fixed, familyIndex, records, getState, onOpenItem: openItemInTesting
+        category: fixed, familyIndex, records: viewRecords(), getState, onOpenItem: openItemInTesting
       });
     } else {
       filterRoot.hidden = false;
-      renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed, counts: statusCounts(records) });
+      renderFilters(filterRoot, manifest, checklistFilters, (next, key) => { checklistFilters = next; renderChecklist(); restoreFilterFocus(filterRoot, key); }, { fixedCategory: fixed, counts: statusCounts(viewRecords()), views: savedViewsOptions((next) => { checklistFilters = next; renderChecklist(); }) });
       // A single surface stays card-first for deep work; the whole catalog is a scan list.
-      renderResults(resultRoot, summary, records, checklistFilters, fixed
+      renderResults(resultRoot, summary, viewRecords(), checklistFilters, fixed
         ? { groupByFamily: familyIndex.families.length > 0 }
         : { compact: true });
     }
@@ -748,8 +888,23 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
 
   function renderSearch() {
     const filterRoot = document.querySelector('[data-search-filters]');
-    renderFilters(filterRoot, manifest, searchFilters, (next, key) => { searchFilters = next; renderSearch(); restoreFilterFocus(filterRoot, key); }, { counts: statusCounts(records) });
-    renderResults(document.querySelector('[data-search-results]'), document.querySelector('[data-search-summary]'), records, searchFilters, { compact: true });
+    renderFilters(filterRoot, manifest, searchFilters, (next, key) => { searchFilters = next; renderSearch(); restoreFilterFocus(filterRoot, key); }, { counts: statusCounts(viewRecords()), views: savedViewsOptions((next) => { searchFilters = next; renderSearch(); }) });
+    renderResults(document.querySelector('[data-search-results]'), document.querySelector('[data-search-summary]'), viewRecords(), searchFilters, { compact: true });
+  }
+
+  // Saved filter views: recall a named filter set in checklist or search.
+  function savedViewsOptions(apply) {
+    const views = getState().saved_views || [];
+    return {
+      views,
+      onRecall: (view) => apply({ ...EMPTY_FILTERS, ...view.filters }),
+      onDelete: (view) => commit(setSavedViews(getState(), views.filter((candidate) => candidate.id !== view.id))),
+      onSave: (name) => {
+        const active = activeView === 'search' ? searchFilters : checklistFilters;
+        const id = `view-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 6)}`;
+        commit(setSavedViews(getState(), [...views, { id, name: name.trim() || 'View', filters: { ...active } }]));
+      }
+    };
   }
 
   // Families touched most recently, newest first — the jump list for iterative testing.
@@ -952,18 +1107,21 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       for (const item of findings) {
         const row = document.createElement('tr');
         const idCell = document.createElement('td');
+        idCell.dataset.label = 'ID';
         const family = familyIndex.byItem.get(item.id);
         const link = element('a', '', item.id);
         link.href = family ? `#family/${family.id}` : `#checklist/${item.category}`;
         idCell.append(link);
         const status = itemStatus(item, state);
-        row.append(
-          idCell,
-          element('td', '', item.title),
-          element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`),
-          element('td', '', `${STATUS_GLYPHS[status] || ''} ${STATUS_LABELS[status]}`),
-          element('td', '', state.retests?.[item.id] ? 'Required' : '—')
-        );
+        const titleCell = element('td', '', item.title);
+        titleCell.dataset.label = 'Finding';
+        const severityCell = element('td', '', `${SEVERITY_GLYPHS[item.severity] || ''} ${item.severity}`);
+        severityCell.dataset.label = 'Severity';
+        const statusCell = element('td', '', `${STATUS_GLYPHS[status] || ''} ${STATUS_LABELS[status]}`);
+        statusCell.dataset.label = 'Status';
+        const retestCell = element('td', '', state.retests?.[item.id] ? 'Required' : '—');
+        retestCell.dataset.label = 'Retest';
+        row.append(idCell, titleCell, severityCell, statusCell, retestCell);
         body.append(row);
       }
       table.append(head, body);
@@ -976,7 +1134,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     renderDashboardMetrics();
     if (records.length) await chainStore.loadAll();
     const state = getState();
-    const itemList = records.map(({ item }) => item);
+    const itemList = withCustom().map(({ item }) => item);
     const coverage = computeCoverage(itemList, context(), state.statuses);
     const queue = retestQueue(state);
     const selectedSurface = currentSurface();
@@ -988,6 +1146,13 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
         engagement: state.engagement,
         playbooks: playbookIndex.playbooks,
         currentSurface: selectedSurface,
+        scopeHistory: {
+          snapshots: state.scope_snapshots || [],
+          items: records.length ? records.map(({ item }) => item) : [],
+          categoryNames: Object.fromEntries(manifest.categories.map(({ slug, name }) => [slug, name])),
+          onSnapshot: () => commit(pushScopeSnapshot(getState(), state.engagement.name.trim() || 'Checkpoint')),
+          onSnapshotRemove: (id) => commit(removeScopeSnapshot(getState(), id))
+        },
         onSurfaceSelect({ surfaceId, engagement }) { selectSurface(surfaceId, engagement); },
         onApply({ answers, engagement }) {
           let next = getState();
@@ -1009,13 +1174,21 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
         index: playbookIndex,
         answers: state.answers,
         engagement: state.engagement,
-        records,
+        records: withCustom(),
         getState,
         commit,
         coverage,
         familyIndex,
         surfaceId: selectedSurface?.id || '',
-        deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl)
+        deriveContext: (answers) => deriveContext(answers, state.engagement?.targetUrl),
+        onCustomAdd: ({ title, objective, severity, surface }) => {
+          commit(setCustomChecks(getState(), [...(getState().custom_checks || []), {
+            id: nextCustomCheckId(getState()), title, objective, severity, surface
+          }]));
+        },
+        onCustomRemove: (id) => {
+          commit(setCustomChecks(getState(), (getState().custom_checks || []).filter((check) => check.id !== id)));
+        }
       });
     }
     document.querySelector('[data-playbook-banner]')?.replaceChildren();
@@ -1076,8 +1249,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       renderDashboardMetrics();
       await loadPlaybooks();
       const state = getState();
-      const hasSurface = playbookIndex.byId.has(state.position?.family || '')
-        || (state.answers?.app_type && state.answers.app_type !== 'unknown');
+      const hasSurface = playbookIndex.byId.has(state.position?.family || '') || answersCarryContext(state.answers);
       if (hasSurface) await Promise.all([ensureAll(), loadFamilies(), chainStore.loadAll()]);
       else records = [];
       await renderDashboard();
@@ -1126,7 +1298,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
   }
 
   async function exportAll(kind) {
-    const all = await catalog.loadAll();
+    const all = [...await catalog.loadAll(), ...(getState().custom_checks || [])];
     const state = getState();
     const categoryNames = names();
     if (kind === 'json') downloadText(safeFilename(state.engagement.name, 'state.json'), composeStateJson(state), 'application/json;charset=utf-8');
@@ -1136,6 +1308,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
       downloadText(safeFilename(state.engagement.name, 'coverage.csv'), composeCoverageCsv(all, state, familyIndex, categoryNames), 'text/csv;charset=utf-8');
     }
     if (kind === 'report') downloadText(safeFilename(state.engagement.name, 'report.md'), composeReportMarkdown(all, state, categoryNames), 'text/markdown;charset=utf-8');
+    if (kind === 'report-html') downloadText(safeFilename(state.engagement.name, 'report.html'), composeReportHtml(all, state, categoryNames), 'text/html;charset=utf-8');
   }
 
   function bindActions() {
@@ -1143,6 +1316,7 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     document.querySelector('[data-export-checklist]').addEventListener('click', () => exportAll('checklist'));
     document.querySelector('[data-export-csv]')?.addEventListener('click', () => exportAll('coverage-csv'));
     document.querySelector('[data-export-report]').addEventListener('click', () => exportAll('report'));
+    document.querySelector('[data-export-report-html]')?.addEventListener('click', () => exportAll('report-html'));
     document.querySelector('[data-import-trigger]').addEventListener('click', () => document.querySelector('[data-import-file]').click());
     document.querySelector('[data-import-file]').addEventListener('change', async (event) => {
       const message = document.querySelector('[data-import-message]');
@@ -1178,4 +1352,41 @@ export function createWorkspace({ catalog, getState, replaceState, onStateChange
     },
     renderDashboardMetrics
   });
+}
+
+
+// Named filter views: recall in one click, delete inline, save the current set.
+function renderSavedViews(root, filters, onChange, views) {
+  const { views: list = [], onRecall, onDelete, onSave } = views;
+  const activeCount = Object.entries(filters).filter(([, value]) => value).length;
+  const row = element('div', 'saved-views');
+  row.setAttribute('role', 'group');
+  row.setAttribute('aria-label', 'Saved filter views');
+  for (const view of list) {
+    const chip = element('button', 'saved-view-chip');
+    chip.type = 'button';
+    chip.title = Object.entries(view.filters).filter(([, value]) => value).map(([key, value]) => `${key}: ${value}`).join(' · ') || 'No filters';
+    chip.append(document.createTextNode(view.name));
+    const remove = element('span', 'saved-view-remove', '×');
+    remove.setAttribute('role', 'button');
+    remove.setAttribute('aria-label', `Delete view ${view.name}`);
+    remove.addEventListener('click', (event) => {
+      event.stopPropagation();
+      onDelete?.(view);
+    });
+    chip.append(remove);
+    chip.addEventListener('click', () => onRecall?.(view));
+    row.append(chip);
+  }
+  if (activeCount) {
+    const save = element('button', 'saved-view-save');
+    save.type = 'button';
+    save.textContent = `＋ Save view (${activeCount})`;
+    save.addEventListener('click', () => {
+      const name = window.prompt('Name this view', 'My view');
+      if (name !== null) onSave?.(name);
+    });
+    row.append(save);
+  }
+  root.append(row);
 }

@@ -244,6 +244,534 @@
           ]
         }
       ]
+    },
+    {
+      "id": "oidc-and-grants",
+      "title": "OIDC response handling and grant hygiene",
+      "checks": [
+        {
+          "id": "nonce-binding",
+          "title": "ID-token nonce bound to the login session",
+          "item": "WAPT-OAUTH-003",
+          "severity": "high",
+          "why": "The nonce ties the ID token to your login attempt; without it an injected ID token logs the attacker in as you (or you as them).",
+          "validate": "ID tokens with a missing or non-matching nonce are rejected; one nonce validates exactly one session.",
+          "variants": [
+            {
+              "name": "Wrong nonce",
+              "kind": "note",
+              "payload": "Complete a login capturing the generated nonce; replay the flow using a recorded ID token whose nonce came from a different session.",
+              "expect": "Must reject; session and token nonce must match one-to-one.",
+              "category": "authentication-context",
+              "why": "Cross-session nonce reuse is the injection primitive."
+            },
+            {
+              "name": "Nonce stripped",
+              "kind": "note",
+              "payload": "Present an ID token with no nonce claim to the client callback.",
+              "expect": "Rejected — nonce is required when it was sent in the request.",
+              "category": "mutation",
+              "why": "Optional-on-response means attacker-chosen absent."
+            },
+            {
+              "name": "Replay within session",
+              "kind": "note",
+              "payload": "Submit the same ID token twice to the callback/validator.",
+              "expect": "Second validation fails; ID tokens are single-delivery.",
+              "category": "race-concurrency",
+              "why": "Replay acceptance defeats the point of a login handshake."
+            }
+          ]
+        },
+        {
+          "id": "mix-up",
+          "title": "Authorization-server mix-up rejected",
+          "item": "WAPT-OAUTH-006",
+          "severity": "critical",
+          "why": "With multiple IdPs, a code from IdP A presented on the client registered with IdP B must not be exchanged or trusted.",
+          "validate": "The client validates iss (token) and the state-to-IdP binding end to end; mismatched combinations fail closed.",
+          "variants": [
+            {
+              "name": "Cross-IdP code",
+              "kind": "note",
+              "payload": "Start login with IdP A (state says A), complete the handshake at IdP B, and let the callback receive B code with A state.",
+              "expect": "Rejected: state identifies the flow; iss in the returned tokens is checked against it.",
+              "category": "authorization-context",
+              "why": "Mix-up turns one IdPs outage or weakness into a login on the other."
+            },
+            {
+              "name": "iss claim mismatch",
+              "kind": "note",
+              "payload": "Exchange the code normally, then hand the client an ID token signed by B while it expects A.",
+              "expect": "Rejected by iss validation before any userinfo call.",
+              "category": "mutation",
+              "why": "iss must be checked against the per-flow server, not a global any-of list."
+            },
+            {
+              "name": "Single IdP note",
+              "kind": "note",
+              "payload": "If only one IdP is configured, record that mix-up needs >=2 and mark N/A-by-design with evidence.",
+              "expect": "Documented single-Issuer deployment; revisit if federation grows.",
+              "category": "baseline",
+              "why": "Scope honesty: mix-up is a multi-provider disease."
+            }
+          ]
+        },
+        {
+          "id": "response-pollution",
+          "title": "Response parameters parsed strictly",
+          "item": "WAPT-OAUTH-007",
+          "severity": "high",
+          "why": "Duplicate or smuggled response parameters must not let an attacker inject a second code, state, or redirect target.",
+          "validate": "Exactly one value per parameter is accepted; duplicates and unknown extras fail the flow.",
+          "variants": [
+            {
+              "name": "Duplicate code/state",
+              "kind": "note",
+              "payload": "Append &code=ATTACKER&state=ATTACKER to a legitimate callback URL (attacker-crafted link).",
+              "expect": "Flow fails: duplicate parameters reject rather than last-wins.",
+              "category": "parameter-variant",
+              "why": "Last-wins parsing lets the real state validate the attacker code."
+            },
+            {
+              "name": "Fragment smuggle",
+              "kind": "note",
+              "payload": "Send the code both in query string and fragment on the redirect target.",
+              "expect": "Only the documented response_mode location is read; the other is ignored and the flow still validates once.",
+              "category": "parser-differential",
+              "why": "Query/fragment duality exposes client parser differences."
+            },
+            {
+              "name": "Unknown extras",
+              "kind": "note",
+              "payload": "Add redirect_uri, client_secret, or scope as response-echo parameters.",
+              "expect": "Ignored or rejected — never merged into the client validation set.",
+              "category": "parameter-variant",
+              "why": "Response echo must never override request-time values."
+            }
+          ]
+        },
+        {
+          "id": "scope-consent",
+          "title": "Scope and consent match granted access",
+          "item": "WAPT-OAUTH-009",
+          "severity": "high",
+          "why": "Tokens carry the scope that was consented; more scope on the wire than on the consent screen is silent escalation.",
+          "validate": "Issued token scope equals the consented scope; endpoints enforce per-scope authorization.",
+          "variants": [
+            {
+              "name": "Scope beyond consent",
+              "kind": "note",
+              "payload": "Request scope=profile during consent, then probe a contacts/billing endpoint with the issued token.",
+              "expect": "403 for out-of-scope endpoints; token scope is the floor, not the ceiling.",
+              "category": "authorization-context",
+              "why": "Consent screens and enforcement must agree."
+            },
+            {
+              "name": "Upscope on refresh",
+              "kind": "note",
+              "payload": "Refresh the token adding scope parameters to the refresh request.",
+              "expect": "Returned scope cannot exceed the original grant; unsupported_scope_error otherwise.",
+              "category": "parameter-variant",
+              "why": "Refresh is not re-consent."
+            },
+            {
+              "name": "Wildcard-scope token",
+              "kind": "note",
+              "payload": "If any scope=* or unspecified-scope token appears (e.g. service tokens), map what it can actually reach.",
+              "expect": "Document reachability; wildcards on user-facing tokens are a finding with evidence.",
+              "category": "baseline",
+              "why": "Sometimes the escalation is in the defaults."
+            }
+          ]
+        },
+        {
+          "id": "legacy-grants",
+          "title": "Implicit and password grants off",
+          "item": "WAPT-OAUTH-010",
+          "severity": "high",
+          "why": "Legacy grants leak tokens to front channels or take passwords directly; both must be disabled server-side.",
+          "validate": "The token endpoint rejects both grants; discovery does not advertise them.",
+          "variants": [
+            {
+              "name": "Password grant probe",
+              "kind": "note",
+              "payload": "POST /oauth/token grant_type=password&username=<test>&password=<test>&client_id=<id>.",
+              "expect": "error=unsupported_grant_type. Any other answer is a finding.",
+              "category": "protocol-variant",
+              "why": "One request settles it."
+            },
+            {
+              "name": "Implicit via response_type",
+              "kind": "note",
+              "payload": "Drive authorize with response_type=token (and id_token token).",
+              "expect": "error, no fragment token ever issued.",
+              "category": "protocol-variant",
+              "why": "Fragment tokens live in browser history and referrers."
+            },
+            {
+              "name": "Discovery check",
+              "kind": "note",
+              "payload": "GET /.well-known/oauth-authorization-server (and openid-configuration): inspect grant_types_supported.",
+              "expect": "List contains authorization_code (+refresh) and PKCE requirements; implicit/password absent.",
+              "category": "baseline",
+              "why": "Advertised capability is the honest surface map."
+            }
+          ]
+        },
+        {
+          "id": "client-redirect-chains",
+          "title": "Client redirect chains stay closed",
+          "item": "WAPT-OAUTH-014",
+          "severity": "high",
+          "why": "A registered redirect_uri that itself redirects (or forwards a code) turns the OAuth client into an open-redirect chain that leaks codes.",
+          "validate": "Registered redirect URIs are exact, non-redirecting endpoints; callback pages never forward codes/tokens onward by parameter.",
+          "variants": [
+            {
+              "name": "Open-redirector redirect_uri",
+              "kind": "note",
+              "payload": "If a registered redirect_uri hosts a redirector (e.g. /logout?next=), complete a flow with next=https://collaborator.example",
+              "expect": "No code/state ever reaches the collaborator; the redirector must refuse off-site next.",
+              "category": "out-of-band",
+              "why": "Chained redirectors were the 2025-26 OAuth piñata."
+            },
+            {
+              "name": "Callback parameter forwarding",
+              "kind": "note",
+              "payload": "Inspect the SPA callback: does it read ?code then bounce with #code or ?code to another route/origin?",
+              "expect": "Codes die at the callback handler; no client-side forwarding of credentials.",
+              "category": "browser-context",
+              "why": "Forwarding re-exposes a front-channel credential."
+            },
+            {
+              "name": "Exact-match registration",
+              "kind": "note",
+              "payload": "Try redirect_uri variants: trailing slash, added path, case changes, fragment.",
+              "expect": "All rejected — byte-exact comparison per RFC 6749.",
+              "category": "parser-differential",
+              "why": "Fuzzy matching is how redirect registration is bypassed."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "token-delegation",
+      "title": "Refresh, audience, and client secrets",
+      "checks": [
+        {
+          "id": "refresh-replay",
+          "title": "Refresh tokens resist replay and outlive policy",
+          "item": "WAPT-OAUTH-011",
+          "severity": "critical",
+          "why": "Refresh tokens are the crown jewels: replayable or immortal ones convert one theft into permanent access.",
+          "validate": "Rotation on every use, reuse revokes the family, absolute lifetime bounded, sender-constrained where possible.",
+          "variants": [
+            {
+              "name": "Old refresh replay",
+              "kind": "note",
+              "payload": "Use refresh token R1 to get R2, then replay R1 from a second client.",
+              "expect": "R1 rejected and family revoked; re-auth required.",
+              "category": "authorization-context",
+              "why": "Rotation without reuse-revocation is rotation theatre."
+            },
+            {
+              "name": "Absolute lifetime",
+              "kind": "note",
+              "payload": "Record refresh exp/issued-at and idle timeout from discovery or token introspection.",
+              "expect": "Bounded absolute lifetime (commonly <= 90 days); report anything unbounded.",
+              "category": "baseline",
+              "why": "Immortality by default is common and quietly severe."
+            },
+            {
+              "name": "Cross-client refresh",
+              "kind": "note",
+              "payload": "Use the SPA client refresh token on the confidential client (and vice versa).",
+              "expect": "Rejected — refresh binds to the client that minted it (client_id binding).",
+              "category": "authentication-context",
+              "why": "Client binding stops token lending between apps."
+            }
+          ]
+        },
+        {
+          "id": "token-audience",
+          "title": "Access-token audience and delegated claims validated",
+          "item": "WAPT-OAUTH-012",
+          "severity": "critical",
+          "why": "Downstream APIs must check aud and scope themselves; upstream tokens flowing through unvalidated is token relay.",
+          "validate": "Each API validates aud for itself plus scope/roles claims; on-behalf-of chains carry the original caller.",
+          "variants": [
+            {
+              "name": "Wrong-audience token",
+              "kind": "note",
+              "payload": "Use an access token minted for API A directly against API B.",
+              "expect": "B returns 401/403 — it checked aud, not just signature.",
+              "category": "authorization-context",
+              "why": "The most common API/OAuth boundary failure."
+            },
+            {
+              "name": "Gateway relay",
+              "kind": "note",
+              "payload": "Send a user token to the gateway/frontend and observe what the backend receives on upstream calls.",
+              "expect": "Backend sees either the validated user context or an explicitly-delegated token — never a raw pass-through that skips aud.",
+              "category": "protocol-variant",
+              "why": "Relayed tokens make every backend implicitly trust every frontend."
+            },
+            {
+              "name": "Delegation claims",
+              "kind": "note",
+              "payload": "Where act/obo tokens exist, use a delegated token meant for API A at API B.",
+              "expect": "Rejected: delegation chains are audience-bound too.",
+              "category": "authorization-context",
+              "why": "Delegation widens reach; audience is the leash."
+            }
+          ]
+        },
+        {
+          "id": "client-secrets",
+          "title": "Client secrets stay server-side",
+          "item": "WAPT-OAUTH-013",
+          "severity": "critical",
+          "why": "A client_secret in shipped JavaScript or a mobile binary is public: anyone can impersonate the client, phish consent, and exchange codes.",
+          "validate": "Public clients use PKCE with no secret; secrets exist only in server-side confidential clients.",
+          "variants": [
+            {
+              "name": "Bundle secret hunt",
+              "kind": "note",
+              "payload": "Fetch the app JS bundles (devtools network filter on the SPA) and grep for client_secret, clientid patterns, and long base64 strings near oauth config.",
+              "expect": "No secret in any public bundle; public flows send code_verifier + PKCE instead.",
+              "category": "browser-context",
+              "why": "The secret is either in the shipped code or it is not — grepping decides."
+            },
+            {
+              "name": "Token-endpoint auth styles",
+              "kind": "note",
+              "payload": "Attempt a code exchange with client_secret=<found-candidate> and with none (PKCE-only).",
+              "expect": "If a found secret verifies, exchange succeeds where it must not — critical, with the file and offset as evidence.",
+              "category": "authentication-context",
+              "why": "Proof beats suspicion: complete one exchange with a test code."
+            },
+            {
+              "name": "PKCE enforcement",
+              "kind": "note",
+              "payload": "Exchange a code without code_verifier on a public client.",
+              "expect": "Rejected: PKCE required (error invalid_request), preventing intercepted-code use.",
+              "category": "protocol-variant",
+              "why": "No-secret flows live or die by PKCE."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "saml",
+      "title": "SAML assertion trust",
+      "checks": [
+        {
+          "id": "xsw-wrapping",
+          "title": "Signature wrapping rejected",
+          "item": "WAPT-OAUTH-016",
+          "severity": "critical",
+          "why": "XSW moves the signed assertion out of the evaluated path and injects an unsigned one (or vice versa); the signature validates, the content does not.",
+          "validate": "The signature element verified is the same element whose content is used; every XSW variant fails.",
+          "variants": [
+            {
+              "name": "SAML Raider wraps",
+              "kind": "note",
+              "payload": "Capture your own test SAML response; in Burp with SAML Raider, apply the classic wraps (e.g., #2: duplicate Response, unsigned inner) editing NameID to your second test account.",
+              "expect": "Login still identifies the original NameID or fails — never the injected one.",
+              "category": "tool-assisted",
+              "why": "The canonical wrap probes with your own two accounts, not an attack on others."
+            },
+            {
+              "name": "Assertion outside signature",
+              "kind": "note",
+              "payload": "Move the original signed Assertion outside the signed subtree and add an unsigned Assertion with test-account NameID inside.",
+              "expect": "Rejected: the evaluated assertion is inside the signature reference.",
+              "category": "mutation",
+              "why": "XML signature references, not document position, must decide what is trusted."
+            },
+            {
+              "name": "Duplicate assertion ids",
+              "kind": "note",
+              "payload": "Two assertions sharing one ID, only one signed.",
+              "expect": "Rejected as malformed — duplicate IDs break signature targeting by design.",
+              "category": "encoding",
+              "why": "ID collisions are the raw material of most wraps."
+            }
+          ]
+        },
+        {
+          "id": "saml-audience",
+          "title": "Audience, recipient, destination, issuer validated",
+          "item": "WAPT-OAUTH-017",
+          "severity": "critical",
+          "why": "A response from a trusted IdP but addressed to another SP (or nowhere) must not log you into this SP.",
+          "validate": "AudienceRestriction = this SP entity id; Recipient = this ACS; Destination = this ACS URL; Issuer = trusted IdP entity id.",
+          "variants": [
+            {
+              "name": "Foreign audience",
+              "kind": "note",
+              "payload": "Use a SAML response issued for a different SP you control (second test app) against this SP ACS.",
+              "expect": "Rejected on AudienceRestriction.",
+              "category": "authorization-context",
+              "why": "Cross-SP acceptance is SAML cross-tenant login."
+            },
+            {
+              "name": "Destination rewrite",
+              "kind": "note",
+              "payload": "Change the Response Destination to your Collaborator URL and submit to the ACS.",
+              "expect": "Rejected — destination mismatch — and the IdP would not have sent it there anyway.",
+              "category": "out-of-band",
+              "why": "Destination binding blocks response forwarding."
+            },
+            {
+              "name": "Issuer lookalike",
+              "kind": "note",
+              "payload": "Edit the IdP Issuer to a lookalike entity id (extra path or suffix).",
+              "expect": "Rejected by exact entity-id match.",
+              "category": "parser-differential",
+              "why": "Entity-id string tricks mirror iss prefix tricks."
+            }
+          ]
+        },
+        {
+          "id": "saml-request-binding",
+          "title": "Responses bound to requests, replay refused",
+          "item": "WAPT-OAUTH-018",
+          "severity": "critical",
+          "why": "Unsolicited (IdP-initiated) responses and replayed responses are injection vectors unless bound to your AuthnRequest.",
+          "validate": "InResponseTo matches an outstanding request ID; responses replay after consumption fail; OneTimeUse enforced.",
+          "variants": [
+            {
+              "name": "Unsolicited response",
+              "kind": "note",
+              "payload": "Remove InResponseTo and submit the response directly to the ACS (IdP-initiated style).",
+              "expect": "Rejected unless the app explicitly allows IdP-initiated with strict Audience+Issuer; document the policy either way.",
+              "category": "protocol-variant",
+              "why": "Unsolicited SSO is legitimate in some flows — it must still be a decision."
+            },
+            {
+              "name": "Replay after login",
+              "kind": "note",
+              "payload": "Capture your login response; submit it again after logging out.",
+              "expect": "Second submission fails (consumed / OneTimeUse / NotOnOrAfter).",
+              "category": "authorization-context",
+              "why": "Replay acceptance makes logout decorative."
+            },
+            {
+              "name": "Stale InResponseTo",
+              "kind": "note",
+              "payload": "Replay a response whose InResponseTo refers to a consumed request.",
+              "expect": "Rejected: request IDs are single-use and short-lived.",
+              "category": "mutation",
+              "why": "Old request IDs must not re-open doors."
+            }
+          ]
+        },
+        {
+          "id": "saml-time",
+          "title": "Assertion time conditions enforced",
+          "item": "WAPT-OAUTH-019",
+          "severity": "high",
+          "why": "NotBefore in the future and stretched NotOnOrAfter both widen the acceptance window beyond intent.",
+          "validate": "NotBefore/NotOnOrAfter enforced with a small documented skew; assertions outside the window are rejected.",
+          "variants": [
+            {
+              "name": "Future NotBefore",
+              "kind": "note",
+              "payload": "Edit NotBefore to +2 hours (keep your own session clock sane).",
+              "expect": "Rejected until the window opens; skew is minutes not hours.",
+              "category": "mutation",
+              "why": "Future-dated assertions should not be time-travel passes."
+            },
+            {
+              "name": "Stretched NotOnOrAfter",
+              "kind": "note",
+              "payload": "Edit NotOnOrAfter to +30 days.",
+              "expect": "Rejected after the intended window; lifetime policy documented.",
+              "category": "mutation",
+              "why": "Eternal assertions equal eternal sessions."
+            },
+            {
+              "name": "Skymap skew probe",
+              "kind": "note",
+              "payload": "Record the accepted skew by shifting NotBefore in small steps (60s, 5m, 15m).",
+              "expect": "Skew is bounded and documented; report unbounded acceptance with the measured value.",
+              "category": "baseline",
+              "why": "Measure the window instead of assuming it."
+            }
+          ]
+        },
+        {
+          "id": "saml-attributes",
+          "title": "Attributes and role mapping constrained",
+          "item": "WAPT-OAUTH-021",
+          "severity": "critical",
+          "why": "Assertions carry group/role attributes; trusting extra or unrequested attributes lets a compromised IdP field (or a permissive mapping) mint admins.",
+          "validate": "Only expected attributes from the trusted IdP map to application roles; unknown attributes are inert.",
+          "variants": [
+            {
+              "name": "Extra admin attribute",
+              "kind": "note",
+              "payload": "With your IdP under control (test app), add an attribute like groups=[admin] to your own test assertion.",
+              "expect": "Login works, but application roles come from the mapped attribute set only — no shadow attribute becomes admin.",
+              "category": "authorization-context",
+              "why": "You control the IdP field; the SP mapping is the target."
+            },
+            {
+              "name": "NameID format confusion",
+              "kind": "note",
+              "payload": "Switch NameID Format between emailAddress and persistent with the same value.",
+              "expect": "Identity resolution is format-aware; no lookup miss that falls back to permissive matching.",
+              "category": "parser-differential",
+              "why": "Format-blind matching enables shadow accounts."
+            },
+            {
+              "name": "Mapping sprawl note",
+              "kind": "note",
+              "payload": "Inventory which assertion attributes the SP consumes (docs + observed login behaviour).",
+              "expect": "Every consumed attribute is documented and intended; orphan mappings removed.",
+              "category": "baseline",
+              "why": "Mapping surface is attack surface."
+            }
+          ]
+        },
+        {
+          "id": "slo-coordination",
+          "title": "SSO logout coordinates and cleans local state",
+          "item": "WAPT-OAUTH-022",
+          "severity": "high",
+          "why": "Single logout that leaves an SP session (or a local fallback session) alive is a logout that did not happen.",
+          "validate": "SLO terminates the SP session, clears local fallback cookies/storage, and SessionIndex targeting works per session.",
+          "variants": [
+            {
+              "name": "SLO then SP replay",
+              "kind": "note",
+              "payload": "Trigger SLO at the IdP, then revisit the SP and re-issue an authenticated request.",
+              "expect": "SP requires re-auth; its session cookie is invalid.",
+              "category": "authorization-context",
+              "why": "The SP session must die with the SLO."
+            },
+            {
+              "name": "SessionIndex mismatch",
+              "kind": "note",
+              "payload": "Trigger SLO for session A while session B (same user, second browser) is live.",
+              "expect": "Only A is terminated if SessionIndex is honoured — otherwise document that all sessions end.",
+              "category": "browser-context",
+              "why": "Precision here is policy, but must be deliberate."
+            },
+            {
+              "name": "Local fallback session",
+              "kind": "note",
+              "payload": "After logout, sweep cookies and storage on the SP origin.",
+              "expect": "No session/token material survives; fallback auth paths re-prompt.",
+              "category": "browser-context",
+              "why": "Half-clean logout is the usual residue."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -256,5 +784,6 @@
       "safe": true,
       "payload": "GET /authorize?client_id=<id>&redirect_uri=https://app.example.com.evil.example/&response_type=code&state=wapt HTTP/1.1\nHost: idp.example.com\nConnection: close"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

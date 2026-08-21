@@ -2187,6 +2187,498 @@
         }
       ],
       "surface": "client"
+    },
+    {
+      "id": "policy-depth",
+      "title": "Policy depth and consistency",
+      "checks": [
+        {
+          "id": "csp-nonce-quality",
+          "title": "CSP nonces unpredictable without unsafe fallbacks",
+          "item": "WAPT-HDR-004",
+          "severity": "medium",
+          "why": "A predictable nonce (counter, timestamp, short random) makes strict CSP equivalent to unsafe-inline.",
+          "validate": "Nonces are >= 128-bit random per response, never reused across responses, and no unsafe-inline fallback coexists.",
+          "variants": [
+            {
+              "name": "Nonce entropy sample",
+              "kind": "note",
+              "payload": "Collect 20+ responses; extract nonce values; check length, charset, repetition, and shared values across users/sessions.",
+              "expect": "16+ base64 chars, no repetition, no cross-session reuse; any pattern is a finding.",
+              "category": "baseline",
+              "why": "Your own responses are the whole sample."
+            },
+            {
+              "name": "Nonce replay",
+              "kind": "note",
+              "payload": "Replay a captured nonce-bearing response nonce in a crafted script tag against a fresh page load (own test page).",
+              "expect": "Old nonce rejected — strictly per-response.",
+              "category": "mutation",
+              "why": "Per-response means per-response."
+            },
+            {
+              "name": "Fallback hunt",
+              "kind": "note",
+              "payload": "Check the policy for unsafe-inline alongside nonces, and script-src duplicate directives.",
+              "expect": "No unsafe-inline coexistence; duplicate script-src understood (second ignored per spec — a misconfig trap).",
+              "category": "baseline",
+              "why": "The fallback quietly deletes the protection."
+            }
+          ]
+        },
+        {
+          "id": "csp-navigation",
+          "title": "CSP constrains base, object, and navigation",
+          "item": "WAPT-HDR-005",
+          "severity": "medium",
+          "why": "Without base-uri/object-src/form-action restrictions, injected markup can hijack relative URLs, load plugins, or exfiltrate via form posts.",
+          "validate": "base-uri restricted (self or none), object-src none, form-action/frame-ancestors/navigation constrained where applicable.",
+          "variants": [
+            {
+              "name": "Base injection",
+              "kind": "note",
+              "payload": "On your test page or an HTML injection point, inject <base href=\"https://evil.example/\"> and observe resource loads.",
+              "expect": "base-uri restricts or none blocks hijack of relative script/style URLs.",
+              "category": "browser-context",
+              "why": "base-uri is the forgotten CSP directive with the biggest payoff."
+            },
+            {
+              "name": "Object/plugin probe",
+              "kind": "note",
+              "payload": "Attempt <object data=\"https://evil.example/x.swf\"> style embeds at any injection point.",
+              "expect": "object-src none blocks plugin-style loads.",
+              "category": "mutation",
+              "why": "Legacy vectors still ship in modern apps."
+            },
+            {
+              "name": "Form-action exfil",
+              "kind": "note",
+              "payload": "Inject a form posting credentials to your Collaborator domain; submit it yourself.",
+              "expect": "form-action blocks the cross-origin post (or is documented as open).",
+              "category": "browser-context",
+              "why": "Exfiltration does not need script."
+            }
+          ]
+        },
+        {
+          "id": "xfo-consistency",
+          "title": "X-Frame-Options consistent with frame-ancestors",
+          "item": "WAPT-HDR-007",
+          "severity": "low",
+          "why": "Conflicting legacy and modern framing headers leave clickjacking protection to browser quirks.",
+          "validate": "Where both exist, XFO and CSP frame-ancestors agree; where only legacy exists, it is deliberately documented.",
+          "variants": [
+            {
+              "name": "Header pair audit",
+              "kind": "command",
+              "payload": "curl -sI https://www.example.com | grep -iE \"x-frame-options|frame-ancestors\" across main, auth, and error routes.",
+              "expect": "Values agree (DENY/none, SAMEORIGIN/self) on every route; conflicts listed.",
+              "category": "tool-assisted",
+              "why": "The audit is one command per route."
+            },
+            {
+              "name": "Frame probe",
+              "kind": "note",
+              "payload": "Embed the app in an iframe on your test origin; observe behavior.",
+              "expect": "Blocked consistently; no route that renders in a foreign frame.",
+              "category": "browser-context",
+              "why": "Behavior beats headers."
+            },
+            {
+              "name": "Legacy-only note",
+              "kind": "note",
+              "payload": "Where only XFO survives, record the decision (legacy browser policy) for the report.",
+              "expect": "Documented reason; modern frame-ancestors preferred.",
+              "category": "baseline",
+              "why": "Legacy headers need funerals too."
+            }
+          ]
+        },
+        {
+          "id": "content-type-strict",
+          "title": "Accurate Content-Type and charset everywhere",
+          "item": "WAPT-HDR-009",
+          "severity": "medium",
+          "why": "Wrong or missing content-types let browsers sniff active content — the road to stored XSS via uploads and API responses rendered as HTML.",
+          "validate": "Every response carries an accurate Content-Type with charset; user-content endpoints never default to text/html.",
+          "variants": [
+            {
+              "name": "Route-type census",
+              "kind": "note",
+              "payload": "curl -sI across HTML, JSON, JS, CSS, downloads, SVG, and error routes; tabulate Content-Type + charset.",
+              "expect": "Accurate type and charset on every route; JSON never text/html; SVG image/svg+xml (with CSP thought through).",
+              "category": "baseline",
+              "why": "One census, permanent reference table."
+            },
+            {
+              "name": "Sniff probe",
+              "kind": "note",
+              "payload": "Fetch a JSON/upload endpoint containing HTML-ish canary content with an Accept: text/html and via direct navigation.",
+              "expect": "No sniff-to-HTML execution; X-Content-Type-Options: nosniff present on non-HTML.",
+              "category": "parser-differential",
+              "why": "nosniff plus correct types is the pair that works."
+            },
+            {
+              "name": "Upload-type honesty",
+              "kind": "note",
+              "payload": "Re-check Content-Type on the download URL of an uploaded file you control.",
+              "expect": "Served type matches the safe delivery policy (see file-handling checks).",
+              "category": "protocol-variant",
+              "why": "The header is the last word on parsing."
+            }
+          ]
+        },
+        {
+          "id": "coop-isolation",
+          "title": "COOP where cross-window isolation matters",
+          "item": "WAPT-HDR-012",
+          "severity": "low",
+          "why": "Without COOP, opened windows keep references (and some leak channels) into your app — tabnabbing and XS-leak plumbing.",
+          "validate": "Cross-Origin-Opener-Policy set (same-origin) on pages with authenticated state, aligned with popup/window usage.",
+          "variants": [
+            {
+              "name": "Opener reference probe",
+              "kind": "note",
+              "payload": "From your test page, window.open the app and inspect the opener relationship both ways in console.",
+              "expect": "References severed per COOP; document actual isolation.",
+              "category": "browser-context",
+              "why": "The direct behavioral test."
+            },
+            {
+              "name": "Tabnabbing combo",
+              "kind": "note",
+              "payload": "Open an external link (marked rel=noopener?) from the app; from the external side attempt opener.location changes (your own pages).",
+              "expect": "rel=noopener and/or COOP prevent reverse tabnabbing.",
+              "category": "browser-context",
+              "why": "Pairs with the client-side tabnabbing check."
+            },
+            {
+              "name": "Isolation-inventory note",
+              "kind": "note",
+              "payload": "Inventory which authenticated routes set COOP and which legitimately need cross-window access.",
+              "expect": "COOP on authenticated surfaces unless a documented feature needs otherwise.",
+              "category": "baseline",
+              "why": "Isolation is a per-route decision set."
+            }
+          ]
+        },
+        {
+          "id": "coep-only-when-needed",
+          "title": "COEP only where isolation requires it",
+          "item": "WAPT-HDR-013",
+          "severity": "informational",
+          "why": "COEP enables cross-origin isolation (SharedArrayBuffer, precise timers) — attackers want it too; deploy deliberately, not by cargo cult.",
+          "validate": "COEP/CORP appear only on surfaces needing isolation; embedded resources carry CORP/credentials policy consistently.",
+          "variants": [
+            {
+              "name": "Isolation census",
+              "kind": "note",
+              "payload": "Check COEP/CORP/COOP across routes; identify which features demand isolation (SAB, precise timers).",
+              "expect": "Isolation present exactly where needed; no accidental blanket COEP breaking legit embeds.",
+              "category": "baseline",
+              "why": "Map intent before judging."
+            },
+            {
+              "name": "Embed breakage probe",
+              "kind": "note",
+              "payload": "Embed legit third-party resources (analytics, fonts, images) on COEP pages.",
+              "expect": "Intended resources load (CORP/cors-approved) — breakage shows accidental policy.",
+              "category": "browser-context",
+              "why": "Broken embeds reveal unmanaged policy."
+            },
+            {
+              "name": "SAB abuse surface note",
+              "kind": "note",
+              "payload": "Where isolation exists, note which high-resolution side channels it unlocks for the threat model.",
+              "expect": "Documented in report as deliberate trade-off.",
+              "category": "baseline",
+              "why": "Isolation is also an attacker capability."
+            }
+          ]
+        },
+        {
+          "id": "clear-site-data",
+          "title": "Clear-Site-Data on high-risk logout/reset",
+          "item": "WAPT-HDR-016",
+          "severity": "low",
+          "why": "Shared machines keep tokens and caches after logout unless the server explicitly clears client state.",
+          "validate": "High-risk logout (and credential reset) responses carry Clear-Site-Data scoped to what the app uses, alongside server-side revocation.",
+          "variants": [
+            {
+              "name": "Logout residue sweep",
+              "kind": "note",
+              "payload": "Inventory storage + caches before/after logout (DevTools Application).",
+              "expect": "Tokens, caches, and storage cleared (header or script) — nothing revivable locally.",
+              "category": "browser-context",
+              "why": "The before/after diff is the evidence."
+            },
+            {
+              "name": "Header scope check",
+              "kind": "note",
+              "payload": "Inspect the Clear-Site-Data directive values on logout responses.",
+              "expect": "Scoped to \"cache\",\"storage\" (or documented subset); wildcards only if everything is client-clearable.",
+              "category": "baseline",
+              "why": "The header is a scalpel, not a fog."
+            },
+            {
+              "name": "Reset-flow parity",
+              "kind": "note",
+              "payload": "Password reset / device revocation flows: same clearing behavior.",
+              "expect": "Credential events clear client state like logout does.",
+              "category": "authentication-context",
+              "why": "Resets are compromise responses."
+            }
+          ]
+        },
+        {
+          "id": "content-disposition",
+          "title": "Safe Content-Disposition on downloads",
+          "item": "WAPT-HDR-017",
+          "severity": "medium",
+          "why": "Downloaded files with attacker-influenced names and inline dispositions execute in the origin context or deceive users.",
+          "validate": "Downloads carry attachment; filename encoded and sanitized; no inline active content from user data.",
+          "variants": [
+            {
+              "name": "Filename injection",
+              "kind": "note",
+              "payload": "Upload/download a file named with quotes, CR/LF, Unicode lookalikes, and .html double extensions (your own file).",
+              "expect": "Header stays well-formed; dangerous names neutralized; no header splitting.",
+              "category": "encoding",
+              "why": "Response-splitting via filenames is the classic."
+            },
+            {
+              "name": "Inline disposition probe",
+              "kind": "note",
+              "payload": "Fetch the download URL directly in the browser.",
+              "expect": "attachment (or a hardened inline policy for previews) — user content never renders as origin HTML.",
+              "category": "browser-context",
+              "why": "inline + text/html = stored XSS via upload."
+            },
+            {
+              "name": "Charset on downloads",
+              "kind": "note",
+              "payload": "Check Content-Type + charset pairs on CSV/TSV exports.",
+              "expect": "Safe types (text/csv) with neutral charset; no Excel formula injection left to the client (see file-handling depth).",
+              "category": "baseline",
+              "why": "Exports are user data too."
+            }
+          ]
+        },
+        {
+          "id": "version-disclosure",
+          "title": "Product and version headers minimized",
+          "item": "WAPT-HDR-018",
+          "severity": "informational",
+          "why": "Server/X-Powered-By and framework versions hand attackers a targeted exploit shortlist for free.",
+          "validate": "Version-bearing headers removed or generic; disclosure limited to what operations require.",
+          "variants": [
+            {
+              "name": "Header census",
+              "kind": "command",
+              "payload": "curl -sI on main/API/error routes; list Server, X-Powered-By, and friends.",
+              "expect": "Removed or generic; anything kept has an operational reason.",
+              "category": "tool-assisted",
+              "why": "Free reconnaissance, countered for free."
+            },
+            {
+              "name": "Error-page versions",
+              "kind": "note",
+              "payload": "Trigger 404/500 pages; grep bodies for version strings, framework signatures, build ids.",
+              "expect": "Error bodies version-free.",
+              "category": "baseline",
+              "why": "Bodies leak more than headers."
+            },
+            {
+              "name": "Asset metadata note",
+              "kind": "note",
+              "payload": "Check meta generators, build-id headers, and sourcemap references for version leakage.",
+              "expect": "Build identifiers absent in production or documented.",
+              "category": "baseline",
+              "why": "Build ids fingerprint exact deployments."
+            }
+          ]
+        },
+        {
+          "id": "xss-protection-off",
+          "title": "Obsolete X-XSS-Protection disabled",
+          "item": "WAPT-HDR-019",
+          "severity": "informational",
+          "why": "The legacy auditor is dead and was itself exploitable — its presence signals stale security practice.",
+          "validate": "X-XSS-Protection absent or explicitly 0; no reliance on it anywhere.",
+          "variants": [
+            {
+              "name": "Header check",
+              "kind": "command",
+              "payload": "curl -sI | grep -i x-xss-protection across routes.",
+              "expect": "Absent or \"0\" — never \"1\" modes.",
+              "category": "tool-assisted",
+              "why": "One command."
+            },
+            {
+              "name": "Mode audit",
+              "kind": "note",
+              "payload": "If present, note mode=block vs report URLs.",
+              "expect": "No report= URLs (they leaked cross-origin); recommend removal.",
+              "category": "baseline",
+              "why": "Even the correct spelling is obsolete."
+            }
+          ]
+        },
+        {
+          "id": "hpkp-absent",
+          "title": "HPKP not deployed",
+          "item": "WAPT-HDR-020",
+          "severity": "informational",
+          "why": "Public key pinning is deprecated and historically brick devices and enables ransom-style lockout — its presence is a risk, not a control.",
+          "validate": "No Public-Key-Pins headers on any route; certificate assurance handled via modern mechanisms.",
+          "variants": [
+            {
+              "name": "Pin hunt",
+              "kind": "command",
+              "payload": "curl -sI across routes grepping Public-Key-Pins and Public-Key-Pins-Report-Only.",
+              "expect": "Absent everywhere.",
+              "category": "tool-assisted",
+              "why": "The check is the finding."
+            },
+            {
+              "name": "Ops-inventory note",
+              "kind": "note",
+              "payload": "Where pins existed historically, confirm removal ran its max-age course and monitoring is off.",
+              "expect": "No stale pin trust anywhere including subdomains.",
+              "category": "baseline",
+              "why": "Pins outlive the teams that set them."
+            }
+          ]
+        },
+        {
+          "id": "expect-ct-obsolete",
+          "title": "Expect-CT treated as obsolete telemetry",
+          "item": "WAPT-HDR-021",
+          "severity": "informational",
+          "why": "Expect-CT is deprecated; keeping it implies a CT story that no longer works that way.",
+          "validate": "Expect-CT absent; certificate transparency handled by current monitoring.",
+          "variants": [
+            {
+              "name": "Header check",
+              "kind": "command",
+              "payload": "grep for Expect-CT across routes.",
+              "expect": "Absent; if present, removal recommended with the CT monitoring story confirmed.",
+              "category": "tool-assisted",
+              "why": "Header census covers it."
+            },
+            {
+              "name": "CT monitoring note",
+              "kind": "note",
+              "payload": "Ask/verify how CT logs are monitored today (issuer monitoring, domain watches).",
+              "expect": "A current mechanism exists and is owned.",
+              "category": "baseline",
+              "why": "Replace, do not just remove."
+            }
+          ]
+        },
+        {
+          "id": "route-consistency",
+          "title": "Policies consistent across routes, errors, redirects",
+          "item": "WAPT-HDR-022",
+          "severity": "medium",
+          "why": "Security headers vanish on error pages, redirects, and alternate origins — attackers route to the weakest copy of the app.",
+          "validate": "The full header set applies to every route, status code, redirect hop, and alternate origin (www vs apex, API vs web).",
+          "variants": [
+            {
+              "name": "Status-code matrix",
+              "kind": "note",
+              "payload": "Request normal, 401, 403, 404, 500, and redirect routes; diff header sets.",
+              "expect": "Identical policy headers on every status; gaps listed as findings.",
+              "category": "baseline",
+              "why": "Error handlers forget headers first."
+            },
+            {
+              "name": "Origin matrix",
+              "kind": "note",
+              "payload": "Repeat across www/apex, api subdomain, and staged alternate hosts.",
+              "expect": "Policy consistent across origins in scope.",
+              "category": "baseline",
+              "why": "The weakest origin is the attack surface."
+            },
+            {
+              "name": "Redirect-hop follow",
+              "kind": "command",
+              "payload": "Follow each redirect chain with curl -L -I; check each hop.",
+              "expect": "Every hop carries the policy (HSTS on the first, CSP on the rendering hop).",
+              "category": "tool-assisted",
+              "why": "Hops skip middleware sometimes."
+            }
+          ]
+        },
+        {
+          "id": "malformed-header-handling",
+          "title": "Duplicate and malformed headers rejected consistently",
+          "item": "WAPT-HDR-023",
+          "severity": "medium",
+          "why": "Duplicate CSP/HSTS headers and odd casing let intermediaries and browsers pick the weakest interpretation.",
+          "validate": "Duplicate security headers are rejected or normalized; the server never emits two policies for one directive.",
+          "variants": [
+            {
+              "name": "Duplicate request-header probe",
+              "kind": "note",
+              "payload": "Send requests with duplicated Origin, Host variants, and repeated cookie names; observe normalization.",
+              "expect": "Deterministic handling; no 500s, no policy bypass via duplicates.",
+              "category": "header-variant",
+              "why": "Request duplicates test middleware maturity."
+            },
+            {
+              "name": "Response self-audit",
+              "kind": "note",
+              "payload": "Check responses for accidentally duplicated headers (middleware stacking).",
+              "expect": "Single, consistent values — duplicates reported.",
+              "category": "baseline",
+              "why": "Stacks emit what stacks emit."
+            },
+            {
+              "name": "Case/whitespace roulette",
+              "kind": "note",
+              "payload": "Request headers with odd casing, tabs, and folded values.",
+              "expect": "Parsed consistently; parser differentials documented.",
+              "category": "parser-differential",
+              "why": "Intermediaries normalize differently than origins."
+            }
+          ]
+        },
+        {
+          "id": "report-only-honesty",
+          "title": "Report-only distinguished from enforcement",
+          "item": "WAPT-HDR-024",
+          "severity": "informational",
+          "why": "A Content-Security-Policy-Report-Only that everyone believes is enforcement is a false sense of security worth naming.",
+          "validate": "Report-Only usage is deliberate, monitored, and time-boxed; enforced policies exist where protection is claimed.",
+          "variants": [
+            {
+              "name": "Policy census",
+              "kind": "note",
+              "payload": "List which routes send Report-Only vs enforced variants.",
+              "expect": "Report-Only only on documented rollout paths; enforced elsewhere.",
+              "category": "baseline",
+              "why": "The census names the gap."
+            },
+            {
+              "name": "Report endpoint check",
+              "kind": "note",
+              "payload": "Where report URIs exist, confirm the endpoint receives and owns reports.",
+              "expect": "Reports flow to a monitored endpoint; failures visible.",
+              "category": "protocol-variant",
+              "why": "Report endpoints leak URLs — protect them."
+            },
+            {
+              "name": "Rollout-window note",
+              "kind": "note",
+              "payload": "Check how long Report-Only has been the state (changelog/headers history if available).",
+              "expect": "Time-boxed rollouts; permanent Report-Only flagged.",
+              "category": "baseline",
+              "why": "Temporary things become permanent."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -2289,5 +2781,6 @@
       "safe": true,
       "payload": "GET / HTTP/1.1\nHost: www.example.com\nHost: www.example.com.evil.example\nConnection: close"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

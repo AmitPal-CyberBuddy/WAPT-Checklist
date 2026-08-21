@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "category": "rate-limiting",
-  "lastmod": "2026-08-18",
+  "lastmod": "2026-08-21",
   "items": [
     {
       "id": "WAPT-RATE-001",
@@ -221,12 +221,12 @@
     },
     {
       "id": "WAPT-RATE-003",
-      "title": "Limit OTP, MFA, and recovery-code verification attempts",
+      "title": "Limit factor-verification abuse across renewed challenges and channels",
       "category": "rate-limiting",
       "severity": "high",
       "difficulty": "medium",
       "mode": "manual",
-      "objective": "Determine whether short factors can be guessed within their validity window or across renewed challenges.",
+      "objective": "Determine whether short factors can still be guessed across challenge renewal, multiple verification channels or endpoints, and slower distributed attempt patterns that defeat single-challenge limits.",
       "prerequisites": [
         "Owner-documented abuse model, expected limits, and explicit safe request/message ceiling",
         "Disposable identities, synthetic resources/destinations, monitoring, and recovery/cleanup plan"
@@ -300,7 +300,9 @@
         ],
         "portswigger": []
       },
-      "related": [],
+      "related": [
+        "WAPT-AUTH-031"
+      ],
       "tags": [
         "rate-limiting",
         "abuse",

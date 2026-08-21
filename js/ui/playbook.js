@@ -3,12 +3,12 @@
 // the catalog-only remainder behind them. Authored checks show named attack hypotheses
 // (tickable coverage, never findings) with a one-line Why; catalog-only checks show a
 // maturity chip and a methodology link — never a fabricated request.
-import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r9';
-import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r9';
-import { variantKey } from '../engine/families.js?v=1.0.0-r9';
-import { setVariantCovered } from '../engine/state.js?v=1.0.0-r9';
-import { itemStatus } from './filters.js?v=1.0.0-r9';
-import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r9';
+import { suggestedPlaybook, playbookChecks, checkItemIds, classifyPlaybook, expandPlaybook, expandedMaturityCounts } from '../engine/playbooks.js?v=1.0.0-r22';
+import { checkMaturity, MATURITY, resolveVariant } from '../engine/maturity.js?v=1.0.0-r22';
+import { variantKey } from '../engine/families.js?v=1.0.0-r22';
+import { setVariantCovered } from '../engine/state.js?v=1.0.0-r22';
+import { itemStatus } from './filters.js?v=1.0.0-r22';
+import { copyButton, element, SEVERITY_GLYPHS, STATUS_GLYPHS, statusControls } from './dom.js?v=1.0.0-r22';
 
 function checkCount(playbook) {
   return (playbook.groups || []).reduce((sum, group) => sum + (group.checks || []).length, 0);
@@ -179,7 +179,7 @@ export function renderPlaybookBoard(root, context) {
   } else if (contextLabel) {
     intro.textContent = `${contextLabel} does not pin a single page or function. Choose what you are looking at, or refine the scope.`;
   } else {
-    intro.textContent = 'What are you looking at? Pick a page or function and start with its core testing plan.';
+    intro.textContent = 'Focus the working set on the page or function in front of you. The assessment context stays the source of truth for what applies.';
   }
   root.append(intro);
 
@@ -424,7 +424,7 @@ export function renderPlaybookWorkspace(root, context) {
   const raw = index?.byId?.get(playbookId);
   root.replaceChildren();
   if (!raw) {
-    root.append(element('p', 'empty-copy', 'Unknown testing plan. Choose the page or function you are looking at.'));
+    root.append(element('p', 'empty-copy', 'Unknown testing plan. Pick a page or function to focus on.'));
     return;
   }
 

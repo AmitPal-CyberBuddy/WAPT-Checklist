@@ -1,8 +1,11 @@
-import { createState, normalizeState, STATE_SCHEMA_VERSION, LEGACY_STATE_SCHEMA_VERSIONS } from './state.js?v=1.0.0-r9';
+import { createState, normalizeState, setAnswers, setEngagement, STATE_SCHEMA_VERSION, LEGACY_STATE_SCHEMA_VERSIONS } from './state.js?v=1.0.0-r22';
 
 export const PORTFOLIO_KIND = 'wapt-engagement-portfolio';
 export const PORTFOLIO_VERSION = 1;
 export const MAX_ENGAGEMENTS = 100;
+export const MAX_TEMPLATES = 12;
+const TEMPLATE_ID = /^tpl-[a-z0-9-]{4,64}$/;
+const TEMPLATE_NAME_MAX = 80;
 
 function isObject(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value);
@@ -25,6 +28,21 @@ function cleanPreferences(value) {
   return { theme: value?.theme === 'light' || value?.theme === 'dark' ? value.theme : null };
 }
 
+// A template freezes one engagement's scope (answers + naming) so the next
+// engagement for the same client starts one click away. It never carries
+// progress, findings, or evidence.
+function cleanTemplates(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  for (const entry of value.slice(0, MAX_TEMPLATES)) {
+    if (!isObject(entry) || !TEMPLATE_ID.test(entry.id || '')) continue;
+    const name = typeof entry.name === 'string' ? entry.name.slice(0, TEMPLATE_NAME_MAX).trim() : '';
+    if (!name || output.some(({ id }) => id === entry.id)) continue;
+    output.push({ id: entry.id, name, created_at: entry.created_at || null, answers: normalizeState({ schema_version: STATE_SCHEMA_VERSION, ...createState(), answers: entry.answers || {} }).answers, engagement: { name: typeof entry.engagement?.name === 'string' ? entry.engagement.name.slice(0, 120) : '', targetUrl: typeof entry.engagement?.targetUrl === 'string' ? entry.engagement.targetUrl.slice(0, 2048) : '' } });
+  }
+  return output;
+}
+
 export function createPortfolio(initialState = createState(), preferences = {}) {
   const id = makeId();
   return {
@@ -32,7 +50,8 @@ export function createPortfolio(initialState = createState(), preferences = {}) 
     portfolio_version: PORTFOLIO_VERSION,
     preferences: cleanPreferences(preferences),
     active_id: id,
-    engagements: [{ id, state: normalizeState(initialState) }]
+    engagements: [{ id, state: normalizeState(initialState) }],
+    templates: []
   };
 }
 
@@ -57,7 +76,7 @@ export function normalizePortfolio(candidate) {
   }
   if (!engagements.length) return createPortfolio(createState(), preferences);
   const activeId = engagements.some(({ id }) => id === candidate.active_id) ? candidate.active_id : engagements[0].id;
-  return { kind: PORTFOLIO_KIND, portfolio_version: PORTFOLIO_VERSION, preferences, active_id: activeId, engagements };
+  return { kind: PORTFOLIO_KIND, portfolio_version: PORTFOLIO_VERSION, preferences, active_id: activeId, engagements, templates: cleanTemplates(candidate.templates) };
 }
 
 export function activeEngagement(portfolio) {
@@ -80,6 +99,40 @@ export function addEngagement(portfolio) {
   if (current.engagements.length >= MAX_ENGAGEMENTS) throw new RangeError(`A maximum of ${MAX_ENGAGEMENTS} local engagements is supported.`);
   const id = makeId(new Set(current.engagements.map((record) => record.id)));
   return { ...current, active_id: id, engagements: [...current.engagements, { id, state: createState() }] };
+}
+
+// Freeze the active engagement's scope as a reusable template.
+export function saveTemplate(portfolio, name, now = new Date().toISOString()) {
+  const current = normalizePortfolio(portfolio);
+  const label = String(name || '').slice(0, TEMPLATE_NAME_MAX).trim();
+  if (!label) throw new TypeError('A template needs a name.');
+  if (current.templates.length >= MAX_TEMPLATES) throw new RangeError(`A maximum of ${MAX_TEMPLATES} scope templates is supported.`);
+  const active = activeEngagement(current);
+  const id = `tpl-${globalThis.crypto?.randomUUID?.() || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`}`.slice(0, 64);
+  return {
+    ...current,
+    templates: [...current.templates, { id, name: label, created_at: now, answers: active.answers, engagement: { name: active.engagement.name, targetUrl: active.engagement.targetUrl } }]
+  };
+}
+
+export function deleteTemplate(portfolio, id) {
+  const current = normalizePortfolio(portfolio);
+  if (!current.templates.some((template) => template.id === id)) throw new TypeError('Unknown template ID.');
+  return { ...current, templates: current.templates.filter((template) => template.id !== id) };
+}
+
+// One click to a running engagement: new record, template scope applied,
+// position pointed at the dashboard so the plan renders immediately.
+export function createEngagementFromTemplate(portfolio, templateId) {
+  const current = normalizePortfolio(portfolio);
+  const template = current.templates.find(({ id }) => id === templateId);
+  if (!template) throw new TypeError('Unknown template ID.');
+  if (current.engagements.length >= MAX_ENGAGEMENTS) throw new RangeError(`A maximum of ${MAX_ENGAGEMENTS} local engagements is supported.`);
+  let state = createState();
+  state = setEngagement(state, { name: template.engagement.name || template.name, targetUrl: template.engagement.targetUrl });
+  state = setAnswers(state, template.answers);
+  const id = makeId(new Set(current.engagements.map((record) => record.id)));
+  return { ...current, active_id: id, engagements: [...current.engagements, { id, state }] };
 }
 
 export function selectEngagement(portfolio, id) {

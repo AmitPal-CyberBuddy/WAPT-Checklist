@@ -326,6 +326,1226 @@
           ]
         }
       ]
+    },
+    {
+      "id": "objects-and-fields",
+      "title": "Objects, properties, and overfetch",
+      "checks": [
+        {
+          "id": "mutation-authz",
+          "title": "Object authorization on API mutations",
+          "item": "WAPT-API-002",
+          "severity": "high",
+          "why": "Reads get checked, writes get shipped — mutations are where object-level authorization is most often missing.",
+          "validate": "POST/PUT/PATCH/DELETE on another account or tenant object is refused with 403/404 and no side effects.",
+          "variants": [
+            {
+              "name": "Swap the body id",
+              "kind": "note",
+              "payload": "PATCH /api/objects with {\"id\": 1002, \"name\": \"x\"} as account A — 1002 belongs to test account B.",
+              "expect": "403/404; B object unchanged (verify via B).",
+              "category": "authorization-context",
+              "why": "Body-borne ids skip route guards that only inspect paths."
+            },
+            {
+              "name": "Create referencing foreign parent",
+              "kind": "note",
+              "payload": "POST /api/tasks with {\"project_id\": <B-project>} as A.",
+              "expect": "Refused — creating under a foreign parent is an authorization decision.",
+              "category": "authorization-context",
+              "why": "Write-side nesting is the classic gap."
+            },
+            {
+              "name": "Delete via alias route",
+              "kind": "note",
+              "payload": "Repeat the foreign-object mutation on every alias shape found: /v2/objects, POST /objects/1002/archive, PATCH with tombstone flags.",
+              "expect": "Same refusal on all shapes — enforcement is object-level, not route-level.",
+              "category": "protocol-variant",
+              "why": "Aliases multiply forgotten checks."
+            }
+          ]
+        },
+        {
+          "id": "nested-related",
+          "title": "Nested and related API resources authorized",
+          "item": "WAPT-API-003",
+          "severity": "high",
+          "why": "Relations (sub-resources, includes, links) re-expose objects the primary endpoint correctly guards.",
+          "validate": "Every traversal path to a related object (nested route, include=, expand, _embed, link header) enforces the same authorization.",
+          "variants": [
+            {
+              "name": "Include/embed traversal",
+              "kind": "note",
+              "payload": "GET /api/orders/1001?include=customer with a B-customer relation on an A-order.",
+              "expect": "Related objects are filtered by caller permission — no cross-account includes.",
+              "category": "parameter-variant",
+              "why": "Includes serialize relations without re-authorizing them."
+            },
+            {
+              "name": "Reverse relation hop",
+              "kind": "note",
+              "payload": "GET /api/customers/<B-id>/orders (list through the foreign parent).",
+              "expect": "403/404 — the parent gate holds in both traversal directions.",
+              "category": "authorization-context",
+              "why": "Inverse relations are forgotten guards."
+            },
+            {
+              "name": "Link-header follow",
+              "kind": "note",
+              "payload": "Follow every relation URL the API itself returns for an A object (Link headers, _links, HAL).",
+              "expect": "Only caller-authorized relations resolve; returned links never leak foreign ids unguarded.",
+              "category": "baseline",
+              "why": "Server-provided links are an honest map of weak spots."
+            }
+          ]
+        },
+        {
+          "id": "batch-members",
+          "title": "Batch members authorized independently",
+          "item": "WAPT-API-004",
+          "severity": "high",
+          "why": "One authorization decision per batch request launders every foreign member inside it.",
+          "validate": "Each member of an array/batch request is authorized and validated individually, with per-member error reporting.",
+          "variants": [
+            {
+              "name": "Mixed array",
+              "kind": "note",
+              "payload": "PUT /api/objects/batch with items=[{A-own ok}, {B-foreign}] as A.",
+              "expect": "Per-member refusal of B without partial application; response names the failing member only.",
+              "category": "parameter-variant",
+              "why": "The minimal honest batch probe."
+            },
+            {
+              "name": "Duplicate member confusion",
+              "kind": "note",
+              "payload": "Same object id twice in one batch with different operations (update + delete).",
+              "expect": "Deterministic ordering per documented semantics; no double-apply or check-bypass via repetition.",
+              "category": "race-concurrency",
+              "why": "Arrays are ordered; authorization must not be."
+            },
+            {
+              "name": "Nested batch shapes",
+              "kind": "note",
+              "payload": "Repeat via every batch transport: JSON arrays, NDJSON, patch+JSON arrays, bulk keys in query.",
+              "expect": "Same enforcement across transports.",
+              "category": "protocol-variant",
+              "why": "One guarded transport and one open twin."
+            }
+          ]
+        },
+        {
+          "id": "mobile-scope",
+          "title": "Mobile API access constrained across accounts and tenants",
+          "item": "WAPT-API-005",
+          "severity": "high",
+          "why": "Mobile clients often get a wider, older API surface with looser checks than the web client.",
+          "validate": "The mobile API surface enforces the same object and tenant authorization as the web API, with no legacy widenings.",
+          "variants": [
+            {
+              "name": "Cross-client replay",
+              "kind": "note",
+              "payload": "Capture the mobile app requests (proxy the device/emulator); replay your best web-side authorization probes against the mobile routes.",
+              "expect": "Same refusals — client type does not widen authority.",
+              "category": "technology-specific",
+              "why": "The same identity, two doors, one policy."
+            },
+            {
+              "name": "Legacy route hunt",
+              "kind": "note",
+              "payload": "Diff mobile routes vs web routes; probe mobile-only routes with cross-account ids.",
+              "expect": "Mobile-only routes enforce current authorization; legacy widenings reported.",
+              "category": "baseline",
+              "why": "Mobile keeps old routes alive for years."
+            },
+            {
+              "name": "Device-bound claims",
+              "kind": "note",
+              "payload": "If device ids/headers bind sessions, replay a captured request with a different device header from your own second device.",
+              "expect": "Device changes re-authenticate or re-validate per policy; no silent adoption.",
+              "category": "authentication-context",
+              "why": "Device binding must be a control, not a decoration."
+            }
+          ]
+        },
+        {
+          "id": "field-filtering",
+          "title": "Sensitive properties filtered from API responses",
+          "item": "WAPT-API-010",
+          "severity": "high",
+          "why": "API serializers dump full models — cost price, tokens, internal flags, PII ride along in JSON nobody reviews.",
+          "validate": "Responses contain only fields the caller may read; sensitive fields are absent (not null) for lesser roles.",
+          "variants": [
+            {
+              "name": "Two-role field diff",
+              "kind": "note",
+              "payload": "Fetch the same object type as two roles you hold; diff response keys.",
+              "expect": "Sensitive keys absent for the lesser role — a structural diff, not a value read.",
+              "category": "authorization-context",
+              "why": "Object-level pass with field-level fail."
+            },
+            {
+              "name": "Sparse fieldsets probe",
+              "kind": "note",
+              "payload": "Explicitly request sensitive fields via field selectors: ?fields=cost_price,internal_note / GraphQL-style projections.",
+              "expect": "Selectors cannot summon unauthorized fields.",
+              "category": "parameter-variant",
+              "why": "Field selection is user input, not permission."
+            },
+            {
+              "name": "Error-shape leakage",
+              "kind": "note",
+              "payload": "Trigger validation errors after the sensitive field; compare error responses for presence hints.",
+              "expect": "Errors do not confirm or echo unauthorized field values.",
+              "category": "parser-differential",
+              "why": "Error serializers forget filters too."
+            }
+          ]
+        },
+        {
+          "id": "property-updates",
+          "title": "Unauthorized property updates rejected",
+          "item": "WAPT-API-011",
+          "severity": "high",
+          "why": "Accept-everything PATCH handlers let callers edit balance, status, tier, owner — fields they can see but must not write.",
+          "validate": "Writable fields are explicitly allowlisted per role; protected fields reject or ignore with no partial application.",
+          "variants": [
+            {
+              "name": "Protected-field PATCH",
+              "kind": "note",
+              "payload": "PATCH /api/orders/1001 with {\"status\":\"approved\",\"total\":0} as a standard user.",
+              "expect": "Protected fields rejected/ignored; the rest of the update follows documented policy.",
+              "category": "parameter-variant",
+              "why": "One payload tests both field classes."
+            },
+            {
+              "name": "Unknown-field smuggling",
+              "kind": "note",
+              "payload": "Include undocumented keys (is_admin, internal_flag, owner_id, tenant_id) in updates.",
+              "expect": "Unknown keys rejected or ignored — never interpreted.",
+              "category": "mutation",
+              "why": "Framework mass-binding turns typos into privileges."
+            },
+            {
+              "name": "Type-confusion writes",
+              "kind": "note",
+              "payload": "Send the protected field with unexpected types (object, array, string-number) seeking a validator bypass.",
+              "expect": "Type juggling changes nothing; validation is type-strict per field.",
+              "category": "encoding",
+              "why": "Coercion quirks open the same door as missing checks."
+            }
+          ]
+        },
+        {
+          "id": "alternate-representations",
+          "title": "Field authorization on sparse, expanded, alternate representations",
+          "item": "WAPT-API-013",
+          "severity": "high",
+          "why": "The detail endpoint filters fields; exports, embeds, expansions, CSV, and error previews quietly re-serialize everything.",
+          "validate": "Every representation (expand, include, export, alternate format, error echo) applies the same field rules.",
+          "variants": [
+            {
+              "name": "Expand/CSV sweep",
+              "kind": "note",
+              "payload": "Request the object with ?expand=*, csv export, and the mobile shape; repeat the two-role field diff on each.",
+              "expect": "Identical field visibility across representations.",
+              "category": "protocol-variant",
+              "why": "Serializers multiply; policies must keep up."
+            },
+            {
+              "name": "Sparse-request round trip",
+              "kind": "note",
+              "payload": "Request with sparse fieldsets, then PUT the returned representation back with a protected field edited.",
+              "expect": "Round-trips do not grant write permission on read-visible fields.",
+              "category": "parameter-variant",
+              "why": "Readable JSON is not a writable contract."
+            },
+            {
+              "name": "Pagination metadata leak",
+              "kind": "note",
+              "payload": "Inspect page metadata, facet counts, and aggregate fields for cross-account totals.",
+              "expect": "Aggregates respect the same authorization as rows.",
+              "category": "baseline",
+              "why": "Sums and counts leak without a single row."
+            }
+          ]
+        },
+        {
+          "id": "overfetch-bounds",
+          "title": "Overfetch bounded to the operation contract",
+          "item": "WAPT-API-014",
+          "severity": "high",
+          "why": "Endpoints that return everything the caller could ask for leak data and enable scraping beyond the UI contract.",
+          "validate": "Responses return contracted fields/objects only; undocumented expansion (fields=*, deep includes) is refused.",
+          "variants": [
+            {
+              "name": "Wildcard expansion",
+              "kind": "note",
+              "payload": "GET /api/objects?fields=*, include=*, expand=3+ levels.",
+              "expect": "Wildcards and deep expansions refused or capped; contract enforced server-side.",
+              "category": "parameter-variant",
+              "why": "Ask for everything, see what you get."
+            },
+            {
+              "name": "Cross-object join",
+              "kind": "note",
+              "payload": "Filter one resource by fields of another (?user.email=...) where the UI never offers it.",
+              "expect": "Only documented filter dimensions accepted.",
+              "category": "parameter-variant",
+              "why": "Accidental query APIs over relations."
+            },
+            {
+              "name": "Scraper-shaped request",
+              "kind": "note",
+              "payload": "One request asking for maximum page size, all fields, all includes at once.",
+              "expect": "Bounded response per operation contract; document the ceiling for the report.",
+              "category": "baseline",
+              "why": "One request, one contract."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tokens-and-keys",
+      "title": "API keys, tokens, and protocol parity",
+      "checks": [
+        {
+          "id": "api-key-hygiene",
+          "title": "API keys scoped, revocable, and server-side",
+          "item": "WAPT-API-007",
+          "severity": "high",
+          "why": "Broad, immortal, client-shipped API keys are permanent backdoors; scope and revocability decide blast radius.",
+          "validate": "Keys are least-scoped, revocable instantly, rotated, and never shipped in clients; server-side secrets never reach bundles.",
+          "variants": [
+            {
+              "name": "Scope fence",
+              "kind": "note",
+              "payload": "With two of your own keys (narrow + broad), use the narrow one beyond its scope.",
+              "expect": "Out-of-scope calls fail — scope enforced at execution, not display.",
+              "category": "authorization-context",
+              "why": "The key says what it may do; the server must agree."
+            },
+            {
+              "name": "Revoke and replay",
+              "kind": "note",
+              "payload": "Revoke a key; immediately replay a known-good request.",
+              "expect": "Dead instantly (within documented window); measure it.",
+              "category": "authentication-context",
+              "why": "Revocation is the kill switch."
+            },
+            {
+              "name": "Client-bundle hunt",
+              "kind": "note",
+              "payload": "Grep shipped web/mobile bundles for key patterns (AKIA-, sk_, api_key, long base64 near config).",
+              "expect": "No live secrets in distributed code; found keys verified harmlessly then reported.",
+              "category": "browser-context",
+              "why": "A key in a bundle is public by definition."
+            }
+          ]
+        },
+        {
+          "id": "token-audience",
+          "title": "API tokens bound to audience and type",
+          "item": "WAPT-API-008",
+          "severity": "high",
+          "why": "A token minted for service A validating at service B collapses API boundaries — token audience is the boundary.",
+          "validate": "Each API validates aud and token type (access vs ID vs refresh) for itself; wrong-audience tokens are rejected.",
+          "variants": [
+            {
+              "name": "Cross-service token",
+              "kind": "note",
+              "payload": "Use the token obtained for API A directly against API B (both first-party).",
+              "expect": "B rejects with an audience error — not a downstream permission error.",
+              "category": "authorization-context",
+              "why": "Reject at the door, not deep inside."
+            },
+            {
+              "name": "Token-type confusion",
+              "kind": "note",
+              "payload": "Send the ID token and (if separate) the refresh token as an access token on API calls.",
+              "expect": "Rejected — each endpoint accepts exactly one token type.",
+              "category": "authentication-context",
+              "why": "OIDC confusion in API clothing."
+            },
+            {
+              "name": "Stale-version token",
+              "kind": "note",
+              "payload": "Use a v1-issued token (if versions coexist) on v2 endpoints.",
+              "expect": "Same audience rules across versions; version drift never widens acceptance.",
+              "category": "protocol-variant",
+              "why": "Versions must not become audiences."
+            }
+          ]
+        },
+        {
+          "id": "auth-parity",
+          "title": "Equivalent authentication across versions and protocols",
+          "item": "WAPT-API-009",
+          "severity": "high",
+          "why": "When v2 enforces MFA/signed requests and v1 or an alternate protocol does not, attackers use the weaker door.",
+          "validate": "Authentication strength (MFA, signing, device checks) is equivalent across versions, protocols, and transports.",
+          "variants": [
+            {
+              "name": "Version downgrade",
+              "kind": "note",
+              "payload": "Replay authenticated calls through every version marker (path /v1, Accept header, ?version=).",
+              "expect": "Same authentication enforced on all versions; weaker elders reported.",
+              "category": "protocol-variant",
+              "why": "Enumerate versions before trusting parity."
+            },
+            {
+              "name": "Protocol alternates",
+              "kind": "note",
+              "payload": "Repeat via alternate transports the API offers: SOAP wrapper, gRPC endpoint, GraphQL — same operation, same auth.",
+              "expect": "Equivalent enforcement across protocols.",
+              "category": "technology-specific",
+              "why": "Each protocol has its own middleware history."
+            },
+            {
+              "name": "MFA bypass route",
+              "kind": "note",
+              "payload": "Where the web flow requires MFA, find API paths (password grant, legacy login, direct session create) that do not.",
+              "expect": "All authentication paths enforce the same assurance level.",
+              "category": "authentication-context",
+              "why": "The bypass is a route, not a flaw in the main door."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "abuse-and-limits",
+      "title": "Abuse, cost, and automation controls",
+      "checks": [
+        {
+          "id": "window-bounds",
+          "title": "Page size and result windows bounded",
+          "item": "WAPT-API-015",
+          "severity": "high",
+          "why": "Unbounded pagination is a full-database export button and a self-DoS lever in one parameter.",
+          "validate": "Page size, offset/cursor windows, and expansion depth are capped server-side with documented maxima.",
+          "variants": [
+            {
+              "name": "Size inflation",
+              "kind": "note",
+              "payload": "GET /api/objects?limit=999999 (and page_size, count, per_page variants).",
+              "expect": "Capped at the documented maximum — not echoed, not honored.",
+              "category": "parameter-variant",
+              "why": "Parameter name roulette with one expected answer."
+            },
+            {
+              "name": "Deep offset",
+              "kind": "note",
+              "payload": "Walk offset/page to extreme values (page=99999).",
+              "expect": "Windowed or refused; cost bounded — no deep-offset scans.",
+              "category": "parameter-variant",
+              "why": "Deep pagination is a scan primitive."
+            },
+            {
+              "name": "Expansion depth",
+              "kind": "note",
+              "payload": "include=a.b.c.d chains to the maximum the schema allows and beyond.",
+              "expect": "Depth capped; beyond-cap refused with a clear error.",
+              "category": "parameter-variant",
+              "why": "Every include level multiplies the query."
+            }
+          ]
+        },
+        {
+          "id": "body-bounds",
+          "title": "Request body, array, and batch sizes bounded",
+          "item": "WAPT-API-016",
+          "severity": "high",
+          "why": "Giant bodies and huge arrays parse before authorization — resource exhaustion before the first check.",
+          "validate": "Body size, array lengths, and batch counts are limited before processing, with clear errors at the limit.",
+          "variants": [
+            {
+              "name": "Array inflation",
+              "kind": "note",
+              "payload": "POST a batch with 10k members (ids of your own objects).",
+              "expect": "Refused above the documented batch cap with a clear error; no partial processing.",
+              "category": "parameter-variant",
+              "why": "Your own objects make the probe honest."
+            },
+            {
+              "name": "Deep-nesting payload",
+              "kind": "note",
+              "payload": "Send JSON nested to 100+ levels in a normal field.",
+              "expect": "Rejected by depth limits before parsing completes; parser limits configured.",
+              "category": "mutation",
+              "why": "Parsers die before validators run."
+            },
+            {
+              "name": "Oversized field",
+              "kind": "note",
+              "payload": "One field with a multi-MB string in an update you legitimately own.",
+              "expect": "Field length limits enforced per documented maximums.",
+              "category": "parameter-variant",
+              "why": "Size limits are per field, not just per request."
+            }
+          ]
+        },
+        {
+          "id": "expensive-filters",
+          "title": "Expensive filters, sorts, and joins bounded",
+          "item": "WAPT-API-017",
+          "severity": "high",
+          "why": "Sorts on unindexed fields and wildcard searches turn one cheap endpoint into a database scanner.",
+          "validate": "Filter/sort parameters are allowlisted; expensive operations are capped, timed out, or rate-limited.",
+          "variants": [
+            {
+              "name": "Sort-field roulette",
+              "kind": "note",
+              "payload": "sort= on every field of the response, including computed and relation fields.",
+              "expect": "Only indexed/allowlisted sorts accepted; others 400.",
+              "category": "parameter-variant",
+              "why": "Sort injection is a performance exploit."
+            },
+            {
+              "name": "Wildcard search",
+              "kind": "note",
+              "payload": "Search for %, *, single chars, and leading wildcards where search exists.",
+              "expect": "Leading-wildcard/expensive patterns refused or capped; response times stable.",
+              "category": "parameter-variant",
+              "why": "Watch latency, not just status."
+            },
+            {
+              "name": "Filter stacking",
+              "kind": "note",
+              "payload": "Stack many AND/OR filters and ranges in one request.",
+              "expect": "Complexity capped; combinatorial requests rejected.",
+              "category": "mutation",
+              "why": "Query builders assemble DoS politely."
+            }
+          ]
+        },
+        {
+          "id": "side-effect-cost",
+          "title": "Paid and async side effects limited",
+          "item": "WAPT-API-018",
+          "severity": "high",
+          "why": "APIs that send mail, SMS, invoke paid AI, or start jobs burn real money and reputation when called in a loop.",
+          "validate": "Metered side effects are quota-limited, rate-limited, and require appropriate authorization per trigger.",
+          "variants": [
+            {
+              "name": "Quota probe",
+              "kind": "note",
+              "payload": "Trigger the metered action toward its documented quota (small counts only, on your own account).",
+              "expect": "Quota enforced with a clear error at the cap; no silent metering gaps.",
+              "category": "baseline",
+              "why": "Spend as little as the evidence needs."
+            },
+            {
+              "name": "Authorization on the trigger",
+              "kind": "note",
+              "payload": "Trigger side-effecting endpoints for objects/scopes you cannot access.",
+              "expect": "Refused — side effects inherit object authorization.",
+              "category": "authorization-context",
+              "why": "Cost follows permission."
+            },
+            {
+              "name": "Async flooding",
+              "kind": "note",
+              "payload": "Enqueue the maximum documented parallel jobs for your account.",
+              "expect": "Concurrent-job cap enforced per account; queue backpressure visible.",
+              "category": "race-concurrency",
+              "why": "Background work is still abuse surface."
+            }
+          ]
+        },
+        {
+          "id": "distributed-abuse",
+          "title": "Concurrent and distributed abuse controls",
+          "item": "WAPT-API-019",
+          "severity": "high",
+          "why": "Per-connection limits fall to a few parallel clients; abuse controls must count identity, not sockets.",
+          "validate": "Limits key on account/identity across connections and IPs, with graduated responses and safe-by-default errors.",
+          "variants": [
+            {
+              "name": "Parallel identity",
+              "kind": "note",
+              "payload": "Fire a small parallel burst (3-5 concurrent) of identical requests from one identity across two source IPs if available.",
+              "expect": "Identity-level throttling engages regardless of connection count.",
+              "category": "race-concurrency",
+              "why": "Two IPs, one account, one counter."
+            },
+            {
+              "name": "Graduated response",
+              "kind": "note",
+              "payload": "Observe response behavior across the throttle boundary (Retry-After, 429 shape).",
+              "expect": "429 with Retry-After; no stack traces, no lockout-without-recovery.",
+              "category": "baseline",
+              "why": "Errors are part of the control design."
+            },
+            {
+              "name": "Expensive-op combination",
+              "kind": "note",
+              "payload": "Combine the throttled op with the most expensive filter from the previous checks in one call.",
+              "expect": "The tighter of the two limits wins; no bypass via combined shape.",
+              "category": "parameter-variant",
+              "why": "Limits compose or they fail."
+            }
+          ]
+        },
+        {
+          "id": "business-flow-abuse",
+          "title": "High-value business flows protected from automation",
+          "item": "WAPT-API-024",
+          "severity": "high",
+          "why": "Signup, referral, coupon, voting, and messaging flows monetized by bots at API speed are business-logic abuse.",
+          "validate": "High-value flows have automation controls (proof-of-work, captchas, velocity rules) proportionate to value.",
+          "variants": [
+            {
+              "name": "Velocity profile",
+              "kind": "note",
+              "payload": "Exercise one protected flow (signup on a disposable domain, or referral with your two accounts) at API speed for a handful of iterations.",
+              "expect": "Velocity rules engage per documented policy — slowdowns, challenges, or caps.",
+              "category": "race-concurrency",
+              "why": "Measure the control, do not defeat it."
+            },
+            {
+              "name": "Missing-control diff",
+              "kind": "note",
+              "payload": "Compare web UI protections (captcha, confirmation) vs the raw API path for the same flow.",
+              "expect": "API paths carry equivalent friction — no captcha-free twin.",
+              "category": "protocol-variant",
+              "why": "The UI is polite; the API must be too."
+            },
+            {
+              "name": "Cross-flow composition",
+              "kind": "note",
+              "payload": "Chain two benign flows (signup + referral + redemption) at API speed with your own accounts.",
+              "expect": "Composition bounded; each stage carries its own controls.",
+              "category": "baseline",
+              "why": "Abuse is often a pipeline, not a call."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "functions-and-flow",
+      "title": "Functions, workflow, and idempotency",
+      "checks": [
+        {
+          "id": "route-aliases",
+          "title": "Function policy across methods and aliases",
+          "item": "WAPT-API-021",
+          "severity": "high",
+          "why": "One function, many spellings: method overrides, trailing slashes, and case variants skip route-level decisions.",
+          "validate": "Authorization and policy bind to the function, applied across every method, path spelling, and alias route.",
+          "variants": [
+            {
+              "name": "Method override headers",
+              "kind": "note",
+              "payload": "POST /api/objects/1002/delete with X-HTTP-Method-Override: DELETE (and _method=DELETE body/query).",
+              "expect": "Override headers do not bypass the policy attached to the real method.",
+              "category": "header-variant",
+              "why": "Proxies and frameworks honor overrides — policies must too."
+            },
+            {
+              "name": "Path spelling roulette",
+              "kind": "note",
+              "payload": "Retry guarded calls as /api/objects/1002/, /api/Objects/1002, /api//objects/1002, /api/v1.5/objects/1002.",
+              "expect": "All spellings hit the same guard; normalization is uniform.",
+              "category": "parser-differential",
+              "why": "Routers normalize; authorization may not follow."
+            },
+            {
+              "name": "Trailing-verb aliases",
+              "kind": "note",
+              "payload": "Probe action-style aliases (POST /objects/1002/approve vs PATCH status=approved).",
+              "expect": "Aliases enforce the same authorization as the canonical shape.",
+              "category": "protocol-variant",
+              "why": "Every alias is a separate policy decision point."
+            }
+          ]
+        },
+        {
+          "id": "role-membership-mgmt",
+          "title": "API role and membership management constrained",
+          "item": "WAPT-API-022",
+          "severity": "critical",
+          "why": "Admin/role/invite functions behind API calls are privilege minting — the most valuable endpoints in the product.",
+          "validate": "Role, membership, and permission management functions require layered authorization and audit every call.",
+          "variants": [
+            {
+              "name": "Self-service elevation",
+              "kind": "note",
+              "payload": "As a standard account, call role-assign/invite endpoints granting yourself an admin role.",
+              "expect": "Refused and logged — layered checks, not one role string.",
+              "category": "authorization-context",
+              "why": "The privilege-minting probe on your own account."
+            },
+            {
+              "name": "Scope-bounded admin",
+              "kind": "note",
+              "payload": "As tenant-1 admin, call the same functions for tenant-2 principals.",
+              "expect": "Cross-scope refused; admin of one is not admin of all.",
+              "category": "authorization-context",
+              "why": "Scoped admins are the multi-tenant rule."
+            },
+            {
+              "name": "Audit trail check",
+              "kind": "note",
+              "payload": "After owner-assisted legitimate role changes, inspect the audit view for the events.",
+              "expect": "Every role/membership change is recorded with actor, target, and before/after.",
+              "category": "baseline",
+              "why": "Minting without a trail is unaccountable."
+            }
+          ]
+        },
+        {
+          "id": "deny-undocumented",
+          "title": "Undocumented API functions denied by default",
+          "item": "WAPT-API-023",
+          "severity": "high",
+          "why": "Routes missing from the policy inventory inherit framework defaults — usually authenticated-and-allowed.",
+          "validate": "Undocumented/newly deployed functions deny by default until a policy explicitly allows them.",
+          "variants": [
+            {
+              "name": "Dark-route probe",
+              "kind": "note",
+              "payload": "Probe routes seen in JS bundles but not in the UI or docs (feature-flagged endpoints) as a standard user.",
+              "expect": "Denied without explicit policy; accessible dark routes reported.",
+              "category": "technology-specific",
+              "why": "Bundles leak the roadmap; policy should already cover it."
+            },
+            {
+              "name": "Inventory diff",
+              "kind": "note",
+              "payload": "Diff OpenAPI/docs against observed proxy-history routes; sample-call the undocumented set harmlessly.",
+              "expect": "Undocumented functions denied or documented-as-intended.",
+              "category": "baseline",
+              "why": "The dark API is bigger than the bright one."
+            },
+            {
+              "name": "Guessable next-versions",
+              "kind": "note",
+              "payload": "Probe /v(N+1)/ and common upcoming resource names for reachability.",
+              "expect": "Unreleased surfaces unreachable or fully guarded.",
+              "category": "encoding",
+              "why": "Predictable names meet unpredicable policy."
+            }
+          ]
+        },
+        {
+          "id": "workflow-sequence",
+          "title": "Workflow sequence and state prerequisites enforced",
+          "item": "WAPT-API-025",
+          "severity": "high",
+          "why": "Skipping steps via API (checkout without payment, publish without review) breaks business invariants cheaply.",
+          "validate": "Each step validates the object state and prerequisites the workflow defines — order is authorization.",
+          "variants": [
+            {
+              "name": "Skip-ahead",
+              "kind": "note",
+              "payload": "Fire a late-state operation (complete, publish, payout) directly on a fresh object.",
+              "expect": "Refused — sequence enforced server-side.",
+              "category": "authorization-context",
+              "why": "Steps the UI enforces are steps the API must too."
+            },
+            {
+              "name": "Out-of-order replay",
+              "kind": "note",
+              "payload": "Execute steps in reverse where possible (refund before capture equivalents in harmless flows).",
+              "expect": "Rejected; state machine validated per transition.",
+              "category": "mutation",
+              "why": "Reverse order finds missing guards."
+            },
+            {
+              "name": "Prerequisite-field forgery",
+              "kind": "note",
+              "payload": "Submit a step with prerequisite fields claiming completion (paid=true, approved=true) before the real prerequisite ran.",
+              "expect": "Server verifies prerequisites from authoritative state, not payload claims.",
+              "category": "parameter-variant",
+              "why": "Client-attested prerequisites are not prerequisites."
+            }
+          ]
+        },
+        {
+          "id": "idempotency",
+          "title": "Idempotency and one-time semantics on transactions",
+          "item": "WAPT-API-026",
+          "severity": "high",
+          "why": "Networks retry; without idempotency keys every retry duplicates orders, charges, and invitations.",
+          "validate": "Mutating operations honor idempotency keys (or are naturally idempotent); one-time tokens are single-use atomically.",
+          "variants": [
+            {
+              "name": "Idempotency-key replay",
+              "kind": "note",
+              "payload": "Send the same Idempotency-Key on two identical creates; then two different payloads under one key.",
+              "expect": "Same key+payload returns the original result; different payload under the same key is an error.",
+              "category": "parameter-variant",
+              "why": "The documented contract, tested literally."
+            },
+            {
+              "name": "One-time token reuse",
+              "kind": "note",
+              "payload": "Redeem a one-time token (invitation, coupon, OTP-confirmed action) twice in quick succession.",
+              "expect": "Second use fails; single-use enforced atomically.",
+              "category": "race-concurrency",
+              "why": "One-time means one under race too."
+            },
+            {
+              "name": "Retry-storm shape",
+              "kind": "note",
+              "payload": "Fire a 3-request retry burst of a non-idempotent create (network-retry shape).",
+              "expect": "At most one effect; duplicates prevented or safely reconciled.",
+              "category": "race-concurrency",
+              "why": "Retries are the honest attack."
+            }
+          ]
+        },
+        {
+          "id": "fetch-redirects",
+          "title": "Server-side fetch redirects and resolved addresses revalidated",
+          "item": "WAPT-API-028",
+          "severity": "high",
+          "why": "A URL parameter the server fetches is SSRF; redirects that skip revalidation carry the fetch anywhere internal.",
+          "validate": "Fetched URLs are allowlisted; redirects are revalidated per-hop (scheme, host, address); private ranges blocked.",
+          "variants": [
+            {
+              "name": "Redirect to internal",
+              "kind": "note",
+              "payload": "Point a fetch-preview/import URL at your Collaborator that 302s to http://169.254.169.254/ and internal names.",
+              "expect": "No internal fetch occurs; every hop revalidated; interaction logged.",
+              "category": "out-of-band",
+              "why": "Redirect-following is where URL filters die."
+            },
+            {
+              "name": "Scheme and address tricks",
+              "kind": "note",
+              "payload": "URLs with redirects to gopher://, redirects to decimal/hex IP encodings of private ranges.",
+              "expect": "Scheme pinned to http(s); address-family checks decode encodings before deciding.",
+              "category": "encoding",
+              "why": "Encodings bypass naive string filters."
+            },
+            {
+              "name": "DNS-rebinding shape",
+              "kind": "note",
+              "payload": "A hostname you control resolving to a private IP on second lookup (interact safely, document only).",
+              "expect": "Resolution re-checked per fetch or egress-bound; rebinding documented as mitigated or present.",
+              "category": "out-of-band",
+              "why": "Name-based allowlists without pinning are bypassable."
+            }
+          ]
+        },
+        {
+          "id": "methods-media",
+          "title": "Unsupported methods and media types rejected",
+          "item": "WAPT-API-029",
+          "severity": "high",
+          "why": "TRACE, unexpected verbs, and exotic content-types walk into parsers and handlers with different rules.",
+          "validate": "Only documented methods and media types are accepted; everything else fails closed before processing.",
+          "variants": [
+            {
+              "name": "Verb roulette",
+              "kind": "note",
+              "payload": "OPTIONS, TRACE, CONNECT, PATCH-on-read-only, and arbitrary X-CUSTOM verbs on a normal resource.",
+              "expect": "405 with Allow; TRACE never echoes; unknown verbs do not route.",
+              "category": "protocol-variant",
+              "why": "The verb table is policy."
+            },
+            {
+              "name": "Content-type confusion",
+              "kind": "note",
+              "payload": "POST with text/plain, application/xml, x-www-form-encoded carrying JSON bodies to JSON endpoints (and vice versa).",
+              "expect": "Only accepted media types parsed; confusion rejected — no CSRF-relevant parsing surprises.",
+              "category": "parser-differential",
+              "why": "Parsing differences are deserialization and CSRF surface."
+            },
+            {
+              "name": "Accept-shape leaks",
+              "kind": "note",
+              "payload": "Request Accept: text/html, application/xml on API endpoints.",
+              "expect": "No HTML error pages with stack traces; acceptable representations only.",
+              "category": "header-variant",
+              "why": "Error negotiators forget filters."
+            }
+          ]
+        },
+        {
+          "id": "debug-hygiene",
+          "title": "Debug modes, stack traces, and internals removed",
+          "item": "WAPT-API-030",
+          "severity": "medium",
+          "why": "Stack traces and debug payloads hand over versions, paths, keys, and queries in one response.",
+          "validate": "Production errors are shape-stable without stack traces, query text, internal ids, or debug flags.",
+          "variants": [
+            {
+              "name": "Error-shape audit",
+              "kind": "note",
+              "payload": "Trigger validation, auth, and 500-class errors (harmlessly); inspect bodies and headers.",
+              "expect": "Correlation id only — no stacks, driver errors, SQL fragments, or file paths.",
+              "category": "baseline",
+              "why": "Every error handler is a disclosure decision."
+            },
+            {
+              "name": "Debug-flag roulette",
+              "kind": "note",
+              "payload": "Append ?debug=1, X-Debug: true, and common staging headers to normal requests.",
+              "expect": "Debug output absent in production regardless of flags.",
+              "category": "header-variant",
+              "why": "Flags that worked in staging ship to prod."
+            },
+            {
+              "name": "Verbose-header check",
+              "kind": "note",
+              "payload": "Inspect response headers for X-Powered-By, Server versions, internal hostnames, request ids that leak topology.",
+              "expect": "Minimal header set; version/internal detail absent.",
+              "category": "baseline",
+              "why": "Headers are the free reconnaissance channel."
+            }
+          ]
+        },
+        {
+          "id": "cors-policy",
+          "title": "CORS by exact origin with credential need",
+          "item": "WAPT-API-031",
+          "severity": "high",
+          "why": "Reflective or wildcard CORS with credentials turns any origin into an authenticated client.",
+          "validate": "Access-Control-Allow-Origin is an exact allowlisted origin; credentials only where required; no wildcard+credentials.",
+          "variants": [
+            {
+              "name": "Origin reflection",
+              "kind": "note",
+              "payload": "Send Origin: https://evil.example on a credentialed endpoint; read ACAO/ACAC headers.",
+              "expect": "No reflection — allowlisted exact origins only; evil origin gets no ACAO or a null allow.",
+              "category": "header-variant",
+              "why": "The one-request CORS verdict."
+            },
+            {
+              "name": "Subdomain and lookalike",
+              "kind": "note",
+              "payload": "Origin values like https://www.example.com.evil.example and https://evilwww combos.",
+              "expect": "Rejected — suffix/prefix matching is not origin matching.",
+              "category": "parser-differential",
+              "why": "String-contains CORS is a browser-level bypass."
+            },
+            {
+              "name": "Preflight honesty",
+              "kind": "note",
+              "payload": "Trigger preflights with custom headers; inspect Access-Control-Allow-Headers/Methods.",
+              "expect": "Only documented headers/methods allowed; no * with credentials.",
+              "category": "protocol-variant",
+              "why": "Preflight answers describe the real policy."
+            }
+          ]
+        },
+        {
+          "id": "schema-management",
+          "title": "Schemas, consoles, and management endpoints protected",
+          "item": "WAPT-API-032",
+          "severity": "high",
+          "why": "Swagger UIs, GraphQL consoles, metrics, and management ports reveal the whole map — often unauthenticated.",
+          "validate": "Schema/console/metrics/management surfaces are authenticated, authorization-gated, and stripped from production where unused.",
+          "variants": [
+            {
+              "name": "Map fetch",
+              "kind": "note",
+              "payload": "GET /swagger, /openapi.json, /graphql (IDE), /metrics, /actuator, /health/detail, /api-docs unauthenticated.",
+              "expect": "Denied or minimized per surface; anything exposed documented as intended.",
+              "category": "baseline",
+              "why": "One GET per name, then judgment."
+            },
+            {
+              "name": "Management actions",
+              "kind": "note",
+              "payload": "Where actuator/management endpoints exist, attempt read-only listings first (env, beans, mappings) — never state-changing.",
+              "expect": "Read-only listings denied in production; no write access at all.",
+              "category": "protocol-variant",
+              "why": "Look, do not touch."
+            },
+            {
+              "name": "Console via API",
+              "kind": "note",
+              "payload": "Where a GraphQL/REST console exists in production, check it requires an authenticated, authorized session.",
+              "expect": "Console gated like the API itself — it is the API.",
+              "category": "authentication-context",
+              "why": "Consoles are the API wearing a UI."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inventory-and-upstream",
+      "title": "Inventory, versions, and consumed APIs",
+      "checks": [
+        {
+          "id": "api-inventory",
+          "title": "Inventory of API hosts, paths, and owners",
+          "item": "WAPT-API-033",
+          "severity": "informational",
+          "why": "You cannot authorize, deprecate, or retire what nobody has listed — the inventory is every later check's base map.",
+          "validate": "A maintained inventory of API hosts, base paths, protocols, versions, and owning teams.",
+          "variants": [
+            {
+              "name": "Discovery triangulation",
+              "kind": "note",
+              "payload": "Build the list from documentation, proxy history, JS bundle route extraction, and well-known files; merge into one inventory.",
+              "expect": "Inventory cross-checked with the owner; unknowns become scope questions, not assumptions.",
+              "category": "baseline",
+              "why": "Four sources beat one."
+            },
+            {
+              "name": "Host and path sweep",
+              "kind": "note",
+              "payload": "Check api., app., mobile., graphql., admin. subdomains plus /api, /v1..v3, /graphql, /rpc base paths in scope.",
+              "expect": "Every discovered host mapped to an owner and a retirement policy.",
+              "category": "baseline",
+              "why": "Naming conventions predict deployment."
+            },
+            {
+              "name": "Owner confirmation",
+              "kind": "note",
+              "payload": "Review the inventory with the owner; mark in-scope, out-of-scope, and unknown-owner.",
+              "expect": "Signed-off inventory — the engagement scope statement for API work.",
+              "category": "baseline",
+              "why": "Scope honesty starts here."
+            }
+          ]
+        },
+        {
+          "id": "version-retirement",
+          "title": "Deprecated API versions identified and retired",
+          "item": "WAPT-API-034",
+          "severity": "high",
+          "why": "Old versions keep old vulnerabilities; a version without a funeral never dies.",
+          "validate": "Deprecated versions have retirement dates, sunset headers, deprecation notices, and eventually die.",
+          "variants": [
+            {
+              "name": "Version census",
+              "kind": "note",
+              "payload": "Enumerate every responding version (paths, headers, content negotiation); check Sunset/Deprecation headers.",
+              "expect": "Every non-current version scheduled with communicated dates; unmaintained elders listed for the report.",
+              "category": "baseline",
+              "why": "The census itself is the finding generator."
+            },
+            {
+              "name": "Policy parity probe",
+              "kind": "note",
+              "payload": "Re-run two strong authorization checks against the oldest version.",
+              "expect": "Parity enforced; weaker behavior on elders reported with evidence.",
+              "category": "protocol-variant",
+              "why": "Security debt concentrates in versions."
+            },
+            {
+              "name": "Sunset honesty",
+              "kind": "note",
+              "payload": "Where Sunset headers exist, verify the date matches the communicated plan.",
+              "expect": "Consistent, honest headers — clients get a fair warning.",
+              "category": "baseline",
+              "why": "Sunset dates are commitments; verify they are kept."
+            }
+          ]
+        },
+        {
+          "id": "shadow-apis",
+          "title": "Shadow and environment APIs discovered safely",
+          "item": "WAPT-API-035",
+          "severity": "medium",
+          "why": "Shadow deployments (test APIs on prod domains, one-off endpoints) carry prod data without prod controls.",
+          "validate": "Shadow and environment-specific deployments are identified, scoped, and either brought under policy or isolated.",
+          "variants": [
+            {
+              "name": "Subdomain census",
+              "kind": "note",
+              "payload": "In-scope DNS/certificate transparency for api-ish subdomains (api-test., staging., dev., internal.); probe harmlessly.",
+              "expect": "Findings mapped and owner-assigned; prod-data-on-test-config reported.",
+              "category": "baseline",
+              "why": "CT logs are the free API census."
+            },
+            {
+              "name": "Bundle route extraction",
+              "kind": "note",
+              "payload": "Extract routes/endpoints from shipped JS bundles; diff against the owned inventory.",
+              "expect": "Unaccounted routes become inventory entries or findings.",
+              "category": "technology-specific",
+              "why": "The client knows all the doors."
+            },
+            {
+              "name": "Cross-environment bleed",
+              "kind": "note",
+              "payload": "Compare auth acceptance: does the staging API accept production tokens (or vice versa) within authorized scope?",
+              "expect": "Environment tokens are environment-bound.",
+              "category": "authentication-context",
+              "why": "Bleed turns test APIs into prod backdoors."
+            }
+          ]
+        },
+        {
+          "id": "docs-reconcile",
+          "title": "Documentation reconciled with deployed operations",
+          "item": "WAPT-API-036",
+          "severity": "informational",
+          "why": "Drift between OpenAPI and reality hides both missing functions and ghost endpoints from review.",
+          "validate": "Documentation matches deployed operations within stated tolerance; drift is visible and owned.",
+          "variants": [
+            {
+              "name": "Schema diff",
+              "kind": "note",
+              "payload": "Fetch the live OpenAPI/GraphQL schema; diff paths, methods, params, and response shapes against documented behavior.",
+              "expect": "Drift list produced and reviewed with the owner; unexplained drift becomes findings.",
+              "category": "baseline",
+              "why": "The diff is cheap; the conversation is the value."
+            },
+            {
+              "name": "Ghost endpoints",
+              "kind": "note",
+              "payload": "Call documented-but-absent endpoints (removed features).",
+              "expect": "Clean 404/410 with documented retirement — not half-alive handlers.",
+              "category": "protocol-variant",
+              "why": "Dead docs describe live risks."
+            },
+            {
+              "name": "Tolerance policy",
+              "kind": "note",
+              "payload": "Where documented drift tolerance exists, verify observed drift is inside it.",
+              "expect": "Drift within policy or policy updated.",
+              "category": "baseline",
+              "why": "Tolerated drift is still drift."
+            }
+          ]
+        },
+        {
+          "id": "third-party-input",
+          "title": "Third-party API data validated and authorized",
+          "item": "WAPT-API-037",
+          "severity": "high",
+          "why": "Data from partners and webhooks is attacker-influenced — trusting it is an unauthenticated input path.",
+          "validate": "Inbound third-party data is signature-verified, schema-validated, and permission-checked before use.",
+          "variants": [
+            {
+              "name": "Webhook signature",
+              "kind": "note",
+              "payload": "Inspect webhook verification (HMAC/signature headers); replay a captured webhook of your own event with tampered payload.",
+              "expect": "Tampered payload rejected; replay within timestamp window only.",
+              "category": "protocol-variant",
+              "why": "Unsigned webhooks are unauthenticated APIs."
+            },
+            {
+              "name": "Payload validation",
+              "kind": "note",
+              "payload": "Submit webhook/provider callbacks with oversized, mistyped, and injection-bearing fields (harmless canaries).",
+              "expect": "Schema-validated; junk rejected before processing or storage.",
+              "category": "parameter-variant",
+              "why": "Partner fields get the same validation as user fields."
+            },
+            {
+              "name": "Authority from context",
+              "kind": "note",
+              "payload": "Check whether actions triggered by callbacks run with caller or service authority for foreign objects.",
+              "expect": "Callback authority is scoped; third-party input cannot steer privileged actions (see confused-deputy).",
+              "category": "authorization-context",
+              "why": "Inbound trust is authority you granted."
+            }
+          ]
+        },
+        {
+          "id": "upstream-resilience",
+          "title": "Consumed APIs: timeouts, sizes, and failure handling",
+          "item": "WAPT-API-038",
+          "severity": "high",
+          "why": "A hung third-party call hangs your users; unbounded responses and unclear failures cascade into outages.",
+          "validate": "Upstream calls carry timeouts, size caps, and defined failure modes (fail-closed where security-relevant).",
+          "variants": [
+            {
+              "name": "Slow-endpoint shape",
+              "kind": "note",
+              "payload": "Point a fetch-preview/import at an endpoint you control that drip-feeds bytes slowly (within authorized testing).",
+              "expect": "Client-side timeout engages; request abandoned with a clean error.",
+              "category": "out-of-band",
+              "why": "Your own slow server proves their timeout exists."
+            },
+            {
+              "name": "Huge-response bound",
+              "kind": "note",
+              "payload": "Serve a large payload from your controlled endpoint to a fetch/import feature.",
+              "expect": "Response size capped before parsing; memory-safe failure.",
+              "category": "out-of-band",
+              "why": "Caps belong before parsers."
+            },
+            {
+              "name": "Failure-mode review",
+              "kind": "note",
+              "payload": "Ask/observe behavior when the upstream is down or erroring (sandbox, owner-assisted).",
+              "expect": "Defined degradation — fail-closed for security decisions, graceful for UX.",
+              "category": "baseline",
+              "why": "Failure is a design state, not an accident."
+            }
+          ]
+        },
+        {
+          "id": "upstream-tls",
+          "title": "Upstream TLS identity and redirect policy",
+          "item": "WAPT-API-039",
+          "severity": "high",
+          "why": "Server-to-server calls with disabled verification or permissive redirects are MITM invitations with service authority.",
+          "validate": "Upstream TLS verifies certificates (CA + hostname); redirect hops revalidate; no verification bypass flags.",
+          "variants": [
+            {
+              "name": "Certificate mismatch probe",
+              "kind": "note",
+              "payload": "Where you can observe upstream config (review or owner question), confirm verification is on; attempt a self-signed upstream only in owner-approved test hooks.",
+              "expect": "Verification failures abort the call — never a warning-tolerated fetch.",
+              "category": "technology-specific",
+              "why": "Verification-off is the quiet classic."
+            },
+            {
+              "name": "Redirect-policy probe",
+              "kind": "note",
+              "payload": "Upstream URL (test hook or review) that redirects cross-host.",
+              "expect": "Cross-host redirects refused or revalidated — authority does not follow redirects blindly.",
+              "category": "protocol-variant",
+              "why": "Redirects change destination; policy must re-decide."
+            },
+            {
+              "name": "Scheme downgrade",
+              "kind": "note",
+              "payload": "An http:// upstream target (or redirect) for a documented-https integration.",
+              "expect": "Plaintext upstreams refused; integrations pinned to https.",
+              "category": "protocol-variant",
+              "why": "Downgrade removes every guarantee."
+            }
+          ]
+        },
+        {
+          "id": "upstream-credentials",
+          "title": "Upstream credentials least-privileged and server-side",
+          "item": "WAPT-API-040",
+          "severity": "high",
+          "why": "The backend credential vault is the deputy full of keys — one broad key turns every confused-deputy into a breach.",
+          "validate": "Upstream credentials are scoped to minimum needs, stored server-side, rotated, and never logged.",
+          "variants": [
+            {
+              "name": "Scope review",
+              "kind": "note",
+              "payload": "With the owner, review each integration credential's actual granted scope vs its used scope.",
+              "expect": "Granted ~= used; excess scopes removed (evidence for the report).",
+              "category": "baseline",
+              "why": "Least privilege is a diff, not a feeling."
+            },
+            {
+              "name": "Credential-in-log sweep",
+              "kind": "note",
+              "payload": "Inspect application logs (owner-assisted) and error payloads for upstream keys, bearer tokens, and secrets.",
+              "expect": "No credentials in logs, errors, or client responses.",
+              "category": "baseline",
+              "why": "Logs outlive the requests that made them."
+            },
+            {
+              "name": "Rotation reality",
+              "kind": "note",
+              "payload": "Ask/observe the rotation procedure; verify old credentials fail after rotation in a test window.",
+              "expect": "Rotation works end-to-end; old keys dead — not just replaced.",
+              "category": "authentication-context",
+              "why": "Rotation without revocation is accumulation."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -356,5 +1576,6 @@
       "safe": true,
       "payload": "POST /api/v1/hooks HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <token>\nContent-Type: application/json\n\n{\"url\":\"https://unique.oast.example/wapt\"}"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

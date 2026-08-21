@@ -1,5 +1,7 @@
 // Attack-surface families are the tester-facing grouping.
 // Page playbooks stay as packs; the assessment regroups their authored tests by surface.
+import { contextHas, contextIsUnknown } from './context.js?v=1.0.0-r22';
+
 export const SURFACES = Object.freeze([
   Object.freeze({ id: 'tls', title: 'TLS / Transport Security', summary: 'Protocols, ciphers, certificates, HTTP→HTTPS, mixed content.' }),
   Object.freeze({ id: 'headers', title: 'Security Headers', summary: 'CSP, HSTS, clickjacking, nosniff, referrer, permissions, CORP, cache.' }),
@@ -15,7 +17,8 @@ export const SURFACES = Object.freeze([
   Object.freeze({ id: 'oauth', title: 'OAuth / SSO / SAML', summary: 'redirect_uri, state, PKCE, code reuse, SAML signatures.' }),
   Object.freeze({ id: 'websocket', title: 'WebSocket / Realtime', summary: 'WSS, Origin, socket auth, per-message authorization.' }),
   Object.freeze({ id: 'business', title: 'Business Logic', summary: 'Checkout, races, coupons, workflow invariants.' }),
-  Object.freeze({ id: 'ai', title: 'AI / LLM', summary: 'Prompt injection, tool calls, retrieval authorization.' })
+  Object.freeze({ id: 'ai', title: 'AI / LLM', summary: 'Prompt injection, tool calls, retrieval authorization.' }),
+  Object.freeze({ id: 'custom', title: 'Custom checks', summary: 'Target-specific tests you added for this engagement.' })
 ]);
 
 const GROUP_SURFACE = Object.freeze({
@@ -104,7 +107,8 @@ export const CATEGORY_SURFACE = Object.freeze({
   'cloud-storage': 'http',
   'rate-limiting': 'http',
   advanced: 'http',
-  'ai-llm-security': 'ai'
+  'ai-llm-security': 'ai',
+  custom: 'custom'
 });
 
 // Surface for a catalog item: an authored overlay's own surface, then the overlay's
@@ -127,6 +131,76 @@ export function surfaceFor(check, group, playbook) {
 export function surfaceMeta(id) {
   return SURFACES.find((surface) => surface.id === id) || { id, title: id, summary: '' };
 }
+
+// Why is this category in the plan? Every rule names the context answer that put it
+// here, so the tester can audit the plan and knows what to change to remove it.
+const SURFACE_RULES = Object.freeze([
+  { id: 'tls', key: null, label: 'Applies to every external web assessment.' },
+  { id: 'headers', key: null, label: 'Applies to every external web assessment.' },
+  { id: 'http', key: null, label: 'Applies to every external web assessment.' },
+  { id: 'client', key: 'app_type', values: ['server_rendered', 'spa', 'hybrid'], label: 'The application runs first-party code in a browser.', fallback: 'Browser-reachable delivery is still to confirm.' },
+  { id: 'auth', key: 'has_login', values: ['yes'], label: 'User authentication is present.', fallback: 'Authentication presence is still to confirm.' },
+  { id: 'session', key: 'auth_mechanism', values: ['cookie'], label: 'Cookie / session-based authentication was selected.', also: [
+    { key: 'auth_mechanism', values: ['jwt'], label: 'Bearer tokens carry the authenticated session.' },
+    { key: 'auth_mechanism', values: ['oauth', 'saml'], label: 'Federation sessions carry the authenticated state.' },
+    { key: 'has_login', values: ['yes'], label: 'Authenticated state is in scope.' }
+  ], fallback: 'Session or token handling is still to confirm.' },
+  { id: 'authz', key: 'creds', values: ['low', 'high'], label: 'Authenticated test access is available.', also: [
+    { key: 'roles', values: ['few', 'many'], label: 'Multiple user roles are in scope.' },
+    { key: 'role_types', values: ['privileged', 'admin'], label: 'A privilege ladder exists — vertical escalation applies.' }
+  ], fallback: 'Authorization depth depends on test-account access.' },
+  { id: 'upload', key: 'features', values: ['file_upload'], label: 'File upload / document handling was selected.', fallback: 'File handling is still to confirm.' },
+  { id: 'api', key: 'api_style', values: ['rest', 'soap', 'grpc'], label: 'HTTP APIs are in scope.', also: [
+    { key: 'api_style', values: ['graphql', 'websocket'], label: 'Exposed interface styles put API-wide checks in scope.' },
+    { key: 'app_type', values: ['api_only'], label: 'The scope is API-first.' }
+  ], fallback: 'API presence is still to confirm.' },
+  { id: 'graphql', key: 'api_style', values: ['graphql'], label: 'GraphQL was selected.', fallback: 'GraphQL is still to confirm.' },
+  { id: 'jwt', key: 'auth_mechanism', values: ['jwt'], label: 'JWT / token-based authentication was selected.', fallback: 'Token type is still to confirm.' },
+  { id: 'oauth', key: 'auth_mechanism', values: ['oauth', 'saml'], label: 'OAuth / SSO federation was selected.', fallback: 'Federation is still to confirm.' },
+  { id: 'websocket', key: 'api_style', values: ['websocket'], label: 'WebSocket channels were selected.', fallback: 'Realtime channels are still to confirm.' },
+  { id: 'business', key: 'features', values: ['payments', 'chat', 'other', 'search'], label: 'Business workflows (commerce, user content, or transactions) were selected.', fallback: 'Business workflows are still to confirm.' },
+  { id: 'ai', key: 'features', values: ['ai_llm'], label: 'AI / LLM features were selected.', fallback: 'AI features are still to confirm.' },
+  { id: 'custom', key: null, label: 'You added these target-specific checks for this engagement.' }
+]);
+
+export function surfaceRationale(surfaceId, context) {
+  const rule = SURFACE_RULES.find((entry) => entry.id === surfaceId);
+  if (!rule) return ['Applies to this assessment context.'];
+  if (!rule.key) return [rule.label];
+  const lines = [];
+  if (contextHas(context, rule.key, rule.values)) lines.push(rule.label);
+  for (const extra of rule.also || []) {
+    if (contextHas(context, extra.key, extra.values) && !lines.includes(extra.label)) lines.push(extra.label);
+  }
+  if (!lines.length) lines.push(contextIsUnknown(context, rule.key) ? rule.fallback : 'Applies to the current assessment context.');
+  return lines;
+}
+
+// Privilege ladder for cross-role testing: the order testers should walk when
+// several role tiers exist. Custom roles slot beside standard users.
+export const ROLE_LADDER = Object.freeze(['admin', 'privileged', 'support', 'standard', 'custom']);
+
+// The real ladder when the tester named the roles: entries ordered by tier
+// (admin > privileged > support > standard > custom), falling back to tier labels.
+export function roleModelLadder(roleModel = []) {
+  const present = roleModel
+    .map(({ tier }) => ({ tier, rank: ROLE_LADDER.indexOf(tier) }))
+    .filter(({ rank }) => rank >= 0)
+    .sort((left, right) => left.rank - right.rank);
+  if (!present.length) return null;
+  const byTier = new Map();
+  for (const { tier } of present) {
+    byTier.set(tier, [...(byTier.get(tier) || []), ...roleModel.filter((role) => role.tier === tier).map(({ name }) => name)]);
+  }
+  return ROLE_LADDER.filter((tier) => byTier.has(tier)).flatMap((tier) => byTier.get(tier));
+}
+
+export function roleLadderLabels(roleTypes = []) {
+  const present = ROLE_LADDER.filter((tier) => roleTypes.includes(tier));
+  const labels = { admin: 'Administrator', privileged: 'Privileged user', support: 'Support / internal', standard: 'Standard user', custom: 'Custom roles' };
+  return present.map((tier) => labels[tier]);
+}
+
 
 export function isHiddenSurface(id, answers = {}) {
   if (answers.app_type === 'static' && answers.has_login === 'no') return HIDDEN_ON_STATIC.has(id);

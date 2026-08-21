@@ -1,3 +1,5 @@
+import { asset } from './paths.js?v=1.0.0-r22';
+
 const WORKFLOWS = [
   ['proxy', 'Proxy'], ['repeater', 'Repeater'], ['intruder', 'Intruder'], ['scanner', 'Scanner'],
   ['comparer', 'Comparer'], ['decoder', 'Decoder'], ['sequencer', 'Sequencer'], ['logger', 'Logger'],
@@ -20,11 +22,11 @@ export function createPayloadStore() {
     if (payloads.length) return payloads;
     if (pending) return pending;
     pending = (async () => {
-      const response = await fetch('payloads/manifest.json', { headers: { Accept: 'application/json' } });
+      const response = await fetch(asset('payloads/manifest.json'), { headers: { Accept: 'application/json' } });
       if (!response.ok) throw new Error(`Payload manifest: HTTP ${response.status}`);
       manifest = await response.json();
       const documents = await Promise.all(manifest.categories.map(async (entry) => {
-        const result = await fetch(`payloads/${entry.file}`, { headers: { Accept: 'application/json' } });
+        const result = await fetch(asset(`payloads/${entry.file}`), { headers: { Accept: 'application/json' } });
         if (!result.ok) throw new Error(`${entry.file}: HTTP ${result.status}`);
         return result.json();
       }));

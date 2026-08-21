@@ -280,6 +280,250 @@
           ]
         }
       ]
+    },
+    {
+      "id": "cost-and-hygiene",
+      "title": "Cost controls, subscriptions, and errors",
+      "checks": [
+        {
+          "id": "gql-baseline",
+          "title": "GraphQL baseline per transport",
+          "item": "WAPT-GQL-001",
+          "severity": "informational",
+          "why": "Every later GraphQL test needs a known-good minimal operation per transport — the control for every mutation you send.",
+          "validate": "A minimal valid query recorded for each confirmed transport (POST, GET, persisted, multipart, websocket).",
+          "variants": [
+            {
+              "name": "Typename per transport",
+              "kind": "note",
+              "payload": "{ __typename } over every confirmed transport (POST body, GET query, persisted-query id, multipart, subscriptions).",
+              "expect": "One recorded baseline per transport; refusals documented per transport too.",
+              "category": "baseline",
+              "why": "The control comes first."
+            },
+            {
+              "name": "Persisted-query shape",
+              "kind": "note",
+              "payload": "Capture a real persisted-query hash from the client; replay it as the baseline for that transport.",
+              "expect": "Hash resolves and executes; unknown hashes get a clear error (not a bypass).",
+              "category": "protocol-variant",
+              "why": "Persisted queries hide the query from logs — capture it now."
+            },
+            {
+              "name": "Error-shape snapshot",
+              "kind": "note",
+              "payload": "Send one deliberately invalid query per transport; snapshot the error envelope.",
+              "expect": "Consistent error envelope recorded — later checks compare against it.",
+              "category": "parser-differential",
+              "why": "Envelope changes reveal handler changes."
+            }
+          ]
+        },
+        {
+          "id": "gql-mutation-inputs",
+          "title": "Unauthorized mutation fields and inputs rejected",
+          "item": "WAPT-GQL-006",
+          "severity": "high",
+          "why": "Mutation inputs accept the full type by default — role, owner, and tenant fields ride inside \"convenient\" input objects.",
+          "validate": "Mutation inputs accept only permitted fields; unauthorized input fields are rejected, not ignored-and-applied.",
+          "variants": [
+            {
+              "name": "Privilege-field input",
+              "kind": "note",
+              "payload": "Include role/isAdmin/ownerId/tenantId in a mutation input type you can use.",
+              "expect": "Rejected with a field-level error; never silently applied.",
+              "category": "parameter-variant",
+              "why": "GraphQL makes mass assignment typed."
+            },
+            {
+              "name": "Nested input smuggle",
+              "kind": "note",
+              "payload": "Nest the privilege field inside sub-inputs (user:{role:\"admin\"}).",
+              "expect": "Deep input validation reaches every level.",
+              "category": "mutation",
+              "why": "Validators often stop at depth one."
+            },
+            {
+              "name": "Mutation-for-read-type",
+              "kind": "note",
+              "payload": "Invoke mutations of privileged types that only read (adminViewer { users { email } }).",
+              "expect": "Field-level authorization on every type — naming is not policy.",
+              "category": "authorization-context",
+              "why": "Reads behind mutations skip read guards."
+            }
+          ]
+        },
+        {
+          "id": "gql-cost",
+          "title": "Query cost analysis on expensive combinations",
+          "item": "WAPT-GQL-009",
+          "severity": "high",
+          "why": "Nested, self-referential, and list-heavy queries cost exponential server work — a single request DoS.",
+          "validate": "Cost/depth analysis rejects or degrades expensive queries with a clear error at the documented limit.",
+          "variants": [
+            {
+              "name": "Depth bomb",
+              "kind": "note",
+              "payload": "A chain of nested list selections 5+ deep on harmless own data.",
+              "expect": "Rejected by depth/cost limits with a clear error.",
+              "category": "mutation",
+              "why": "The classic single-request DoS shape."
+            },
+            {
+              "name": "Cost probe",
+              "kind": "note",
+              "payload": "Repeat a moderately nested selection with growing breadth; find the refusal boundary.",
+              "expect": "Refusal at a documented cost; boundary stable (not timing-dependent).",
+              "category": "baseline",
+              "why": "Find the wall, cite it."
+            },
+            {
+              "name": "Introspection-driven heavy path",
+              "kind": "note",
+              "payload": "Use the schema to find the deepest relation path and build the minimal expensive query.",
+              "expect": "Same limits regardless of path; heuristics catch schema-guided shapes too.",
+              "category": "technology-specific",
+              "why": "The schema is the attack map — limits must be path-independent."
+            }
+          ]
+        },
+        {
+          "id": "gql-aliases",
+          "title": "Aliases and repeats count toward limits",
+          "item": "WAPT-GQL-010",
+          "severity": "high",
+          "why": "Alias the same field a thousand times and every per-field limit is bypassed by name multiplication.",
+          "validate": "Aliases and repeated fields count toward depth/cost/complexity limits; per-operation totals cap repetition.",
+          "variants": [
+            {
+              "name": "Alias flood",
+              "kind": "note",
+              "payload": "One field aliased 50-100 times in a single query on your own object.",
+              "expect": "Rejected by operation-complexity limits — counted per alias.",
+              "category": "parameter-variant",
+              "why": "The oldest GraphQL limit bypass."
+            },
+            {
+              "name": "Batched operations",
+              "kind": "note",
+              "payload": "Multiple operations in one request document; multiple queries in one array body.",
+              "expect": "Each operation counted; batching does not multiply the budget.",
+              "category": "protocol-variant",
+              "why": "Batching is aliasing at request scale."
+            },
+            {
+              "name": "Fragment multiplication",
+              "kind": "note",
+              "payload": "Spread the same fragment many times in one operation.",
+              "expect": "Fragment spreads count toward complexity like inline fields.",
+              "category": "mutation",
+              "why": "Fragments hide the repetition from naive counters."
+            }
+          ]
+        },
+        {
+          "id": "gql-pagination",
+          "title": "Pagination and connection traversal bounded",
+          "item": "WAPT-GQL-012",
+          "severity": "medium",
+          "why": "first: 999999 and endless next-page walks are export and exhaustion primitives in one cursor.",
+          "validate": "Page sizes capped; cursor windows bounded; deep traversal limited per operation.",
+          "variants": [
+            {
+              "name": "Size inflation",
+              "kind": "note",
+              "payload": "first: 999999, last: 999999 on a connection you own.",
+              "expect": "Capped at the documented maximum with a clear error or truncation notice.",
+              "category": "parameter-variant",
+              "why": "The one-parameter export button."
+            },
+            {
+              "name": "Cursor forging",
+              "kind": "note",
+              "payload": "Tamper with pagination cursors (decode, mutate offset/id, re-encode).",
+              "expect": "Forged cursors rejected or resolve within authorized bounds — never arbitrary seeks.",
+              "category": "encoding",
+              "why": "Cursors are client input."
+            },
+            {
+              "name": "Deep walk",
+              "kind": "note",
+              "payload": "Follow next-page automatically a bounded number of pages on your own data.",
+              "expect": "Traversal caps or rate-limits engage; total exposure bounded.",
+              "category": "baseline",
+              "why": "Walk politely, measure the wall."
+            }
+          ]
+        },
+        {
+          "id": "gql-subscriptions",
+          "title": "Subscriptions authorized at subscribe and event time",
+          "item": "WAPT-GQL-014",
+          "severity": "high",
+          "why": "Subscriptions authorize at subscribe and then stream forever — permissions change, streams do not notice.",
+          "validate": "Each subscription checks caller authorization at subscribe AND per event dispatch; revocation ends streams.",
+          "variants": [
+            {
+              "name": "Foreign subscription",
+              "kind": "note",
+              "payload": "Subscribe to a topic rooted at another test account object.",
+              "expect": "Refused at subscribe — topic arguments are authorization inputs.",
+              "category": "authorization-context",
+              "why": "Handshake auth is not topic auth."
+            },
+            {
+              "name": "Event-time recheck",
+              "kind": "note",
+              "payload": "Subscribe to your own object; owner-assisted permission removal mid-stream; observe events.",
+              "expect": "Stream closes or events stop within the documented window.",
+              "category": "authentication-context",
+              "why": "The stream that outlives its permission."
+            },
+            {
+              "name": "Argument tampering mid-protocol",
+              "kind": "note",
+              "payload": "Change subscription variables (topic ids) over the same connection after connect.",
+              "expect": "Re-authorized per change; variable updates are new authorization decisions.",
+              "category": "parameter-variant",
+              "why": "WebSocket variable updates skip naive auth middleware."
+            }
+          ]
+        },
+        {
+          "id": "gql-errors",
+          "title": "Errors without secrets or unauthorized data",
+          "item": "WAPT-GQL-015",
+          "severity": "medium",
+          "why": "GraphQL errors love to include stack traces, query text, resolver paths, and partial data next to the error.",
+          "validate": "Error envelopes carry messages and paths only — no stacks, credentials, SQL, or data the query was not authorized for.",
+          "variants": [
+            {
+              "name": "Error envelope audit",
+              "kind": "note",
+              "payload": "Force type, auth, and resolver errors (harmlessly); inspect message, extensions, and any partial data field.",
+              "expect": "Clean envelopes; no stacks, internals, or leaked partial data.",
+              "category": "baseline",
+              "why": "Every error type, one audit pass."
+            },
+            {
+              "name": "Partial-data leak",
+              "kind": "note",
+              "payload": "Query a mix of authorized and unauthorized fields to force partial failure.",
+              "expect": "Errors for unauthorized fields WITHOUT data; no partial cross-account values.",
+              "category": "authorization-context",
+              "why": "Partial success is where filters snap."
+            },
+            {
+              "name": "Suggestions fuzz",
+              "kind": "note",
+              "payload": "Send slightly-wrong field names and inspect did-you-mean suggestions.",
+              "expect": "Suggestions limited to the caller's visible schema — not a private-type oracle.",
+              "category": "parser-differential",
+              "why": "Helpful errors leak private schemas."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -292,5 +536,6 @@
       "safe": true,
       "payload": "POST /graphql HTTP/1.1\nHost: api.example.com\nAuthorization: Bearer <account-A-token>\nContent-Type: application/json\n\n{\"query\":\"{node(id:\\\"T3JkZXI6MTAwMg==\\\"){... on Order{id total}}}\"}"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

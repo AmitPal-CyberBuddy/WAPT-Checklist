@@ -186,8 +186,16 @@ async function run() {
   await waitFor(() => doc.querySelectorAll('[data-url-hints] li').length === 0, 2000, 'no url hints for clean https URL');
   record('Wizard: engagement name + target URL accepted locally', 'PASS', 'https://app.example.com produced no hint rows');
 
-  doc.querySelector('[data-preset="saas_jwt_api"]').click();
-  doc.querySelector('[data-wizard-next]').click();
+  doc.querySelector('[data-preset="web_grey_box"]').click();
+  await waitFor(() => doc.querySelector('#wizard-root .option-grid'), 5000, 'preset follow-up');
+  // The assessment preset asks only its relevant follow-ups; answer delivery, then flow to review.
+  const spaOption = [...doc.querySelectorAll('.option-card input')].find((input) => input.value === 'spa');
+  if (spaOption) {
+    spaOption.checked = true;
+    spaOption.dispatchEvent(new dom.window.Event('change', { bubbles: true }));
+    await new Promise((resolve) => setTimeout(resolve, 250));
+  }
+  doc.querySelector('[data-wizard-next]')?.click();
   let steps = 0;
   while (doc.querySelector('[data-wizard-next]') && steps < 30) {
     doc.querySelector('[data-wizard-next]').click();
@@ -195,7 +203,7 @@ async function run() {
   }
   await waitFor(() => doc.querySelector('[data-wizard-finish]'), 3000, 'review step');
   const summaryText = text(doc.querySelector('.wizard-summary'));
-  record('Wizard: preset applies and all 18 questions flow to review', summaryText.includes('jwt') && summaryText.includes('multi tenant') && summaryText.includes('grey box') ? 'PASS' : 'FAIL', summaryText.slice(0, 120));
+  record('Wizard: assessment preset applies and follow-ups flow to review', summaryText.includes('grey box') && summaryText.includes('spa') ? 'PASS' : 'FAIL', summaryText.slice(0, 120));
   doc.querySelector('[data-wizard-finish]').click();
   await waitFor(() => doc.querySelectorAll('[data-suggested-next] .suggested-row').length >= 1, 10000, 'suggested next');
   record('Workflow 1: dashboard renders Suggested next with explanations', 'PASS', `${doc.querySelectorAll('[data-suggested-next] .suggested-row').length} rows, first: ${text(doc.querySelector('[data-suggested-next] .suggested-row small'))?.slice(0, 90)}`);
@@ -297,7 +305,7 @@ async function run() {
   doc.querySelector('[data-export-json]').click();
   await waitFor(() => exports.some((e) => e.filename.endsWith('-state.json')), 3000, 'state export');
   const exportedState = exports.find((e) => e.filename.endsWith('-state.json')).text;
-  record('Export: state JSON produced', exportedState.includes('"schema_version": 3') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
+  record('Export: state JSON produced', exportedState.includes('"schema_version": 4') && exportedState.includes('findings') ? 'PASS' : 'FAIL');
 
   // Reload simulation + import
   const dom2 = await boot('reloaded', dom.window.localStorage.getItem('wapt.state.v1'));
@@ -367,7 +375,7 @@ async function run() {
 
   // Long note cap
   const dom4 = await boot('long-note', null);
-  dom4.window.document.querySelector('[data-preset="static_marketing"]').click();
+  dom4.window.document.querySelector('[data-preset="static_black_box"]').click();
   let guard = 0;
   while (dom4.window.document.querySelector('[data-wizard-next]') && guard < 30) { dom4.window.document.querySelector('[data-wizard-next]').click(); guard += 1; }
   dom4.window.document.querySelector('[data-wizard-finish]').click();

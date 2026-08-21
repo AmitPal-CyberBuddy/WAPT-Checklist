@@ -65,7 +65,7 @@ async function run() {
   const url = doc.querySelector('#target-url');
   url.value = 'https://app.example.com';
   fire(window, url, 'input');
-  doc.querySelector('[data-preset="saas_jwt_api"]')?.click();
+  doc.querySelector('[data-preset="web_grey_box"]')?.click();
   let guard = 0;
   while (doc.querySelector('[data-wizard-next]') && guard < 40) { doc.querySelector('[data-wizard-next]').click(); guard += 1; }
   await waitFor(() => doc.querySelector('[data-wizard-finish]'), 5000, 'wizard review');

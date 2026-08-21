@@ -1,8 +1,9 @@
 import { normalizeScopeAnswers } from './context.js';
+import { cleanScopeSnapshots, snapshotScope, MAX_SCOPE_SNAPSHOTS } from './scopediff.js?v=1.0.0-r22';
 
 export const STATE_KEY = 'wapt.state.v1';
-export const STATE_SCHEMA_VERSION = 3;
-export const LEGACY_STATE_SCHEMA_VERSIONS = Object.freeze([1, 2]);
+export const STATE_SCHEMA_VERSION = 4;
+export const LEGACY_STATE_SCHEMA_VERSIONS = Object.freeze([1, 2, 3]);
 // Coverage state of one check. 'blocked' means the tester cannot execute it right now
 // (environment, credentials, or client instruction) — it is NOT tested and NOT N/A.
 export const ITEM_STATUSES = Object.freeze([
@@ -17,6 +18,23 @@ export const FINDING_SEVERITIES = Object.freeze(['critical', 'high', 'medium', '
 export const EXPLOITABILITY_LEVELS = Object.freeze(['not_demonstrated', 'likely', 'proven']);
 export const RETEST_VERDICTS = Object.freeze(['pending', 'pass', 'partial', 'fail']);
 export const MAX_FINDINGS = 200;
+// Evidence attachments: redacted screenshots and request files, stored locally
+// as data URLs inside the pack. Caps keep the local-only state honest — per
+// file, per pack, and across the whole engagement.
+export const ATTACHMENT_TYPES = Object.freeze(['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'text/plain', 'application/json']);
+export const MAX_ATTACHMENTS_PER_PACK = 3;
+export const MAX_ATTACHMENT_BYTES = 400_000;
+export const MAX_ATTACHMENT_TOTAL_BYTES = 2_000_000;
+const ATTACHMENT_ID = /^att-[a-z0-9-]{4,64}$/;
+const ATTACHMENT_NAME_MAX = 120;
+const DATA_URL = /^data:(image\/(?:png|jpeg|webp|gif)|text\/plain|application\/json);base64,[A-Za-z0-9+/=]+$/;
+export const ROLE_TIERS = Object.freeze(['admin', 'privileged', 'support', 'standard', 'custom']);
+export const MAX_ROLES = 8;
+export const MAX_CUSTOM_CHECKS = 100;
+export const MAX_SAVED_VIEWS = 12;
+const ROLE_NAME_MAX = 48;
+const CUSTOM_ID = /^WAPT-CUSTOM-\d{3}$/;
+const VIEW_ID = /^view-[a-z0-9-]{2,32}$/;
 
 const STATUS_SET = new Set(ITEM_STATUSES);
 const SEVERITY_SET = new Set(FINDING_SEVERITIES);
@@ -28,6 +46,8 @@ const FINDING_ID = /^find-[a-z0-9-]{4,100}$/;
 // reminder it was recorded against even if the family list is reordered.
 const VARIANT_KEY = /^[a-z0-9-]{2,64}#[a-z0-9]{1,12}$/;
 const POSITION_VIEWS = new Set(['dashboard', 'playbooks', 'playbook', 'families', 'family', 'checklist', 'search', 'chains', 'payloads']);
+const CUSTOM_SURFACES = new Set(['tls', 'headers', 'http', 'client', 'auth', 'session', 'authz', 'upload', 'api', 'graphql', 'jwt', 'oauth', 'websocket', 'business', 'ai', 'custom']);
+const FILTER_KEYS = new Set(['query', 'category', 'severity', 'difficulty', 'status', 'mode', 'applicability', 'technology', 'tool', 'tag', 'testId', 'standard', 'sort']);
 const MAX_IMPORT_BYTES = 5_000_000;
 
 function isObject(value) {
@@ -89,6 +109,74 @@ function cleanOverrides(value) {
   return output;
 }
 
+// Named roles of this engagement's privilege ladder, e.g. Admin → Manager → Analyst.
+// Tier comes from the controlled vocabulary; the name is the target's real label.
+function cleanRoleModel(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  const seen = new Set();
+  for (const entry of value.slice(0, MAX_ROLES)) {
+    if (!isObject(entry)) continue;
+    const name = cleanText(entry.name, ROLE_NAME_MAX).trim();
+    const tier = ROLE_TIERS.includes(entry.tier) ? entry.tier : 'standard';
+    const key = name.toLocaleLowerCase('en-US');
+    if (!name || seen.has(key)) continue;
+    seen.add(key);
+    output.push({ name, tier });
+  }
+  return output.slice(0, MAX_ROLES);
+}
+
+// Target-specific checks the tester adds locally. They use WAPT-CUSTOM-nnn IDs so
+// statuses, notes, findings, and exports treat them like any other check, and they
+// never collide with the production catalog.
+function cleanCustomChecks(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  const seen = new Set();
+  for (const entry of value.slice(0, MAX_CUSTOM_CHECKS)) {
+    if (!isObject(entry) || !CUSTOM_ID.test(entry.id || '') || seen.has(entry.id)) continue;
+    const title = cleanText(entry.title, 120).trim();
+    if (!title) continue;
+    seen.add(entry.id);
+    output.push({
+      id: entry.id,
+      title,
+      category: 'custom',
+      surface: CUSTOM_SURFACES.has(entry.surface) ? entry.surface : 'custom',
+      severity: cleanEnum(entry.severity, SEVERITY_SET, 'medium'),
+      difficulty: ['low', 'medium', 'high'].includes(entry.difficulty) ? entry.difficulty : 'medium',
+      mode: 'manual',
+      objective: cleanText(entry.objective, 2000),
+      steps: (Array.isArray(entry.steps) ? entry.steps : []).slice(0, 12).map((step) => cleanText(step, 400)).filter(Boolean),
+      tools: [],
+      tags: ['custom'],
+      related: [],
+      variants: []
+    });
+  }
+  return output;
+}
+
+// Named filter sets the tester can recall in checklist/search and the plan.
+function cleanSavedViews(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  const seen = new Set();
+  for (const entry of value.slice(0, MAX_SAVED_VIEWS)) {
+    if (!isObject(entry) || !VIEW_ID.test(entry.id || '') || seen.has(entry.id)) continue;
+    const name = cleanText(entry.name, 60).trim();
+    if (!name) continue;
+    const filters = {};
+    for (const [key, value] of Object.entries(isObject(entry.filters) ? entry.filters : {})) {
+      if (FILTER_KEYS.has(key) && typeof value === 'string' && value.length <= 160) filters[key] = value;
+    }
+    seen.add(entry.id);
+    output.push({ id: entry.id, name, filters });
+  }
+  return output;
+}
+
 function cleanVariants(value) {
   const output = {};
   if (!isObject(value)) return output;
@@ -119,6 +207,32 @@ function cleanRetests(value, statuses) {
   return output;
 }
 
+// One attachment: { id, name, type, size, data }. Everything is validated —
+// type allowlist, base64 data URL shape, byte cap — because the whole state
+// file must survive a hostile import unchanged in shape.
+function cleanAttachments(value) {
+  const output = [];
+  if (!Array.isArray(value)) return output;
+  for (const entry of value.slice(0, MAX_ATTACHMENTS_PER_PACK)) {
+    if (!isObject(entry) || !ATTACHMENT_ID.test(entry.id || '') || !ATTACHMENT_TYPES.includes(entry.type)) continue;
+    const data = typeof entry.data === 'string' ? entry.data : '';
+    if (!DATA_URL.test(data) || data.length > MAX_ATTACHMENT_BYTES) continue;
+    if (output.some(({ id }) => id === entry.id)) continue;
+    output.push({
+      id: entry.id,
+      name: cleanText(entry.name, ATTACHMENT_NAME_MAX).trim() || 'evidence',
+      type: entry.type,
+      size: Number.isInteger(entry.size) && entry.size >= 0 ? entry.size : Math.floor(data.length * 0.75),
+      data
+    });
+  }
+  return output;
+}
+
+function attachmentTotalBytes(findings = []) {
+  return findings.reduce((sum, finding) => sum + (finding.attachments || []).reduce((inner, attachment) => inner + attachment.data.length, 0), 0);
+}
+
 function cleanFinding(value) {
   if (!isObject(value) || typeof value.id !== 'string' || !FINDING_ID.test(value.id.trim())) return null;
   if (!ITEM_ID.test(value.item_id || '')) return null;
@@ -141,6 +255,7 @@ function cleanFinding(value) {
     root_cause: cleanText(value.root_cause, 2_000),
     retest_verdict: cleanEnum(value.retest_verdict, VERDICT_SET, 'pending'),
     retest_note: cleanText(value.retest_note, 2_000),
+    attachments: cleanAttachments(value.attachments),
     created_at: isoOrNull(value.created_at),
     updated_at: isoOrNull(value.updated_at)
   };
@@ -162,7 +277,7 @@ function cleanFindings(value) {
 export function createState() {
   return {
     schema_version: STATE_SCHEMA_VERSION,
-    engagement: { name: '', targetUrl: '', started_at: null },
+    engagement: { name: '', targetUrl: '', started_at: null, role_model: [] },
     answers: normalizeScopeAnswers(),
     statuses: {},
     notes: {},
@@ -171,6 +286,9 @@ export function createState() {
     variants: {},
     position: { view: '', family: '', category: '', item: '', updated_at: null },
     findings: [],
+    custom_checks: [],
+    saved_views: [],
+    scope_snapshots: [],
     updated_at: null
   };
 }
@@ -182,7 +300,8 @@ function normalizeFields(candidate) {
     engagement: {
       name: cleanText(engagement.name, 120),
       targetUrl: cleanText(engagement.targetUrl, 2048),
-      started_at: isoOrNull(engagement.started_at)
+      started_at: isoOrNull(engagement.started_at),
+      role_model: cleanRoleModel(engagement.role_model)
     },
     answers: normalizeScopeAnswers(candidate.answers),
     statuses,
@@ -203,13 +322,16 @@ export function normalizeState(candidate, options = {}) {
   const version = candidate.schema_version;
   const isLegacy = LEGACY_STATE_SCHEMA_VERSIONS.includes(version);
   if (!isLegacy && version !== STATE_SCHEMA_VERSION) {
-    if (options.strict) throw new TypeError(`State must use schema_version ${STATE_SCHEMA_VERSION} (legacy version 1 is migrated).`);
+    if (options.strict) throw new TypeError(`State must use schema_version ${STATE_SCHEMA_VERSION} (legacy versions 1–3 are migrated).`);
     return createState();
   }
   return {
     schema_version: STATE_SCHEMA_VERSION,
     ...normalizeFields(candidate),
-    findings: cleanFindings(candidate.findings)
+    findings: cleanFindings(candidate.findings),
+    custom_checks: cleanCustomChecks(candidate.custom_checks),
+    saved_views: cleanSavedViews(candidate.saved_views),
+    scope_snapshots: cleanScopeSnapshots(candidate.scope_snapshots)
   };
 }
 
@@ -231,7 +353,8 @@ export function setEngagement(state, patch, now) {
     engagement: {
       name: cleanText(next.name, 120),
       targetUrl: cleanText(next.targetUrl, 2048),
-      started_at: isoOrNull(next.started_at)
+      started_at: isoOrNull(next.started_at),
+      role_model: cleanRoleModel(next.role_model)
     }
   }, now);
 }
@@ -239,6 +362,42 @@ export function setEngagement(state, patch, now) {
 export function setAnswers(state, patch, now) {
   const current = normalizeState(state);
   return touch(current, { answers: normalizeScopeAnswers({ ...current.answers, ...(isObject(patch) ? patch : {}) }) }, now);
+}
+
+// Replace the engagement's custom checks (UI owns ID generation and editing).
+// Push a scope checkpoint (ring buffer of the latest ten).
+export function pushScopeSnapshot(state, label, now = new Date().toISOString()) {
+  const current = normalizeState(state);
+  const snapshot = snapshotScope(current.answers, label, now);
+  const scope_snapshots = [...current.scope_snapshots.filter(({ id }) => id !== snapshot.id), snapshot].slice(-MAX_SCOPE_SNAPSHOTS);
+  return touch(current, { scope_snapshots }, now);
+}
+
+export function removeScopeSnapshot(state, id, now) {
+  const current = normalizeState(state);
+  if (!current.scope_snapshots.some(({ id: existing }) => existing === id)) throw new TypeError('Unknown scope snapshot ID.');
+  return touch(current, { scope_snapshots: current.scope_snapshots.filter(({ id: existing }) => existing !== id) }, now);
+}
+
+export function setCustomChecks(state, checks, now) {
+  const current = normalizeState(state);
+  return touch(current, { custom_checks: cleanCustomChecks(checks) }, now);
+}
+
+// Replace the engagement's saved filter views.
+export function setSavedViews(state, views, now) {
+  const current = normalizeState(state);
+  return touch(current, { saved_views: cleanSavedViews(views) }, now);
+}
+
+// Next free custom-check id (WAPT-CUSTOM-001…999).
+export function nextCustomCheckId(state) {
+  const used = new Set((normalizeState(state).custom_checks || []).map(({ id }) => id));
+  for (let index = 1; index <= 999; index += 1) {
+    const id = `WAPT-CUSTOM-${String(index).padStart(3, '0')}`;
+    if (!used.has(id)) return id;
+  }
+  throw new RangeError('Custom check ids exhausted.');
 }
 
 export function setItemStatus(state, id, status, now) {
@@ -329,7 +488,7 @@ function makeFindingId(existing) {
 const FINDING_FIELDS = Object.freeze([
   'title', 'severity', 'endpoint', 'method', 'parameter', 'auth_context', 'precondition',
   'baseline_request', 'test_request', 'observed_behavior', 'exploitability', 'reportable',
-  'cleanup_performed', 'root_cause'
+  'cleanup_performed', 'root_cause', 'attachments'
 ]);
 
 function findingFieldValue(field, value) {
@@ -347,6 +506,7 @@ function findingFieldValue(field, value) {
   if (field === 'reportable') return cleanBoolean(value);
   if (field === 'cleanup_performed') return cleanText(value, 2_000);
   if (field === 'root_cause') return cleanText(value, 2_000);
+  if (field === 'attachments') return cleanAttachments(value);
   return undefined;
 }
 
@@ -362,6 +522,10 @@ export function addFinding(state, fields, now) {
   }
   const patch = isObject(fields) ? fields : {};
   const timestamp = nowIso(now);
+  const stagedAttachments = cleanAttachments(patch.attachments);
+  if (stagedAttachments.length && attachmentTotalBytes(current.findings) + stagedAttachments.reduce((sum, a) => sum + a.data.length, 0) > MAX_ATTACHMENT_TOTAL_BYTES) {
+    throw new RangeError('Attachment budget exceeded: keep total evidence attachments under 2 MB per engagement.');
+  }
   const finding = {
     id: makeFindingId(new Set(current.findings.map(({ id }) => id))),
     item_id: itemId,
@@ -381,6 +545,7 @@ export function addFinding(state, fields, now) {
     root_cause: cleanText(patch.root_cause, 2_000),
     retest_verdict: 'pending',
     retest_note: '',
+    attachments: stagedAttachments,
     created_at: timestamp,
     updated_at: timestamp
   };
@@ -401,6 +566,22 @@ export function updateFinding(state, id, patch, now) {
   const findings = [...current.findings];
   findings[index] = updated;
   return touch(current, { findings }, timestamp);
+}
+
+// Replace one pack's attachments wholesale (UI owns staging and removal).
+// Enforces the engagement-wide attachment budget on growth.
+export function setFindingAttachments(state, id, attachments, now) {
+  const current = normalizeState(state);
+  const index = current.findings.findIndex(({ id: existing }) => existing === id);
+  if (index < 0) throw new TypeError('Unknown evidence pack ID.');
+  const next = cleanAttachments(attachments);
+  const others = attachmentTotalBytes(current.findings.filter((_, position) => position !== index));
+  if (others + next.reduce((sum, a) => sum + a.data.length, 0) > MAX_ATTACHMENT_TOTAL_BYTES) {
+    throw new RangeError('Attachment budget exceeded: keep total evidence attachments under 2 MB per engagement.');
+  }
+  const findings = [...current.findings];
+  findings[index] = { ...findings[index], attachments: next, updated_at: nowIso(now) };
+  return touch(current, { findings }, now);
 }
 
 export function setRetestVerdict(state, id, verdict, note, now) {

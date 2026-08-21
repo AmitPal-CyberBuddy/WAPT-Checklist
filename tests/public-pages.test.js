@@ -17,9 +17,9 @@ test('all user-facing pages share policy, branding, theme, and responsive viewpo
     assert.match(html, /<meta name="viewport" content="width=device-width, initial-scale=1">/);
     assert.ok(html.includes('assets/logo.svg'));
     assert.ok(html.includes('css/styles.css?v=1.0.0'));
-    assert.ok(html.includes('css/polish.css?v=1.0.0-r9'), `${page} shared product polish`);
-    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r9"/);
-    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r9'), `${page} early theme boot`);
+    assert.ok(html.includes('css/polish.css?v=1.0.0-r22'), `${page} shared product polish`);
+    assert.match(html, /src="js\/ui\/[^"]+\.js\?v=1\.0\.0-r22"/);
+    assert.ok(html.includes('js/ui/theme-boot.js?v=1.0.0-r22'), `${page} early theme boot`);
     assert.ok(html.indexOf('theme-boot.js') < html.indexOf('css/styles.css'), `${page} applies theme before CSS`);
   }
 });
@@ -55,14 +55,14 @@ test('methodology page is manifest-driven and exposes real workflow content', ()
   assert.match(html, /A deliberate assessment sequence/);
   assert.match(html, /Decision-grade test design/);
   assert.match(html, /data-method-categories/);
-  assert.match(script, /fetch\('checklist\/manifest\.json'/);
+  assert.match(script, /fetch\(asset\('checklist\/manifest\.json'\)/);
   assert.match(script, /app\.html#checklist\/\$\{category\.slug\}/);
 });
 
 test('sitemap includes designed methodology and documentation pages', () => {
   const sitemap = read('sitemap.xml');
-  assert.ok(sitemap.includes('/methodology.html'));
-  assert.ok(sitemap.includes('/docs.html'));
+  assert.ok(sitemap.includes('/methodology/'));
+  assert.ok(sitemap.includes('/docs/'));
 });
 
 test('Burp workflow links route through the designed workflow page', () => {
@@ -83,8 +83,8 @@ test('homepage presents the practical testing loop without loading the full cata
   assert.match(html, /data-project-metric="attack_chains"/);
   assert.match(html, /class="pipeline"/);
   assert.match(html, /data-chain-preview/);
-  assert.match(home, /fetch\('release\.json'/);
-  assert.match(home, /fetch\('attack-chains\/manifest\.json'/);
+  assert.match(home, /fetch\(asset\('release\.json'\)/);
+  assert.match(home, /fetch\(asset\('attack-chains\/manifest\.json'\)/);
   assert.match(home, /IntersectionObserver/);
   assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });

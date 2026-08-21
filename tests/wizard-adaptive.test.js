@@ -67,8 +67,18 @@ test('static delivery with no API hides outbound-fetch and asynchronous-job ques
   assert.ok(keys.includes('intermediary'));
 });
 
-test('all-unknown scope exposes all 18 adaptive questions for confirmation', async () => {
+test('all-unknown scope exposes all 19 adaptive questions for confirmation', async () => {
   const { applicableQuestions, QUESTIONS } = await wizardModule;
-  assert.equal(QUESTIONS.length, 18);
-  assert.equal(applicableQuestions({}).length, 18);
+  assert.equal(QUESTIONS.length, 19);
+  assert.equal(applicableQuestions({}).length, 19);
+});
+
+test('role-type tiers are asked only when several roles can exist', async () => {
+  const { applicableQuestions } = await wizardModule;
+  const keysFor = (answers) => applicableQuestions(answers).map(({ key }) => key);
+  assert.ok(keysFor({ has_login: 'yes', roles: 'few' }).includes('role_types'));
+  assert.ok(keysFor({ has_login: 'yes', roles: 'many' }).includes('role_types'));
+  assert.ok(!keysFor({ has_login: 'yes', roles: 'one' }).includes('role_types'));
+  assert.ok(!keysFor({ has_login: 'yes', roles: 'none' }).includes('role_types'));
+  assert.ok(!keysFor({ has_login: 'no', roles: 'none' }).includes('role_types'));
 });

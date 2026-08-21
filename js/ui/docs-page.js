@@ -1,5 +1,6 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r9';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r9';
+import { initializeTheme } from './theme.js?v=1.0.0-r22';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 // Public documentation map. Only operator-facing documents are served here;
 // project-management material (QA reports, phase notes, release runbooks,
@@ -26,7 +27,7 @@ async function loadDocument() {
   });
   const root = document.querySelector('[data-doc-content]');
   try {
-    const response = await fetch(documentInfo.file, { headers: { Accept: 'text/plain' } });
+    const response = await fetch(asset(documentInfo.file), { headers: { Accept: 'text/plain' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     renderMarkdown(await response.text(), root, { plain: documentInfo.plain });
   } catch (error) {

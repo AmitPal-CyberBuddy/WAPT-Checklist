@@ -1,5 +1,6 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r9';
-import { renderMarkdown } from './markdown.js?v=1.0.0-r9';
+import { initializeTheme } from './theme.js?v=1.0.0-r22';
+import { renderMarkdown } from './markdown.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 const TOOLS = Object.freeze({
   proxy: 'Proxy', repeater: 'Repeater', intruder: 'Intruder', scanner: 'Scanner',
@@ -17,7 +18,7 @@ async function loadWorkflow() {
   document.querySelector('[data-workflow-title]').textContent = `Burp ${name}`;
   const root = document.querySelector('[data-workflow-content]');
   try {
-    const response = await fetch(`burp-workflows/${key}.md`, { headers: { Accept: 'text/plain' } });
+    const response = await fetch(asset(`burp-workflows/${key}.md`), { headers: { Accept: 'text/plain' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     renderMarkdown(await response.text(), root);
   } catch (error) {

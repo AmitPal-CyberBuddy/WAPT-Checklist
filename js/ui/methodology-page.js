@@ -1,10 +1,11 @@
-import { initializeTheme } from './theme.js?v=1.0.0-r9';
+import { initializeTheme } from './theme.js?v=1.0.0-r22';
+import { asset } from './paths.js?v=1.0.0-r22';
 
 async function renderCategories() {
   initializeTheme();
   const root = document.querySelector('[data-method-categories]');
   try {
-    const response = await fetch('checklist/manifest.json', { headers: { Accept: 'application/json' } });
+    const response = await fetch(asset('checklist/manifest.json'), { headers: { Accept: 'application/json' } });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const manifest = await response.json();
     root.replaceChildren(...manifest.categories.map((category) => {

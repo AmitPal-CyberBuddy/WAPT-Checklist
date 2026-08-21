@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/</loc><lastmod>2026-08-18</lastmod><changefreq>weekly</changefreq></url>
-  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app.html</loc><lastmod>2026-08-18</lastmod><changefreq>weekly</changefreq></url>
-  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/methodology.html</loc><lastmod>2026-08-18</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/docs.html</loc><lastmod>2026-08-18</lastmod><changefreq>monthly</changefreq></url>
-  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/workflow.html</loc><lastmod>2026-08-18</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/</loc><lastmod>2026-08-21</lastmod><changefreq>weekly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/app/</loc><lastmod>2026-08-21</lastmod><changefreq>weekly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/methodology/</loc><lastmod>2026-08-21</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/docs/</loc><lastmod>2026-08-21</lastmod><changefreq>monthly</changefreq></url>
+  <url><loc>https://amitpal-cyberbuddy.github.io/WAPT-Checklist/workflow/</loc><lastmod>2026-08-21</lastmod><changefreq>monthly</changefreq></url>
 </urlset>

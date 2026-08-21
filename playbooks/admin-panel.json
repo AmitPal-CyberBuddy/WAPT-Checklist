@@ -214,6 +214,1233 @@
           ]
         }
       ]
+    },
+    {
+      "id": "objects-and-collections",
+      "title": "Objects, collections, and artifacts",
+      "checks": [
+        {
+          "id": "role-matrix",
+          "title": "Build and verify the role-permission matrix",
+          "item": "WAPT-AUTHZ-001",
+          "severity": "informational",
+          "why": "Every later authorization test needs a written map of who can do what — otherwise findings are anecdotes, not coverage.",
+          "validate": "A matrix of roles x functions x objects (including tenant dimensions) that the engagement tests against.",
+          "variants": [
+            {
+              "name": "Documented matrix",
+              "kind": "note",
+              "payload": "From documentation, UI walkthroughs as each test account, and owner confirmation, write the matrix: role, functions reachable, object scopes, tenant reach.",
+              "expect": "Matrix reviewed by the owner as intended behaviour — it becomes the oracle for every gap test.",
+              "category": "baseline",
+              "why": "The oracle comes first; findings are deviations from it."
+            },
+            {
+              "name": "UI reach sweep",
+              "kind": "note",
+              "payload": "Walk every role account through the app; record reachable functions and object types per role.",
+              "expect": "Observed reach matches the matrix; extra reach becomes a finding, missing reach becomes a question.",
+              "category": "authorization-context",
+              "why": "The UI is the cheapest complete function inventory."
+            },
+            {
+              "name": "API surface overlay",
+              "kind": "note",
+              "payload": "Repeat the sweep at the API layer (routes the UI uses plus documented endpoints).",
+              "expect": "API reach per role matches UI reach per role; unexplained differences are test targets.",
+              "category": "protocol-variant",
+              "why": "UI hiding what the API allows is the classic split."
+            }
+          ]
+        },
+        {
+          "id": "horizontal-delete",
+          "title": "Horizontal delete authorization",
+          "item": "WAPT-AUTHZ-005",
+          "severity": "high",
+          "why": "Destructive operations get the least casual testing and cause the most damage when authorization is missing.",
+          "validate": "DELETE (and destructive POST/PUT) on another user object is refused with 403/404, and nothing is soft-deleted.",
+          "variants": [
+            {
+              "name": "Swap the path id",
+              "kind": "note",
+              "payload": "DELETE /api/objects/1002 HTTP/1.1\nHost: www.example.com\nCookie: session=<account-A> — 1002 belongs to test account B (yours).",
+              "expect": "403/404 for B id; only A-owned ids delete. Confirm with B that 1002 still exists.",
+              "category": "authorization-context",
+              "why": "Direct cross-account delete with your own two accounts."
+            },
+            {
+              "name": "Soft-delete parity",
+              "kind": "note",
+              "payload": "Repeat with destructive verbs and shapes: POST /objects/1002/delete, PUT {deleted:true}, POST /trash with the id in body.",
+              "expect": "Every destructive shape enforces ownership — route-level checks miss body-borne ids.",
+              "category": "parameter-variant",
+              "why": "One guarded verb and three unguarded twins is a common pattern."
+            },
+            {
+              "name": "Bulk delete smuggling",
+              "kind": "note",
+              "payload": "Include B id inside a batch you legitimately own: DELETE ids=[1001(own),1002(B)].",
+              "expect": "Whole request rejected or per-member partial refuse — never silently delete the foreign member.",
+              "category": "parameter-variant",
+              "why": "Bulk endpoints must authorize per member, not per request."
+            }
+          ]
+        },
+        {
+          "id": "collection-filtering",
+          "title": "Collections filtered by caller permissions",
+          "item": "WAPT-AUTHZ-006",
+          "severity": "high",
+          "why": "List endpoints leak other users data without any id guessing — the response simply contains it.",
+          "validate": "Every collection response contains only objects the caller may read; totals and pagination respect the same filter.",
+          "variants": [
+            {
+              "name": "Own-list baseline",
+              "kind": "note",
+              "payload": "GET /api/objects as account A: note count and a stable marker field.",
+              "expect": "Only A-owned (or A-visible) objects return; record the shape for cross-account comparison.",
+              "category": "baseline",
+              "why": "Establish what correct looks like first."
+            },
+            {
+              "name": "Foreign-object presence",
+              "kind": "note",
+              "payload": "Create an object as B with a canary title; list as A (default list, search, sort, filters).",
+              "expect": "B canary never appears in any A listing — including exports, suggestions, and typeaheads.",
+              "category": "authorization-context",
+              "why": "Auxiliary list shapes (typeahead, recent, suggested) are where filters are forgotten."
+            },
+            {
+              "name": "Pagination and totals",
+              "kind": "note",
+              "payload": "Compare reported totals/pagination metadata with the filtered content length as A.",
+              "expect": "Totals count only A-visible objects; unfiltered counts leak existence and volume.",
+              "category": "parameter-variant",
+              "why": "Metadata is data too."
+            }
+          ]
+        },
+        {
+          "id": "bulk-per-member",
+          "title": "Bulk operations authorize per member",
+          "item": "WAPT-AUTHZ-007",
+          "severity": "high",
+          "why": "Batch endpoints authorize the request once and apply it to every member — one foreign id inside a batch is a multiplier.",
+          "validate": "Each member of a batch is authorized individually; foreign members fail without partial application of side effects.",
+          "variants": [
+            {
+              "name": "Mixed batch",
+              "kind": "note",
+              "payload": "POST /api/objects/batch-update ids=[A-own, B-foreign] with a harmless field change.",
+              "expect": "Rejected (all-or-nothing) or per-member partial with B refused — never B applied.",
+              "category": "authorization-context",
+              "why": "The minimal honest batch probe with two of your own objects."
+            },
+            {
+              "name": "All-foreign batch",
+              "kind": "note",
+              "payload": "A batch containing only B ids under A session.",
+              "expect": "Complete refusal; no metadata leakage about B object existence beyond a flat deny.",
+              "category": "authorization-context",
+              "why": "Response detail here is also an existence oracle (see separate check)."
+            },
+            {
+              "name": "Nested batch shapes",
+              "kind": "note",
+              "payload": "Repeat via every batch transport the app uses: array body, CSV import, patch-document arrays, GraphQL lists.",
+              "expect": "Same per-member enforcement across transports.",
+              "category": "parameter-variant",
+              "why": "Enforcement often exists on one path only."
+            }
+          ]
+        },
+        {
+          "id": "nested-resources",
+          "title": "Parent-child authorization on nested routes",
+          "item": "WAPT-AUTHZ-008",
+          "severity": "high",
+          "why": "GET /own/child is guarded, but /parents/<other>/children/<own> style nesting lets idor hide in the middle segment.",
+          "validate": "Authorization is evaluated on the full path chain: every ancestor must belong to (or be reachable by) the caller.",
+          "variants": [
+            {
+              "name": "Foreign parent, own child",
+              "kind": "note",
+              "payload": "GET /api/users/<B>/orders/<A-order-id> as A — your order under the other account path.",
+              "expect": "403/404: the parent check must fail even though the child is yours.",
+              "category": "authorization-context",
+              "why": "Child-ownership checks are not ancestor checks."
+            },
+            {
+              "name": "Foreign child, own parent",
+              "kind": "note",
+              "payload": "GET /api/users/<A>/orders/<B-order-id>.",
+              "expect": "403/404 — middle segments are authorization inputs everywhere.",
+              "category": "authorization-context",
+              "why": "The mirror case catches inverse-only validation."
+            },
+            {
+              "name": "Deep chain walk",
+              "kind": "note",
+              "payload": "Build the deepest documented route (4+ segments) and swap the least-checked middle segment.",
+              "expect": "Swap rejected; record which segment levels lack checks for the report.",
+              "category": "mutation",
+              "why": "Longer chains accumulate unvalidated segments."
+            }
+          ]
+        },
+        {
+          "id": "opaque-references",
+          "title": "Opaque references treated as inputs, not secrets",
+          "item": "WAPT-AUTHZ-009",
+          "severity": "high",
+          "why": "UUIDs and opaque handles delay guessing, but they are not authorization — a leaked or shared reference must still deny.",
+          "validate": "Access decisions run on ownership/permission for every reference format, not on the unguessability of the id.",
+          "variants": [
+            {
+              "name": "Handle handoff",
+              "kind": "note",
+              "payload": "Copy the full reference (UUID, hash, ref token) of a B object from a legitimate B-side view you control; request it as A.",
+              "expect": "403/404 — knowing the reference grants nothing.",
+              "category": "authorization-context",
+              "why": "The honest test: full knowledge of the identifier, still denied."
+            },
+            {
+              "name": "Sequential-vs-opaque mix",
+              "kind": "note",
+              "payload": "Find endpoints that accept both sequential and opaque forms of the same object; try the sequential form where the UI uses opaque.",
+              "expect": "Same enforcement regardless of representation.",
+              "category": "encoding",
+              "why": "Alternate representations are alternate entrances."
+            },
+            {
+              "name": "Cross-format objects",
+              "kind": "note",
+              "payload": "Use a document ref where a message id is expected (and similar type confusions across namespaces).",
+              "expect": "Type/scope mismatch rejected — references are namespace-bound.",
+              "category": "parameter-variant",
+              "why": "Global uniqueness without scoping invites cross-type confusion."
+            }
+          ]
+        },
+        {
+          "id": "direct-media",
+          "title": "Direct file and media retrieval authorized",
+          "item": "WAPT-AUTHZ-010",
+          "severity": "high",
+          "why": "Uploads, avatars, and exports are often served from a storage path with no per-object decision — the URL is the only lock.",
+          "validate": "Fetching any file object requires an authorized session decision per object, including direct storage URLs.",
+          "variants": [
+            {
+              "name": "B media as A",
+              "kind": "note",
+              "payload": "As B upload a canary file; take its direct URL (CDN or app path); fetch it as A and in a private window (unauthenticated).",
+              "expect": "403/404 (or signed-URL refusal) both ways — private media stays private even with the URL.",
+              "category": "authorization-context",
+              "why": "URL-knowledge is the attacker model for leaked links."
+            },
+            {
+              "name": "Signed-URL scope",
+              "kind": "note",
+              "payload": "Where signed URLs exist: take B signed URL, strip/alter signature and query params, try as A.",
+              "expect": "Altered signatures fail; signatures are bound to object and expiry (see signed-URL check for depth).",
+              "category": "protocol-variant",
+              "why": "Signature tamper-proving before deeper scope tests."
+            },
+            {
+              "name": "Listing paths",
+              "kind": "note",
+              "payload": "Request the directory/listing endpoints or predictable adjacent names (file-1.jpg..file-3.jpg) around A-owned media.",
+              "expect": "No enumeration of sibling or foreign objects.",
+              "category": "baseline",
+              "why": "Adjacent guessing costs nothing to test."
+            }
+          ]
+        },
+        {
+          "id": "report-artifacts",
+          "title": "Reports and export artifacts authorized",
+          "item": "WAPT-AUTHZ-011",
+          "severity": "high",
+          "why": "Generated reports aggregate data the UI protects — the artifact often sits on a less-guarded download path.",
+          "validate": "Downloading any generated artifact requires caller ownership/permission at download time, not just at generation time.",
+          "variants": [
+            {
+              "name": "B report as A",
+              "kind": "note",
+              "payload": "As B generate an export/report; capture its download URL or id; fetch as A.",
+              "expect": "403/404 — artifact ids are authorization-bound.",
+              "category": "authorization-context",
+              "why": "Generation-time checks without download-time checks."
+            },
+            {
+              "name": "Post-revocation download",
+              "kind": "note",
+              "payload": "Generate as A, have permissions revoked (owner-assisted), then download.",
+              "expect": "Download refused — artifact access follows current permission, not a snapshot.",
+              "category": "authorization-context",
+              "why": "Exports outlive the sessions that made them."
+            },
+            {
+              "name": "Guessable artifact ids",
+              "kind": "note",
+              "payload": "If artifact ids look sequential/timestamped, probe adjacent values for your own artifacts only.",
+              "expect": "Adjacent fetches fail or return only A artifacts; report enumerability evidence without touching foreign data.",
+              "category": "encoding",
+              "why": "Stay on your own objects while proving the pattern."
+            }
+          ]
+        },
+        {
+          "id": "async-jobs",
+          "title": "Async jobs authorized end to end",
+          "item": "WAPT-AUTHZ-012",
+          "severity": "high",
+          "why": "Queued work runs with worker authority — status, cancellation, and result endpoints are the user-facing doors to it.",
+          "validate": "Job status, cancellation, and results all check the caller against the job owner at request time.",
+          "variants": [
+            {
+              "name": "B job status as A",
+              "kind": "note",
+              "payload": "As B start a long job (export, import, report); poll its status endpoint as A with the job id.",
+              "expect": "403/404 — status is authorization data too (progress, payload names).",
+              "category": "authorization-context",
+              "why": "Status endpoints leak and control."
+            },
+            {
+              "name": "Cancel foreign job",
+              "kind": "note",
+              "payload": "POST cancel on the B job id as A.",
+              "expect": "Refused — cancelling other people work is integrity, not just confidentiality.",
+              "category": "authorization-context",
+              "why": "Cancellation is a destructive operation."
+            },
+            {
+              "name": "Results after permission change",
+              "kind": "note",
+              "payload": "Complete a job as A, lose the underlying permission (owner-assisted), fetch results.",
+              "expect": "Results refused — job outputs inherit current authority over the source data.",
+              "category": "authorization-context",
+              "why": "Workers remember; endpoints must re-check."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "properties-and-state",
+      "title": "Properties, display, and state",
+      "checks": [
+        {
+          "id": "visibility-not-authz",
+          "title": "Hidden UI is not authorization",
+          "item": "WAPT-AUTHZ-015",
+          "severity": "high",
+          "why": "Buttons hidden per role stop honest users; the API behind them serves anyone who asks.",
+          "validate": "Every function reachable through the UI is enforced server-side per role, independent of what the UI renders.",
+          "variants": [
+            {
+              "name": "Hidden-button API call",
+              "kind": "note",
+              "payload": "As a limited role, find functions the UI hides; drive their API calls directly (Repeater).",
+              "expect": "403 — server-side role enforcement, evidenced per endpoint.",
+              "category": "authorization-context",
+              "why": "The canonical client-side authorization test."
+            },
+            {
+              "name": "Disabled-field payload",
+              "kind": "note",
+              "payload": "Re-enable a disabled field in DevTools, submit, and watch the request.",
+              "expect": "Server decides with its own permission model; tampered clients change nothing.",
+              "category": "browser-context",
+              "why": "Cheapest tamper that proves the point."
+            },
+            {
+              "name": "Route-direct navigation",
+              "kind": "note",
+              "payload": "Navigate directly to hidden routes (URL/SPA state) as the limited role.",
+              "expect": "Route guards server-side; UI routing is convenience.",
+              "category": "browser-context",
+              "why": "Deep links bypass menus, never enforcement."
+            }
+          ]
+        },
+        {
+          "id": "ownership-reassignment",
+          "title": "Ownership cannot be reassigned by client fields",
+          "item": "WAPT-AUTHZ-017",
+          "severity": "critical",
+          "why": "Mass assignment on owner/user/tenant fields transfers objects (or grants access) with one crafted update.",
+          "validate": "Server-controlled fields (owner, roles, tenant, pricing tier, flags) are ignored or rejected in client payloads.",
+          "variants": [
+            {
+              "name": "Owner field overwrite",
+              "kind": "note",
+              "payload": "PUT /api/objects/1001 (A-owned) with {\"owner_id\": <B-test-id>} added to the normal payload.",
+              "expect": "Field ignored or 400 — ownership never changes from client input.",
+              "category": "parameter-variant",
+              "why": "The classic mass-assignment probe on the most dangerous field."
+            },
+            {
+              "name": "Role/tier bump",
+              "kind": "note",
+              "payload": "POST registration or PUT profile including role=admin, tier=premium, is_admin=true variants.",
+              "expect": "Ignored/rejected; registration and profile flows assign only default roles.",
+              "category": "parameter-variant",
+              "why": "Self-service endpoints must not mint privilege."
+            },
+            {
+              "name": "Transfer flow abuse",
+              "kind": "note",
+              "payload": "If a legitimate transfer/invite flow exists, complete it with yourself then attempt to skip its confirmation step via direct state changes.",
+              "expect": "Transfers honor their full workflow; state cannot be jumped by field edits.",
+              "category": "authorization-context",
+              "why": "Legitimate flows abused are worse than absent ones."
+            }
+          ]
+        },
+        {
+          "id": "field-read-permissions",
+          "title": "Sensitive properties filtered by read permission",
+          "item": "WAPT-AUTHZ-018",
+          "severity": "high",
+          "why": "Field-level data (tokens, internal notes, cost price, PII) often rides along in objects the caller may otherwise read.",
+          "validate": "Responses include sensitive fields only for roles/contexts with that field-level permission.",
+          "variants": [
+            {
+              "name": "Field diff across roles",
+              "kind": "note",
+              "payload": "Fetch the same object type as two roles you hold; diff the response keys.",
+              "expect": "Sensitive keys absent for the lesser role — not null-empty but absent (or explicitly permitted).",
+              "category": "authorization-context",
+              "why": "A clean structural diff beats reading values."
+            },
+            {
+              "name": "Alternate representations",
+              "kind": "note",
+              "payload": "Repeat the diff across representations: ?fields=*, export CSV, mobile API, and internal fields in errors.",
+              "expect": "Every representation applies the same field rules.",
+              "category": "parameter-variant",
+              "why": "Exports and mobile shapes forget filters."
+            },
+            {
+              "name": "Nested/embedded copy",
+              "kind": "note",
+              "payload": "Check the same fields when the object is embedded in a parent response (/me containing full account object).",
+              "expect": "Embedded copies follow the same field permission as direct reads.",
+              "category": "protocol-variant",
+              "why": "Embedding re-serializes and re-leaks."
+            }
+          ]
+        },
+        {
+          "id": "protected-writes",
+          "title": "Protected properties reject unauthorized writes",
+          "item": "WAPT-AUTHZ-019",
+          "severity": "high",
+          "why": "Readable-but-not-writable fields (balance, status, limits, audit fields) must refuse edits from roles without that write permission.",
+          "validate": "Writes to protected properties are rejected for unauthorized roles, with no partial application.",
+          "variants": [
+            {
+              "name": "Balance/status edit",
+              "kind": "note",
+              "payload": "PUT the object as the lesser role with {\"balance\":999999} or {\"status\":\"approved\"} included.",
+              "expect": "Rejected or ignored with the rest of the update applied per policy — protected fields never change.",
+              "category": "parameter-variant",
+              "why": "One payload, two field classes: normal and protected."
+            },
+            {
+              "name": "Deep-merge reach",
+              "kind": "note",
+              "payload": "Send nested paths to protected fields (settings.tier, meta.flags.admin).",
+              "expect": "Deep merges do not tunnel into protected branches.",
+              "category": "mutation",
+              "why": "Frameworks that merge deep give writers long arms."
+            },
+            {
+              "name": "Write-via-read-representation",
+              "kind": "note",
+              "payload": "Round-trip: GET the object, modify the protected field in the copy, PUT it back.",
+              "expect": "The read representation is not a writable contract — protected fields still refuse.",
+              "category": "protocol-variant",
+              "why": "Editable-looking JSON is not a permission."
+            }
+          ]
+        },
+        {
+          "id": "state-change-recheck",
+          "title": "Authorization rechecked when object state changes",
+          "item": "WAPT-AUTHZ-039",
+          "severity": "critical",
+          "why": "Approved-then-locked, published-then-restricted: permissions depend on state, and stale checks keep old access alive.",
+          "validate": "State transitions that change reachability re-evaluate authorization for in-flight and follow-up access.",
+          "variants": [
+            {
+              "name": "Lock-then-read",
+              "kind": "note",
+              "payload": "Owner-assisted: move your test object into a restricted state (lock, unpublish, close); immediately re-read and re-edit as before.",
+              "expect": "New state enforced on the next request — no grace access to restricted states.",
+              "category": "authorization-context",
+              "why": "The check must follow the object, not the session."
+            },
+            {
+              "name": "Transition race",
+              "kind": "note",
+              "payload": "Submit a state-changing action, and mid-flight (before completion) fire the follow-up action that the new state should block.",
+              "expect": "Follow-up evaluated against current state at execution time — TOCTOU closed.",
+              "category": "race-concurrency",
+              "why": "State machines are authorization machines with extra steps."
+            },
+            {
+              "name": "Workflow-boundary edit",
+              "kind": "note",
+              "payload": "After an object enters approval/review, attempt direct edits as the original owner.",
+              "expect": "Owner edits blocked per workflow rules; review states are integrity states.",
+              "category": "authorization-context",
+              "why": "Owner is a role that state can narrow."
+            }
+          ]
+        },
+        {
+          "id": "display-attributes",
+          "title": "Authorization independent of display attributes",
+          "item": "WAPT-AUTHZ-040",
+          "severity": "critical",
+          "why": "Theme, locale, feature-flag, and layout fields sometimes double as authority — if the server reads them for decisions, users mint permissions.",
+          "validate": "No authorization decision reads user-controllable display/preference attributes.",
+          "variants": [
+            {
+              "name": "Preference-field sweep",
+              "kind": "note",
+              "payload": "List preference-ish fields (theme, locale, plan display, dashboard config, feature flags in profile).",
+              "expect": "None of these appear in access decisions — verified by role-matrix diff, not assumption.",
+              "category": "baseline",
+              "why": "Inventory before inference."
+            },
+            {
+              "name": "Flag flip probe",
+              "kind": "note",
+              "payload": "Flip profile-carried feature flags (feature_x_enabled=true) via their normal settings endpoints; probe gated functions.",
+              "expect": "Gating is server-permission based; flag changes do not unlock.",
+              "category": "parameter-variant",
+              "why": "Client flags steer UI; server flags steer access."
+            },
+            {
+              "name": "Config-injection shapes",
+              "kind": "note",
+              "payload": "Send dashboard/config blobs containing role- or permission-looking keys.",
+              "expect": "Unknown keys ignored; blobs are data, never policy.",
+              "category": "mutation",
+              "why": "Flexible config fields attract policy smuggling."
+            }
+          ]
+        },
+        {
+          "id": "error-representations",
+          "title": "Error, preview, and metadata representations authorized",
+          "item": "WAPT-AUTHZ-042",
+          "severity": "high",
+          "why": "Validation errors, preview renders, audit metadata, and schema endpoints re-serialize objects — filters are easily forgotten there.",
+          "validate": "Every representation of an object (errors, previews, metadata, docs) enforces the same read permissions as the primary view.",
+          "variants": [
+            {
+              "name": "Error-message reflection",
+              "kind": "note",
+              "payload": "Request B object as A with malformed payloads that echo object content in validation errors.",
+              "expect": "Errors carry no B field values — error paths serialize too.",
+              "category": "parser-differential",
+              "why": "Error messages are representations."
+            },
+            {
+              "name": "Preview render",
+              "kind": "note",
+              "payload": "Use preview/preview-link features on B object ids as A.",
+              "expect": "Preview refuses or renders only A-visible content.",
+              "category": "authorization-context",
+              "why": "Previews bypass the detail page, so they skip its guards."
+            },
+            {
+              "name": "Metadata/schema leak",
+              "kind": "note",
+              "payload": "Fetch schema/options/metadata endpoints for B ids (field definitions, owners, timestamps).",
+              "expect": "Metadata follows the same visibility as the data it describes.",
+              "category": "baseline",
+              "why": "Metadata is half the story in reports."
+            }
+          ]
+        },
+        {
+          "id": "audit-events",
+          "title": "Audit events without leaking protected data",
+          "item": "WAPT-AUTHZ-043",
+          "severity": "medium",
+          "why": "Audit logs prove authorization decisions — but the logs themselves become a data leak if user-facing views expose protected content.",
+          "validate": "User-visible audit/log views redact protected data and enforce viewer permissions on event payloads.",
+          "variants": [
+            {
+              "name": "Audit view sweep",
+              "kind": "note",
+              "payload": "Open user-facing activity/log views as A; inspect events for other users content, tokens, or full payloads.",
+              "expect": "Events describe actions, not payloads; cross-user events only where intended.",
+              "category": "baseline",
+              "why": "Logs written for auditors, shown to users, leak both ways."
+            },
+            {
+              "name": "Event injection",
+              "kind": "note",
+              "payload": "Cause log-worthy actions containing canary strings (display-name canary) as B; view logs as A.",
+              "expect": "Canary does not surface to A through any log or event surface.",
+              "category": "authorization-context",
+              "why": "Proves payload propagation end to end."
+            },
+            {
+              "name": "Immutability poke",
+              "kind": "note",
+              "payload": "Attempt to edit/delete own audit events via any user-reachable path.",
+              "expect": "Audit events are append-only for users; no deletion or edit path exists.",
+              "category": "mutation",
+              "why": "Editable audit logs are not audit logs."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tenant-isolation",
+      "title": "Tenant boundaries",
+      "checks": [
+        {
+          "id": "tenant-from-identity",
+          "title": "Tenant context bound to trusted identity",
+          "item": "WAPT-AUTHZ-020",
+          "severity": "critical",
+          "why": "Tenant chosen from request input (header, subdomain, form field) lets any authenticated user shop tenants.",
+          "validate": "Tenant context derives from verified identity claims (token/session) only; request-borne tenant values are ignored.",
+          "variants": [
+            {
+              "name": "Header/param override",
+              "kind": "note",
+              "payload": "With A-in-tenant-1 session, replay requests with X-Tenant: 2, tenant_id=2 body field, and ?tenant=2 variants.",
+              "expect": "Tenant stays 1 — every transport ignored.",
+              "category": "parameter-variant",
+              "why": "Enumerate transports; one accepted is the bypass."
+            },
+            {
+              "name": "Subdomain hop",
+              "kind": "note",
+              "payload": "If tenants map to subdomains, take the tenant-1 session cookie to the tenant-2 subdomain.",
+              "expect": "Rejected — session is tenant-bound (cookie scope + server binding).",
+              "category": "browser-context",
+              "why": "Subdomain front doors need server-side tenant binding behind them."
+            },
+            {
+              "name": "Token-tenant mismatch",
+              "kind": "note",
+              "payload": "Craft (with app-owned test keys) or obtain a token whose tenant claim differs from the request context.",
+              "expect": "Server resolves tenant from the authoritative claim chain with defined precedence, never from the lesser source.",
+              "category": "mutation",
+              "why": "Ambiguity between two tenant signals is the flaw."
+            }
+          ]
+        },
+        {
+          "id": "cross-tenant-objects",
+          "title": "Cross-tenant object access refused",
+          "item": "WAPT-AUTHZ-021",
+          "severity": "critical",
+          "why": "Object-level checks that verify user but not tenant leak data across the strongest boundary in the product.",
+          "validate": "Every object access checks tenant membership in addition to ownership/permission.",
+          "variants": [
+            {
+              "name": "Foreign-tenant object id",
+              "kind": "note",
+              "payload": "With two test tenants you hold: request tenant-2 object ids from a tenant-1 session (path, body, and alternate representations).",
+              "expect": "403/404 everywhere — tenant is part of every object predicate.",
+              "category": "authorization-context",
+              "why": "The core boundary test with your own two tenants."
+            },
+            {
+              "name": "Search/lookup leak",
+              "kind": "note",
+              "payload": "Search tenant-1 for canary content created in tenant-2.",
+              "expect": "No cross-tenant hits in search, suggestions, or recent lists.",
+              "category": "authorization-context",
+              "why": "Search indexes often span tenants by accident."
+            },
+            {
+              "name": "Reference across tenants",
+              "kind": "note",
+              "payload": "Link, share, or attach tenant-2 objects into tenant-1 containers.",
+              "expect": "Cross-tenant references rejected at create and at render.",
+              "category": "parameter-variant",
+              "why": "Relations are object access too."
+            }
+          ]
+        },
+        {
+          "id": "tenant-switch",
+          "title": "Tenant switch clears object and permission state",
+          "item": "WAPT-AUTHZ-022",
+          "severity": "high",
+          "why": "Switching tenants mid-session with cached lists, permissions, or single-page state bleeds one tenant context into another.",
+          "validate": "Tenant switch re-establishes context atomically: lists, permissions, drafts, and uploads from the old tenant do not survive.",
+          "variants": [
+            {
+              "name": "Canary carry-over",
+              "kind": "note",
+              "payload": "Load tenant-1 lists/drafts in the UI; switch to tenant-2; watch network and UI for tenant-1 content.",
+              "expect": "Fresh tenant-2 state only; no tenant-1 requests or remnants.",
+              "category": "browser-context",
+              "why": "The user-visible version of the boundary."
+            },
+            {
+              "name": "Parallel-tab switch",
+              "kind": "note",
+              "payload": "Keep tenant-1 open in one tab while switching to tenant-2 in another; act in the old tab.",
+              "expect": "Old tab re-authorizes per request and fails closed against the new session state.",
+              "category": "browser-context",
+              "why": "Stale tabs are the real multi-tenant client."
+            },
+            {
+              "name": "Switch mid-flow",
+              "kind": "note",
+              "payload": "Start a multi-step flow (wizard, upload) in tenant-1, switch tenants, complete the flow.",
+              "expect": "Flow either restarts or carries with explicit tenant re-validation — never silently lands in the wrong tenant.",
+              "category": "race-concurrency",
+              "why": "Multi-step flows cache early context."
+            }
+          ]
+        },
+        {
+          "id": "tenant-invitations",
+          "title": "Tenant invitations and role assignment authorized",
+          "item": "WAPT-AUTHZ-023",
+          "severity": "critical",
+          "why": "Invite and role-assign endpoints create members and privileges — weak checks here mint admins.",
+          "validate": "Only tenant-authorized roles may invite/assign; invite links are tenant- and role-bound, single-use, and expiry-limited.",
+          "variants": [
+            {
+              "name": "Self-elevation via invite",
+              "kind": "note",
+              "payload": "As a standard member, call the invite/assign endpoint granting yourself (or a second account you hold) an admin role.",
+              "expect": "Refused — role grants require the tenant privilege you lack.",
+              "category": "authorization-context",
+              "why": "The privilege-minting probe, done to your own account."
+            },
+            {
+              "name": "Cross-tenant invite",
+              "kind": "note",
+              "payload": "Invite an address into tenant-2 from tenant-1 membership (and accept from your tenant-2-capable account).",
+              "expect": "Invitations are tenant-scoped; cross-tenant invites rejected or land only in the inviting tenant.",
+              "category": "authorization-context",
+              "why": "Invites are tenant membership documents."
+            },
+            {
+              "name": "Invite link reuse",
+              "kind": "note",
+              "payload": "Use a valid invite link twice (second time from a different account you hold); try after expiry and after acceptance.",
+              "expect": "Single-use within expiry; reuse and replay refused.",
+              "category": "authentication-context",
+              "why": "Invite links are bearer credentials with a job."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "delegation-and-groups",
+      "title": "Groups, delegation, and shared access",
+      "checks": [
+        {
+          "id": "group-membership",
+          "title": "Group and team membership changes authorized",
+          "item": "WAPT-AUTHZ-024",
+          "severity": "critical",
+          "why": "Membership is permission: adding yourself to a privileged group is a privilege escalation with a friendly UI.",
+          "validate": "Membership add/remove/role-in-group changes require the documented group authority; self-service is limited to allowed cases.",
+          "variants": [
+            {
+              "name": "Self-add to privileged group",
+              "kind": "note",
+              "payload": "As a standard account, call the group-membership endpoint to add yourself to an admin/privileged group.",
+              "expect": "Refused and logged; only authorized group managers can add.",
+              "category": "authorization-context",
+              "why": "One request, one escalation path."
+            },
+            {
+              "name": "Role-in-group bump",
+              "kind": "note",
+              "payload": "Where groups have per-member roles (owner/manager/member), promote your own membership to manager/owner.",
+              "expect": "Refused — per-member role changes need the level above.",
+              "category": "authorization-context",
+              "why": "Nested privilege needs nested checks."
+            },
+            {
+              "name": "Remove-your-manager",
+              "kind": "note",
+              "payload": "Attempt to remove a group owner/manager as a member, or to remove the last owner.",
+              "expect": "Refused; group integrity rules (last owner, manager set) enforced server-side.",
+              "category": "mutation",
+              "why": "Destructive group ops have integrity guards too."
+            }
+          ]
+        },
+        {
+          "id": "delegated-access",
+          "title": "Delegated and shared access keep scope and expiry",
+          "item": "WAPT-AUTHZ-025",
+          "severity": "high",
+          "why": "Share links, delegates, and API keys outlive their intent when scope/expiry are advisory — they become permanent second identities.",
+          "validate": "Delegated credentials carry enforced scope and expiry; renewal cannot widen either; revocation is immediate.",
+          "variants": [
+            {
+              "name": "Scope fence",
+              "kind": "note",
+              "payload": "Create a share/delegate with read-only scope; attempt writes through it.",
+              "expect": "Writes refused — scope is enforced at execution, not recorded as metadata.",
+              "category": "authorization-context",
+              "why": "Read-only that writes is the finding."
+            },
+            {
+              "name": "Expiry reality",
+              "kind": "note",
+              "payload": "Create the shortest-lived share available; use it after expiry.",
+              "expect": "Refused at expiry — client-side countdowns do not count.",
+              "category": "authentication-context",
+              "why": "Expiry is a server decision."
+            },
+            {
+              "name": "Revoke-and-replay",
+              "kind": "note",
+              "payload": "Revoke the share/key; immediately replay it.",
+              "expect": "Dead immediately; no propagation gap beyond the documented window.",
+              "category": "authorization-context",
+              "why": "Revocation is the user-side kill switch."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "workflow-and-approvals",
+      "title": "Workflow, approvals, and revocation timing",
+      "checks": [
+        {
+          "id": "transition-authorization",
+          "title": "Every workflow transition authorized",
+          "item": "WAPT-AUTHZ-026",
+          "severity": "high",
+          "why": "State machines encode who may move a case from state to state — skipped checks let anyone approve, publish, or close.",
+          "validate": "Each transition is authorized for the current state and actor role; terminal and approval states are specially guarded.",
+          "variants": [
+            {
+              "name": "Forbidden transition map",
+              "kind": "note",
+              "payload": "From your test object current state, attempt every other transition the API exposes (approve as non-approver, close as requester, reopen as auditor).",
+              "expect": "Only role-legal transitions succeed; map accepted/rejected for the report.",
+              "category": "authorization-context",
+              "why": "Exhaustive per state beats sampling."
+            },
+            {
+              "name": "Skip-ahead",
+              "kind": "note",
+              "payload": "Fire a late-state transition (publish, payout) directly on a fresh object still in early state.",
+              "expect": "Rejected — order is part of authorization.",
+              "category": "parameter-variant",
+              "why": "Jumping states skips the checks between them."
+            },
+            {
+              "name": "Idempotent replay",
+              "kind": "note",
+              "payload": "Replay an already-applied transition (approve twice, cancel after completion).",
+              "expect": "Idempotent refusal or defined re-submission — never double side effects.",
+              "category": "race-concurrency",
+              "why": "Replay semantics are authorization semantics."
+            }
+          ]
+        },
+        {
+          "id": "separation-of-duties",
+          "title": "Separation of duties on approvals",
+          "item": "WAPT-AUTHZ-027",
+          "severity": "high",
+          "why": "If the requester can approve their own request (or pick their approver), approval theatre replaces control.",
+          "validate": "Approver must differ from requester, be eligible for the object, and cannot be delegated to the requester.",
+          "variants": [
+            {
+              "name": "Self-approval",
+              "kind": "note",
+              "payload": "Submit a request as A; call the approve endpoint for it as A.",
+              "expect": "Refused — maker and checker are different identities server-side.",
+              "category": "authorization-context",
+              "why": "The direct SoD probe."
+            },
+            {
+              "name": "Approver choice",
+              "kind": "note",
+              "payload": "Where requesters nominate an approver, nominate your own second account or an ineligible role.",
+              "expect": "Eligibility enforced server-side; self-nomination refused.",
+              "category": "authorization-context",
+              "why": "Attacker-chosen approvers are rubber stamps."
+            },
+            {
+              "name": "Post-assignment swap",
+              "kind": "note",
+              "payload": "After legitimate assignment, attempt to reassign the approver to yourself mid-flight.",
+              "expect": "Reassignment follows its own authority; mid-flight swaps audited and restricted.",
+              "category": "mutation",
+              "why": "The swap is the subtle escalation."
+            }
+          ]
+        },
+        {
+          "id": "revocation-freshness",
+          "title": "Role revocation beats stale caches",
+          "item": "WAPT-AUTHZ-029",
+          "severity": "high",
+          "why": "Permissions removed but cached (session, token, gateway, front-end) keep working — revocation with a lag is escalation with a timer.",
+          "validate": "Role/permission removal takes effect within the documented window on every layer that decides access.",
+          "variants": [
+            {
+              "name": "Revoke-then-use",
+              "kind": "note",
+              "payload": "Owner-assisted: remove a role from your test account mid-session; immediately probe role-gated endpoints.",
+              "expect": "Refused within the documented cache window; measure and record the window.",
+              "category": "authorization-context",
+              "why": "The incident-response question: how fast does no mean no?"
+            },
+            {
+              "name": "Layer sweep",
+              "kind": "note",
+              "payload": "Repeat the probe across layers: existing session, fresh token, different endpoint families, background jobs.",
+              "expect": "Every deciding layer honors the revocation within the window.",
+              "category": "protocol-variant",
+              "why": "One cache forgotten keeps the door open."
+            },
+            {
+              "name": "Cache-window honesty",
+              "kind": "note",
+              "payload": "Compare measured behavior against the documented SLA.",
+              "expect": "Measured within documented; otherwise a finding with timings.",
+              "category": "baseline",
+              "why": "Windows are fine; undocumented windows are not."
+            }
+          ]
+        },
+        {
+          "id": "stale-role-claims",
+          "title": "Stale self-contained role claims rejected",
+          "item": "WAPT-AUTHZ-030",
+          "severity": "high",
+          "why": "JWT-bearing roles outlive revocation by design — until a role change, the old token still says admin.",
+          "validate": "Privilege-sensitive actions re-validate roles (short token lifetimes, server-side role checks, or token refresh on change).",
+          "variants": [
+            {
+              "name": "Old-token replay",
+              "kind": "note",
+              "payload": "Capture a token for your account; owner-assisted role removal; replay the token on sensitive functions.",
+              "expect": "Sensitive functions refuse — either token lifetime is short or the check is server-side.",
+              "category": "authorization-context",
+              "why": "The token says who you were."
+            },
+            {
+              "name": "Refresh widens nothing",
+              "kind": "note",
+              "payload": "After role removal, refresh the token and inspect its role claims.",
+              "expect": "Refreshed token carries current roles — no echo of old claims.",
+              "category": "authentication-context",
+              "why": "Refresh is a re-authorization moment."
+            },
+            {
+              "name": "Sensitive-function short clock",
+              "kind": "note",
+              "payload": "Record where stale-role windows are acceptable (read-only menus) vs refused (admin functions).",
+              "expect": "Tiered enforcement documented; high-impact functions have the shortest stale window.",
+              "category": "baseline",
+              "why": "Risk-proportional staleness is a policy, not an accident."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "surfaces-and-channels",
+      "title": "Functions, versions, and channels",
+      "checks": [
+        {
+          "id": "batched-requests",
+          "title": "Each operation in batched requests authorized",
+          "item": "WAPT-AUTHZ-031",
+          "severity": "high",
+          "why": "GraphQL batching, arrays, and multiplexed transports decide once per request — per-operation decisions are the fix.",
+          "validate": "Every operation inside a batch/multiplexed frame is authorized as if sent alone.",
+          "variants": [
+            {
+              "name": "Mixed batch",
+              "kind": "note",
+              "payload": "In one request batch: an allowed operation plus a forbidden one (cross-account object) as the same user.",
+              "expect": "The forbidden member fails alone; the allowed one proceeds per policy — never all-pass.",
+              "category": "authorization-context",
+              "why": "Batch-level checks launder forbidden members."
+            },
+            {
+              "name": "Same-object repetition",
+              "kind": "note",
+              "payload": "Repeat the same forbidden operation N times inside one batch (small N).",
+              "expect": "Same refusal; repetition does not wear down the check.",
+              "category": "mutation",
+              "why": "Also a rate-limit observation, honestly labelled."
+            },
+            {
+              "name": "Nested aliases",
+              "kind": "note",
+              "payload": "Use aliases/nested selection (GraphQL) to reach the forbidden object inside one operation.",
+              "expect": "Field-level authorization still applies — nesting is not anonymity.",
+              "category": "protocol-variant",
+              "why": "Aliasing hides operations from naive logging too."
+            }
+          ]
+        },
+        {
+          "id": "existence-oracles",
+          "title": "Avoid authorization existence oracles",
+          "item": "WAPT-AUTHZ-033",
+          "severity": "medium",
+          "why": "404-vs-403 differences, timing gaps, and error text reveal whether objects exist — where concealment is required, that is disclosure.",
+          "validate": "Where concealment is a requirement, unauthorized access returns a uniform response (status, timing, error shape) regardless of existence.",
+          "variants": [
+            {
+              "name": "Status-code diff",
+              "kind": "note",
+              "payload": "Request existing-foreign vs nonexistent ids with the same shape and compare status codes and bodies.",
+              "expect": "Identical denial responses where concealment matters; document the oracle otherwise.",
+              "category": "baseline",
+              "why": "Measure before demanding uniformity."
+            },
+            {
+              "name": "Timing diff",
+              "kind": "note",
+              "payload": "Time both cases over a small sample; look for systematic gaps (db hits, late checks).",
+              "expect": "Timing consistent within noise; report measured deltas.",
+              "category": "tool-assisted",
+              "why": "Late authorization shows up as late milliseconds."
+            },
+            {
+              "name": "Error-text echo",
+              "kind": "note",
+              "payload": "Compare error messages and ids echoed back for both cases.",
+              "expect": "No existence-revealing detail in denials.",
+              "category": "parser-differential",
+              "why": "Friendly errors are often honest to a fault."
+            }
+          ]
+        },
+        {
+          "id": "signed-urls",
+          "title": "Signed object URLs scoped and revocable",
+          "item": "WAPT-AUTHZ-034",
+          "severity": "high",
+          "why": "A signed URL is a bearer credential for one object — unscoped signatures or long horizons leak data via link sharing.",
+          "validate": "Signatures bind to object, action, and short expiry; revocation invalidates outstanding URLs; scope cannot be edited.",
+          "variants": [
+            {
+              "name": "Signature surgery",
+              "kind": "note",
+              "payload": "Take a signed URL for A-object; alter the object path/id in it, keep the signature; fetch.",
+              "expect": "Fails — signature covers the exact object and method.",
+              "category": "mutation",
+              "why": "The most common signed-URL flaw."
+            },
+            {
+              "name": "Cross-object swap",
+              "kind": "note",
+              "payload": "Sign two of your own URLs; mix signature from one with path from the other.",
+              "expect": "Rejected; no signature reuse across objects.",
+              "category": "parameter-variant",
+              "why": "Two honest URLs, one dishonest combination."
+            },
+            {
+              "name": "Expiry and revoke",
+              "kind": "note",
+              "payload": "Use the shortest-expiry URL after expiry; then revoke a live one and replay.",
+              "expect": "Both refused; expiry enforced, revocation immediate.",
+              "category": "authentication-context",
+              "why": "Time and kill-switch on the same credential."
+            }
+          ]
+        },
+        {
+          "id": "realtime-authz",
+          "title": "Realtime channels authorized per subscription and message",
+          "item": "WAPT-AUTHZ-035",
+          "severity": "high",
+          "why": "WebSockets authenticate once at handshake — subscription and per-message authorization are where channels leak.",
+          "validate": "Each subscribe targets channels the caller may read; each incoming message is authorized per target before relay.",
+          "variants": [
+            {
+              "name": "Foreign subscription",
+              "kind": "note",
+              "payload": "Over your authed socket, subscribe to a B-user or foreign-room channel/topic.",
+              "expect": "Subscription refused; no frames ever arrive for it.",
+              "category": "authorization-context",
+              "why": "Handshake auth is not channel auth."
+            },
+            {
+              "name": "Mid-stream revocation",
+              "kind": "note",
+              "payload": "Owner-assisted: revoke the account/socket mid-connection; observe frames.",
+              "expect": "Connection closed or frames stop within the documented window.",
+              "category": "authentication-context",
+              "why": "Dead accounts should not keep sockets."
+            },
+            {
+              "name": "Direct message injection",
+              "kind": "note",
+              "payload": "Send a message addressed to a foreign room/user through the socket.",
+              "expect": "Rejected per-message — relay re-checks the target.",
+              "category": "parameter-variant",
+              "why": "Send authorization is per message, not per socket."
+            }
+          ]
+        },
+        {
+          "id": "confused-deputy",
+          "title": "Backend integrations resist confused deputy",
+          "item": "WAPT-AUTHZ-036",
+          "severity": "high",
+          "why": "Server-side integrations act with service authority on user input (URLs, ids, templates) — the deputy serves whoever steers it.",
+          "validate": "Integration actions carry the caller context (or narrow service scope) and cannot be steered to foreign objects or endpoints.",
+          "variants": [
+            {
+              "name": "Steer-to-foreign",
+              "kind": "note",
+              "payload": "Where an integration takes an object/id/url (fetch, render, import, notify), point it at a B object or internal endpoint.",
+              "expect": "Refused or strictly scoped — the deputy never acts beyond the caller rights.",
+              "category": "authorization-context",
+              "why": "The server holds the keys; the user holds the wheel — both must matter."
+            },
+            {
+              "name": "Callback/URL injection",
+              "kind": "note",
+              "payload": "Integration URLs (webhook target, fetch-url) pointing at internal ranges or your Collaborator.",
+              "expect": "Blocked (SSRF controls) and logged; outbound targets allowlisted.",
+              "category": "out-of-band",
+              "why": "Deputy problems are often SSRF problems."
+            },
+            {
+              "name": "Cross-tenant integration",
+              "kind": "note",
+              "payload": "Configure an integration in tenant-1 referencing tenant-2 resources.",
+              "expect": "Refused — integrations are tenant-bound like every other object.",
+              "category": "authorization-context",
+              "why": "Integrations are objects with privileges."
+            }
+          ]
+        },
+        {
+          "id": "deny-by-default",
+          "title": "New and undocumented functions denied by default",
+          "item": "WAPT-AUTHZ-037",
+          "severity": "high",
+          "why": "Routes absent from the policy inventory inherit whatever the framework defaults to — often authenticated-and-allowed.",
+          "validate": "Undocumented/newly deployed functions deny by default until policy is authored; framework defaults are deny.",
+          "variants": [
+            {
+              "name": "Inventory diff",
+              "kind": "note",
+              "payload": "Diff documented endpoints (OpenAPI, docs) against observed routes (proxy history, JS bundles); probe undocumented ones as a standard user.",
+              "expect": "Undocumented functions refuse standard users — or are documented gaps to report.",
+              "category": "baseline",
+              "why": "The dark API is usually bigger than the bright one."
+            },
+            {
+              "name": "Preview/dark-route probe",
+              "kind": "note",
+              "payload": "Request likely upcoming routes (versioned, feature-flagged paths seen in JS) as a standard user.",
+              "expect": "Denied without explicit policy; presence with access is a finding.",
+              "category": "technology-specific",
+              "why": "Bundles leak the future; policy should already deny it."
+            },
+            {
+              "name": "Framework default check",
+              "kind": "note",
+              "payload": "Probe a guaranteed-unmatched path shape that still routes (new verb on existing resource).",
+              "expect": "Falls into deny (403/404), not accidental allow.",
+              "category": "protocol-variant",
+              "why": "Routing tables are policies you did not write."
+            }
+          ]
+        },
+        {
+          "id": "admin-layering",
+          "title": "Admin interfaces layered authorization",
+          "item": "WAPT-AUTHZ-038",
+          "severity": "critical",
+          "why": "Admin panels concentrate every dangerous function; single-layer checks (one role string) fail wide when wrong.",
+          "validate": "Administrative functions require layered checks: role + scope (tenant/org) + explicit permission, with step-up for destructive actions.",
+          "variants": [
+            {
+              "name": "Cross-scope admin",
+              "kind": "note",
+              "payload": "Tenant-1 admin account against tenant-2 admin functions (path or id swap).",
+              "expect": "Refused — admin of one is not admin of all.",
+              "category": "authorization-context",
+              "why": "Scoped admins are the rule in multi-tenant products."
+            },
+            {
+              "name": "Destructive step-up",
+              "kind": "note",
+              "payload": "Attempt destructive admin actions (delete tenant, reset user, rotate keys) with a plain admin session lacking step-up.",
+              "expect": "Requires re-auth/MFA confirmation per policy; refusal otherwise.",
+              "category": "authentication-context",
+              "why": "Admin destruction deserves a second factor."
+            },
+            {
+              "name": "Legacy admin paths",
+              "kind": "note",
+              "payload": "Enumerate documented-old admin paths (/admin, /manage, /internal, /backoffice) as regular and admin users.",
+              "expect": "Consistent layered enforcement across all admin surfaces — no softer twin.",
+              "category": "baseline",
+              "why": "Old admin UIs outlive the policies that guarded new ones."
+            }
+          ]
+        },
+        {
+          "id": "version-consistency",
+          "title": "Authorization consistent across API versions",
+          "item": "WAPT-AUTHZ-041",
+          "severity": "high",
+          "why": "v2 fixes the authorization bug, v1 keeps it; deprecated mobile clients keep v1 alive for years.",
+          "validate": "Every live version (path, header, content-type, query variants) enforces the same authorization rules.",
+          "variants": [
+            {
+              "name": "Version matrix",
+              "kind": "note",
+              "payload": "Replay your best authorization probes against every version marker: /v1 vs /v2 paths, Accept headers, content types, and ?version=.",
+              "expect": "Same refusal on all live versions; document any version that lags.",
+              "category": "protocol-variant",
+              "why": "Enumerate versions first — they hide in headers too."
+            },
+            {
+              "name": "Beta/preview flags",
+              "kind": "note",
+              "payload": "Access preview endpoints via beta headers/flags as a standard user.",
+              "expect": "Preview surfaces enforce current policy or deny.",
+              "category": "parameter-variant",
+              "why": "Betas ship authorization half-done."
+            },
+            {
+              "name": "Sunset honesty",
+              "kind": "note",
+              "payload": "Check whether deprecated versions are scheduled, throttled, or logged.",
+              "expect": "Retirement plan exists for report completeness; open-ended v1 is risk to note.",
+              "category": "baseline",
+              "why": "Versions without funerals never die."
+            }
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "lastmod": "2026-08-21"
 }

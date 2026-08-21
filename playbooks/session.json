@@ -205,6 +205,772 @@
           ]
         }
       ]
+    },
+    {
+      "id": "transport-and-scope",
+      "title": "Transport, scope, and contents",
+      "checks": [
+        {
+          "id": "token-inventory",
+          "title": "Every session token inventoried",
+          "item": "WAPT-SESS-001",
+          "severity": "medium",
+          "why": "You cannot reason about session security for tokens you have not enumerated — most fixation and leakage findings start with a forgotten second cookie.",
+          "validate": "A written inventory of every identity-bearing value: name, transport (cookie/header/body/URL), set at which request, and cleared when.",
+          "variants": [
+            {
+              "name": "Full-login capture",
+              "kind": "note",
+              "payload": "Burp Proxy on; log in, navigate, refresh, step-up, and log out. Filter Set-Cookie and Authorization. Record every value that appears or changes with identity.",
+              "expect": "Table of tokens with transport and lifecycle. Values redacted in evidence.",
+              "category": "baseline",
+              "why": "One clean capture beats guesswork about what carries identity."
+            },
+            {
+              "name": "Removal test",
+              "kind": "note",
+              "payload": "For each candidate token, remove it (one at a time) on a harmless authenticated request and re-issue.",
+              "expect": "Only the documented primary token matters; removing auxiliaries (CSRF, device, preference) changes only their own behaviour.",
+              "category": "mutation",
+              "why": "Proves which values independently restore authenticated state."
+            },
+            {
+              "name": "URL and storage sweep",
+              "kind": "note",
+              "payload": "Search the proxy history for the token value appearing in URLs, Referer headers, or script-readable storage; check DevTools Application tab.",
+              "expect": "Session authority never appears in URLs, Referer-bearing navigation, localStorage, or non-HttpOnly cookies.",
+              "category": "browser-context",
+              "why": "Where a token lives decides what can read it."
+            }
+          ]
+        },
+        {
+          "id": "cookie-scope",
+          "title": "Cookie Domain and Path scoped tight",
+          "item": "WAPT-SESS-005",
+          "severity": "medium",
+          "why": "A cookie scoped to the parent domain or site root is handed to every sibling application and path — session soup across trust boundaries.",
+          "validate": "Session cookies set Domain only when required (narrowest host) and the minimal Path; no host-only bypasses.",
+          "variants": [
+            {
+              "name": "Read the Set-Cookie scope",
+              "kind": "note",
+              "payload": "After login, read Domain and Path attributes of every session cookie.",
+              "expect": "Host-only cookies (no Domain) with Path at the app root or narrower; any Domain=.example.com on session authority is a finding.",
+              "category": "baseline",
+              "why": "The attribute pair is the blast radius."
+            },
+            {
+              "name": "Sibling acceptance",
+              "kind": "note",
+              "payload": "If Domain is parent-scoped, open a sibling subdomain in scope and check document.cookie (or the request) for the session cookie.",
+              "expect": "Sibling must never see or send session authority; report with the exact attribute evidence.",
+              "category": "browser-context",
+              "why": "Parent scoping shares sessions with every subdomain, including less-hardened ones."
+            },
+            {
+              "name": "Path creep",
+              "kind": "note",
+              "payload": "Request a static asset path outside the application and observe whether the session cookie rides along.",
+              "expect": "Path-limited cookies stay within the app scope; site-wide paths need justification.",
+              "category": "protocol-variant",
+              "why": "Broad paths leak authority into lower-trust handlers."
+            }
+          ]
+        },
+        {
+          "id": "persistent-lifetime",
+          "title": "Persistent lifetime matches need",
+          "item": "WAPT-SESS-006",
+          "severity": "medium",
+          "why": "\"Remember me\" that never forgets turns a stolen cookie into permanent access.",
+          "validate": "Persistent cookies only on explicit remember-me, with documented lifetimes; ordinary sessions are session-cookies.",
+          "variants": [
+            {
+              "name": "Attribute read",
+              "kind": "note",
+              "payload": "After a normal login, inspect Expires/Max-Age on session cookies without touching remember-me.",
+              "expect": "Ordinary auth sets session cookies (no Expires); only the remember-me cookie is persistent.",
+              "category": "baseline",
+              "why": "Persistence should be a choice, not a default."
+            },
+            {
+              "name": "Remember-me horizon",
+              "kind": "note",
+              "payload": "Enable remember-me and read its lifetime.",
+              "expect": "Days-to-weeks, consistent with policy; multi-month or multi-year lifetimes are findings.",
+              "category": "baseline",
+              "why": "The horizon is the theft window."
+            },
+            {
+              "name": "Persistence downgrade",
+              "kind": "note",
+              "payload": "Log out from a remember-me session and re-check storage and replay.",
+              "expect": "Remember-me material is invalidated server-side on logout, not just deleted client-side.",
+              "category": "browser-context",
+              "why": "A logged-out cookie that still works defeats the logout."
+            }
+          ]
+        },
+        {
+          "id": "token-entropy",
+          "title": "Reference tokens carry real entropy",
+          "item": "WAPT-SESS-007",
+          "severity": "medium",
+          "why": "Sequential, short, or structured session ids are brute-forceable or guessable across accounts.",
+          "validate": "Opaque ids are at least 128 bits of randomness: same length, mixed charset, no visible pattern across accounts.",
+          "variants": [
+            {
+              "name": "Multi-account sample",
+              "kind": "note",
+              "payload": "Log in as your two test accounts several times (and refresh); collect 10+ session ids.",
+              "expect": "Ids never repeat, share prefixes, or reveal sequence; lengths and charsets are stable and long (20+ chars mixed).",
+              "category": "baseline",
+              "why": "Your own accounts give a safe, legal sample."
+            },
+            {
+              "name": "Structure decode",
+              "kind": "note",
+              "payload": "Base64/hex-decode ids where they look encoded; look for embedded username, uid, or timestamp.",
+              "expect": "Ids are opaque; any embedded identity or counter structure is documented (pattern-guessable is a finding).",
+              "category": "encoding",
+              "why": "Encoding is not entropy — decoding often shows structure."
+            },
+            {
+              "name": "Pre-auth id",
+              "kind": "note",
+              "payload": "Compare anonymous (pre-login) session id vs post-login id.",
+              "expect": "Different values and different authority after login; an id that survives login is fixation surface.",
+              "category": "authentication-context",
+              "why": "Pre-auth ids must never become post-auth authority."
+            }
+          ]
+        },
+        {
+          "id": "token-contents",
+          "title": "No sensitive plaintext in tokens",
+          "item": "WAPT-SESS-008",
+          "severity": "medium",
+          "why": "Client-visible tokens that carry passwords, PII, or secrets leak them to every place the token travels (logs, Referer, storage, XSS).",
+          "validate": "Decoded token contents contain only opaque identifiers; no credentials, PII, or internal secrets.",
+          "variants": [
+            {
+              "name": "Decode and read",
+              "kind": "note",
+              "payload": "Decode each identity cookie (base64/base64url/hex/JWT) and read the claims.",
+              "expect": "Opaque ids only; document any readable fields. Roles/tenant in a client-mutable token must be server-verified.",
+              "category": "encoding",
+              "why": "Reading your own session token is the fastest content audit."
+            },
+            {
+              "name": "Sensitive-value grep",
+              "kind": "note",
+              "payload": "Grep decoded tokens (and the whole cookie jar) for the test password, username, email, and internal hostnames from your engagement notes.",
+              "expect": "Zero hits for credentials or PII.",
+              "category": "baseline",
+              "why": "If you can find the password in the cookie, so can every log line."
+            },
+            {
+              "name": "Known-secret canary",
+              "kind": "note",
+              "payload": "Set a canary value via profile fields you control (display name), then re-read tokens.",
+              "expect": "Canary absent from all tokens — user content must not be mirrored into authority material.",
+              "category": "mutation",
+              "why": "Proves the token is not a dump of account state."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "rotation-and-binding",
+      "title": "Rotation, fixation, and binding",
+      "checks": [
+        {
+          "id": "rotate-on-auth",
+          "title": "Session rotates on authentication",
+          "item": "WAPT-SESS-010",
+          "severity": "critical",
+          "why": "A session id that survives login lets an attacker plant a pre-auth id (fixation) and ride it into the victim account.",
+          "validate": "A fresh session id is issued at every privilege transition: anonymous to authenticated, and at each re-authentication.",
+          "variants": [
+            {
+              "name": "Before/after compare",
+              "kind": "note",
+              "payload": "Capture the session cookie pre-login, authenticate, and compare values.",
+              "expect": "Post-login value differs; the old id is rejected on the next request.",
+              "category": "authentication-context",
+              "why": "The direct fixation test on your own accounts."
+            },
+            {
+              "name": "Plant your own id",
+              "kind": "note",
+              "payload": "Set the session cookie to a known pre-auth value you obtained, log in, and check whether the server keeps it.",
+              "expect": "Server replaces it — an accepted planted id is textbook session fixation.",
+              "category": "mutation",
+              "why": "This is the attacker replay of the same rule, done safely with your own test account."
+            },
+            {
+              "name": "Old id replay",
+              "kind": "note",
+              "payload": "Re-issue a request with the pre-login id after authenticating.",
+              "expect": "Pre-login id has no authenticated authority anywhere.",
+              "category": "authorization-context",
+              "why": "Killing the old id closes the fixation window."
+            }
+          ]
+        },
+        {
+          "id": "rotate-on-elevation",
+          "title": "Sessions rotate on privilege change",
+          "item": "WAPT-SESS-011",
+          "severity": "high",
+          "why": "Step-up (MFA verify, login-as, admin elevation, role grant) must reissue authority — otherwise a pre-elevation cookie from an XSS or log can be replayed as elevated.",
+          "validate": "Every privilege or assurance change issues a new session token and invalidates the previous one.",
+          "variants": [
+            {
+              "name": "Step-up compare",
+              "kind": "note",
+              "payload": "Complete an MFA step-up or sensitive re-auth; compare session cookie before/after.",
+              "expect": "New value; old token rejected immediately.",
+              "category": "authentication-context",
+              "why": "Elevation is exactly when old authority must die."
+            },
+            {
+              "name": "Old-elevation replay",
+              "kind": "note",
+              "payload": "Capture the pre-elevation token, elevate, then replay the old token on an elevated endpoint.",
+              "expect": "Old token cannot reach elevated functions.",
+              "category": "authorization-context",
+              "why": "The finding that matters: replay after elevation."
+            },
+            {
+              "name": "Role grant timing",
+              "kind": "note",
+              "payload": "With owner approval, grant your test account a new role mid-session, then inspect the token and its reach.",
+              "expect": "Either the token refreshes or server-side roles are re-evaluated per request; stale elevated reach is a finding.",
+              "category": "authorization-context",
+              "why": "Privilege changes mid-life are common — cache windows become privilege windows."
+            }
+          ]
+        },
+        {
+          "id": "session-puzzling",
+          "title": "No session puzzling across token names",
+          "item": "WAPT-SESS-022",
+          "severity": "high",
+          "why": "When several cookie or parameter names can carry authority (legacy + current, access + SSO), the server may mix them: identity from one, permissions from another.",
+          "validate": "Exactly one authority source per request; superseded names are ignored, not merged.",
+          "variants": [
+            {
+              "name": "Duplicate names",
+              "kind": "note",
+              "payload": "Send both the legacy session name and the current one with different accounts (both yours).",
+              "expect": "Server honors exactly one (documented); no mixed identity in responses.",
+              "category": "parameter-variant",
+              "why": "Two live authorities is one too many."
+            },
+            {
+              "name": "Token in multiple transports",
+              "kind": "note",
+              "payload": "Provide the session via cookie AND header/body parameter with conflicting values.",
+              "expect": "One transport wins consistently; the other is ignored — never merged.",
+              "category": "parser-differential",
+              "why": "Transport duplication invites parser-split confusion."
+            },
+            {
+              "name": "Empty-vs-stale precedence",
+              "kind": "note",
+              "payload": "Send current-name empty with legacy-name valid (and the reverse).",
+              "expect": "Missing current token means unauthenticated, regardless of legacy values.",
+              "category": "mutation",
+              "why": "Empty must not fall through to stale authority."
+            }
+          ]
+        },
+        {
+          "id": "subdomain-isolation",
+          "title": "Authority isolated across sibling apps",
+          "item": "WAPT-SESS-023",
+          "severity": "critical",
+          "why": "Parent-domain session cookies make every subdomain a session holder: the weakest sibling becomes the auth bypass for the strongest app.",
+          "validate": "Application session authority is scoped to its host (or an explicitly hardened SSO domain) and is not accepted by siblings.",
+          "variants": [
+            {
+              "name": "Cross-host replay",
+              "kind": "note",
+              "payload": "Take the app session cookie and send it to a sibling subdomain in scope (different first-party app).",
+              "expect": "Sibling rejects it — different issuer, different key, different audience.",
+              "category": "authorization-context",
+              "why": "The direct cross-app replay with your own token."
+            },
+            {
+              "name": "Scope attribute evidence",
+              "kind": "note",
+              "payload": "Read Domain on the session cookie and map every host that would receive it.",
+              "expect": "Only intended hosts; parent-scoped authority documented as accepted risk or fixed.",
+              "category": "baseline",
+              "why": "The attribute tells you the exposure before any request."
+            },
+            {
+              "name": "Cookie-shadowing",
+              "kind": "note",
+              "payload": "From a sibling subdomain in scope, set a same-named cookie and revisit the main app.",
+              "expect": "Main app does not adopt sibling-set values for authority (host-only scoping prevents the shadow).",
+              "category": "browser-context",
+              "why": "Sibling-writable session names let a weaker host plant sessions."
+            }
+          ]
+        },
+        {
+          "id": "account-switch",
+          "title": "No session adoption on account switch",
+          "item": "WAPT-SESS-024",
+          "severity": "high",
+          "why": "Logout-login as another user (or admin login-as) must not carry over carts, impersonation context, or MFA state from the previous identity.",
+          "validate": "Switching accounts starts a clean session: no carry-over of identity-bound state, and login-as is time-boxed and marked.",
+          "variants": [
+            {
+              "name": "A to B carry-over",
+              "kind": "note",
+              "payload": "As test account A, put a marker in identity-bound state (cart item, draft); log out, log in as B, and look for the marker.",
+              "expect": "Session B has none of account A state.",
+              "category": "authorization-context",
+              "why": "Leaked cross-account state is a cross-user disclosure."
+            },
+            {
+              "name": "Logout completeness",
+              "kind": "note",
+              "payload": "After logout, immediately re-issue an authenticated request with the old cookie.",
+              "expect": "Rejected; logout kills the server-side session, not just the client copy.",
+              "category": "authorization-context",
+              "why": "The oldest logout rule, still the most commonly broken."
+            },
+            {
+              "name": "Login-as hygiene",
+              "kind": "note",
+              "payload": "If admins can impersonate: use it on your own test account; inspect session marking and exit path.",
+              "expect": "Impersonation uses a distinct, time-boxed session with audit trail and a clean exit back to admin.",
+              "category": "authorization-context",
+              "why": "Login-as is powerful; its session must say so."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "limits-and-revocation",
+      "title": "Limits, timeouts, and revocation",
+      "checks": [
+        {
+          "id": "concurrent-limits",
+          "title": "Concurrent session limits enforced",
+          "item": "WAPT-SESS-012",
+          "severity": "medium",
+          "why": "Unlimited parallel sessions defeat anomaly response and share credentials silently; policy must actually be enforced server-side.",
+          "validate": "Documented concurrent-session limit (or deliberate unlimited policy) enforced on login, with the older session handling defined.",
+          "variants": [
+            {
+              "name": "N-browser login",
+              "kind": "note",
+              "payload": "Log in from 3+ separate browser profiles/containers as the same test account.",
+              "expect": "Behaviour matches policy: either a cap with oldest-session eviction or a documented unlimited decision.",
+              "category": "authentication-context",
+              "why": "Parallel logins on your own account are the whole test."
+            },
+            {
+              "name": "Eviction effect",
+              "kind": "note",
+              "payload": "When the cap evicts, re-use the evicted session.",
+              "expect": "Evicted session is rejected — eviction is server-side, not cosmetic.",
+              "category": "authorization-context",
+              "why": "Eviction that leaves the old cookie working is UI fiction."
+            },
+            {
+              "name": "Notification check",
+              "kind": "note",
+              "payload": "Observe whether new logins notify the user (email/in-app) where policy promises it.",
+              "expect": "Notification fires as documented for the report.",
+              "category": "baseline",
+              "why": "Detection complements prevention."
+            }
+          ]
+        },
+        {
+          "id": "session-review",
+          "title": "Users can review and revoke sessions",
+          "item": "WAPT-SESS-014",
+          "severity": "medium",
+          "why": "A session list with one-click revoke is the user-side incident response for stolen cookies.",
+          "validate": "A settings page lists active sessions (device, location, time) and revoking one takes effect immediately.",
+          "variants": [
+            {
+              "name": "Inventory accuracy",
+              "kind": "note",
+              "payload": "Log in from two distinct browsers; open the sessions page.",
+              "expect": "Both sessions listed with usable metadata; no phantom or missing entries.",
+              "category": "baseline",
+              "why": "You cannot revoke what you cannot see."
+            },
+            {
+              "name": "Revoke other session",
+              "kind": "note",
+              "payload": "From browser A, revoke the browser-B session; then re-issue a request in B.",
+              "expect": "Next request in B is unauthenticated — immediately, not on next login.",
+              "category": "authorization-context",
+              "why": "The revocation race matters: prove immediacy."
+            },
+            {
+              "name": "Metadata honesty",
+              "kind": "note",
+              "payload": "Check listed details against what you know (user agent, IP, time).",
+              "expect": "Accurate enough for a user to spot an intruder; fabricated or empty metadata is reportable.",
+              "category": "baseline",
+              "why": "The feature is only useful if the data is real."
+            }
+          ]
+        },
+        {
+          "id": "inactivity-timeout",
+          "title": "Server-enforced inactivity timeout",
+          "item": "WAPT-SESS-015",
+          "severity": "medium",
+          "why": "Idle sessions on shared or compromised machines are free access; the server must expire them, not a client-side timer.",
+          "validate": "After the documented idle window, the next request requires re-auth regardless of client behaviour.",
+          "variants": [
+            {
+              "name": "Idle then request",
+              "kind": "note",
+              "payload": "With the documented idle window known, stop all traffic, wait it out plus margin, then re-request an authenticated endpoint with the old cookie.",
+              "expect": "401/redirect to login; server-side expiry proven.",
+              "category": "authentication-context",
+              "why": "Patient version: respect the window rather than hammering."
+            },
+            {
+              "name": "Client-timer bypass",
+              "kind": "note",
+              "payload": "Keep the tab closed but re-issue the request via Repeater at the same moment a browser heartbeat would have fired.",
+              "expect": "No JS-heartbeat exemption: server time rules.",
+              "category": "browser-context",
+              "why": "Heartbeats that never touch server-side expiry defeat the policy."
+            },
+            {
+              "name": "Partial-activity note",
+              "kind": "note",
+              "payload": "Record which requests do and do not reset the idle clock (polling, assets, websocket frames).",
+              "expect": "Idle clock driven by meaningful authenticated activity per policy; background noise renewing sessions forever is a finding.",
+              "category": "baseline",
+              "why": "Define activity or the timeout is decorative."
+            }
+          ]
+        },
+        {
+          "id": "absolute-lifetime",
+          "title": "Absolute maximum session lifetime",
+          "item": "WAPT-SESS-016",
+          "severity": "medium",
+          "why": "Even active sessions must die at an absolute cap, or one stolen cookie lives as long as the account is never idle.",
+          "validate": "A hard maximum age is enforced server-side regardless of activity.",
+          "variants": [
+            {
+              "name": "Stay-alive marathon",
+              "kind": "note",
+              "payload": "Keep the session lightly active (one harmless request every few minutes) past the documented maximum age.",
+              "expect": "Session terminates at the cap and requires re-auth.",
+              "category": "authentication-context",
+              "why": "Activity must not extend life beyond the ceiling."
+            },
+            {
+              "name": "Cap discovery",
+              "kind": "note",
+              "payload": "Where policy is unknown, run the stay-alive pattern in bounded steps (30m, 1h, 8h — engagement time permitting) or read documentation.",
+              "expect": "Documented observed bound for the report; never-expiring is the finding.",
+              "category": "baseline",
+              "why": "Measure, do not assume."
+            },
+            {
+              "name": "Re-auth token swap",
+              "kind": "note",
+              "payload": "After the cap forces re-auth, confirm a fresh session id is issued.",
+              "expect": "New session value — the cap is a lifecycle boundary, not a client refresh.",
+              "category": "authentication-context",
+              "why": "Re-auth that recycles the old id re-opens fixation surface."
+            }
+          ]
+        },
+        {
+          "id": "server-side-expiry",
+          "title": "Expiry enforced server-side",
+          "item": "WAPT-SESS-017",
+          "severity": "medium",
+          "why": "Client-controlled timestamps (cookie Max-Age, embedded exp claims, hidden fields) must never be the authority for session validity.",
+          "validate": "Validity is decided by server-side state (or a cryptographically bound exp): tampering with client timestamps changes nothing.",
+          "variants": [
+            {
+              "name": "Cookie clock stretch",
+              "kind": "note",
+              "payload": "Edit the session cookie Expires/Max-Age in DevTools to +30 days; re-issue an authenticated request.",
+              "expect": "Server still enforces its own expiry; the attribute is transport, not authority.",
+              "category": "mutation",
+              "why": "Cookie attributes are client input."
+            },
+            {
+              "name": "Embedded exp tamper",
+              "kind": "note",
+              "payload": "If the token embeds exp/issued-at (JWT-style), modify them (expect signature failure) or replay an expired reference token.",
+              "expect": "Expired is expired: 401 either way.",
+              "category": "mutation",
+              "why": "Signature-protected exp is fine; trust-by-readout is not."
+            },
+            {
+              "name": "Logout-timer race",
+              "kind": "note",
+              "payload": "Log out, then immediately replay the cookie before any client cleanup.",
+              "expect": "Rejected — server-side invalidation is instant.",
+              "category": "authorization-context",
+              "why": "The server, not the browser, decides death."
+            }
+          ]
+        },
+        {
+          "id": "script-readable",
+          "title": "No session authority in script-readable storage",
+          "item": "WAPT-SESS-019",
+          "severity": "medium",
+          "why": "localStorage/sessionStorage tokens are one XSS away from theft with no HttpOnly protection.",
+          "validate": "Session authority lives in HttpOnly cookies or memory; web storage holds nothing that restores authenticated state.",
+          "variants": [
+            {
+              "name": "Storage sweep",
+              "kind": "note",
+              "payload": "DevTools Application tab: local/session storage on the authed app; decode JWT-shaped values.",
+              "expect": "No identity-restoring material; document anything found with its reach.",
+              "category": "browser-context",
+              "why": "The five-minute inventory that maps XSS blast radius."
+            },
+            {
+              "name": "Script-reachability proof",
+              "kind": "note",
+              "payload": "In the console, read the stored keys and replay one into an Authorization header on a harmless endpoint.",
+              "expect": "Nothing in storage grants authenticated responses.",
+              "category": "browser-context",
+              "why": "Proves reachability rather than just presence."
+            },
+            {
+              "name": "Logout residue",
+              "kind": "note",
+              "payload": "After logout, re-sweep storage.",
+              "expect": "All session material removed.",
+              "category": "browser-context",
+              "why": "Left-behind tokens outlive the session they served."
+            }
+          ]
+        },
+        {
+          "id": "disabled-account-replay",
+          "title": "Disabled and deleted accounts replay nothing",
+          "item": "WAPT-SESS-020",
+          "severity": "critical",
+          "why": "Account disablement is the incident-response switch; live sessions for disabled users defeat it entirely.",
+          "validate": "Disabling or deleting an account invalidates all its sessions immediately (within the documented propagation window).",
+          "variants": [
+            {
+              "name": "Disable-then-replay",
+              "kind": "note",
+              "payload": "With owner approval, disable your test account while holding an active session; immediately re-issue authenticated requests.",
+              "expect": "401/403 within the documented window; a working session after disablement is critical.",
+              "category": "authorization-context",
+              "why": "The exact incident-response scenario, on an account you own."
+            },
+            {
+              "name": "Delete-then-replay",
+              "kind": "note",
+              "payload": "Same pattern with account deletion (or anonymization) if policy allows test accounts to be removed.",
+              "expect": "All sessions dead; deleted identities cannot authenticate anywhere.",
+              "category": "authorization-context",
+              "why": "Deletion must be stronger than disablement, never weaker."
+            },
+            {
+              "name": "Scheduled-window note",
+              "kind": "note",
+              "payload": "If revocation propagates (multi-node), measure the window by hitting a second node/region quickly.",
+              "expect": "Propagation matches the documented bound; record it as the honest revocation SLA.",
+              "category": "baseline",
+              "why": "Distributed systems get a window — it must be known."
+            }
+          ]
+        },
+        {
+          "id": "credential-change-kill",
+          "title": "Password and factor changes end other sessions",
+          "item": "WAPT-SESS-021",
+          "severity": "medium",
+          "why": "Changing a password is what a user does when they suspect compromise; surviving stolen sessions make the ritual meaningless.",
+          "validate": "Password change (and factor add/remove) revokes other sessions, or offers explicit revocation that works.",
+          "variants": [
+            {
+              "name": "Change-then-other-session",
+              "kind": "note",
+              "payload": "Hold sessions in two browsers; change the password in A; re-issue in B.",
+              "expect": "B is logged out (or explicitly offered revocation that works immediately).",
+              "category": "authentication-context",
+              "why": "The user story: I changed my password — am I safe now?"
+            },
+            {
+              "name": "Factor-change parity",
+              "kind": "note",
+              "payload": "Add or remove an MFA factor; check other sessions.",
+              "expect": "Same revocation semantics as password change per policy.",
+              "category": "authentication-context",
+              "why": "Factor changes are compromise responses too."
+            },
+            {
+              "name": "Post-change token freshness",
+              "kind": "note",
+              "payload": "Inspect the session cookie in the browser that made the change.",
+              "expect": "Fresh session issued (rotation on credential change).",
+              "category": "authentication-context",
+              "why": "The surviving session should at least be new."
+            }
+          ]
+        },
+        {
+          "id": "federated-logout",
+          "title": "Local and federated logout coordinated",
+          "item": "WAPT-SESS-025",
+          "severity": "medium",
+          "why": "With federation, logging out of the SP while the IdP session lives means one click back in — and SLO that misses either side leaves sessions alive.",
+          "validate": "Logout offers/propagates SLO where supported; local fallback sessions are cleaned; residual IdP behaviour matches policy.",
+          "variants": [
+            {
+              "name": "SP logout then IdP state",
+              "kind": "note",
+              "payload": "Log out of the SP; visit the IdP profile page in the same browser.",
+              "expect": "IdP session per policy (SLO propagated, or documented local-only logout with its risk).",
+              "category": "authentication-context",
+              "why": "Show what a shared-machine attacker retains."
+            },
+            {
+              "name": "SLO round trip",
+              "kind": "note",
+              "payload": "Trigger SLO from the IdP side; sweep SP cookies and re-issue requests.",
+              "expect": "All SP sessions in scope terminate; post-logout redirect is validated and closed.",
+              "category": "authorization-context",
+              "why": "Both halves of the logout must land."
+            },
+            {
+              "name": "Re-login friction",
+              "kind": "note",
+              "payload": "After full logout, hit the SP login again.",
+              "expect": "Fresh authentication required — no silent SSO re-entry contradicting the logout.",
+              "category": "authentication-context",
+              "why": "One-click return after logout surprises users and auditors."
+            }
+          ]
+        },
+        {
+          "id": "explicit-session-creation",
+          "title": "Sessions only on explicit user action",
+          "item": "WAPT-SESS-026",
+          "severity": "high",
+          "why": "Silent session creation (IdP-initiated SSO landing, token-in-URL auto-login) enables login phishing: a link the victim clicks logs them into an attacker-shaped context.",
+          "validate": "Application sessions require an explicit interaction at the SP; unsolicited SSO is a documented decision, not a default.",
+          "variants": [
+            {
+              "name": "Link-driven auto-login",
+              "kind": "note",
+              "payload": "Craft a link (your own test IdP/app flow) that carries a valid assertion/token to the SP without a click at the SP.",
+              "expect": "SP requires initiation or shows explicit consent before a session exists.",
+              "category": "protocol-variant",
+              "why": "The phishing primitive: authentication without intent."
+            },
+            {
+              "name": "IdP-initiated policy",
+              "kind": "note",
+              "payload": "If IdP-initiated SSO is supported, verify Audience+Issuer strictness and document why it is allowed.",
+              "expect": "Strict audience binding; the allowance is a written decision.",
+              "category": "baseline",
+              "why": "Supported features need reasons."
+            },
+            {
+              "name": "Token-in-URL auto-login",
+              "kind": "note",
+              "payload": "Check proxy history for any login flow that accepts tokens in query/fragment and creates sessions on GET.",
+              "expect": "No URL-borne session creation; sessions start at POST/redirect exchanges.",
+              "category": "parser-differential",
+              "why": "GET-logins leak via Referer and history."
+            }
+          ]
+        },
+        {
+          "id": "revocation-propagation",
+          "title": "Revocation propagates within the window",
+          "item": "WAPT-SESS-027",
+          "severity": "medium",
+          "why": "Logout or revoke must beat the attacker everywhere: caches and second nodes honoring dead sessions extend the compromise window.",
+          "validate": "After revocation, all endpoints and nodes reject the token within the documented window.",
+          "variants": [
+            {
+              "name": "Two-endpoint race",
+              "kind": "note",
+              "payload": "Revoke a session; immediately alternate requests between two different endpoints (or regions) with the dead token.",
+              "expect": "Both reject within the documented propagation bound; measure and record it.",
+              "category": "race-concurrency",
+              "why": "The cache that forgot the logout is where sessions resurrect."
+            },
+            {
+              "name": "Cache-layer probe",
+              "kind": "note",
+              "payload": "If a CDN caches authenticated responses, revoke and re-request.",
+              "expect": "No cached authenticated content served post-revocation (Cache-Control private/no-store).",
+              "category": "protocol-variant",
+              "why": "Revocation of identity is also a caching question."
+            },
+            {
+              "name": "Propagation budget note",
+              "kind": "note",
+              "payload": "Compare the measured window against the documented SLA.",
+              "expect": "Measured within documented; otherwise a finding with the numbers.",
+              "category": "baseline",
+              "why": "SLAs are testable statements."
+            }
+          ]
+        },
+        {
+          "id": "family-replay",
+          "title": "Rotated cookie families detect replay",
+          "item": "WAPT-SESS-028",
+          "severity": "critical",
+          "why": "Rotating persistent/remember-me cookies on every use, with reuse-revocation, is the refresh-token lesson applied to cookies.",
+          "validate": "Persistent session cookies rotate per use; replaying a rotated cookie revokes the family.",
+          "variants": [
+            {
+              "name": "Rotated-cookie replay",
+              "kind": "note",
+              "payload": "With remember-me enabled, capture cookie P1; make another request (P1 to P2); then replay P1 from a second client.",
+              "expect": "P1 rejected and the family (P2) revoked — reuse is treated as theft.",
+              "category": "authorization-context",
+              "why": "Mirror of the JWT refresh-family test, cookie edition."
+            },
+            {
+              "name": "Parallel use race",
+              "kind": "note",
+              "payload": "Fire two requests with P1 simultaneously (Repeater parallel groups, 2-3 max).",
+              "expect": "At most one rotation wins linearly; no parallel families issued.",
+              "category": "race-concurrency",
+              "why": "Rotation must be atomic under concurrency."
+            },
+            {
+              "name": "Family-scope check",
+              "kind": "note",
+              "payload": "Confirm the revocation hits sibling sessions of the same family, not the whole account.",
+              "expect": "Scope matches policy (family-wide vs account-wide) and is documented.",
+              "category": "authorization-context",
+              "why": "Blast radius of reuse-revocation should be a decision."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -226,5 +992,6 @@
       "safe": true,
       "payload": "In the logged-in origin console: document.cookie"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

@@ -1,3 +1,5 @@
+import { asset } from './paths.js?v=1.0.0-r22';
+
 const ITEM_ID = /^WAPT-[A-Z]+-\d{3}$/;
 
 function assertDocument(document, category) {
@@ -24,7 +26,7 @@ export function createCatalog() {
     if (pending.has(slug)) return pending.get(slug);
     const category = categories.find((candidate) => candidate.slug === slug);
     if (!category) return [];
-    const request = fetch(`checklist/${category.file}`, { headers: { Accept: 'application/json' } })
+    const request = fetch(asset(`checklist/${category.file}`), { headers: { Accept: 'application/json' } })
       .then((response) => {
         if (!response.ok) throw new Error(`Could not load ${category.name}: HTTP ${response.status}`);
         return response.json();

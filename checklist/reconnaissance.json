@@ -1,7 +1,7 @@
 {
   "schema_version": "1.0.0",
   "category": "reconnaissance",
-  "lastmod": "2026-08-18",
+  "lastmod": "2026-08-21",
   "items": [
     {
       "id": "WAPT-RECON-001",
@@ -1705,12 +1705,12 @@
     },
     {
       "id": "WAPT-RECON-024",
-      "title": "Confirm GraphQL endpoint locations and transport modes",
+      "title": "Discover GraphQL endpoint locations and accepted transports",
       "category": "reconnaissance",
       "severity": "informational",
       "difficulty": "medium",
       "mode": "manual",
-      "objective": "Identify confirmed GraphQL endpoints, supported HTTP methods, content types, subscriptions, and authentication contexts before GraphQL-specific testing.",
+      "objective": "Find every reachable GraphQL endpoint and record which HTTP methods, content types, persisted-query modes, and subscription channels each accepts before GraphQL-specific testing.",
       "prerequisites": [
         "GraphQL selected or suggested during scope",
         "Observed client traffic or owner documentation"
@@ -1763,7 +1763,9 @@
         "cwe": [],
         "portswigger": []
       },
-      "related": [],
+      "related": [
+        "WAPT-GQL-001"
+      ],
       "tags": [
         "graphql",
         "endpoint-discovery",

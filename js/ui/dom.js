@@ -1,6 +1,6 @@
 // Shared DOM helpers and the status vocabulary used across every workspace view.
-import { STATUS_LABELS } from './export.js?v=1.0.0-r9';
-import { setItemStatus } from '../engine/state.js?v=1.0.0-r9';
+import { STATUS_LABELS } from './export.js?v=1.0.0-r22';
+import { setItemStatus } from '../engine/state.js?v=1.0.0-r22';
 
 export const SEVERITY_GLYPHS = Object.freeze({ critical: '▲', high: '◆', medium: '●', low: '■', informational: '○' });
 export const STATUS_GLYPHS = Object.freeze({
@@ -52,6 +52,9 @@ export function composeStatus(coverage, finding) {
 // One reusable pair of controls: coverage (did I run it?) and finding (is it a vulnerability?).
 export function statusControls(item, status, { getState, commit, compact = false } = {}) {
   const wrap = element('div', compact ? 'status-controls compact' : 'status-controls');
+  // The wrap carries the live status so the control pair can be color-scanned
+  // (accent + glyph) without reading either select.
+  wrap.dataset.status = status;
   const coverage = document.createElement('select');
   coverage.className = 'status-select';
   coverage.dataset.coverageControl = item.id;

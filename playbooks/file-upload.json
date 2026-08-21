@@ -274,6 +274,664 @@
           ]
         }
       ]
+    },
+    {
+      "id": "acceptance-depth",
+      "title": "What really gets accepted",
+      "checks": [
+        {
+          "id": "acceptance-contract",
+          "title": "File acceptance and delivery contract documented",
+          "item": "WAPT-UPLOAD-001",
+          "severity": "informational",
+          "why": "Every upload finding is a contract violation — the contract (types, sizes, delivery, processing) must exist before testing.",
+          "validate": "A written per-surface contract: accepted types, max sizes, storage/delivery origin, transformations, and who may read what.",
+          "variants": [
+            {
+              "name": "Contract capture",
+              "kind": "note",
+              "payload": "From docs, UI hints, and owner confirmation, write the contract per upload surface (avatar, import, attachment, export).",
+              "expect": "Owner-confirmed contract; each later check cites the clause it tests.",
+              "category": "baseline",
+              "why": "No contract, no findings — just opinions."
+            },
+            {
+              "name": "Surface census",
+              "kind": "note",
+              "payload": "Enumerate every upload and download path (UI, API, importers, drag-drop, paste handlers, email-in).",
+              "expect": "All surfaces listed with owners; forgotten surfaces are the findings.",
+              "category": "baseline",
+              "why": "Uploads arrive by more doors than the UI shows."
+            },
+            {
+              "name": "Delivery mapping",
+              "kind": "note",
+              "payload": "For each surface, record where files are served from (same origin, subdomain, CDN, signed URL) and processing applied.",
+              "expect": "Delivery path documented; isolation decisions visible (feeds the isolation check).",
+              "category": "baseline",
+              "why": "Where it lands decides how dangerous it is."
+            }
+          ]
+        },
+        {
+          "id": "filename-normalization",
+          "title": "Filenames normalized before extension checks",
+          "item": "WAPT-UPLOAD-003",
+          "severity": "high",
+          "why": "shell.php;.jpg, trailing dots/spaces, Unicode lookalikes, and double extensions fool naive extension logic.",
+          "validate": "Filenames normalized (NFC, trimmed, case-folded) before allowlist checks; extension taken from the final segment only.",
+          "variants": [
+            {
+              "name": "Extension roulette",
+              "kind": "note",
+              "payload": "Upload your canary file as shell.php.jpg, shell.jpg.php, shell.PHP, shell.php;, shell.php%00.jpg, \"shell .php\".",
+              "expect": "Only genuinely allowed extensions accepted regardless of casing, padding, or double dots.",
+              "category": "encoding",
+              "why": "One upload each, all yours, all decisive."
+            },
+            {
+              "name": "Unicode lookalikes",
+              "kind": "note",
+              "payload": "Extensions with homoglyphs (е vs e) and right-to-left marks in names.",
+              "expect": "Normalized before checks; no lookalike bypasses.",
+              "category": "encoding",
+              "why": "Normalization is the fix; test its presence."
+            },
+            {
+              "name": "Stored-name review",
+              "kind": "note",
+              "payload": "Inspect the stored/served filename after a legitimate upload.",
+              "expect": "Server-generated or sanitized names; original name kept only as metadata.",
+              "category": "baseline",
+              "why": "The stored name is the served risk."
+            }
+          ]
+        },
+        {
+          "id": "isolated-origin",
+          "title": "Untrusted files on an isolated origin",
+          "item": "WAPT-UPLOAD-005",
+          "severity": "high",
+          "why": "User files served same-origin mean stored XSS by upload; isolation (dedicated domain, headers, sandbox) contains execution.",
+          "validate": "User-content delivery is origin-isolated or hardened (sandbox, CSP, nosniff, attachment) so uploads cannot execute against the app.",
+          "variants": [
+            {
+              "name": "Upload-then-navigate",
+              "kind": "note",
+              "payload": "Upload an HTML/SVG canary file; navigate directly to its URL.",
+              "expect": "Served from isolated origin or forced download / strict CSP — never executable same-origin.",
+              "category": "browser-context",
+              "why": "The single most important upload test."
+            },
+            {
+              "name": "Header hardening audit",
+              "kind": "note",
+              "payload": "Check delivery headers on the file: CSP, nosniff, Content-Disposition, CORP.",
+              "expect": "Defense stack present and coherent on the delivery origin.",
+              "category": "baseline",
+              "why": "Headers are the isolation contract."
+            },
+            {
+              "name": "Cookie scope crossover",
+              "kind": "note",
+              "payload": "Check whether app cookies scope onto the delivery origin.",
+              "expect": "No session cookies on untrusted origins; domain scoping reviewed.",
+              "category": "authorization-context",
+              "why": "Isolation fails if cookies bridge it."
+            }
+          ]
+        },
+        {
+          "id": "collision-overwrite",
+          "title": "Upload overwrite and collision prevented",
+          "item": "WAPT-UPLOAD-006",
+          "severity": "high",
+          "why": "Predictable storage names let one user overwrite another object — defacement or code swap on shared paths.",
+          "validate": "Storage names are unique (random ids) and writes verify ownership; no user-controlled path segments.",
+          "variants": [
+            {
+              "name": "Same-name overwrite",
+              "kind": "note",
+              "payload": "Upload two files with identical names; then attempt re-upload over a path containing another user object.",
+              "expect": "Each upload gets unique storage; overwrite attempts fail ownership checks.",
+              "category": "authorization-context",
+              "why": "Names are not identifiers."
+            },
+            {
+              "name": "Path segment injection",
+              "kind": "note",
+              "payload": "Filenames containing ../, ..\\, url-encoded slashes, and absolute paths (/tmp/x, C:\\x).",
+              "expect": "Rejected or flattened; no traversal into other directories (feeds traversal checks).",
+              "category": "encoding",
+              "why": "Names become paths somewhere — find where."
+            },
+            {
+              "name": "Id-vs-name mismatch",
+              "kind": "note",
+              "payload": "Access a file by its friendly name path vs its id; attempt the friendly path of another user file.",
+              "expect": "Only id-based, authorized access works.",
+              "category": "parameter-variant",
+              "why": "Friendly paths are usually the unguarded twin."
+            }
+          ]
+        },
+        {
+          "id": "symlink-escape",
+          "title": "Archive symlinks rejected at extraction",
+          "item": "WAPT-UPLOAD-009",
+          "severity": "critical",
+          "why": "A tar/zip entry that is a symlink to /etc/passwd or app code turns extraction into arbitrary read/write.",
+          "validate": "Archive extraction rejects symlinks/hardlinks outside the target, absolute paths, and device entries.",
+          "variants": [
+            {
+              "name": "Symlink escape archive",
+              "kind": "note",
+              "payload": "Craft (with tar/zip tools) an archive whose entry links to /etc/hostname and ../../app/config; upload to the extract feature.",
+              "expect": "Extraction refuses link entries or confines them; no file outside the sandbox touched.",
+              "category": "tool-assisted",
+              "why": "The classic zip-slip sibling — build it in one command."
+            },
+            {
+              "name": "Absolute-path entry",
+              "kind": "note",
+              "payload": "Archive entry named /tmp/pwned or C:\\\\temp\\\\pwned.",
+              "expect": "Absolute entry paths rejected before extraction.",
+              "category": "encoding",
+              "why": "Path handling is security at extraction time."
+            },
+            {
+              "name": "Extraction log review",
+              "kind": "note",
+              "payload": "Owner-assisted: check server logs/behavior for the extraction of your crafted archive (no external reads attempted).",
+              "expect": "Refusals logged; extraction sandbox documented.",
+              "category": "out-of-band",
+              "why": "Confirm the boundary held server-side."
+            }
+          ]
+        },
+        {
+          "id": "zip-bomb-bounds",
+          "title": "Archive expansion bounded before extraction",
+          "item": "WAPT-UPLOAD-010",
+          "severity": "high",
+          "why": "A 10KB zip that expands to 100GB kills disk and memory before any scanner runs — bounds must precede extraction.",
+          "validate": "Entry count, total uncompressed size, and compression ratio are checked before extraction; hard limits enforced.",
+          "variants": [
+            {
+              "name": "Ratio bomb (small)",
+              "kind": "note",
+              "payload": "A zip with highly compressible entries (zeros) sized to expand a few hundred MB max — bounded by your authorization.",
+              "expect": "Refused at declared size limits before extraction; clear error.",
+              "category": "tool-assisted",
+              "why": "Small enough to be safe, big enough to prove."
+            },
+            {
+              "name": "Entry-count flood",
+              "kind": "note",
+              "payload": "Archive with tens of thousands of tiny entries.",
+              "expect": "Entry-count limit enforced before per-entry work.",
+              "category": "parameter-variant",
+              "why": "Inodes are the resource nobody caps."
+            },
+            {
+              "name": "Nested-archive note",
+              "kind": "note",
+              "payload": "Zip-inside-zip chains to depth where supported.",
+              "expect": "Nested extraction bounded (depth/total budget).",
+              "category": "mutation",
+              "why": "Recursion multiplies everything."
+            }
+          ]
+        },
+        {
+          "id": "size-quota",
+          "title": "Upload size and per-user quotas enforced",
+          "item": "WAPT-UPLOAD-011",
+          "severity": "medium",
+          "why": "Per-request limits without per-user quotas let one account fill storage — cost and denial for everyone.",
+          "validate": "Per-file and cumulative per-user limits enforced server-side with clear errors.",
+          "variants": [
+            {
+              "name": "Oversize single",
+              "kind": "note",
+              "payload": "Upload just above the documented max.",
+              "expect": "Rejected before processing with a clear error; no partial temp files left (check via timing/errors).",
+              "category": "parameter-variant",
+              "why": "The basic bound, tested at its edge."
+            },
+            {
+              "name": "Quota walk",
+              "kind": "note",
+              "payload": "Upload valid small files until the documented quota (bounded effort, or owner-assisted reset).",
+              "expect": "Quota enforced cumulatively with a clear message; eviction policy documented.",
+              "category": "baseline",
+              "why": "Cumulative is the part teams forget."
+            },
+            {
+              "name": "Temp-file hygiene",
+              "kind": "note",
+              "payload": "After rejection/failure cases, retry the same upload; observe behavior.",
+              "expect": "Failed uploads leave no zombie temp files or quota ghosts.",
+              "category": "protocol-variant",
+              "why": "Garbage accumulates in failure paths."
+            }
+          ]
+        },
+        {
+          "id": "image-dimensions",
+          "title": "Decoded image dimensions bounded",
+          "item": "WAPT-UPLOAD-012",
+          "severity": "high",
+          "why": "A tiny PNG declaring 30000x30000 decodes into gigabytes of pixels — decompression bombs live in dimensions, not file size.",
+          "validate": "Decoded pixel dimensions capped before processing; oversized metadata rejected.",
+          "variants": [
+            {
+              "name": "Dimension bomb",
+              "kind": "note",
+              "payload": "Craft a PNG/JPEG (ImageMagick/python) declaring extreme dimensions with small file size; upload for thumbnails/previews.",
+              "expect": "Rejected on decoded dimensions before pixel work; error, not hang.",
+              "category": "tool-assisted",
+              "why": "One command builds it; one request decides it."
+            },
+            {
+              "name": "Metadata monsters",
+              "kind": "note",
+              "payload": "Files with huge EXIF/XMP chunks and comment floods.",
+              "expect": "Metadata size capped; stripped before processing.",
+              "category": "parameter-variant",
+              "why": "Parsers read metadata before pixels."
+            },
+            {
+              "name": "Format confusion",
+              "kind": "note",
+              "payload": "A file whose magic bytes disagree with its extension and Content-Type.",
+              "expect": "Type detected server-side (magic bytes), not trusted from client.",
+              "category": "encoding",
+              "why": "Client-declared type is advice, not truth."
+            }
+          ]
+        },
+        {
+          "id": "normalization-processing",
+          "title": "Images and documents normalized before use",
+          "item": "WAPT-UPLOAD-013",
+          "severity": "medium",
+          "why": "Re-processing (thumbnails, preview, OCR) feeds raw originals into parsers — normalization closes parser-differential surface.",
+          "validate": "Uploads are transcoded/normalized before downstream processing; originals never reach parsers directly.",
+          "variants": [
+            {
+              "name": "Polyglot into preview",
+              "kind": "note",
+              "payload": "Upload a JPEG/PHP or GIF/JS polyglot through the thumbnail/preview pipeline.",
+              "expect": "Normalization strips the foreign tail; preview contains only re-encoded image data.",
+              "category": "mutation",
+              "why": "The pipeline is the attack surface, not the file."
+            },
+            {
+              "name": "SVG sanitization",
+              "kind": "note",
+              "payload": "Upload an SVG containing script, foreignObject, and event handlers; view the preview.",
+              "expect": "SVG sanitized (script removed) or served inert (feeds isolation check).",
+              "category": "browser-context",
+              "why": "SVG is HTML with superpowers."
+            },
+            {
+              "name": "Original-access check",
+              "kind": "note",
+              "payload": "Determine whether raw originals remain reachable after processing.",
+              "expect": "Originals not served for inline rendering; processed versions only.",
+              "category": "baseline",
+              "why": "Keep originals, do not render them."
+            }
+          ]
+        },
+        {
+          "id": "polyglot-parsers",
+          "title": "Polyglot files handled per every reachable parser",
+          "item": "WAPT-UPLOAD-015",
+          "severity": "high",
+          "why": "The same bytes hit the browser (as HTML), the preview service (as image), and the backend (as archive) — each must be safe.",
+          "validate": "Each polyglot-reachable parser treats the file safely; no parser-executable path from user content.",
+          "variants": [
+            {
+              "name": "Parser reach map",
+              "kind": "note",
+              "payload": "For one uploaded file, list every consumer: browser delivery, preview, antivirus, search indexer, export.",
+              "expect": "Map documented; each consumer judged in its own parser.",
+              "category": "baseline",
+              "why": "Three parsers, three verdicts, one file."
+            },
+            {
+              "name": "Browser-side polyglot",
+              "kind": "note",
+              "payload": "Craft content that sniffs as HTML in browsers (leading <!doctype) with a valid image extension; navigate to its URL.",
+              "expect": "nosniff + correct type + isolation stop browser execution.",
+              "category": "browser-context",
+              "why": "The browser is the easiest parser to attack."
+            },
+            {
+              "name": "Backend polyglot",
+              "kind": "note",
+              "payload": "Archive/document polyglots through import pipelines (owner-approved test paths).",
+              "expect": "Import treats input strictly as the declared format; errors are clean.",
+              "category": "tool-assisted",
+              "why": "Backends trust magic bytes at their peril."
+            }
+          ]
+        },
+        {
+          "id": "av-as-depth",
+          "title": "Malware scanning as depth, not type validation",
+          "item": "WAPT-UPLOAD-016",
+          "severity": "medium",
+          "why": "Scanners catch malware, not attacks — EICAR proves the pipeline runs; type/authorization logic must stand alone.",
+          "validate": "Scanning is present, asynchronous-safe, and never the only control; EICAR is caught, type checks pass without it.",
+          "variants": [
+            {
+              "name": "EICAR pipeline test",
+              "kind": "note",
+              "payload": "Upload the EICAR test string file (harmless industry-standard test content).",
+              "expect": "Detected, quarantined, and reported per policy — pipeline proven live.",
+              "category": "tool-assisted",
+              "why": "The safe, standard way to prove AV runs."
+            },
+            {
+              "name": "Scan-bypass shape",
+              "kind": "note",
+              "payload": "EICAR inside a zip, split across entries, or with altered (still-inert) formatting.",
+              "expect": "Detection robust to trivial obfuscation; note bypass shapes honestly.",
+              "category": "encoding",
+              "why": "Scanners see what scanners see."
+            },
+            {
+              "name": "Window-of-availability",
+              "kind": "note",
+              "payload": "Upload a benign file then EICAR immediately; observe when each becomes downloadable.",
+              "expect": "Nothing served before scan verdict (or documented async policy with quarantine).",
+              "category": "race-concurrency",
+              "why": "Async scanning has a serving gap."
+            }
+          ]
+        },
+        {
+          "id": "upload-authorization",
+          "title": "Upload creation and attachment targets authorized",
+          "item": "WAPT-UPLOAD-017",
+          "severity": "high",
+          "why": "Attaching uploads to foreign objects (other accounts, tenants, tasks) smuggles content into contexts you do not own.",
+          "validate": "Upload creation and every attachment/re-reference is authorized against the target object.",
+          "variants": [
+            {
+              "name": "Foreign attachment",
+              "kind": "note",
+              "payload": "Upload as A; attach it to a B-owned container (message, task, ticket) via id.",
+              "expect": "Attachment refused — target authorization, not just upload permission.",
+              "category": "authorization-context",
+              "why": "The upload was legal; the attach is the attack."
+            },
+            {
+              "name": "Cross-tenant upload",
+              "kind": "note",
+              "payload": "Upload into tenant-1 storage referencing tenant-2 paths/ids.",
+              "expect": "Tenant boundaries enforced on storage targets.",
+              "category": "authorization-context",
+              "why": "Storage inherits tenancy."
+            },
+            {
+              "name": "Orphan-adoption",
+              "kind": "note",
+              "payload": "Reference an unattached/deleted file id from your earlier upload in a new context.",
+              "expect": "Orphans are not adoptable; ids re-validate per use.",
+              "category": "parameter-variant",
+              "why": "Zombie files live in id lists."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "inclusion-and-traversal",
+      "title": "Traversal, inclusion, and delivery",
+      "checks": [
+        {
+          "id": "traversal-variants",
+          "title": "Encoded traversal variants rejected consistently",
+          "item": "WAPT-UPLOAD-020",
+          "severity": "high",
+          "why": "One decoder in the chain (web server, framework, storage SDK) and ../ comes back to life.",
+          "validate": "Traversal rejected in every encoding: plain, %2e%2e, double-encoded, over-long UTF-8, semicolon, backslash.",
+          "variants": [
+            {
+              "name": "Encoding ladder",
+              "kind": "note",
+              "payload": "Download/serve paths with ../, ..%2f, %2e%2e/, ..%252f, ..;/, ..\\\\, ....// (each its own request).",
+              "expect": "All variants rejected uniformly; no 200 with content outside the root.",
+              "category": "encoding",
+              "why": "The ladder finds the forgotten decoder."
+            },
+            {
+              "name": "Absolute-path forms",
+              "kind": "note",
+              "payload": "Filenames resolving to /etc/hostname and C:\\\\windows\\\\win.ini style targets.",
+              "expect": "Absolute paths rejected.",
+              "category": "parameter-variant",
+              "why": "Absolute is just another escape."
+            },
+            {
+              "name": "Response-diff proof",
+              "kind": "note",
+              "payload": "Compare a valid file response with each traversal attempt.",
+              "expect": "No leaked foreign content; document statuses for the report.",
+              "category": "baseline",
+              "why": "Evidence is the diff, not the guess."
+            }
+          ]
+        },
+        {
+          "id": "lfi-include",
+          "title": "Local file inclusion via include/template paths",
+          "item": "WAPT-UPLOAD-021",
+          "severity": "critical",
+          "why": "Template or include paths influenced by request data render server files (config, source) or execute uploaded ones.",
+          "validate": "Include/template paths come from a static allowlist; request data never selects filesystem paths.",
+          "variants": [
+            {
+              "name": "Path parameter hunt",
+              "kind": "note",
+              "payload": "Parameters like template=, page=, lang=, theme=, file= that look like path fragments; try path values and traversal.",
+              "expect": "Paths resolve only against a static map; unknown keys rejected.",
+              "category": "parameter-variant",
+              "why": "Every path-shaped parameter is a candidate."
+            },
+            {
+              "name": "Extension ladder",
+              "kind": "note",
+              "payload": "Append extensions (.html, .tpl, .php) to reachable include values per stack.",
+              "expect": "No source disclosure, no execution; extension handling fixed.",
+              "category": "encoding",
+              "why": "Null bytes are gone; suffix rules remain."
+            },
+            {
+              "name": "Uploaded-template chain",
+              "kind": "note",
+              "payload": "If uploads are includable (via traversal or template params), chain upload→include (canary content only).",
+              "expect": "Uploads never land in executable/include paths; chain broken.",
+              "category": "mutation",
+              "why": "The two findings that combine into RCE."
+            }
+          ]
+        },
+        {
+          "id": "rfi-template",
+          "title": "Remote inclusion and untrusted template loading",
+          "item": "WAPT-UPLOAD-022",
+          "severity": "critical",
+          "why": "Loading templates/code from URLs or user content means the attacker ships the payload and the server executes it.",
+          "validate": "No remote sources for templates/includes; template engines run untrusted content in non-executing modes.",
+          "variants": [
+            {
+              "name": "URL parameter probe",
+              "kind": "note",
+              "payload": "Template/include parameters given https:// URLs (your Collaborator/test host).",
+              "expect": "Remote sources refused; no outbound fetch occurs (watch Collaborator).",
+              "category": "out-of-band",
+              "why": "The fetch itself is the finding."
+            },
+            {
+              "name": "SSTI canary",
+              "kind": "note",
+              "payload": "In any field rendered through a template engine, inject engine-neutral markers ({{7*7}}, ${7*7}, <%= 7*7 %>) with your own account.",
+              "expect": "No evaluation — output shows the literal text; any arithmetic result is SSTI.",
+              "category": "mutation",
+              "why": "Canary math, not payloads."
+            },
+            {
+              "name": "User-content-as-template",
+              "kind": "note",
+              "payload": "Determine whether stored user content is ever rendered as a template (mail merge, document generation).",
+              "expect": "Untrusted content rendered as data with auto-escaping; generation contexts sandboxed.",
+              "category": "baseline",
+              "why": "The mail-merge feature is the classic RCE."
+            }
+          ]
+        },
+        {
+          "id": "disposition-encoding",
+          "title": "Download filenames encoded safely",
+          "item": "WAPT-UPLOAD-023",
+          "severity": "medium",
+          "why": "User filenames in Content-Disposition break headers or deceive users (evil.html.exe, RTL overrides).",
+          "validate": "Content-Disposition filenames RFC-encoded (filename*), header-safe, and deceptive characters neutralized.",
+          "variants": [
+            {
+              "name": "Header-breaking names",
+              "kind": "note",
+              "payload": "Filenames with CR/LF, quotes, and semicolons (your own upload).",
+              "expect": "Well-formed header; no splitting; neutralized output.",
+              "category": "encoding",
+              "why": "The response-splitting test in its modern home."
+            },
+            {
+              "name": "Deceptive names",
+              "kind": "note",
+              "payload": "RTL override + .exe, trailing spaces before extension, double extensions.",
+              "expect": "Served names neutralized; UI shows true extension.",
+              "category": "browser-context",
+              "why": "Social engineering in one attribute."
+            },
+            {
+              "name": "Unicode round-trip",
+              "kind": "note",
+              "payload": "Emoji and CJK filenames across browsers (your files).",
+              "expect": "filename* encoding correct; falls back safely.",
+              "category": "baseline",
+              "why": "International users exist; encodings must too."
+            }
+          ]
+        },
+        {
+          "id": "temp-quarantine",
+          "title": "Temporary and quarantined files inaccessible",
+          "item": "WAPT-UPLOAD-024",
+          "severity": "high",
+          "why": "Pending scans, failed imports, and temp renders sit outside normal authorization — but on reachable URLs.",
+          "validate": "Temp/quarantine storage is not web-served, or requires the same authorization as final files; names unguessable.",
+          "variants": [
+            {
+              "name": "Temp URL hunt",
+              "kind": "note",
+              "payload": "During processing (slow scan/import if triggerable), capture any temp URL from responses or storage paths; request it directly.",
+              "expect": "Temp artifacts not directly reachable or fully authorized.",
+              "category": "race-concurrency",
+              "why": "The window between upload and finalize."
+            },
+            {
+              "name": "Predictable temp names",
+              "kind": "note",
+              "payload": "Check temp naming (timestamps, original name, sequential) via your own uploads.",
+              "expect": "Random names; predictability documented if present.",
+              "category": "encoding",
+              "why": "Guessable + unguarded = enumeration."
+            },
+            {
+              "name": "Quarantine access",
+              "kind": "note",
+              "payload": "Where AV quarantines files, attempt to fetch a quarantined file URL.",
+              "expect": "Quarantine is not a delivery path.",
+              "category": "authorization-context",
+              "why": "Quarantined means contained, not published."
+            }
+          ]
+        },
+        {
+          "id": "preview-privilege",
+          "title": "Unsafe preview in privileged tools prevented",
+          "item": "WAPT-UPLOAD-025",
+          "severity": "critical",
+          "why": "Previews rendered inside admin/analyst sessions execute in the most privileged context in the product.",
+          "validate": "Document/archive previews render in isolated contexts (sandboxed origin/iframe, conversion service), never in privileged UI directly.",
+          "variants": [
+            {
+              "name": "Preview execution probe",
+              "kind": "note",
+              "payload": "Upload content that would execute on preview (script in SVG/HTML-ish document); open the preview as an admin-capable test account.",
+              "expect": "No execution in the privileged context; isolation verified by origin inspection.",
+              "category": "browser-context",
+              "why": "The admin preview window is the crown context."
+            },
+            {
+              "name": "Office macro shape",
+              "kind": "note",
+              "payload": "Documents with auto-open behaviors (owner-approved inert samples) through the preview pipeline.",
+              "expect": "Conversion sandbox strips active content; no macro execution paths.",
+              "category": "tool-assisted",
+              "why": "Preview = conversion = parser exposure."
+            },
+            {
+              "name": "Converter escape",
+              "kind": "note",
+              "payload": "Check preview service for known CVE-class parser bugs relevant to its stack (version-appropriate, read-only probes).",
+              "expect": "Patching posture verified; converter isolation documented.",
+              "category": "baseline",
+              "why": "The converter is internet-facing infrastructure."
+            }
+          ]
+        },
+        {
+          "id": "generated-output",
+          "title": "Generated files validated before publish/email",
+          "item": "WAPT-UPLOAD-026",
+          "severity": "high",
+          "why": "Exports and generated documents (PDFs, reports, spreadsheets) inherit user content — formula injection and stored XSS via generation.",
+          "validate": "Generated outputs are validated/neutralized (formula prefixes, embedded content) before delivery to any viewer.",
+          "variants": [
+            {
+              "name": "CSV formula injection",
+              "kind": "note",
+              "payload": "Profile fields set to =cmd|/c calc! and +HYPERLINK shapes (your own account); export CSV; open in a sandboxed spreadsheet.",
+              "expect": "Formulas neutralized (=, +, -, @ prefixed or stripped); no execution on open.",
+              "category": "browser-context",
+              "why": "The classic export flaw, still everywhere."
+            },
+            {
+              "name": "HTML-in-PDF reflection",
+              "kind": "note",
+              "payload": "User content rendered into PDF exports; inject content designed to escape into PDF-link/JS features.",
+              "expect": "Generator escapes content; no active PDF features from user data.",
+              "category": "mutation",
+              "why": "PDF engines have their own script stories."
+            },
+            {
+              "name": "Mail-merge injection",
+              "kind": "note",
+              "payload": "Generated emails containing user content; inject headers/redirects shapes into fields.",
+              "expect": "Emails well-formed; no header or body structure injection.",
+              "category": "encoding",
+              "why": "Generated output is still an output."
+            }
+          ]
+        }
+      ]
     }
   ],
   "payloads": {
@@ -295,5 +953,6 @@
       "safe": true,
       "payload": "filename: ../../wapt-canary.txt"
     }
-  }
+  },
+  "lastmod": "2026-08-21"
 }

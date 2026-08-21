@@ -1,5 +1,5 @@
-import { serializeState } from '../engine/state.js?v=1.0.0-r9';
-import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r9';
+import { serializeState } from '../engine/state.js?v=1.0.0-r22';
+import { RETEST_GUIDANCE } from '../engine/reportability.js?v=1.0.0-r22';
 
 export const STATUS_LABELS = Object.freeze({
   not_tested: 'Not tested', in_progress: 'Testing now', passed: 'Tested — not vulnerable',
@@ -86,6 +86,7 @@ export function composeReportMarkdown(items, state, categoryNames = {}) {
       lines.push(`| ${pack.id} | ${pack.item_id} | ${cell(pack.title) || '—'} | ${pack.severity} | ${cell(pack.endpoint) || '—'} | ${cell(pack.method) || '—'} | ${pack.exploitability} | ${pack.reportable ? 'Yes' : 'No'} | ${pack.retest_verdict} |`);
       if (pack.observed_behavior) lines.push(`| | | Observed: ${cell(pack.observed_behavior)} | | | | | | |`);
       if (pack.cleanup_performed) lines.push(`| | | Cleanup: ${cell(pack.cleanup_performed)} | | | | | | |`);
+      for (const attachment of pack.attachments || []) lines.push(`| | | Attachment: ${cell(attachment.name)} (${(attachment.size / 1024).toFixed(1)} KB, ${attachment.type}) | | | | | | |`);
     }
   }
   lines.push('', '## Retest matrix', '', '| ID | Finding | Retest requested | Verdict | Residual risk / guidance |', '|---|---|---|---|---|');
@@ -205,4 +206,145 @@ export function composeFamilyCoverageBlock(family, coverage, state, categoryName
     lines.push('');
   }
   return lines.join('\n');
+}
+
+// ── HTML engagement report ─────────────────────────────────────────────────
+// A single self-contained file the tester can hand to a client: inline styles
+// in the console's own palette, no external requests, renders offline from
+// file://. Content mirrors the Markdown report; secrets remain the tester's
+// responsibility (the same redaction reminder is printed on the report).
+const REPORT_SEVERITY_RANK = Object.freeze({ critical: 0, high: 1, medium: 2, low: 3, informational: 4 });
+
+function decodeAttachmentText(attachment) {
+  try {
+    const base64 = String(attachment.data || '').split(',')[1] || '';
+    return atob(base64).slice(0, 4000);
+  } catch {
+    return `${attachment.name} (${attachment.type})`;
+  }
+}
+
+function reportEsc(value) {
+  return String(value ?? '').replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+}
+
+export function composeReportHtml(items, state, categoryNames = {}) {
+  const findings = [...findingItems(items, state)].sort((left, right) =>
+    (REPORT_SEVERITY_RANK[left.severity] ?? 9) - (REPORT_SEVERITY_RANK[right.severity] ?? 9) || left.id.localeCompare(right.id));
+  const statuses = Object.values(state.statuses || {});
+  const tested = statuses.filter((status) => TESTED_STATUSES.includes(status)).length;
+  const confirmed = statuses.filter((status) => status === 'confirmed_finding').length;
+  const potential = statuses.filter((status) => status === 'potential_finding').length;
+  const packs = Array.isArray(state.findings) ? state.findings : [];
+  const custom = items.filter((item) => item.category === 'custom');
+  const roleModel = state.engagement?.role_model || [];
+  const generated = new Date().toISOString().slice(0, 10);
+  const stat = (value, label) => `<div class="stat"><strong>${reportEsc(value)}</strong><span>${reportEsc(label)}</span></div>`;
+  const findingRows = findings.length ? findings.map((item) => `
+      <tr>
+        <td class="mono">${reportEsc(item.id)}</td>
+        <td>${reportEsc(item.title)}</td>
+        <td>${reportEsc(categoryNames[item.category] || item.category)}</td>
+        <td><span class="sev sev-${reportEsc(item.severity)}">${reportEsc(item.severity)}</span></td>
+        <td>${reportEsc(STATUS_LABELS[statusOf(item, state)] || statusOf(item, state))}</td>
+        <td>${reportEsc(state.notes?.[item.id] || '')}</td>
+      </tr>`).join('') : '<tr><td colspan="6" class="empty">No potential or confirmed findings recorded.</td></tr>';
+  const packBlocks = packs.map((pack) => `
+      <section class="pack">
+        <h3>${reportEsc(pack.title || 'Evidence pack')} <span class="mono">${reportEsc(pack.id)} · ${reportEsc(pack.item_id)}</span></h3>
+        <dl>
+          <div><dt>Severity</dt><dd>${reportEsc(pack.severity)}</dd></div>
+          <div><dt>Endpoint</dt><dd class="mono">${reportEsc(pack.endpoint || '—')}</dd></div>
+          <div><dt>Method</dt><dd>${reportEsc(pack.method || '—')}</dd></div>
+          <div><dt>Exploitability</dt><dd>${reportEsc(pack.exploitability)}</dd></div>
+          <div><dt>Reportable</dt><dd>${pack.reportable ? 'Yes' : 'No'}</dd></div>
+          <div><dt>Retest</dt><dd>${reportEsc(pack.retest_verdict)}</dd></div>
+        </dl>
+        ${pack.observed_behavior ? `<p><strong>Observed.</strong> ${reportEsc(pack.observed_behavior)}</p>` : ''}
+        ${pack.cleanup_performed ? `<p><strong>Cleanup.</strong> ${reportEsc(pack.cleanup_performed)}</p>` : ''}
+        ${pack.root_cause ? `<p><strong>Root cause.</strong> ${reportEsc(pack.root_cause)}</p>` : ''}
+        ${(pack.attachments || []).length ? `<div class="attachments">${pack.attachments.map((attachment) => attachment.type.startsWith('image/')
+          ? `<figure class="attachment"><img src="${attachment.data}" alt="${reportEsc(attachment.name)}"><figcaption>${reportEsc(attachment.name)} · ${(attachment.size / 1024).toFixed(1)} KB</figcaption></figure>`
+          : `<details class="attachment-text"><summary>${reportEsc(attachment.name)} · ${(attachment.size / 1024).toFixed(1)} KB</summary><pre>${reportEsc(decodeAttachmentText(attachment))}</pre></details>`).join('')}</div>` : ''}
+      </section>`).join('') || '<p class="empty">No structured evidence packs recorded.</p>';
+  const customRows = custom.map((item) => `<li><span class="mono">${reportEsc(item.id)}</span> ${reportEsc(item.title)} <em>(${reportEsc(STATUS_LABELS[statusOf(item, state)] || 'not tested')})</em></li>`).join('');
+
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>${reportEsc(state.engagement?.name || 'WAPT engagement')} — Assessment report</title>
+<style>
+  :root{color-scheme:light}
+  *{box-sizing:border-box}
+  body{margin:0;background:#f4f7fb;color:#101828;font:400 14px/1.6 Sora,system-ui,-apple-system,"Segoe UI",sans-serif}
+  .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+  main{max-width:980px;margin:0 auto;padding:40px 24px 64px}
+  header.hero{border:1px solid #d9e1ec;border-left:4px solid #087a6d;border-radius:14px;background:#fff;padding:22px 26px;margin-bottom:20px}
+  .kicker{margin:0 0 6px;color:#087a6d;font:500 11px/1 ui-monospace,Menlo,monospace;letter-spacing:.16em}
+  h1{margin:0 0 4px;font-size:26px;letter-spacing:-.02em}
+  .target{margin:0;color:#5c6672;font-size:13px}
+  .stats{display:flex;flex-wrap:wrap;gap:1px;background:#d9e1ec;border:1px solid #d9e1ec;border-radius:12px;overflow:hidden;margin-bottom:28px}
+  .stat{flex:1 1 140px;background:#fff;padding:14px 18px}
+  .stat strong{display:block;font-size:26px;letter-spacing:-.02em;color:#087a6d}
+  .stat span{color:#5c6672;font-size:11px;text-transform:uppercase;letter-spacing:.08em}
+  h2{font-size:17px;margin:32px 0 10px;letter-spacing:-.01em}
+  .ladder{margin:0 0 8px;padding:10px 14px;border:1px solid #cfe7e2;border-radius:10px;background:#eef9f7;font-size:13px}
+  table{width:100%;border-collapse:collapse;background:#fff;border:1px solid #d9e1ec;border-radius:12px;overflow:hidden;font-size:13px}
+  th{text-align:left;padding:10px 12px;background:#edf2f7;color:#5c6672;font:500 10px/1 ui-monospace,Menlo,monospace;letter-spacing:.1em;text-transform:uppercase}
+  td{padding:10px 12px;border-top:1px solid #edf2f7;vertical-align:top}
+  .sev{display:inline-block;padding:2px 8px;border-radius:100px;font-size:11px;font-weight:600}
+  .sev-critical,.sev-high{background:#fde8ea;color:#c41212}
+  .sev-medium{background:#fdf3e0;color:#a03e00}
+  .sev-low{background:#e7f7f1;color:#016a3e}
+  .sev-informational{background:#eaf1fe;color:#175cd3}
+  .pack{background:#fff;border:1px solid #d9e1ec;border-radius:12px;padding:16px 18px;margin-bottom:12px}
+  .pack h3{margin:0 0 8px;font-size:14px}
+  .pack h3 .mono{color:#5c6672;font-weight:400;font-size:11px;margin-left:8px}
+  .pack dl{display:flex;flex-wrap:wrap;gap:6px 24px;margin:0 0 8px}
+  .pack dt{color:#5c6672;font-size:10px;text-transform:uppercase;letter-spacing:.08em}
+  .pack dd{margin:0;font-size:13px}
+  .pack p{margin:6px 0 0;font-size:13px}
+  .empty{color:#5c6672;text-align:center;padding:18px}
+  .attachments{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+  .attachment{margin:0;max-width:280px}
+  .attachment img{max-width:280px;max-height:200px;border:1px solid #d9e1ec;border-radius:8px;display:block}
+  .attachment figcaption{font-size:11px;color:#5c6672;margin-top:4px}
+  .attachment-text{width:100%}
+  .attachment-text summary{font-size:12px;color:#344054;cursor:pointer}
+  .attachment-text pre{background:#f4f7fb;border:1px solid #d9e1ec;border-radius:8px;padding:10px;font:400 11px/1.5 ui-monospace,Menlo,monospace;overflow:auto;white-space:pre-wrap}
+  .note{margin-top:36px;padding:12px 16px;border:1px dashed #d9e1ec;border-radius:10px;color:#5c6672;font-size:12px}
+  ul.custom{background:#fff;border:1px solid #d9e1ec;border-radius:12px;padding:14px 14px 14px 30px;font-size:13px}
+  @media print{body{background:#fff}main{padding:0}.stats,.pack,table{border-color:#ccc}}
+</style>
+</head>
+<body>
+<main>
+  <header class="hero">
+    <p class="kicker">WAPT CHECKLIST · ASSESSMENT REPORT · ${reportEsc(generated)}</p>
+    <h1>${reportEsc(state.engagement?.name || 'WAPT engagement')}</h1>
+    <p class="target mono">${reportEsc(state.engagement?.targetUrl || 'Target not recorded')}</p>
+  </header>
+  <div class="stats">
+    ${stat(items.length, 'Tests in scope')}
+    ${stat(tested, 'Tested')}
+    ${stat(potential, 'Potential findings')}
+    ${stat(confirmed, 'Confirmed findings')}
+    ${stat(packs.length, 'Evidence packs')}
+    ${stat(custom.length, 'Custom checks')}
+  </div>
+  ${roleModel.length ? `<h2>Role ladder under test</h2><p class="ladder mono">${roleModel.map(({ name }) => reportEsc(name)).join('  &uarr;  ')}</p>` : ''}
+  <h2>Findings</h2>
+  <table>
+    <thead><tr><th>ID</th><th>Title</th><th>Category</th><th>Severity</th><th>Status</th><th>Notes</th></tr></thead>
+    <tbody>${findingRows}</tbody>
+  </table>
+  <h2>Evidence packs</h2>
+  ${packBlocks}
+  ${custom.length ? `<h2>Custom checks (target-specific)</h2><ul class="custom">${customRows}</ul>` : ''}
+  <p class="note">Client-generated draft produced locally by WAPT Checklist. It contains tester notes and evidence descriptions — review and redact credentials, tokens, personal data, and tenant identifiers before distribution. Authorized testing only.</p>
+</main>
+</body>
+</html>`;
 }

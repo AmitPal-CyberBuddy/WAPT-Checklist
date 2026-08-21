@@ -144,7 +144,7 @@ test('malicious or malformed imports are rejected safely without corrupting exis
     assert.equal(({}).polluted, undefined, `prototype pollution via ${payload.slice(0, 40)}`);
   }
   assert.throws(() => importState('not json at all'), /not valid JSON/);
-  assert.throws(() => importState('{"schema_version":99}'), /schema_version 3/);
+  assert.throws(() => importState('{"schema_version":99}'), /schema_version 4/);
   // The healthy state object is untouched by failed imports (imports are pure)
   assert.equal(healthy.engagement.name, 'Healthy');
   assert.deepEqual(healthy.findings, []);
@@ -464,7 +464,7 @@ test('import normalization handles missing fields, unknown IDs, invalid statuses
   ];
   for (const [candidate, label] of cases) {
     const normalized = normalizeState(candidate);
-    assert.equal(normalized.schema_version, 3, label);
+    assert.equal(normalized.schema_version, 4, label);
     assert.equal(typeof normalized.engagement.name, 'string', label);
     assert.ok(Array.isArray(normalized.findings), label);
     assert.equal(({}).polluted, undefined, label);

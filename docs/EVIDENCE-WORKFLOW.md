@@ -58,10 +58,6 @@ Variant suggestions derive from the item's related IDs plus a standard set: alte
 
 Coverage is **recorded work ÷ executable work**. Context-N/A items are scoped out of the denominator; credential-blocked items are counted separately. Coverage never inflates from inapplicable or untestable work, and N/A is never treated as tested.
 
-## Where it lives
+## Where the data lives
 
-- `js/engine/state.js` — schema v2, evidence-pack CRUD, retest verdicts, v1 migration.
-- `js/engine/reportability.js` — finding-decision gate and retest guidance.
-- `js/engine/coverage.js` — coverage math and retest queue.
-- `js/ui/workspace.js` — evidence form, evidence-pack cards, dashboard panels.
-- `js/ui/export.js` — report sections for evidence packs and the retest matrix.
+Everything above runs locally in your browser. Evidence packs, verdicts, statuses, and notes are part of your engagement state in this browser's local storage — export JSON regularly and treat exports as sensitive. The report and coverage exports described here never leave your device unless you send them.

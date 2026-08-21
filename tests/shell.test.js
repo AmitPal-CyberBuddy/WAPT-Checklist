@@ -25,7 +25,7 @@ test('all page CSS and JavaScript entry URLs share one cache version', () => {
     for (const match of read(page).matchAll(/(?:href|src)="(?:css|js)\/[^"?]+\?v=([^"]+)"/g)) versions.push(match[1]);
   }
   assert.ok(versions.length >= 5);
-  assert.deepEqual(new Set(versions), new Set(['1.0.0-r9']));
+  assert.deepEqual(new Set(versions), new Set(['1.0.0-r22']));
 });
 
 test('font assets are self-hosted WOFF2 files', () => {
@@ -60,7 +60,7 @@ test('homepage stays light and shows only useful product and local-progress coun
   assert.ok(html.includes('data-project-metric="production_items"'));
   assert.ok(html.includes('data-stat="tested"'));
   assert.ok(html.includes('data-stat="findings"'));
-  assert.match(home, /fetch\('release\.json'/);
+  assert.match(home, /fetch\(asset\('release\.json'\)/);
   assert.doesNotMatch(home, /checklist\/manifest\.json|evaluateApplicability/);
 });
 
@@ -86,14 +86,14 @@ test('workspace shell exposes rendered Phase 7 chain and payload browsers', () =
   assert.match(workspace, /payloadStore\.render/);
 });
 
-test('wizard source defines all 18 question keys and the one localStorage key', () => {
+test('wizard source defines all 19 question keys and the one localStorage key', () => {
   const wizard = read('js/ui/wizard.js');
   const app = read('js/ui/app.js');
   const engineState = read('js/engine/state.js');
   const theme = read('js/ui/theme.js');
   const themeBoot = read('js/ui/theme-boot.js');
   const questionKeys = [...wizard.matchAll(/\{ key: '([a-z_]+)'/g)].map((match) => match[1]);
-  assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features', 'intermediary', 'outbound_fetch', 'async_jobs']);
+  assert.deepEqual(questionKeys, ['mode', 'app_type', 'has_login', 'creds', 'registration', 'roles', 'role_types', 'auth_mechanism', 'identity_features', 'api_style', 'api_docs', 'source_access', 'backend', 'database', 'cloud', 'features', 'intermediary', 'outbound_fetch', 'async_jobs']);
   assert.match(engineState, /STATE_KEY = 'wapt\.state\.v1'/);
   assert.match(app, /localStorage\.setItem\(STATE_KEY/);
   assert.equal((app.match(/localStorage\.setItem/g) || []).length, 1);

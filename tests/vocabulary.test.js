@@ -11,6 +11,6 @@ test('validator context vocabulary stays byte-identical with the engine', async 
   assert.deepEqual(Object.keys(OPTIONS), Object.keys(ATTRIBUTE_OPTIONS), 'attribute keys diverged between tools/validate.js and js/engine/context.js');
   for (const [key, values] of Object.entries(OPTIONS)) {
     assert.deepEqual(values, [...ATTRIBUTE_OPTIONS[key]], `${key} values diverged`);
-    assert.equal(MULTI_ATTRIBUTES.has(key), ['auth_mechanism', 'identity_features', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch'].includes(key), `${key} cardinality diverged`);
+    assert.equal(MULTI_ATTRIBUTES.has(key), ['auth_mechanism', 'identity_features', 'role_types', 'backend', 'api_style', 'database', 'features', 'intermediary', 'outbound_fetch'].includes(key), `${key} cardinality diverged`);
   }
 });
