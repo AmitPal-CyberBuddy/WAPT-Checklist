@@ -79,7 +79,7 @@ tester's day shorter.
 
 ## v1.2 — Next (the practical-depth program)
 
-### 6. 🚧 Practical-variant authoring, wave 1 — **JWT, OAuth/SAML, sessions, and authorization complete**
+### 6. 🚧 Practical-variant authoring, wave 1 — **identity, session, authorization, and API surfaces complete**
 - **Progress (r15–r16)**: JWT is 18/18 step-by-step (algorithm allowlist, HMAC
   secret strength, jku/x5u/embedded-JWK rejection, kid rotation,
   issuer/audience/type binding, subject–tenant binding, replay limits, refresh
@@ -103,8 +103,20 @@ tester's day shorter.
   workflow transitions, separation of duties, revocation freshness, stale
   role claims, batched requests, existence oracles, signed URLs, realtime
   channel authorization, confused-deputy integrations, deny-by-default,
-  admin layering, and API-version consistency). Remaining categories: API,
-  headers, client-side, upload, GraphQL, business logic.
+  admin layering, and API-version consistency). API security is 40/40 as of
+  r18 (mutation/nested/batch object authorization, mobile-surface parity,
+  field filtering and property updates across representations, overfetch
+  bounds, API-key scope/revocation, token audience and type, cross-version
+  auth parity, page/body/filter cost bounds, side-effect quotas, distributed
+  abuse controls, business-flow automation guards, route-alias and method-
+  override policy, role-management constraint, deny-by-default, workflow
+  sequence and idempotency, fetch-redirect revalidation, method/media
+  hygiene, debug/CORS/schema-console controls, inventory/version/shadow-API
+  programs, and consumed-API trust: validation, resilience, TLS, and
+  credentials). GraphQL is 15/15 (per-transport baselines, mutation input
+  authorization, cost analysis, alias counting, pagination bounds,
+  subscription event-time authorization, error hygiene). Remaining
+  categories: headers, client-side, upload, business logic.
 - **Why**: the hero feature of this console is pasteable procedures; today only
   static-page/login-era playbooks carry them. JWT, OAuth/OIDC, authorization, and
   sessions are where testers spend their time.

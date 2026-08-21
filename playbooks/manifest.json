@@ -78,14 +78,14 @@
       "title": "API endpoint",
       "file": "api-endpoint.json",
       "summary": "Auth, object/function authorization, verb/content-type swaps, mass assignment, and SSRF-shaped URL fields.",
-      "count": 8
+      "count": 43
     },
     {
       "id": "graphql",
       "title": "GraphQL endpoint",
       "file": "graphql.json",
       "summary": "Introspection, node(id:) BOLA, field/mutation authorization, batching, CSRF, and depth/cost.",
-      "count": 8
+      "count": 15
     },
     {
       "id": "websocket",

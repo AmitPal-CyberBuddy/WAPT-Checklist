@@ -6,15 +6,15 @@
 // from “methodology-only” catalog entries, while the operator UI calls them
 // Practical and Methodology so internal content architecture never becomes
 // navigation noise.
-import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r17';
-import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r17';
-import { shareHref } from '../engine/share.js?v=1.0.0-r17';
-import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r17';
-import { surfaceRationale, roleLadderLabels, roleModelLadder } from '../engine/surfaces.js?v=1.0.0-r17';
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r17';
-import { itemStatus } from './filters.js?v=1.0.0-r17';
-import { element } from './dom.js?v=1.0.0-r17';
-import { renderOperatorCheck } from './playbook.js?v=1.0.0-r17';
+import { checkItemIds } from '../engine/playbooks.js?v=1.0.0-r18';
+import { buildAssessmentPlan, composeAssessmentMarkdown } from '../engine/assessment.js?v=1.0.0-r18';
+import { shareHref } from '../engine/share.js?v=1.0.0-r18';
+import { answersCarryContext } from '../engine/profile.js?v=1.0.0-r18';
+import { surfaceRationale, roleLadderLabels, roleModelLadder } from '../engine/surfaces.js?v=1.0.0-r18';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r18';
+import { itemStatus } from './filters.js?v=1.0.0-r18';
+import { element } from './dom.js?v=1.0.0-r18';
+import { renderOperatorCheck } from './playbook.js?v=1.0.0-r18';
 
 const APP_TYPE_LABEL = Object.freeze({
   static: 'Static website',

@@ -3,9 +3,9 @@
 // tester evolve the same context as the target is learned — add a discovered auth
 // mechanism, WebSocket, file upload, or role tier — while every status, note, and
 // finding is preserved.
-import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r17';
-import { importScope } from '../engine/scope-import.js?v=1.0.0-r17';
-import { element } from './dom.js?v=1.0.0-r17';
+import { matchAssessment } from '../data/presets.mjs?v=1.0.0-r18';
+import { importScope } from '../engine/scope-import.js?v=1.0.0-r18';
+import { element } from './dom.js?v=1.0.0-r18';
 
 function list(value) {
   return Array.isArray(value) ? value : value ? [value] : [];
